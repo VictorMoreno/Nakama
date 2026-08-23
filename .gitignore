@@ -1,0 +1,130 @@
+## =========================================================
+## Nakama — .gitignore (backend .NET 10 + frontend React/Vite)
+## =========================================================
+
+# ---------------------------------------------------------
+# .NET / C# backend
+# ---------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+build/
+bld/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# ASP.NET Core / publish
+*.pubxml
+*.pubxml.user
+*.publishproj
+PublishProfiles/
+publish/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Entity Framework migrations scaffolding cache / local DBs
+*.mdf
+*.ldf
+*.ndf
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Test results / coverage
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+*.VisualState.xml
+
+# User-specific config that leaks secrets/connection strings
+appsettings.*.local.json
+appsettings.Development.json
+secrets.json
+*.pfx
+*.p12
+*.key
+*.pem
+
+# ---------------------------------------------------------
+# Node / React / Vite frontend
+# ---------------------------------------------------------
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+.turbo/
+.cache/
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Coverage / test artifacts
+coverage/
+.nyc_output/
+
+# ---------------------------------------------------------
+# Environment variables / secrets (both backend & frontend)
+# ---------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ---------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*~
+
+# ---------------------------------------------------------
+# Misc local tooling
+# ---------------------------------------------------------
+*.log
+.eslintcache
