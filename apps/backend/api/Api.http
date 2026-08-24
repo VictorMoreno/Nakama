@@ -1,0 +1,6 @@
+@Nakama_HostAddress = http://localhost:5091
+
+GET {{Nakama_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
