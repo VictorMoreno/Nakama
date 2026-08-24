@@ -10,6 +10,7 @@ export interface CreateChatbotInput {
   description: string;
   status: ChatbotLifecycleStatus;
   settings: ChatbotSettings;
+  iconUrl?: string;
 }
 
 interface ChatbotsContextValue {
@@ -24,6 +25,7 @@ interface ChatbotsContextValue {
   archiveChatbot: (key: string) => void;
   updateSettings: (key: string, patch: Partial<ChatbotSettings>) => void;
   updateStatus: (key: string, status: ChatbotLifecycleStatus) => void;
+  updateIcon: (key: string, iconUrl: string | undefined) => void;
   removeDocument: (key: string, index: number) => void;
   addTeamMember: (key: string, member: TeamMember) => void;
   removeTeamMember: (key: string, index: number) => void;
@@ -52,7 +54,7 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
   }
 
   function createChatbot(input: CreateChatbotInput): string {
-    const { name, dept, general, description, status, settings } = input;
+    const { name, dept, general, description, status, settings, iconUrl } = input;
     const key = slugify(name, Object.keys(chatbots));
     const trimmedDescription = description.trim();
     const fallbackDescription = general
@@ -74,6 +76,7 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
       chips: [],
       settings,
       general,
+      iconUrl,
       docs: [],
       gaps: [],
       topQuestions: [],
@@ -99,6 +102,10 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
 
   function updateStatus(key: string, status: ChatbotLifecycleStatus) {
     updateBot(key, (bot) => ({ ...bot, status }));
+  }
+
+  function updateIcon(key: string, iconUrl: string | undefined) {
+    updateBot(key, (bot) => ({ ...bot, iconUrl }));
   }
 
   function removeDocument(key: string, index: number) {
@@ -128,6 +135,7 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
     archiveChatbot,
     updateSettings,
     updateStatus,
+    updateIcon,
     removeDocument,
     addTeamMember,
     removeTeamMember

@@ -81,7 +81,10 @@ export function CurriculumsListView() {
             return (
               <div className="bot-card glass" key={c.key}>
                 <div className="bot-card-top">
-                  <div className="bot-card-icon">
+                  <div
+                    className="bot-card-icon"
+                    style={c.iconUrl ? { backgroundImage: `url(${c.iconUrl})` } : undefined}
+                  >
                     <span className={`led ${status.level}`} title={status.label} />
                   </div>
                   <div>

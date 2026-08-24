@@ -16,15 +16,13 @@ export interface EntityStatus {
 
 export const CHATBOT_STATUS_META: Record<ChatbotLifecycleStatus, EntityStatus> = {
   activo: { level: "ok", label: "Activo" },
-  atencion: { level: "pending", label: "Necesita atención" },
-  pausado: { level: "danger", label: "Pausado" },
+  inactivo: { level: "danger", label: "Inactivo" },
   borrador: { level: "muted", label: "Borrador" }
 };
 
 export const CURRICULUM_STATUS_META: Record<CurriculumLifecycleStatus, EntityStatus> = {
   activo: { level: "ok", label: "Activo" },
-  revision: { level: "pending", label: "En revisión" },
-  pausado: { level: "danger", label: "Pausado" },
+  inactivo: { level: "danger", label: "Inactivo" },
   borrador: { level: "muted", label: "Borrador" }
 };
 

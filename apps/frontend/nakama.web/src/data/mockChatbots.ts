@@ -10,7 +10,7 @@ export const mockChatbots: ChatbotMap = {
     key: "ecu",
     label: "Diagnósticos ECU",
     description: "Protocolos de comunicación con la ECU, arquitectura de adaptadores y decisiones de diseño del equipo.",
-    status: "atencion",
+    status: "activo",
     lastUsed: "Usaste este chatbot hoy",
     context:
       "Nutrido con la documentación técnica del equipo de <strong>Diagnósticos ECU</strong>: arquitectura de protocolos, referencias de configuración y decisiones de diseño registradas por los seniors del equipo.",
@@ -61,7 +61,7 @@ export const mockChatbots: ChatbotMap = {
     key: "auth",
     label: "Acceso Talleres",
     description: "Autenticación PKCE, gestión de sesiones y políticas de acceso para las tablets de taller.",
-    status: "atencion",
+    status: "inactivo",
     lastUsed: "Usaste este chatbot hace 3 días",
     context:
       "Nutrido con la documentación del equipo de <strong>Acceso Talleres</strong>: flujo de autenticación con Jaltest Auth, gestión de sesiones y políticas de acceso para las tablets de taller.",
@@ -109,7 +109,7 @@ export const mockChatbots: ChatbotMap = {
     key: "cloud",
     label: "Plataforma Cloud",
     description: "Arquitectura multi-departamento, stack técnico y decisiones de infraestructura compartida.",
-    status: "pausado",
+    status: "inactivo",
     lastUsed: "Aún no has usado este chatbot",
     context:
       "Nutrido con la documentación de <strong>Plataforma Cloud</strong>: arquitectura multi-departamento, stack técnico y decisiones de infraestructura compartida.",

@@ -25,7 +25,7 @@ const STATUS_OPTIONS: StatusSelectOption<ChatbotLifecycleStatus>[] = (
 
 export function ChatbotDetailView() {
   const { key } = useParams<{ key: string }>();
-  const { chatbots, updateStatus } = useChatbots();
+  const { chatbots, isAdmin, updateStatus } = useChatbots();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab = (searchParams.get("tab") as TabKey | null) ?? "config";
@@ -60,12 +60,16 @@ export function ChatbotDetailView() {
             <h2>{bot.label}</h2>
             <p>{botSubText(bot.docs.length, bot.team.length)}</p>
           </div>
-          <StatusSelect
-            value={bot.status}
-            onChange={(status) => updateStatus(bot.key, status)}
-            options={STATUS_OPTIONS}
-            ariaLabel="Estado del chatbot"
-          />
+          {isAdmin ? (
+            <StatusSelect
+              value={bot.status}
+              onChange={(status) => updateStatus(bot.key, status)}
+              options={STATUS_OPTIONS}
+              ariaLabel="Estado del chatbot"
+            />
+          ) : (
+            <span className={`status-tag ${CHATBOT_STATUS_META[bot.status].level}`}>{CHATBOT_STATUS_META[bot.status].label}</span>
+          )}
         </div>
 
         <div className="tabs" role="tablist" aria-label="Secciones del chatbot">

@@ -2,7 +2,7 @@
   <defs>
     <linearGradient id="nakama-brand-g" x1="4.2" y1="3" x2="19.8" y2="21" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#004a98"/>
-      <stop offset="1" stop-color="#0d6efd"/>
+      <stop offset="1" stop-color="#00a3e2"/>
     </linearGradient>
   </defs>
   <path d="M12 3L19.8 7.5L19.8 16.5L12 21L4.2 16.5L4.2 7.5Z" fill="url(#nakama-brand-g)"/>

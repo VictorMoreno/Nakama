@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IconUploadField } from "../../components/IconUploadField";
 import { Select } from "../../components/Select";
 import { StatusSelect, type StatusSelectOption } from "../../components/StatusSelect";
 import { useChatbots } from "../../context/ChatbotsContext";
@@ -23,6 +24,7 @@ export function CreateCurriculumView() {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<CurriculumLifecycleStatus>("borrador");
   const [linkedChatbotKey, setLinkedChatbotKey] = useState("");
+  const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
   const [titleError, setTitleError] = useState(false);
 
   function handleConfirm() {
@@ -36,7 +38,8 @@ export function CreateCurriculumView() {
       audience: audience.trim(),
       description,
       status,
-      linkedChatbotKey: linkedChatbotKey || undefined
+      linkedChatbotKey: linkedChatbotKey || undefined,
+      iconUrl
     });
     showToast("Currículo creado");
     navigate(`/formacion/${key}`);
@@ -54,6 +57,7 @@ export function CreateCurriculumView() {
             <h2>Crear currículo</h2>
             <p>Podrás añadir módulos y asignar equipo en cuanto lo crees.</p>
           </div>
+          <StatusSelect value={status} onChange={setStatus} options={STATUS_OPTIONS} ariaLabel="Estado inicial del currículo" />
         </div>
 
         <div className="glass">
@@ -61,6 +65,7 @@ export function CreateCurriculumView() {
             <h2>Datos básicos</h2>
           </div>
           <div style={{ padding: "0 20px 20px" }}>
+            <IconUploadField value={iconUrl} onChange={setIconUrl} placeholderLabel={title || "Currículo"} />
             <div className="form-field">
               <label htmlFor="new-curriculum-title">Título</label>
               <input
@@ -101,14 +106,6 @@ export function CreateCurriculumView() {
           </div>
 
           <div className="config-rows">
-            <div className="config-row">
-              <div className="config-row-text">
-                <div className="title">Estado inicial</div>
-                <div className="desc">Determina el color del indicador en el listado. Podrás cambiarlo en cualquier momento.</div>
-              </div>
-              <StatusSelect value={status} onChange={setStatus} options={STATUS_OPTIONS} ariaLabel="Estado inicial del currículo" />
-            </div>
-
             <div className="config-row">
               <div className="config-row-text">
                 <div className="title">Chatbot de referencia</div>

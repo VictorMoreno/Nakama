@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IconUploadField } from "../../components/IconUploadField";
 import { Select } from "../../components/Select";
 import { StatusSelect, type StatusSelectOption } from "../../components/StatusSelect";
 import { useChatbots } from "../../context/ChatbotsContext";
@@ -30,6 +31,7 @@ export function CreateChatbotView() {
   const [socratic, setSocratic] = useState(false);
   const [explicaMas, setExplicaMas] = useState(true);
   const [provider, setProvider] = useState<LlmProvider>("anthropic");
+  const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
   const [nameError, setNameError] = useState(false);
 
   function handleConfirm() {
@@ -44,7 +46,8 @@ export function CreateChatbotView() {
       general,
       description,
       status,
-      settings: { socratic, explicaMas, provider }
+      settings: { socratic, explicaMas, provider },
+      iconUrl
     });
     showToast("Chatbot creado");
     navigate(`/chatbots/${key}`);
@@ -62,6 +65,7 @@ export function CreateChatbotView() {
             <h2>Crear chatbot</h2>
             <p>Se te añadirá como propietario. Podrás subir documentos e invitar a tu equipo en cuanto lo crees.</p>
           </div>
+          <StatusSelect value={status} onChange={setStatus} options={STATUS_OPTIONS} ariaLabel="Estado inicial del chatbot" />
         </div>
 
         <div className="glass">
@@ -69,6 +73,7 @@ export function CreateChatbotView() {
             <h2>Datos básicos</h2>
           </div>
           <div style={{ padding: "0 20px 20px" }}>
+            <IconUploadField value={iconUrl} onChange={setIconUrl} placeholderLabel={name || "Chatbot"} />
             <div className="form-field">
               <label htmlFor="new-bot-name">Nombre del chatbot</label>
               <input
@@ -126,14 +131,6 @@ export function CreateChatbotView() {
                 type="button"
                 onClick={() => setGeneral((g) => !g)}
               />
-            </div>
-
-            <div className="config-row">
-              <div className="config-row-text">
-                <div className="title">Estado inicial</div>
-                <div className="desc">Determina el color del indicador en el listado. Podrás cambiarlo en cualquier momento.</div>
-              </div>
-              <StatusSelect value={status} onChange={setStatus} options={STATUS_OPTIONS} ariaLabel="Estado inicial del chatbot" />
             </div>
           </div>
         </div>

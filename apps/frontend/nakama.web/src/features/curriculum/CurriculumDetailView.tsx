@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { CheckIcon, DocumentIcon, ExerciseIcon, LockIcon, QuizIcon, VideoIcon } from "../../components/icons";
+import { IconUploadField } from "../../components/IconUploadField";
 import { StatusSelect, type StatusSelectOption } from "../../components/StatusSelect";
 import { useChatbots } from "../../context/ChatbotsContext";
 import { useCurriculums } from "../../context/CurriculumsContext";
@@ -187,7 +188,7 @@ export function CurriculumDetailView() {
 
   const c = key ? curriculums[key] : undefined;
   const deleteTarget = c?.modules.find((m) => m.id === deleteId);
-  const { removeModule, updateStatus } = useCurriculums();
+  const { removeModule, updateStatus, updateIcon } = useCurriculums();
   const { showToast } = useToast();
 
   if (!c) {
@@ -241,6 +242,21 @@ export function CurriculumDetailView() {
             <span className={`status-tag ${CURRICULUM_STATUS_META[c.status].level}`}>{CURRICULUM_STATUS_META[c.status].label}</span>
           )}
         </div>
+
+        {isAdmin && (
+          <div className="glass">
+            <div className="panel-head">
+              <h2>Icono del currículo</h2>
+            </div>
+            <div style={{ padding: "0 20px 20px" }}>
+              <IconUploadField
+                value={c.iconUrl}
+                onChange={(iconUrl) => updateIcon(c.key, iconUrl)}
+                placeholderLabel={c.title}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="glass">
           <div className="curriculum-progress">

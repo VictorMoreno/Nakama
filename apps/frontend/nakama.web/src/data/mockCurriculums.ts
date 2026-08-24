@@ -77,7 +77,7 @@ export const mockCurriculums: CurriculumMap = {
     title: "Onboarding Acceso Talleres",
     audience: "Acceso Talleres",
     description: "Currículo guiado sobre el flujo de autenticación y gestión de sesiones para las tablets de taller.",
-    status: "revision",
+    status: "inactivo",
     linkedChatbotKey: "auth",
     modules: [
       {

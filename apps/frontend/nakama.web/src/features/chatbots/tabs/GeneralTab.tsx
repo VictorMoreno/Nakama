@@ -1,3 +1,4 @@
+import { IconUploadField } from "../../../components/IconUploadField";
 import { Select } from "../../../components/Select";
 import { useChatbots } from "../../../context/ChatbotsContext";
 import type { Chatbot, LlmProvider } from "../../../types/chatbot";
@@ -13,10 +14,23 @@ interface GeneralTabProps {
 }
 
 export function GeneralTab({ bot }: GeneralTabProps) {
-  const { updateSettings } = useChatbots();
+  const { updateSettings, updateIcon } = useChatbots();
 
   return (
     <div className="tab-panel active">
+      <div className="glass" style={{ marginBottom: 14 }}>
+        <div className="panel-head">
+          <h2>Icono del chatbot</h2>
+        </div>
+        <div style={{ padding: "0 20px 20px" }}>
+          <IconUploadField
+            value={bot.iconUrl}
+            onChange={(iconUrl) => updateIcon(bot.key, iconUrl)}
+            placeholderLabel={bot.label}
+          />
+        </div>
+      </div>
+
       <div className="glass">
         <div className="panel-head">
           <h2>Comportamiento del chatbot</h2>

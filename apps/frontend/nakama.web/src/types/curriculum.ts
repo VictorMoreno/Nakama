@@ -1,7 +1,7 @@
 export type ModuleType = "video" | "documento" | "ejercicio" | "examen";
 
 /** Estado configurado por el admin del currículo — determina el LED de la card y el status-tag de la ficha */
-export type CurriculumLifecycleStatus = "activo" | "revision" | "pausado" | "borrador";
+export type CurriculumLifecycleStatus = "activo" | "inactivo" | "borrador";
 
 export interface QuizQuestion {
   question: string;
@@ -63,6 +63,8 @@ export interface Curriculum {
   myProgress: LearnerProgress;
   team: CurriculumMember[];
   archived?: boolean;
+  /** Imagen subida por un admin (al crear o desde la ficha del currículo), mostrada en la card del listado en vez del icono por defecto */
+  iconUrl?: string;
 }
 
 export type CurriculumMap = Record<string, Curriculum>;

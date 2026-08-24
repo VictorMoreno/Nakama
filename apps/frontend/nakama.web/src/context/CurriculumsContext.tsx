@@ -9,6 +9,7 @@ export interface CreateCurriculumInput {
   description: string;
   status: CurriculumLifecycleStatus;
   linkedChatbotKey?: string;
+  iconUrl?: string;
 }
 
 interface CurriculumsContextValue {
@@ -18,6 +19,7 @@ interface CurriculumsContextValue {
   createCurriculum: (input: CreateCurriculumInput) => string;
   archiveCurriculum: (key: string) => void;
   updateStatus: (key: string, status: CurriculumLifecycleStatus) => void;
+  updateIcon: (key: string, iconUrl: string | undefined) => void;
   addModule: (key: string, module: Omit<CurriculumModule, "id">) => void;
   removeModule: (key: string, moduleId: string) => void;
   toggleModuleGating: (key: string, moduleId: string) => void;
@@ -43,7 +45,7 @@ export function CurriculumsProvider({ children }: { children: ReactNode }) {
   }
 
   function createCurriculum(input: CreateCurriculumInput): string {
-    const { title, audience, description, status, linkedChatbotKey } = input;
+    const { title, audience, description, status, linkedChatbotKey, iconUrl } = input;
     const key = slugify(title, Object.keys(curriculums));
     const trimmedDescription = description.trim();
     const newCurriculum: Curriculum = {
@@ -53,6 +55,7 @@ export function CurriculumsProvider({ children }: { children: ReactNode }) {
       description: trimmedDescription || "Currículo recién creado. Añade módulos para que el equipo pueda empezar a formarse.",
       status,
       linkedChatbotKey,
+      iconUrl,
       modules: [],
       myProgress: { completedModuleIds: [], examScores: {} },
       team: []
@@ -67,6 +70,10 @@ export function CurriculumsProvider({ children }: { children: ReactNode }) {
 
   function updateStatus(key: string, status: CurriculumLifecycleStatus) {
     updateCurriculum(key, (c) => ({ ...c, status }));
+  }
+
+  function updateIcon(key: string, iconUrl: string | undefined) {
+    updateCurriculum(key, (c) => ({ ...c, iconUrl }));
   }
 
   function addModule(key: string, module: Omit<CurriculumModule, "id">) {
@@ -113,6 +120,7 @@ export function CurriculumsProvider({ children }: { children: ReactNode }) {
     createCurriculum,
     archiveCurriculum,
     updateStatus,
+    updateIcon,
     addModule,
     removeModule,
     toggleModuleGating,

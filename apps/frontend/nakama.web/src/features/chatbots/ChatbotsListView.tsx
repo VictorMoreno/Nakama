@@ -71,7 +71,10 @@ export function ChatbotsListView() {
             return (
             <div className="bot-card glass" key={bot.key}>
               <div className="bot-card-top">
-                <div className="bot-card-icon">
+                <div
+                  className="bot-card-icon"
+                  style={bot.iconUrl ? { backgroundImage: `url(${bot.iconUrl})` } : undefined}
+                >
                   <span className={`led ${status.level}`} title={status.label} />
                 </div>
                 <div>

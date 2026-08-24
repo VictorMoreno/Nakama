@@ -1,7 +1,7 @@
 export type LlmProvider = "anthropic" | "openai" | "local";
 
 /** Estado configurado por el admin del chatbot — determina el LED de la card y el status-tag de la ficha */
-export type ChatbotLifecycleStatus = "activo" | "atencion" | "pausado" | "borrador";
+export type ChatbotLifecycleStatus = "activo" | "inactivo" | "borrador";
 
 export interface ChatbotSettings {
   socratic: boolean;
@@ -69,6 +69,8 @@ export interface Chatbot {
   archived?: boolean;
   /** true para el chatbot transversal de empresa (RF19), nutrido con información general en vez de la de un departamento */
   general?: boolean;
+  /** Imagen subida por un admin (al crear o desde la pestaña General), mostrada en la card del listado en vez del icono por defecto */
+  iconUrl?: string;
 }
 
 export type ChatbotMap = Record<string, Chatbot>;
