@@ -131,6 +131,11 @@
     cursor: pointer;
   }
 
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
   ::selection {
     background: var(--accent-soft);
   }

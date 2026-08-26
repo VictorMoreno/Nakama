@@ -40,7 +40,7 @@ export function ChatbotDetailView() {
           <p>
             No se ha encontrado este chatbot.{" "}
             <button className="config-link" type="button" onClick={() => navigate("/chatbots")}>
-              Volver a Chatbots →
+              Volver a Gestión de chatbots →
             </button>
           </p>
         </div>
@@ -52,7 +52,7 @@ export function ChatbotDetailView() {
     <section className="view active">
       <div className="bot-detail">
         <button className="btn-ghost back-btn" type="button" onClick={() => navigate("/chatbots")}>
-          ← Chatbots
+          ← Gestión de chatbots
         </button>
 
         <div className="bot-detail-head">

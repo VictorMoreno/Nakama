@@ -92,7 +92,7 @@ export function ChatView() {
             No tienes ningún chatbot seleccionado.{" "}
             {isAdmin ? (
               <button className="config-link" type="button" onClick={() => navigate("/chatbots")}>
-                Ir a Chatbots →
+                Ir a Gestión de chatbots →
               </button>
             ) : (
               "Elige uno con el selector de la parte superior."

@@ -52,9 +52,9 @@ export function Rail() {
           <span>Chat</span>
         </NavLink>
         {isAdmin && (
-          <NavLink to="/chatbots" className="nav-item" data-tooltip="Chatbots">
+          <NavLink to="/chatbots" className="nav-item" data-tooltip="Gestión de chatbots">
             <GridIcon />
-            <span>Chatbots</span>
+            <span>Gestión de chatbots</span>
           </NavLink>
         )}
         <NavLink to="/formacion" className="nav-item" data-tooltip="Formación">
