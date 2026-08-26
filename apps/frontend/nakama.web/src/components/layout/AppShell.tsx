@@ -7,8 +7,10 @@ export function AppShell() {
     <div className="app">
       <Rail />
       <main className="main">
-        <Topbar />
-        <Outlet />
+        <div className="main-content">
+          <Topbar />
+          <Outlet />
+        </div>
       </main>
     </div>
   );
