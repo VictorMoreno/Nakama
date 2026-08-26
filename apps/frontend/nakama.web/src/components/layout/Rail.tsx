@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useChatbots } from "../../context/ChatbotsContext";
 import { AnalyticsIcon, BrandMarkIcon, ChatIcon, ChevronLeftIcon, GridIcon, LearningIcon } from "../icons";
+import { UserMenu } from "./UserMenu";
 
 const STORAGE_KEY = "nakama-rail-collapsed";
 
@@ -69,9 +70,7 @@ export function Rail() {
       </nav>
 
       <div className="rail-foot">
-        Prototipo navegable · datos de ejemplo
-        <br />
-        v0.1 · fase de diseño
+        <UserMenu />
       </div>
     </aside>
   );

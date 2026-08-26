@@ -1,6 +1,5 @@
 import { useLocation } from "react-router-dom";
 import { BotSwitcher } from "./BotSwitcher";
-import { UserMenu } from "./UserMenu";
 
 function headingFor(pathname: string): { title: string; subtitle: string; showSwitcher: boolean } {
   if (pathname === "/chat" || pathname.startsWith("/chat/")) {
@@ -29,9 +28,6 @@ export function Topbar() {
             <BotSwitcher />
           </div>
         )}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-        <UserMenu />
       </div>
     </div>
   );

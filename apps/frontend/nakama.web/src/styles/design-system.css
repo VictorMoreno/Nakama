@@ -179,8 +179,7 @@
   .rail.collapsed { width: 76px; padding-left: 14px; padding-right: 14px; }
 
   .rail.collapsed .brand-text,
-  .rail.collapsed .nav-item span,
-  .rail.collapsed .rail-foot {
+  .rail.collapsed .nav-item span {
     display: none;
   }
 
@@ -316,11 +315,42 @@
 
   .rail-foot {
     margin-top: auto;
-    font-size: 0.72rem;
-    color: var(--ink-faint);
-    line-height: 1.5;
     border-top: 1px solid var(--border);
     padding-top: 14px;
+  }
+
+  /* User menu rendered inside the rail footer: adapt it from the topbar's pill/button
+     look to a nav-item-style row so it reads as part of the sidebar, not a floating chip. */
+  .rail-foot .user-menu { width: 100%; }
+
+  .rail-foot .user-trigger {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: var(--radius-sm);
+  }
+
+  .rail-foot .user-trigger:hover { background: var(--surface); }
+
+  /* Glass/blur affordance only while the menu is open — matches the select-trigger's
+     "cristal" treatment, but reserved for the active state instead of always-on, to
+     keep the trigger reading as a plain nav row at rest. Uses --glass-border-strong
+     (not the plain --border used elsewhere) because this sits on top of the rail's
+     own blurred surface — a plain border has too little contrast against that second
+     layer of translucency in dark mode, where it becomes nearly invisible. */
+  .rail-foot .user-menu.open .user-trigger {
+    background: var(--surface-strong);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-color: var(--glass-border-strong);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .rail.collapsed .rail-foot .user-trigger { justify-content: center; padding: 8px; }
+  .rail.collapsed .rail-foot .user-trigger span:not(.user-avatar),
+  .rail.collapsed .rail-foot .user-trigger .chevron {
+    display: none;
   }
 
   /* ---------- Main ---------- */
@@ -507,10 +537,9 @@
   .user-trigger .chevron { width: 11px; height: 11px; color: var(--ink-faint); transition: transform 0.15s ease; }
   .user-menu.open .user-trigger .chevron { transform: rotate(180deg); }
 
+  /* Positioned via inline style (see UserMenu.tsx) since it's portaled to <body>. */
   .user-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
+    position: fixed;
     width: 240px;
     background: var(--surface-strong);
     backdrop-filter: blur(28px);
@@ -519,13 +548,10 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow);
     padding: 14px;
-    display: none;
     z-index: 30;
   }
 
-  .user-menu.open .user-dropdown { display: block; }
-
-  .user-dropdown-head { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .user-dropdown-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
   .user-dropdown-name { font-size: 0.86rem; font-weight: 600; color: var(--ink); }
   .user-dropdown-role { font-size: 0.72rem; color: var(--ink-faint); margin-top: 2px; }
 
@@ -565,14 +591,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 6px 2px 12px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
   }
 
-  .user-dropdown-demo-text { display: flex; flex-direction: column; gap: 1px; }
   .user-dropdown-demo-label { font-size: 0.74rem; color: var(--ink-soft); }
-  .user-dropdown-demo-hint { font-size: 0.64rem; font-style: italic; color: var(--ink-faint); }
 
   .demo-switch {
     position: relative;
@@ -1748,7 +1770,7 @@
   @media (max-width: 920px) {
     .rail { width: 76px; padding-left: 14px; padding-right: 14px; }
     .rail-toggle { display: none; }
-    .brand-name, .brand-sub, .nav-item span, .rail-foot { display: none; }
+    .brand-name, .brand-sub, .nav-item span { display: none; }
     .brand { justify-content: center; }
     .nav-item { justify-content: center; }
     .chat-shell { grid-template-columns: 1fr; }
