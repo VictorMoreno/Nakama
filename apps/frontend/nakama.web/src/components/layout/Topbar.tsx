@@ -4,7 +4,7 @@ import { UserMenu } from "./UserMenu";
 
 function headingFor(pathname: string): { title: string; subtitle: string; showSwitcher: boolean } {
   if (pathname === "/chat" || pathname.startsWith("/chat/")) {
-    return { title: "Chat", subtitle: "Vista del desarrollador junior", showSwitcher: true };
+    return { title: "Chat", subtitle: "", showSwitcher: true };
   }
   if (pathname === "/formacion" || pathname.startsWith("/formacion/")) {
     return { title: "Formación", subtitle: "Currículos de formación, independientes de los chatbots", showSwitcher: false };
@@ -23,10 +23,14 @@ export function Topbar() {
     <div className="topbar">
       <div className="view-title">
         <h1>{title}</h1>
-        <p>{subtitle}</p>
+        {subtitle && <p>{subtitle}</p>}
+        {showSwitcher && (
+          <div className="view-title-switcher">
+            <BotSwitcher />
+          </div>
+        )}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-        {showSwitcher && <BotSwitcher />}
         <UserMenu />
       </div>
     </div>

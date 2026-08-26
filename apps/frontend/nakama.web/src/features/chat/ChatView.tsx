@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatbots } from "../../context/ChatbotsContext";
-import type { ChatExample } from "../../types/chatbot";
+import { mockConversations } from "../../data/mockConversations";
+import type { ChatExample, ConversationSummary } from "../../types/chatbot";
 import { BotBubble, UserBubble, type BotMessageState } from "./MessageBubble";
 
 type ThreadItem = { kind: "user"; id: string; text: string } | { kind: "bot"; id: string; bot: BotMessageState };
@@ -10,6 +11,13 @@ let uidCounter = 0;
 function nextId() {
   uidCounter += 1;
   return `m${uidCounter}`;
+}
+
+function exchangesToThread(exchanges: ChatExample[], useSocratic: boolean): ThreadItem[] {
+  return exchanges.flatMap((example) => [
+    { kind: "user" as const, id: nextId(), text: example.q },
+    { kind: "bot" as const, id: nextId(), bot: { id: nextId(), example, useSocratic, revealed: false } }
+  ]);
 }
 
 const DEMO_FALLBACK: ChatExample = {
@@ -24,20 +32,20 @@ export function ChatView() {
   const { chatbots, currentBotKey, isAdmin } = useChatbots();
   const navigate = useNavigate();
   const bot = chatbots[currentBotKey];
+  const botConversations = mockConversations.filter((conv) => conv.botKey === currentBotKey);
 
   const [thread, setThread] = useState<ThreadItem[]>([]);
   const [input, setInput] = useState("");
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
 
   // Intentionally keyed only on bot.key: this should reset the thread when switching
   // chatbots, not when the current bot's settings change mid-conversation.
   useEffect(() => {
     if (!bot) return;
+    setActiveConversationId(null);
     if (bot.opening) {
-      setThread([
-        { kind: "user", id: nextId(), text: bot.opening.q },
-        { kind: "bot", id: nextId(), bot: { id: nextId(), example: bot.opening, useSocratic: bot.settings.socratic, revealed: false } }
-      ]);
+      setThread(exchangesToThread([bot.opening], bot.settings.socratic));
     } else {
       setThread([]);
     }
@@ -47,7 +55,13 @@ export function ChatView() {
     threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight });
   }, [thread]);
 
+  function openConversation(conv: ConversationSummary) {
+    setThread(exchangesToThread(conv.exchanges, bot!.settings.socratic));
+    setActiveConversationId(conv.id);
+  }
+
   function appendExchange(question: string, example: ChatExample) {
+    setActiveConversationId(null);
     setThread((prev) => [
       ...prev,
       { kind: "user", id: nextId(), text: question },
@@ -145,6 +159,27 @@ export function ChatView() {
                 Ver configuración del chatbot →
               </button>
             )}
+          </div>
+
+          <div className="history-card glass">
+            <span className="eyebrow">Historial de conversaciones</span>
+            <div className="history-panel">
+              {botConversations.length === 0 ? (
+                <div className="history-empty">Todavía no tienes conversaciones guardadas con este chatbot.</div>
+              ) : (
+                botConversations.map((conv) => (
+                  <button
+                    key={conv.id}
+                    className={`history-row${conv.id === activeConversationId ? " active" : ""}`}
+                    type="button"
+                    onClick={() => openConversation(conv)}
+                  >
+                    <span className="history-row-title">{conv.title}</span>
+                    <span className="history-row-date">{conv.dateLabel}</span>
+                  </button>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>

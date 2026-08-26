@@ -7,8 +7,7 @@ import { ChevronDownIcon, UserIcon } from "../icons";
 
 const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
   { mode: "light", label: "Claro" },
-  { mode: "dark", label: "Oscuro" },
-  { mode: "auto", label: "Auto" }
+  { mode: "dark", label: "Oscuro" }
 ];
 
 export function UserMenu() {
@@ -69,13 +68,20 @@ export function UserMenu() {
           ))}
         </div>
 
-        <div className="user-dropdown-label">Ver como (demo)</div>
-        <div className="theme-options">
-          <button className={`theme-opt${!isAdmin ? " active" : ""}`} type="button" onClick={() => setIsAdmin(false)}>
-            Usuario
-          </button>
-          <button className={`theme-opt${isAdmin ? " active" : ""}`} type="button" onClick={() => setIsAdmin(true)}>
-            Administrador
+        <div className="user-dropdown-demo-row">
+          <div className="user-dropdown-demo-text">
+            <span className="user-dropdown-demo-label">Ver como administrador</span>
+            <span className="user-dropdown-demo-hint">Solo demo</span>
+          </div>
+          <button
+            className={`demo-switch${isAdmin ? " active" : ""}`}
+            type="button"
+            role="switch"
+            aria-checked={isAdmin}
+            aria-label="Ver como administrador (demo)"
+            onClick={() => setIsAdmin(!isAdmin)}
+          >
+            <span className="demo-switch-thumb" />
           </button>
         </div>
 

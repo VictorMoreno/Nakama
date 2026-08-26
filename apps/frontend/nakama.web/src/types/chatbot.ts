@@ -47,6 +47,15 @@ export interface ChatExample {
   socratic: string;
 }
 
+/** A past conversation the user can reopen from the chat history panel, grouped by the chatbot it belongs to. */
+export interface ConversationSummary {
+  id: string;
+  botKey: string;
+  title: string;
+  dateLabel: string;
+  exchanges: ChatExample[];
+}
+
 export interface Chatbot {
   key: string;
   label: string;
