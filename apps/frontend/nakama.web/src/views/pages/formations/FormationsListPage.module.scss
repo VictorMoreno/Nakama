@@ -1,0 +1,79 @@
+.botsList { display: flex; flex-direction: column; gap: 18px; }
+
+.botsToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.botsIntro {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  max-width: 56ch;
+  line-height: 1.5;
+}
+
+.botGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.botCard {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.botCard:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+
+.botCardTop { display: flex; align-items: center; gap: 10px; }
+
+.botCardIcon {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--navy), var(--accent));
+  background-size: cover;
+  background-position: center;
+  flex: none;
+
+  :global(.led) {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    border: 2px solid var(--surface-strong);
+  }
+}
+
+.botCardName { font-weight: 700; font-size: 0.96rem; color: var(--ink); }
+.botCardDept { font-size: 0.72rem; color: var(--ink-faint); margin-top: 1px; }
+
+.botCardDesc {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  line-height: 1.5;
+}
+
+.botCardMeta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.botCardActions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  flex-wrap: wrap;
+
+  :global(.btn-primary),
+  :global(.btn-ghost) { font-size: 0.74rem; padding: 6px 11px; }
+}

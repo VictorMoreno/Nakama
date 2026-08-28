@@ -1,0 +1,84 @@
+// Custom select (replaces native <select> so the open panel matches the app, not the OS).
+// StatusSelect composes these classes with its own module — see StatusSelect.module.scss.
+
+.select {
+  position: relative;
+  display: inline-block;
+  flex: none;
+
+  &.selectFull { display: block; width: 100%; }
+}
+
+.selectTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 9px 10px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  text-align: left;
+  white-space: nowrap;
+
+  &:hover { border-color: var(--border-strong); }
+}
+
+.select.open .selectTrigger { border-color: var(--cyan); }
+
+.selectValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron { width: 11px; height: 11px; color: var(--ink-faint); transition: transform 0.15s ease; flex: none; }
+.select.open .selectTrigger .chevron { transform: rotate(180deg); }
+
+.selectDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 340px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  z-index: 30;
+}
+
+.selectOption {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.82rem;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  line-height: 1.4;
+
+  &:hover { background: var(--surface); }
+
+  &[aria-selected="true"] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+}

@@ -1,11 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import App from "./App.tsx";
-import { ChatbotsProvider } from "./context/ChatbotsContext.tsx";
-import { CurriculumsProvider } from "./context/CurriculumsContext.tsx";
-import { ThemeProvider } from "./context/ThemeContext.tsx";
-import { ToastProvider } from "./context/ToastContext.tsx";
+import { ChatbotsProvider } from "./views/shared/contexts/ChatbotsContext.tsx";
+import { FormationsProvider } from "./views/shared/contexts/FormationsContext.tsx";
+import { ThemeProvider } from "./views/shared/contexts/ThemeContext.tsx";
+import { ToastProvider } from "./views/shared/contexts/ToastContext.tsx";
+import Router from "./views/routes/Router.tsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
@@ -13,11 +13,11 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider>
       <ToastProvider>
         <ChatbotsProvider>
-          <CurriculumsProvider>
+          <FormationsProvider>
             <BrowserRouter>
-              <App />
+              <Router />
             </BrowserRouter>
-          </CurriculumsProvider>
+          </FormationsProvider>
         </ChatbotsProvider>
       </ToastProvider>
     </ThemeProvider>

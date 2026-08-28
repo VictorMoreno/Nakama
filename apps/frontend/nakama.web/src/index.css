@@ -1,1 +1,2 @@
-@import "./styles/design-system.css";
+@import "./views/shared/css/tokens.scss";
+@import "./views/shared/css/utilities.scss";

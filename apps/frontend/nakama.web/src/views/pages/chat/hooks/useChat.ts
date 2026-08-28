@@ -1,0 +1,121 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import type { ChatExample, ConversationSummary } from "../../../../modules/chatbots/domain/Chatbot";
+import type { IConversationsRepository } from "../../../../modules/chatbots/domain/IConversationsRepository";
+import { Services } from "../../../../shared/infrastructure/injection/Services";
+import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
+import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
+import type { BotMessageState } from "../MessageBubble";
+
+type ThreadItem = { kind: "user"; id: string; text: string } | { kind: "bot"; id: string; bot: BotMessageState };
+
+let uidCounter = 0;
+function nextId() {
+  uidCounter += 1;
+  return `m${uidCounter}`;
+}
+
+function exchangesToThread(exchanges: ChatExample[], useSocratic: boolean): ThreadItem[] {
+  return exchanges.flatMap((example) => [
+    { kind: "user" as const, id: nextId(), text: example.q },
+    { kind: "bot" as const, id: nextId(), bot: { id: nextId(), example, useSocratic, revealed: false } }
+  ]);
+}
+
+const DEMO_FALLBACK: ChatExample = {
+  q: "",
+  a: "Este es un prototipo de demostración — solo la pregunta de ejemplo que ves al abrir cada chatbot tiene una respuesta guionizada, para mostrar con precisión cómo se comportan las funcionalidades diferenciadoras (citas, profundidad y modo socrático).",
+  cite: "Modo demo",
+  more: "En la versión real, esta respuesta vendría del contenido indexado del chatbot seleccionado, para cualquier pregunta.",
+  socratic: "¿Tu pregunta se parece a la conversación de ejemplo que ya ves arriba?"
+};
+
+export function useChat() {
+  const { chatbots, currentBotKey, isAdmin } = useChatbots();
+  const conversationsRepo = useInjection<IConversationsRepository>(Services.ConversationsRepository.id);
+  const navigate = useNavigate();
+  const bot = chatbots[currentBotKey];
+
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [thread, setThread] = useState<ThreadItem[]>([]);
+  const [input, setInput] = useState("");
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const threadRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    conversationsRepo.FindAll().then((data) => {
+      if (!cancelled) setConversations(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [conversationsRepo]);
+
+  const botConversations = conversations.filter((conv) => conv.botKey === currentBotKey);
+
+  // Intentionally keyed only on bot.key: this should reset the thread when switching
+  // chatbots, not when the current bot's settings change mid-conversation. A `key`-prop
+  // reset isn't viable here since ChatPage itself doesn't remount on bot switch (the rail
+  // stays mounted), so the effect is the correct tool despite the lint rule's default bias
+  // toward computing state during render.
+  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+  useEffect(() => {
+    if (!bot) return;
+    setActiveConversationId(null);
+    if (bot.opening) {
+      setThread(exchangesToThread([bot.opening], bot.settings.socratic));
+    } else {
+      setThread([]);
+    }
+  }, [bot?.key]);
+  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+
+  useEffect(() => {
+    threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight });
+  }, [thread]);
+
+  function openConversation(conv: ConversationSummary) {
+    setThread(exchangesToThread(conv.exchanges, bot!.settings.socratic));
+    setActiveConversationId(conv.id);
+  }
+
+  function appendExchange(question: string, example: ChatExample) {
+    setActiveConversationId(null);
+    setThread((prev) => [
+      ...prev,
+      { kind: "user", id: nextId(), text: question },
+      { kind: "bot", id: nextId(), bot: { id: nextId(), example, useSocratic: bot!.settings.socratic, revealed: false } }
+    ]);
+  }
+
+  function handleReveal(botMsgId: string) {
+    setThread((prev) =>
+      prev.map((item) => (item.kind === "bot" && item.bot.id === botMsgId ? { ...item, bot: { ...item.bot, revealed: true } } : item))
+    );
+  }
+
+  function handleSend() {
+    const val = input.trim();
+    if (!val || !bot) return;
+
+    const match = bot.chips.find((c) => c.q === val) ?? (bot.opening && bot.opening.q === val ? bot.opening : null);
+    appendExchange(val, match ?? DEMO_FALLBACK);
+    setInput("");
+  }
+
+  return {
+    bot,
+    isAdmin,
+    navigate,
+    thread,
+    threadRef,
+    input,
+    setInput,
+    botConversations,
+    activeConversationId,
+    openConversation,
+    handleSend,
+    handleReveal
+  };
+}

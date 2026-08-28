@@ -1,0 +1,26 @@
+// Bare table/th/td element selectors in the legacy design-system.css aren't scoped by
+// CSS Modules (only class selectors are), so this tab needs explicit classNames on those
+// elements that weren't in the original JSX.
+
+.tableWrap { overflow-x: auto; padding: 0 20px 18px; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 560px; }
+
+.th {
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink-soft);
+}
+
+.docName { color: var(--ink); font-weight: 500; }

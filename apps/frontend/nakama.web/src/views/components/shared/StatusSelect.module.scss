@@ -1,0 +1,39 @@
+// Status badge as a control (StatusSelect). Same box as the app's other <Select> triggers
+// (composed from Select.module.scss at the JSX level — see StatusSelect.tsx), so it doesn't
+// read as a passive label: the estado's color still comes through via the left accent + the
+// led dot in the value.
+
+.statusSelect { position: relative; display: inline-block; flex: none; }
+
+// Applied directly to the chevron icon when open, since the dropdown itself is conditionally
+// rendered in JSX (not CSS-display-toggled) — no need for a `.statusSelect.open` selector.
+.chevronOpen { transform: rotate(180deg); }
+
+.statusTrigger {
+  border-left-width: 3px;
+  font-weight: 600;
+}
+
+.ok { border-left-color: var(--cyan); color: var(--cyan); }
+.pending { border-left-color: var(--gold); color: var(--gold); }
+.danger { border-left-color: var(--danger); color: var(--danger); }
+.muted { border-left-color: var(--ink-faint); color: var(--ink); }
+
+// Applied alongside Select's own `selectValue`/`selectOption` classes (see StatusSelect.tsx) —
+// StatusSelect needs the led dot laid out inline with the label, which the base Select doesn't.
+.statusValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusSelectDropdown {
+  left: auto;
+  right: 0;
+}

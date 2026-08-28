@@ -1,0 +1,47 @@
+.iconUpload {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.iconUploadPreview {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--navy), var(--accent));
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--glass-border);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.iconUploadActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.iconUploadRow { display: flex; gap: 8px; }
+
+// Composed with the global `btn-ghost` utility class on the <label> — see IconUploadField.tsx.
+.iconUploadBtn {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.iconUploadHint {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  line-height: 1.4;
+  max-width: 34ch;
+}

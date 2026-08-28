@@ -1,0 +1,31 @@
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+// The scroll viewport spans the full available width so its scrollbar sits flush against
+// the actual edge — .mainContent (below) is what carries the centered, width-capped
+// layout, so the scrollbar doesn't end up floating with a gap next to it on wide screens.
+.main {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.mainContent {
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  // Floor it at .main's full height so a short page (e.g. Chat) stretches its content
+  // down to the viewport edge instead of shrink-wrapping — still grows past this and
+  // scrolls via .main's overflow-y when a page's content genuinely needs more room.
+  min-height: 100%;
+}

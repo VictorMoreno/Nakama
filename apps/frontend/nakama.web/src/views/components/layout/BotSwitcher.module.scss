@@ -1,0 +1,111 @@
+.botSwitcher {
+  position: relative;
+}
+
+.botSwitcherTrigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 500;
+  max-width: 220px;
+
+  &:hover { border-color: var(--border-strong); }
+}
+
+.botSwitcherLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.botSwitcherDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan);
+  flex: none;
+}
+
+.chevron { width: 11px; height: 11px; color: var(--ink-faint); transition: transform 0.15s ease; flex: none; }
+.botSwitcher.open .chevron { transform: rotate(180deg); }
+
+.botSwitcherDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 280px;
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(28px);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  display: none;
+  z-index: 30;
+}
+
+.botSwitcher.open .botSwitcherDropdown { display: block; }
+
+.botSwitcherSearch {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  margin-bottom: 8px;
+}
+
+.botSwitcherList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.botSwitcherRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.82rem;
+  text-align: left;
+  width: 100%;
+
+  &:hover { background: var(--surface); }
+
+  .meta { font-size: 0.68rem; color: var(--ink-faint); font-weight: 400; }
+
+  &[aria-current="true"] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+
+    .meta { color: var(--accent); opacity: 0.75; }
+  }
+}
+
+.botSwitcherEmpty {
+  padding: 14px 10px;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  text-align: center;
+}

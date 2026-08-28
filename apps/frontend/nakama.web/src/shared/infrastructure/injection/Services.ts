@@ -1,0 +1,7 @@
+/** Injection tokens — pass `Services.X.id` to `useInjection<IX>(...)` to resolve X. */
+export const Services = {
+  ChatbotsRepository: { id: "ChatbotsRepository" },
+  ConversationsRepository: { id: "ConversationsRepository" },
+  FormationsRepository: { id: "FormationsRepository" },
+  UserRepository: { id: "UserRepository" }
+} as const;

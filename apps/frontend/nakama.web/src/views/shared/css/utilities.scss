@@ -1,0 +1,361 @@
+// Classes shared across *unrelated* components on purpose (confirmed via grep: each of
+// these is used by files spanning chat, chatbots, formations, analytics and/or shared
+// components) — kept global instead of duplicated into a dozen .module.scss files.
+// Imported once (main.tsx), alongside tokens.scss.
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+// ---------- Glass panel base ----------
+
+.glass {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--radius-lg);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: var(--shadow), inset 0 1px 0 var(--glass-border-strong);
+}
+
+// ---------- Page transition wrapper ----------
+
+.view { display: none; flex-direction: column; gap: 20px; flex: 1; min-height: 0; }
+.view.active { display: flex; animation: view-enter 0.22s ease; }
+
+// ---------- Buttons ----------
+
+.btn-primary {
+  border: none;
+  background: var(--accent);
+  color: #041127;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+// A brightness-only hover reads well in light mode but is nearly invisible in dark mode
+// (dimming an already-vivid button against a dark page barely registers). A colored ring
+// stays clearly visible regardless of theme, since it's a distinct shape appearing, not
+// just a subtle tone shift.
+.btn-primary:hover { filter: brightness(1.05); box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-sm); }
+.btn-primary:active { filter: brightness(0.9); transform: translateY(1px); }
+.btn-primary.danger { background: var(--danger-fill); color: white; }
+.btn-primary.danger:hover { box-shadow: 0 0 0 3px var(--danger-soft), var(--shadow-sm); }
+
+.btn-ghost {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 6px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  flex: none;
+  transition: background 0.15s ease, backdrop-filter 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-ghost:hover {
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-ghost.done { color: var(--cyan); border-color: var(--cyan); }
+.btn-ghost.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+// ---------- Status tag / LED (signature status language, reused everywhere a card/row
+// needs to encode a live state at a glance) ----------
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.status-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+
+.status-tag.ok { background: var(--cyan-soft); color: var(--cyan); }
+.status-tag.ok::before { background: var(--cyan); }
+.status-tag.pending { background: var(--gold-soft); color: var(--gold); }
+.status-tag.pending::before { background: var(--gold); }
+.status-tag.danger { background: var(--danger-soft); color: var(--danger); }
+.status-tag.danger::before { background: var(--danger); }
+.status-tag.muted { background: var(--border); color: var(--ink-faint); }
+.status-tag.muted::before { background: var(--ink-faint); }
+
+.led {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.led.ok { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.led.pending { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+.led.danger { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+.led.muted { background: var(--border-strong); }
+
+// ---------- Tabs (chatbot detail + any future tabbed page) ----------
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 10px 4px;
+  margin-right: 18px;
+  border-bottom: 2px solid transparent;
+  transform: translateY(1px);
+}
+
+.tab-btn:hover { color: var(--ink); }
+
+.tab-btn[aria-selected="true"] {
+  color: var(--accent);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.tab-panel { display: none; flex: 1; min-height: 0; flex-direction: column; }
+.tab-panel.active { display: flex; animation: view-enter 0.18s ease; }
+
+// ---------- Generic toggle switch (Modo Socrático, Explícame más, module gating, ...) ----------
+
+.switch {
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--border-strong);
+  border: none;
+  position: relative;
+  padding: 0;
+  transition: background 0.2s ease;
+  flex: none;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  transition: transform 0.2s ease;
+}
+
+.switch[aria-checked="true"] {
+  background: var(--gold);
+}
+
+.switch[aria-checked="true"]::after {
+  transform: translateX(16px);
+}
+
+// ---------- List page filters (Chatbots list + Formations list share this exact pattern) ----------
+
+.list-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.list-search {
+  flex: 1;
+  min-width: 200px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 0.82rem;
+  font-family: inherit;
+}
+
+.list-search::placeholder { color: var(--ink-faint); }
+.list-search:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
+.list-empty {
+  padding: 32px 20px;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--ink-faint);
+}
+
+// ---------- Form primitives (used both inside modals and inside full create/edit pages) ----------
+
+.form-field { margin-bottom: 14px; text-align: left; }
+
+.form-field label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+
+.form-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.form-input:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.form-input.field-error { border-color: var(--danger); }
+
+// ---------- Modal shell (Dialog.tsx renders these; every dialog composes on top) ----------
+
+.modal-back {
+  position: fixed;
+  inset: 0;
+  background: rgb(10 11 13 / 50%);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-back.open { display: flex; }
+
+.modal {
+  width: min(420px, 90vw);
+  padding: 24px;
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.modal h3 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 6px; }
+.modal p { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.5; margin-bottom: 16px; }
+
+.modal .form-hint {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.dropzone {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 26px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-bottom: 16px;
+}
+
+// ---------- Panel head (used by chart/stat/team/gaps/etc. cards across features) ----------
+
+.panel-head {
+  padding: 18px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-head h2 { font-size: 0.95rem; font-family: var(--font-display); }
+.panel-head .count { font-size: 0.72rem; color: var(--ink-faint); }
+
+// ---------- Config rows (settings-style list, reused by chatbot/formation create+detail pages) ----------
+
+.config-rows { display: flex; flex-direction: column; }
+
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.config-row-text .title { font-size: 0.86rem; font-weight: 600; color: var(--ink); }
+.config-row-text .desc { font-size: 0.76rem; color: var(--ink-soft); margin-top: 3px; max-width: 48ch; line-height: 1.5; }
+
+// ---------- Progress bar (used by formation progress + analytics charts) ----------
+
+.bar-track {
+  margin-top: 10px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+}
+
+// ---------- Config link (small text-only CTA reused across detail/settings panels) ----------
+
+.config-link {
+  margin-top: 12px;
+  font-size: 0.76rem;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.config-link:hover { text-decoration: underline; }
+
+// ---------- Toast (ToastProvider renders one instance at the app root) ----------
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-strong);
+  color: var(--ink);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transition: all 0.25s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

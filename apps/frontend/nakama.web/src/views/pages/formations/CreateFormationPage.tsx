@@ -1,0 +1,126 @@
+import { useNavigate } from "react-router-dom";
+import IconUploadField from "../../components/shared/IconUploadField";
+import Select from "../../components/shared/Select";
+import StatusSelect, { type StatusSelectOption } from "../../components/shared/StatusSelect";
+import { FORMATION_STATUS_META } from "../../../lib/status";
+import { useCreateFormation } from "./hooks/useCreateFormation";
+import type { FormationLifecycleStatus } from "../../../modules/formations/domain/Formation";
+import styles from "./CreateFormationPage.module.scss";
+
+const STATUS_OPTIONS: StatusSelectOption<FormationLifecycleStatus>[] = (
+  Object.keys(FORMATION_STATUS_META) as FormationLifecycleStatus[]
+).map((value) => ({ value, label: FORMATION_STATUS_META[value].label, level: FORMATION_STATUS_META[value].level }));
+
+export default function CreateFormationPage() {
+  const navigate = useNavigate();
+  const {
+    activeChatbots,
+    title,
+    setTitle,
+    audience,
+    setAudience,
+    description,
+    setDescription,
+    status,
+    setStatus,
+    linkedChatbotKey,
+    setLinkedChatbotKey,
+    iconUrl,
+    setIconUrl,
+    titleError,
+    setTitleError,
+    handleConfirm
+  } = useCreateFormation();
+
+  return (
+    <section className="view active">
+      <div className={styles.botDetail}>
+        <button className={`btn-ghost ${styles.backBtn}`} type="button" onClick={() => navigate("/formacion")}>
+          ← Formación
+        </button>
+
+        <div className={styles.botDetailHead}>
+          <div>
+            <h2>Crear currículo</h2>
+            <p>Podrás añadir módulos y asignar equipo en cuanto lo crees.</p>
+          </div>
+          <StatusSelect value={status} onChange={setStatus} options={STATUS_OPTIONS} ariaLabel="Estado inicial del currículo" />
+        </div>
+
+        <div className="glass">
+          <div className="panel-head">
+            <h2>Datos básicos</h2>
+          </div>
+          <div style={{ padding: "0 20px 20px" }}>
+            <IconUploadField value={iconUrl} onChange={setIconUrl} placeholderLabel={title || "Currículo"} />
+            <div className="form-field">
+              <label htmlFor="new-formation-title">Título</label>
+              <input
+                id="new-formation-title"
+                type="text"
+                className={`form-input${titleError ? " field-error" : ""}`}
+                placeholder="p. ej. Onboarding Plataforma Pagos"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (titleError) setTitleError(false);
+                }}
+                autoFocus
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="new-formation-audience">Audiencia</label>
+              <input
+                id="new-formation-audience"
+                type="text"
+                className="form-input"
+                placeholder="p. ej. Plataforma Pagos, o Toda la empresa"
+                value={audience}
+                onChange={(e) => setAudience(e.target.value)}
+              />
+            </div>
+            <div className="form-field" style={{ marginBottom: 0 }}>
+              <label htmlFor="new-formation-desc">Descripción breve</label>
+              <textarea
+                id="new-formation-desc"
+                className="form-input"
+                rows={2}
+                placeholder="Se mostrará en la card del listado para ayudar a encontrar este currículo."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="config-rows">
+            <div className="config-row">
+              <div className="config-row-text">
+                <div className="title">Chatbot de referencia</div>
+                <div className="desc">
+                  Opcional — solo se usa para generar borradores de examen con IA a partir de su documentación. El
+                  currículo funciona igual sin ninguno asociado.
+                </div>
+              </div>
+              <Select
+                id="new-formation-chatbot"
+                value={linkedChatbotKey}
+                onChange={setLinkedChatbotKey}
+                options={[{ value: "", label: "Ninguno" }, ...activeChatbots.map((bot) => ({ value: bot.key, label: bot.label }))]}
+                ariaLabel="Chatbot de referencia"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button className="btn-ghost" type="button" onClick={() => navigate("/formacion")}>
+            Cancelar
+          </button>
+          <button className="btn-primary" type="button" onClick={handleConfirm}>
+            Crear currículo
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}

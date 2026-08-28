@@ -1,0 +1,15 @@
+.configRows { display: flex; flex-direction: column; }
+
+.configRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.configRowText {
+  :global(.title) { font-size: 0.86rem; font-weight: 600; color: var(--ink); }
+  :global(.desc) { font-size: 0.76rem; color: var(--ink-soft); margin-top: 3px; max-width: 48ch; line-height: 1.5; }
+}

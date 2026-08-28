@@ -1,0 +1,38 @@
+// NOTE for the integration pass: chartLegend/legendItem/legendDot are duplicated
+// from TrendChart.module.scss, and hbarList/hbarRowLabel/hbarTrack/hbarFill are
+// duplicated from AnalyticsPage.module.scss — same cross-cutting classes, genuinely
+// shared across sibling components in this feature. Worth promoting to
+// views/shared/css/utilities.scss later rather than reaching into a sibling's module.
+
+.chartLegend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 10px 0 6px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+}
+
+.legendDot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+
+.hbarList { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+
+.hbarRowLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+
+  .name { display: flex; align-items: center; gap: 7px; color: var(--ink); }
+  .value { font-family: var(--font-display); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+}
+
+.hbarTrack { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.hbarFill { height: 100%; border-radius: 999px; }

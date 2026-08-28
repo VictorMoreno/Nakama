@@ -1,0 +1,171 @@
+.rail {
+  position: relative;
+  width: 220px;
+  flex: none;
+  padding: 28px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  border-right: 1px solid var(--glass-border);
+  background: var(--surface-rail);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  transition: width 0.2s ease, padding 0.2s ease;
+
+  &.collapsed {
+    width: 76px;
+    padding-left: 14px;
+    padding-right: 14px;
+
+    .brandText,
+    .navItem span {
+      display: none;
+    }
+
+    .brand,
+    .navItem {
+      justify-content: center;
+    }
+
+    .railToggle svg { transform: rotate(180deg); }
+  }
+}
+
+.railToggle {
+  position: absolute;
+  top: 30px;
+  right: -13px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-strong);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+  z-index: 5;
+
+  &:hover { color: var(--accent); border-color: var(--accent); }
+
+  svg {
+    width: 13px;
+    height: 13px;
+    transition: transform 0.2s ease;
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandMark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--navy), var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+
+  svg { width: 18px; height: 18px; }
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.brandSub {
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  margin-top: 1px;
+}
+
+.brandText {
+  // display toggled by .rail.collapsed above; no base layout of its own.
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+  svg { width: 16px; height: 16px; flex: none; }
+
+  &:hover {
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  &[aria-current="page"] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--border-strong);
+    font-weight: 600;
+  }
+}
+
+// Collapsed rail: the label text is hidden, so surface it as a hover tooltip instead.
+.rail.collapsed .navItem[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  border: 1px solid var(--glass-border-strong);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 40;
+  animation: nav-tooltip-in 0.15s ease;
+}
+
+.railFoot {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+// ---------- Narrow viewport: collapse the rail to icon-only ----------
+
+@media (width <= 920px) {
+  .rail { width: 76px; padding-left: 14px; padding-right: 14px; }
+  .railToggle { display: none; }
+  .brandName, .brandSub { display: none; }
+  .navItem span { display: none; }
+  .brand { justify-content: center; }
+  .navItem { justify-content: center; }
+}
