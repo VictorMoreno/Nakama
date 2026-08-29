@@ -53,7 +53,7 @@
 .statDelta {
   margin-top: 10px;
   font-size: 0.72rem;
-  color: var(--cyan);
+  color: var(--positive);
   font-weight: 600;
 }
 
@@ -68,7 +68,7 @@
 .barFill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  background: var(--accent);
 }
 
 .hbarList { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
@@ -90,7 +90,7 @@
 .gapsList { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px; }
 
 .gapItem {
-  border: 1px solid var(--border);
+  background: var(--bg);
   border-radius: var(--radius-md);
   padding: 12px 14px;
   display: flex;

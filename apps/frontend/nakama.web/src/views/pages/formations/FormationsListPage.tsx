@@ -73,7 +73,7 @@ export default function FormationsListPage() {
                   >
                     <span className={`led ${status.level}`} title={status.label} />
                   </div>
-                  <div>
+                  <div className={styles.botCardTitles}>
                     <div className={styles.botCardName}>{c.title}</div>
                     <div className={styles.botCardDept}>{c.audience}</div>
                   </div>
@@ -81,7 +81,10 @@ export default function FormationsListPage() {
                 <p className={styles.botCardDesc}>{c.description}</p>
                 <div className={styles.botCardMeta}>
                   <span>{pluralWord(c.modules.length, "módulo", "módulos")}</span>
-                  <span>Tu progreso: {pct}%</span>
+                  <span>{pct}% completado</span>
+                </div>
+                <div className="bar-track">
+                  <div className="bar-fill" style={{ width: `${pct}%` }} />
                 </div>
                 {linkedBot && (
                   <p className={styles.botCardDesc} style={{ marginTop: -4 }}>

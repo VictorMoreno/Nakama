@@ -24,10 +24,7 @@
 .chartTooltip {
   position: absolute;
   pointer-events: none;
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border-strong);
+  background: var(--surface);
   border-radius: var(--radius-sm);
   padding: 8px 10px;
   font-size: 0.72rem;

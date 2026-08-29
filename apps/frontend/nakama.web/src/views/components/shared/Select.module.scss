@@ -9,28 +9,30 @@
   &.selectFull { display: block; width: 100%; }
 }
 
+// Verified against the real kit (select2-choice, computed styles): the closed trigger
+// is a solid accent-color fill with white/light text, not a neutral input-like box —
+// same "color as identity" logic as .btn-primary, applied to our own accent instead of
+// the kit's teal.
 .selectTrigger {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  border: 1px solid var(--border);
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--accent-ink);
   border-radius: var(--radius-sm);
-  padding: 9px 10px;
-  font-size: 0.8rem;
+  padding: 11px 14px;
+  font-size: 0.85rem;
   font-family: inherit;
   text-align: left;
   white-space: nowrap;
+  transition: filter 0.15s ease;
 
-  &:hover { border-color: var(--border-strong); }
+  &:hover { filter: brightness(1.1); }
 }
 
-.select.open .selectTrigger { border-color: var(--cyan); }
+.select.open .selectTrigger { filter: brightness(0.92); }
 
 .selectValue {
   overflow: hidden;
@@ -38,7 +40,10 @@
   white-space: nowrap;
 }
 
-.chevron { width: 11px; height: 11px; color: var(--ink-faint); transition: transform 0.15s ease; flex: none; }
+// currentColor so this chevron always matches whatever text color its trigger sets —
+// white on the default solid-accent trigger, but StatusSelect overrides the trigger's
+// own color per status (see StatusSelect.module.scss) and the chevron follows along.
+.chevron { width: 11px; height: 11px; color: currentcolor; transition: transform 0.15s ease; flex: none; }
 .select.open .selectTrigger .chevron { transform: rotate(180deg); }
 
 .selectDropdown {
@@ -50,10 +55,11 @@
   max-width: 340px;
   max-height: 260px;
   overflow-y: auto;
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  border: 1px solid var(--glass-border-strong);
+
+  // Verified against the kit's .select2-drop: a tone distinct from a plain white
+  // surface, not var(--surface) itself — same off-white-panel logic as dropdown menus
+  // generally (see flat-ui-design skill).
+  background: var(--bg);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow);
   padding: 6px;
@@ -74,11 +80,16 @@
   border-radius: var(--radius-sm);
   line-height: 1.4;
 
-  &:hover { background: var(--surface); }
+  // Verified against the kit's .select2-highlighted: a solid accent fill with white
+  // text, not a light tint — bolder than what we had.
+  &:hover {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
 
   &[aria-selected="true"] {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
     font-weight: 600;
   }
 }

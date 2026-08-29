@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import AppShell from "../components/layout/AppShell";
 import { useChatbots } from "../shared/contexts/ChatbotsContext";
 import AnalyticsPage from "../pages/analytics/AnalyticsPage";
+import LoginPage from "../pages/auth/LoginPage";
 import ChatPage from "../pages/chat/ChatPage";
 import ChatbotDetailPage from "../pages/chatbots/ChatbotDetailPage";
 import ChatbotsListPage from "../pages/chatbots/ChatbotsListPage";
@@ -20,6 +21,7 @@ function RequireAdmin({ children }: { children: ReactNode }) {
 export default function Router() {
   return (
     <Routes>
+      <Route path="login" element={<LoginPage />} />
       <Route element={<AppShell />}>
         <Route index element={<Navigate to="/chat" replace />} />
         <Route path="chat" element={<ChatPage />} />

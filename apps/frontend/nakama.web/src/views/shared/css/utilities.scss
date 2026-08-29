@@ -11,15 +11,14 @@
   color: var(--ink-faint);
 }
 
-// ---------- Glass panel base ----------
+// ---------- Card panel base (solid — the executive palette is flat, not glass) ----------
 
+// Flat UI kit reference (verified via computed styles): floating/static panels carry
+// NO border and NO shadow — separation comes only from a background tone distinct
+// from the page (--bg vs --surface). A border here doesn't exist in the real kit.
 .glass {
-  background: var(--glass-fill);
-  border: 1px solid var(--glass-border-strong);
+  background: var(--surface);
   border-radius: var(--radius-lg);
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-  backdrop-filter: blur(14px) saturate(180%);
-  box-shadow: var(--shadow), inset 0 1px 0 var(--glass-border-strong);
 }
 
 // ---------- Page transition wrapper ----------
@@ -29,46 +28,43 @@
 
 // ---------- Buttons ----------
 
+// Flat UI: generous padding is part of the "flat" feel as much as the absence of
+// effects — the kit's own buttons run ~12px 24px, not a cramped chip.
 .btn-primary {
   border: none;
   background: var(--accent);
-  color: #041127;
+  color: var(--accent-ink);
+  padding: 11px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: filter 0.15s ease;
+}
+
+// Flat UI: hover/active read through color alone (darken/brighten the fill) — no ring,
+// no shadow, no translateY press-down. Depth cues are off the table on purpose.
+.btn-primary:hover { filter: brightness(1.12); }
+.btn-primary:active { filter: brightness(0.88); }
+.btn-primary.danger { background: var(--danger-fill); color: white; }
+
+// Flat UI kit reference: the kit's own secondary/default button (.btn-default) is a
+// solid muted-gray fill, zero border — not an outline button. This is the "quiet"
+// action, so it gets the least saturated fill in the system, not a bordered ghost.
+.btn-ghost {
+  border: none;
+  background: var(--border);
+  color: var(--ink-soft);
   padding: 8px 14px;
   border-radius: var(--radius-sm);
-  font-size: 0.78rem;
-  font-weight: 600;
-  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-}
-
-// A brightness-only hover reads well in light mode but is nearly invisible in dark mode
-// (dimming an already-vivid button against a dark page barely registers). A colored ring
-// stays clearly visible regardless of theme, since it's a distinct shape appearing, not
-// just a subtle tone shift.
-.btn-primary:hover { filter: brightness(1.05); box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-sm); }
-.btn-primary:active { filter: brightness(0.9); transform: translateY(1px); }
-.btn-primary.danger { background: var(--danger-fill); color: white; }
-.btn-primary.danger:hover { box-shadow: 0 0 0 3px var(--danger-soft), var(--shadow-sm); }
-
-.btn-ghost {
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--ink-soft);
-  padding: 6px 11px;
-  border-radius: var(--radius-sm);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   flex: none;
-  transition: background 0.15s ease, backdrop-filter 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.btn-ghost:hover {
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.btn-ghost.done { color: var(--cyan); border-color: var(--cyan); }
-.btn-ghost.danger:hover { border-color: var(--danger); color: var(--danger); }
+.btn-ghost:hover { background: var(--accent-soft); color: var(--accent); }
+.btn-ghost.done { background: var(--cyan-soft); color: var(--cyan); }
+.btn-ghost.danger:hover { background: var(--danger-soft); color: var(--danger); }
 
 // ---------- Status tag / LED (signature status language, reused everywhere a card/row
 // needs to encode a live state at a glance) ----------
@@ -101,9 +97,10 @@
   flex: none;
 }
 
-.led.ok { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-.led.pending { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
-.led.danger { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+// Flat UI: a solid dot communicates state through color, not a glow.
+.led.ok { background: var(--cyan); }
+.led.pending { background: var(--gold); }
+.led.danger { background: var(--danger); }
 .led.muted { background: var(--border-strong); }
 
 // ---------- Tabs (chatbot detail + any future tabbed page) ----------
@@ -184,18 +181,16 @@
   flex: 1;
   min-width: 200px;
   border: 1px solid var(--border);
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  background: var(--surface);
   color: var(--ink);
   border-radius: var(--radius-sm);
-  padding: 9px 12px;
-  font-size: 0.82rem;
+  padding: 11px 14px;
+  font-size: 0.85rem;
   font-family: inherit;
 }
 
 .list-search::placeholder { color: var(--ink-faint); }
-.list-search:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.list-search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 .list-empty {
   padding: 32px 20px;
@@ -219,15 +214,15 @@
 .form-input {
   width: 100%;
   border: 1px solid var(--border);
-  background: var(--surface-strong);
+  background: var(--surface);
   color: var(--ink);
   border-radius: var(--radius-sm);
-  padding: 9px 12px;
+  padding: 11px 14px;
   font-size: 0.85rem;
   font-family: inherit;
 }
 
-.form-input:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.form-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 .form-input.field-error { border-color: var(--danger); }
 
 // ---------- Modal shell (Dialog.tsx renders these; every dialog composes on top) ----------
@@ -235,8 +230,7 @@
 .modal-back {
   position: fixed;
   inset: 0;
-  background: rgb(10 11 13 / 50%);
-  backdrop-filter: blur(4px);
+  background: rgb(17 24 39 / 45%);
   display: none;
   align-items: center;
   justify-content: center;
@@ -248,10 +242,7 @@
 .modal {
   width: min(420px, 90vw);
   padding: 24px;
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(30px);
-  backdrop-filter: blur(30px);
-  border: 1px solid var(--glass-border-strong);
+  background: var(--surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
 }
@@ -308,9 +299,13 @@
 
 // ---------- Progress bar (used by formation progress + analytics charts) ----------
 
+// Correction: I misread this from a screenshot earlier. Verified via computed styles
+// on the real kit: .progress has border-radius: 32px on a ~14px-tall bar — a radius
+// bigger than half the height always renders as a full pill. .progress-bar (the fill)
+// itself is border-radius: 0, clipped to the pill shape by the track's overflow:hidden.
 .bar-track {
   margin-top: 10px;
-  height: 5px;
+  height: 8px;
   border-radius: 999px;
   background: var(--border);
   overflow: hidden;
@@ -318,8 +313,7 @@
 
 .bar-fill {
   height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  background: var(--accent);
 }
 
 // ---------- Config link (small text-only CTA reused across detail/settings panels) ----------
@@ -343,11 +337,9 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-strong);
-  color: var(--ink);
+  background: var(--navy);
+  border: 1px solid var(--navy);
+  color: var(--ink-on-navy);
   padding: 10px 18px;
   border-radius: var(--radius-sm);
   font-size: 0.8rem;

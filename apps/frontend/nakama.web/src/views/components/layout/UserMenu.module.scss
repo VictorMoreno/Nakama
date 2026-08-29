@@ -19,29 +19,23 @@
   border: 1px solid transparent;
   background: transparent;
   border-radius: var(--radius-sm);
-  color: var(--ink);
+  color: var(--ink-on-navy);
   font-size: 0.8rem;
   font-weight: 500;
 
-  &:hover { background: var(--surface); }
+  &:hover { background: var(--accent-soft); }
 
-  .chevron { width: 11px; height: 11px; color: var(--ink-faint); transition: transform 0.15s ease; }
+  .chevron { width: 11px; height: 11px; color: var(--ink-on-navy-soft); transition: transform 0.15s ease; }
 }
 
 .userMenu.open .userTrigger .chevron { transform: rotate(180deg); }
 
-// Glass/blur affordance only while the menu is open — matches the select-trigger's
-// "cristal" treatment, but reserved for the active state instead of always-on, to keep the
-// trigger reading as a plain nav row at rest. Uses --glass-border-strong (not the plain
-// --border used elsewhere) because this sits on top of the rail's own blurred surface — a
-// plain border has too little contrast against that second layer of translucency in dark
-// mode, where it becomes nearly invisible.
+// Solid affordance only while the menu is open, reserved for the active state instead of
+// always-on, to keep the trigger reading as a plain nav row at rest — this sits on the rail's
+// navy background, same accent-tint treatment as .navItem's own open/hover state.
 .userMenu.open .userTrigger {
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border-color: var(--glass-border-strong);
-  box-shadow: var(--shadow-sm);
+  background: var(--accent-soft);
+  border-color: transparent;
 }
 
 .collapsed {
@@ -58,7 +52,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--navy), var(--accent));
+  background: var(--accent);
   color: var(--accent-ink);
   display: flex;
   align-items: center;
@@ -78,10 +72,7 @@
 .userDropdown {
   position: fixed;
   width: 240px;
-  background: var(--surface-strong);
-  -webkit-backdrop-filter: blur(28px);
-  backdrop-filter: blur(28px);
-  border: 1px solid var(--glass-border-strong);
+  background: var(--surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow);
   padding: 14px;
@@ -104,8 +95,7 @@
 .themeOptions {
   display: flex;
   gap: 4px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--bg);
   border-radius: var(--radius-sm);
   padding: 3px;
   margin-bottom: 12px;
@@ -120,7 +110,7 @@
   padding: 6px 4px;
   border-radius: 7px;
 
-  &.active { background: var(--accent); color: #041127; font-weight: 600; }
+  &.active { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 }
 
 .userDropdownDemoRow {
@@ -139,11 +129,10 @@
   width: 32px;
   height: 18px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--border);
 
   &.active {
-    border-color: var(--border-strong);
+    background: var(--border-strong);
     .demoSwitchThumb { background: var(--ink-soft); transform: translateX(14px); }
   }
 }
@@ -161,7 +150,6 @@
 
 .userDropdownLogout {
   width: 100%;
-  border: 1px solid var(--border);
   background: transparent;
   color: var(--danger);
   font-size: 0.8rem;
@@ -169,5 +157,5 @@
   padding: 8px 10px;
   border-radius: var(--radius-sm);
 
-  &:hover { border-color: var(--danger); background: var(--danger-soft); }
+  &:hover { background: var(--danger-soft); }
 }

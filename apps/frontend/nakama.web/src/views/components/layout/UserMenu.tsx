@@ -47,10 +47,8 @@ export default function UserMenu({ collapsed = false }: UserMenuProps) {
   }, [userRepo]);
 
   // The dropdown is portaled to <body> (see render below) instead of living inside the
-  // rail: nested inside the rail's own blurred/tinted surface, its backdrop-filter would
-  // sample that pre-blurred backdrop instead of the page behind it, so the exact same
-  // glass CSS as e.g. the status select ends up reading as flatter/less transparent.
-  // Portaling it lets it blur the plain page background, matching that reference exactly.
+  // rail so it can escape the rail's own stacking context/overflow and sit above the rest
+  // of the page regardless of where the trigger is rendered.
   useEffect(() => {
     if (!open) return;
 

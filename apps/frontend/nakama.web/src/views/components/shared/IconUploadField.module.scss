@@ -9,15 +9,14 @@
   width: 56px;
   height: 56px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--navy), var(--accent));
+  background: var(--accent);
   background-size: cover;
   background-position: center;
-  border: 1px solid var(--glass-border);
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--accent-ink);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.05rem;

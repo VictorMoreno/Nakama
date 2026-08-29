@@ -1,7 +1,8 @@
 // Status badge as a control (StatusSelect). Same box as the app's other <Select> triggers
 // (composed from Select.module.scss at the JSX level — see StatusSelect.tsx), so it doesn't
-// read as a passive label: the estado's color still comes through via the left accent + the
-// led dot in the value.
+// read as a passive label: the estado's color still comes through via its own tinted fill +
+// the led dot in the value — no border, no left accent stripe (that read as a fake-3D edge
+// the real kit never uses; the kit's own status/label components are flat tinted fills).
 
 .statusSelect { position: relative; display: inline-block; flex: none; }
 
@@ -9,15 +10,21 @@
 // rendered in JSX (not CSS-display-toggled) — no need for a `.statusSelect.open` selector.
 .chevronOpen { transform: rotate(180deg); }
 
-.statusTrigger {
-  border-left-width: 3px;
+// Select's own .selectTrigger is now a solid-accent button (see Select.module.scss) —
+// StatusSelect needs its own status color instead, so these override background/color
+// explicitly. Written as compound selectors (.statusSelect .statusTrigger, not just
+// .statusTrigger) so they win over .selectTrigger's rule regardless of stylesheet import
+// order — same specificity would otherwise be a coin flip between two different CSS
+// Modules files. Same soft-tint-fill treatment the app's .status-tag chips already use
+// elsewhere — no border of any kind, flat color communicates the state on its own.
+.statusSelect .statusTrigger {
   font-weight: 600;
 }
 
-.ok { border-left-color: var(--cyan); color: var(--cyan); }
-.pending { border-left-color: var(--gold); color: var(--gold); }
-.danger { border-left-color: var(--danger); color: var(--danger); }
-.muted { border-left-color: var(--ink-faint); color: var(--ink); }
+.statusSelect .statusTrigger.ok { background: var(--cyan-soft); color: var(--cyan); }
+.statusSelect .statusTrigger.pending { background: var(--gold-soft); color: var(--gold); }
+.statusSelect .statusTrigger.danger { background: var(--danger-soft); color: var(--danger); }
+.statusSelect .statusTrigger.muted { background: var(--border); color: var(--ink-soft); }
 
 // Applied alongside Select's own `selectValue`/`selectOption` classes (see StatusSelect.tsx) —
 // StatusSelect needs the led dot laid out inline with the label, which the base Select doesn't.
