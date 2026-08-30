@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Dialog from "../../../components/shared/Dialog";
 import Select from "../../../components/shared/Select";
+import { CloseIcon, MailIcon } from "../../../components/shared/icons";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
 import type { TeamRole } from "../../../../modules/chatbots/domain/Chatbot";
@@ -98,10 +99,10 @@ export default function InviteDialog({ open, botKey, botLabel, onClose }: Invite
       </p>
       <div className="modal-actions">
         <button className="btn-ghost" type="button" onClick={handleClose}>
-          Cancelar
+          <CloseIcon /> Cancelar
         </button>
         <button className="btn-primary" type="button" onClick={handleConfirm}>
-          Invitar
+          <MailIcon /> Invitar
         </button>
       </div>
     </Dialog>

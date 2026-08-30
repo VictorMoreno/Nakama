@@ -33,7 +33,7 @@ export function useCreateFormation() {
       linkedChatbotKey: linkedChatbotKey || undefined,
       iconUrl
     });
-    showToast("Currículo creado");
+    showToast("Formación creada");
     navigate(`/formacion/${key}`);
   }
 

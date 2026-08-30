@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import Select from "../../components/shared/Select";
+import { ArrowRightIcon, PlusIcon, TrashIcon } from "../../components/shared/icons";
 import { FORMATION_STATUS_META, getFormationStatus } from "../../../lib/status";
-import { pluralWord } from "../../../lib/text";
 import { useFormationsList, type StatusFilter } from "./hooks/useFormationsList";
 import type { FormationLifecycleStatus } from "../../../modules/formations/domain/Formation";
 import styles from "./FormationsListPage.module.scss";
@@ -18,7 +18,6 @@ const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
 export default function FormationsListPage() {
   const navigate = useNavigate();
   const {
-    chatbots,
     isAdmin,
     search,
     setSearch,
@@ -35,12 +34,12 @@ export default function FormationsListPage() {
       <div className={styles.botsList}>
         <div className={styles.botsToolbar}>
           <p className={styles.botsIntro}>
-            Currículos de formación — independientes de los chatbots, aunque pueden referenciar uno como fuente de
-            contexto para generar contenido con IA.
+            Formaciones independientes de los chatbots, aunque pueden referenciar uno como fuente de contexto para
+            generar contenido con IA.
           </p>
           {isAdmin && (
             <button className="btn-primary" type="button" onClick={() => navigate("/formacion/new")}>
-              + Crear currículo
+              <PlusIcon /> Crear formación
             </button>
           )}
         </div>
@@ -52,17 +51,16 @@ export default function FormationsListPage() {
             placeholder="Buscar por título, audiencia o descripción…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            aria-label="Buscar currículos"
+            aria-label="Buscar formaciones"
           />
           <Select value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} ariaLabel="Filtrar por estado" />
         </div>
 
         {filteredFormations.length === 0 ? (
-          <p className="list-empty">No hay currículos que coincidan con la búsqueda o el filtro.</p>
+          <p className="list-empty">No hay formaciones que coincidan con la búsqueda o el filtro.</p>
         ) : (
         <div className={styles.botGrid}>
           {filteredFormations.map(({ c, pct }) => {
-            const linkedBot = c.linkedChatbotKey ? chatbots[c.linkedChatbotKey] : undefined;
             const status = getFormationStatus(c);
             return (
               <div className={`${styles.botCard} glass`} key={c.key}>
@@ -79,25 +77,19 @@ export default function FormationsListPage() {
                   </div>
                 </div>
                 <p className={styles.botCardDesc}>{c.description}</p>
-                <div className={styles.botCardMeta}>
-                  <span>{pluralWord(c.modules.length, "módulo", "módulos")}</span>
-                  <span>{pct}% completado</span>
+                <div className={styles.progressRow}>
+                  <div className="bar-track">
+                    <div className="bar-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className={styles.progressPct}>{pct}%</span>
                 </div>
-                <div className="bar-track">
-                  <div className="bar-fill" style={{ width: `${pct}%` }} />
-                </div>
-                {linkedBot && (
-                  <p className={styles.botCardDesc} style={{ marginTop: -4 }}>
-                    Basado en: {linkedBot.label}
-                  </p>
-                )}
                 <div className={styles.botCardActions}>
                   <button className="btn-primary" type="button" onClick={() => navigate(`/formacion/${c.key}`)}>
-                    Abrir
+                    <ArrowRightIcon /> Abrir
                   </button>
                   {isAdmin && (
                     <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(c.key)}>
-                      Eliminar
+                      <TrashIcon /> Eliminar
                     </button>
                   )}
                 </div>
@@ -111,7 +103,7 @@ export default function FormationsListPage() {
       <ConfirmDialog
         open={deleteTarget != null}
         title={`Eliminar ${deleteTarget?.title ?? ""}`}
-        message="¿Seguro que quieres eliminar este currículo? Se perderá su configuración y el progreso registrado. Esta acción no se puede deshacer."
+        message="¿Seguro que quieres eliminar esta formación? Se perderá su configuración y el progreso registrado. Esta acción no se puede deshacer."
         confirmLabel="Eliminar"
         danger
         onCancel={() => setDeleteKey(null)}

@@ -34,7 +34,7 @@ export function useFormationsList() {
   async function confirmDelete() {
     if (deleteKey) {
       await archiveFormation(deleteKey);
-      showToast("Currículo eliminado (demo)");
+      showToast("Formación eliminada (demo)");
     }
     setDeleteKey(null);
   }

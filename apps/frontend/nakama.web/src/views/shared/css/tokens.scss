@@ -17,11 +17,14 @@
   // (.dropdown-menu: #f3f4f5 on a #fff body, zero border, zero shadow). Cards here
   // drop their border the same way, so --bg needs a wider gap from --surface than a
   // near-white #f8fafc gives, or white-on-white reads as borderless AND separationless.
-  --bg: #eef1f5;
-  --surface: #fff;
-  --surface-strong: #fff;
+  // Surfaces are an off-white, not pure #fff — large stark-white panels (chat, cards,
+  // dropdowns) read as glare-y/hard on the eyes, so every "white" here is softened
+  // while keeping the same tonal gap to --bg that borderless separation relies on.
+  --bg: #e7ebf0;
+  --surface: #f7f9fb;
+  --surface-strong: #fbfcfd;
   --surface-rail: #001b2a;
-  --glass-fill: #fff;
+  --glass-fill: #f7f9fb;
   --border: #e5e7eb;
   --border-strong: #9ca3af;
   --glass-border: #e5e7eb;
@@ -178,7 +181,7 @@ h1, h2, h3, p {
 }
 
 @keyframes view-enter {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(28px); }
   to { opacity: 1; transform: translateY(0); }
 }
 

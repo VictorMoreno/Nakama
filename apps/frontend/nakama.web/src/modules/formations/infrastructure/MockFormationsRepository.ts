@@ -13,7 +13,7 @@ const seedFormations: FormationMap = {
     key: "onboarding-ecu",
     title: "Onboarding Diagnósticos ECU",
     audience: "Diagnósticos ECU",
-    description: "Currículo guiado para incorporarse al equipo de Diagnósticos ECU: arquitectura de protocolos y aislamiento entre fabricantes.",
+    description: "Formación guiada para incorporarse al equipo de Diagnósticos ECU: arquitectura de protocolos y aislamiento entre fabricantes.",
     status: "activo",
     linkedChatbotKey: "ecu",
     modules: [
@@ -79,7 +79,7 @@ const seedFormations: FormationMap = {
     key: "onboarding-talleres",
     title: "Onboarding Acceso Talleres",
     audience: "Acceso Talleres",
-    description: "Currículo guiado sobre el flujo de autenticación y gestión de sesiones para las tablets de taller.",
+    description: "Formación guiada sobre el flujo de autenticación y gestión de sesiones para las tablets de taller.",
     status: "inactivo",
     linkedChatbotKey: "auth",
     modules: [
@@ -114,7 +114,7 @@ const seedFormations: FormationMap = {
     key: "onboarding-cloud",
     title: "Onboarding Plataforma Cloud",
     audience: "Plataforma Cloud",
-    description: "Currículo guiado sobre aislamiento multi-departamento e infraestructura intercambiable.",
+    description: "Formación guiada sobre aislamiento multi-departamento e infraestructura intercambiable.",
     status: "borrador",
     linkedChatbotKey: "cloud",
     modules: [
@@ -155,7 +155,7 @@ const seedFormations: FormationMap = {
     key: "onboarding-empresa",
     title: "Onboarding General de Empresa",
     audience: "Toda la empresa",
-    description: "Currículo transversal común a cualquier departamento: cultura, políticas internas y herramientas comunes.",
+    description: "Formación transversal común a cualquier departamento: cultura, políticas internas y herramientas comunes.",
     status: "activo",
     linkedChatbotKey: "general",
     modules: [
@@ -223,7 +223,7 @@ export class MockFormationsRepository implements IFormationsRepository {
       key,
       title,
       audience: audience || "Sin definir",
-      description: trimmedDescription || "Currículo recién creado. Añade módulos para que el equipo pueda empezar a formarse.",
+      description: trimmedDescription || "Formación recién creada. Añade módulos para que el equipo pueda empezar a formarse.",
       status,
       linkedChatbotKey,
       iconUrl,

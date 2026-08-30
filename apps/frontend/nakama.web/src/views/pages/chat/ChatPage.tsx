@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { AttachIcon, CloseIcon, SendIcon } from "../../components/shared/icons";
 import { useChat } from "./hooks/useChat";
 import { BotBubble, UserBubble } from "./MessageBubble";
 import styles from "./ChatPage.module.scss";
@@ -9,14 +11,19 @@ export default function ChatPage() {
     navigate,
     thread,
     threadRef,
+    composerRef,
     input,
     setInput,
+    attachedFiles,
+    handleAttachFiles,
+    removeAttachedFile,
     botConversations,
     activeConversationId,
     openConversation,
     handleSend,
     handleReveal
   } = useChat();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!bot) {
     return (
@@ -68,19 +75,63 @@ export default function ChatPage() {
           </div>
 
           <div className={styles.composer}>
-            <input
-              type="text"
-              placeholder="Escribe tu pregunta…"
-              aria-label="Escribe tu pregunta"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSend();
-              }}
-            />
-            <button type="button" onClick={handleSend}>
-              Enviar
-            </button>
+            {attachedFiles.length > 0 && (
+              <div className={styles.attachments}>
+                {attachedFiles.map((file, i) => (
+                  <span className={styles.attachmentChip} key={`${file.name}-${i}`}>
+                    {file.name}
+                    <button
+                      type="button"
+                      className={styles.attachmentRemove}
+                      onClick={() => removeAttachedFile(i)}
+                      aria-label={`Quitar ${file.name}`}
+                    >
+                      <CloseIcon />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className={styles.composerRow}>
+              <button
+                className={styles.attachBtn}
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                aria-label="Adjuntar archivo"
+                title="Adjuntar archivo"
+              >
+                <AttachIcon />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className={styles.fileInput}
+                onChange={(e) => {
+                  handleAttachFiles(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+              <textarea
+                ref={composerRef}
+                className={styles.composerTextarea}
+                rows={1}
+                placeholder="Escribe tu pregunta… (Shift+Enter para salto de línea)"
+                aria-label="Escribe tu pregunta"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+              />
+              <button className={styles.sendBtn} type="button" onClick={handleSend}>
+                <SendIcon />
+                Enviar
+              </button>
+            </div>
           </div>
         </div>
 

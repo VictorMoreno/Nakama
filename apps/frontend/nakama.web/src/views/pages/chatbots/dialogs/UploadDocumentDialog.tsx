@@ -1,4 +1,5 @@
 import Dialog from "../../../components/shared/Dialog";
+import { CloseIcon, UploadIcon } from "../../../components/shared/icons";
 import { useToast } from "../../../shared/contexts/ToastContext";
 
 interface UploadDocumentDialogProps {
@@ -19,7 +20,7 @@ export default function UploadDocumentDialog({ open, botLabel, onClose }: Upload
       <div className="dropzone">Arrastra un archivo aquí, o haz clic para seleccionar</div>
       <div className="modal-actions">
         <button className="btn-ghost" type="button" onClick={onClose}>
-          Cancelar
+          <CloseIcon /> Cancelar
         </button>
         <button
           className="btn-primary"
@@ -29,7 +30,7 @@ export default function UploadDocumentDialog({ open, botLabel, onClose }: Upload
             showToast("Documento en cola de indexado");
           }}
         >
-          Subir
+          <UploadIcon /> Subir
         </button>
       </div>
     </Dialog>

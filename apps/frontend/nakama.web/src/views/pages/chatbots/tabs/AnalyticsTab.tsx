@@ -1,4 +1,5 @@
 import type { Chatbot } from "../../../../modules/chatbots/domain/Chatbot";
+import { CheckIcon, PlusIcon } from "../../../components/shared/icons";
 import { useAnalyticsTab } from "./hooks/useAnalyticsTab";
 import styles from "./AnalyticsTab.module.scss";
 
@@ -68,7 +69,15 @@ export default function AnalyticsTab({ bot }: AnalyticsTabProps) {
                   disabled={done}
                   onClick={() => markDocumented(idx)}
                 >
-                  {done ? "Añadido ✓" : "Documentar"}
+                  {done ? (
+                    <>
+                      <CheckIcon /> Añadido ✓
+                    </>
+                  ) : (
+                    <>
+                      <PlusIcon /> Documentar
+                    </>
+                  )}
                 </button>
               </div>
             );

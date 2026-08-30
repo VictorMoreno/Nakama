@@ -24,13 +24,19 @@
 // ---------- Page transition wrapper ----------
 
 .view { display: none; flex-direction: column; gap: 20px; flex: 1; min-height: 0; }
-.view.active { display: flex; animation: view-enter 0.22s ease; }
+.view.active { display: flex; animation: view-enter 0.85s cubic-bezier(0.16, 1, 0.3, 1); }
 
 // ---------- Buttons ----------
 
 // Flat UI: generous padding is part of the "flat" feel as much as the absence of
 // effects — the kit's own buttons run ~12px 24px, not a cramped chip.
+// svg sized in em (not px) so its icon scales with each button's own font-size instead
+// of needing a manual override per instance — a .btn-ghost icon inside a tight card row
+// ends up smaller than a full-size .btn-primary one automatically, matching each button.
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: none;
   background: var(--accent);
   color: var(--accent-ink);
@@ -38,7 +44,9 @@
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
   font-weight: 600;
-  transition: filter 0.15s ease;
+  transition: filter 0.3s ease;
+
+  svg { width: 1em; height: 1em; flex: none; }
 }
 
 // Flat UI: hover/active read through color alone (darken/brighten the fill) — no ring,
@@ -51,6 +59,9 @@
 // solid muted-gray fill, zero border — not an outline button. This is the "quiet"
 // action, so it gets the least saturated fill in the system, not a bordered ghost.
 .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: none;
   background: var(--border);
   color: var(--ink-soft);
@@ -59,7 +70,9 @@
   font-size: 0.75rem;
   font-weight: 500;
   flex: none;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.3s ease, color 0.3s ease;
+
+  svg { width: 1em; height: 1em; flex: none; }
 }
 
 .btn-ghost:hover { background: var(--accent-soft); color: var(--accent); }
@@ -132,7 +145,7 @@
 }
 
 .tab-panel { display: none; flex: 1; min-height: 0; flex-direction: column; }
-.tab-panel.active { display: flex; animation: view-enter 0.18s ease; }
+.tab-panel.active { display: flex; animation: view-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
 
 // ---------- Generic toggle switch (Modo Socrático, Explícame más, module gating, ...) ----------
 
@@ -144,7 +157,7 @@
   border: none;
   position: relative;
   padding: 0;
-  transition: background 0.2s ease;
+  transition: background 0.35s ease;
   flex: none;
 }
 
@@ -157,7 +170,7 @@
   height: 16px;
   border-radius: 50%;
   background: var(--surface-strong);
-  transition: transform 0.2s ease;
+  transition: transform 0.35s ease;
 }
 
 .switch[aria-checked="true"] {
@@ -345,7 +358,7 @@
   font-size: 0.8rem;
   box-shadow: var(--shadow);
   opacity: 0;
-  transition: all 0.25s ease;
+  transition: all 0.4s ease;
   pointer-events: none;
   z-index: 20;
 }

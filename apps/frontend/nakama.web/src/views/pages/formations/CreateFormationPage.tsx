@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import IconUploadField from "../../components/shared/IconUploadField";
 import Select from "../../components/shared/Select";
 import StatusSelect, { type StatusSelectOption } from "../../components/shared/StatusSelect";
+import { ChevronLeftIcon, CloseIcon, PlusIcon } from "../../components/shared/icons";
 import { FORMATION_STATUS_META } from "../../../lib/status";
 import { useCreateFormation } from "./hooks/useCreateFormation";
 import type { FormationLifecycleStatus } from "../../../modules/formations/domain/Formation";
@@ -36,15 +37,15 @@ export default function CreateFormationPage() {
     <section className="view active">
       <div className={styles.botDetail}>
         <button className={`btn-ghost ${styles.backBtn}`} type="button" onClick={() => navigate("/formacion")}>
-          ← Formación
+          <ChevronLeftIcon /> Formación
         </button>
 
         <div className={styles.botDetailHead}>
           <div>
-            <h2>Crear currículo</h2>
+            <h2>Crear formación</h2>
             <p>Podrás añadir módulos y asignar equipo en cuanto lo crees.</p>
           </div>
-          <StatusSelect value={status} onChange={setStatus} options={STATUS_OPTIONS} ariaLabel="Estado inicial del currículo" />
+          <StatusSelect value={status} onChange={setStatus} options={STATUS_OPTIONS} ariaLabel="Estado inicial de la formación" />
         </div>
 
         <div className="glass">
@@ -52,7 +53,7 @@ export default function CreateFormationPage() {
             <h2>Datos básicos</h2>
           </div>
           <div style={{ padding: "0 20px 20px" }}>
-            <IconUploadField value={iconUrl} onChange={setIconUrl} placeholderLabel={title || "Currículo"} />
+            <IconUploadField value={iconUrl} onChange={setIconUrl} placeholderLabel={title || "Formación"} />
             <div className="form-field">
               <label htmlFor="new-formation-title">Título</label>
               <input
@@ -85,7 +86,7 @@ export default function CreateFormationPage() {
                 id="new-formation-desc"
                 className="form-input"
                 rows={2}
-                placeholder="Se mostrará en la card del listado para ayudar a encontrar este currículo."
+                placeholder="Se mostrará en la card del listado para ayudar a encontrar esta formación."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -97,8 +98,8 @@ export default function CreateFormationPage() {
               <div className="config-row-text">
                 <div className="title">Chatbot de referencia</div>
                 <div className="desc">
-                  Opcional — solo se usa para generar borradores de examen con IA a partir de su documentación. El
-                  currículo funciona igual sin ninguno asociado.
+                  Opcional — solo se usa para generar borradores de examen con IA a partir de su documentación. La
+                  formación funciona igual sin ninguno asociado.
                 </div>
               </div>
               <Select
@@ -114,10 +115,10 @@ export default function CreateFormationPage() {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button className="btn-ghost" type="button" onClick={() => navigate("/formacion")}>
-            Cancelar
+            <CloseIcon /> Cancelar
           </button>
           <button className="btn-primary" type="button" onClick={handleConfirm}>
-            Crear currículo
+            <PlusIcon /> Crear formación
           </button>
         </div>
       </div>

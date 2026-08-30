@@ -7,7 +7,7 @@ function headingFor(pathname: string): { title: string; subtitle: string; showSw
     return { title: "Chat", subtitle: "", showSwitcher: true };
   }
   if (pathname === "/formacion" || pathname.startsWith("/formacion/")) {
-    return { title: "Formación", subtitle: "Currículos de formación, independientes de los chatbots", showSwitcher: false };
+    return { title: "Formación", subtitle: "Formaciones independientes de los chatbots", showSwitcher: false };
   }
   if (pathname.startsWith("/analytics")) {
     return { title: "Analítica", subtitle: "Uso de la plataforma — solo administradores", showSwitcher: false };

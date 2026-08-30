@@ -1,6 +1,17 @@
 import { useState } from "react";
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
-import { CheckIcon, DocumentIcon, ExerciseIcon, LockIcon, QuizIcon, VideoIcon } from "../../components/shared/icons";
+import {
+  CheckIcon,
+  ChevronLeftIcon,
+  DocumentIcon,
+  ExerciseIcon,
+  LockIcon,
+  PlusIcon,
+  QuizIcon,
+  SendIcon,
+  TrashIcon,
+  VideoIcon
+} from "../../components/shared/icons";
 import IconUploadField from "../../components/shared/IconUploadField";
 import StatusSelect, { type StatusSelectOption } from "../../components/shared/StatusSelect";
 import { useFormations } from "../../shared/contexts/FormationsContext";
@@ -158,18 +169,26 @@ function ModuleRow({ formationKey, module: m, index, locked, done, examScore, is
                 showToast("Módulo completado");
               }}
             >
-              {done ? "Completado ✓" : "Marcar como completado"}
+              <CheckIcon /> {done ? "Completado ✓" : "Marcar como completado"}
             </button>
           )}
           {!locked && m.type === "examen" && (
             <button className={`btn-ghost${done ? " done" : ""}`} type="button" disabled={done || answers.includes(-1)} onClick={submitExam}>
-              {done ? "Aprobado ✓" : "Enviar examen"}
+              {done ? (
+                <>
+                  <CheckIcon /> Aprobado ✓
+                </>
+              ) : (
+                <>
+                  <SendIcon /> Enviar examen
+                </>
+              )}
             </button>
           )}
 
           {isAdmin && (
             <button className="btn-ghost danger" type="button" onClick={onDelete}>
-              Eliminar
+              <TrashIcon /> Eliminar
             </button>
           )}
         </div>
@@ -201,7 +220,7 @@ export default function FormationDetailPage() {
       <section className="view active">
         <div className="glass" style={{ padding: 24 }}>
           <p>
-            No se ha encontrado este currículo.{" "}
+            No se ha encontrado esta formación.{" "}
             <button className="config-link" type="button" onClick={() => navigate("/formacion")}>
               Volver a Formación →
             </button>
@@ -215,7 +234,7 @@ export default function FormationDetailPage() {
     <section className="view active">
       <div className={styles.botDetail}>
         <button className={`btn-ghost ${styles.backBtn}`} type="button" onClick={() => navigate("/formacion")}>
-          ← Formación
+          <ChevronLeftIcon /> Formación
         </button>
 
         <div className={styles.botDetailHead}>
@@ -227,7 +246,7 @@ export default function FormationDetailPage() {
             </p>
           </div>
           {isAdmin ? (
-            <StatusSelect value={c.status} onChange={handleUpdateStatus} options={STATUS_OPTIONS} ariaLabel="Estado del currículo" />
+            <StatusSelect value={c.status} onChange={handleUpdateStatus} options={STATUS_OPTIONS} ariaLabel="Estado de la formación" />
           ) : (
             <span className={`status-tag ${FORMATION_STATUS_META[c.status].level}`}>{FORMATION_STATUS_META[c.status].label}</span>
           )}
@@ -236,7 +255,7 @@ export default function FormationDetailPage() {
         {isAdmin && (
           <div className="glass">
             <div className="panel-head">
-              <h2>Icono del currículo</h2>
+              <h2>Icono de la formación</h2>
             </div>
             <div style={{ padding: "0 20px 20px" }}>
               <IconUploadField value={c.iconUrl} onChange={handleUpdateIcon} placeholderLabel={c.title} />
@@ -256,10 +275,10 @@ export default function FormationDetailPage() {
           </div>
 
           <div className="panel-head">
-            <h2>Módulos del currículo</h2>
+            <h2>Módulos de la formación</h2>
             {isAdmin && (
               <button className="btn-primary" type="button" onClick={() => setCreateOpen(true)}>
-                + Nuevo módulo
+                <PlusIcon /> Nuevo módulo
               </button>
             )}
           </div>
@@ -267,8 +286,8 @@ export default function FormationDetailPage() {
           {c.modules.length === 0 ? (
             <p style={{ padding: "0 20px 20px", fontSize: "0.82rem", color: "var(--ink-faint)" }}>
               {isAdmin
-                ? 'Este currículo todavía no tiene módulos. Crea el primero con "+ Nuevo módulo".'
-                : "Este currículo todavía no tiene módulos."}
+                ? 'Esta formación todavía no tiene módulos. Crea el primero con "+ Nuevo módulo".'
+                : "Esta formación todavía no tiene módulos."}
             </p>
           ) : (
             <div className={styles.moduleList}>
@@ -297,7 +316,7 @@ export default function FormationDetailPage() {
             </div>
             {c.team.length === 0 ? (
               <p style={{ padding: "0 20px 20px", fontSize: "0.82rem", color: "var(--ink-faint)" }}>
-                Todavía no hay personas asignadas a este currículo.
+                Todavía no hay personas asignadas a esta formación.
               </p>
             ) : (
               <div className={styles.progressList}>
@@ -323,7 +342,7 @@ export default function FormationDetailPage() {
         title="Eliminar módulo"
         message={
           <>
-            ¿Eliminar <strong>{deleteTarget?.title}</strong> de este currículo?
+            ¿Eliminar <strong>{deleteTarget?.title}</strong> de esta formación?
           </>
         }
         confirmLabel="Eliminar"

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Dialog from "../../components/shared/Dialog";
 import Select from "../../components/shared/Select";
+import { CloseIcon, PlusIcon } from "../../components/shared/icons";
 import { useFormations } from "../../shared/contexts/FormationsContext";
 import { useToast } from "../../shared/contexts/ToastContext";
 import type { ModuleType } from "../../../modules/formations/domain/Formation";
@@ -202,10 +203,10 @@ export default function CreateModuleDialog({ open, formationKey, onClose }: Crea
 
       <div className="modal-actions">
         <button className="btn-ghost" type="button" onClick={handleClose}>
-          Cancelar
+          <CloseIcon /> Cancelar
         </button>
         <button className="btn-primary" type="button" onClick={handleConfirm}>
-          Crear módulo
+          <PlusIcon /> Crear módulo
         </button>
       </div>
     </Dialog>

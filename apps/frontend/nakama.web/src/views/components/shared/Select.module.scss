@@ -27,7 +27,7 @@
   font-family: inherit;
   text-align: left;
   white-space: nowrap;
-  transition: filter 0.15s ease;
+  transition: filter 0.3s ease;
 
   &:hover { filter: brightness(1.1); }
 }
@@ -43,7 +43,7 @@
 // currentColor so this chevron always matches whatever text color its trigger sets —
 // white on the default solid-accent trigger, but StatusSelect overrides the trigger's
 // own color per status (see StatusSelect.module.scss) and the chevron follows along.
-.chevron { width: 11px; height: 11px; color: currentcolor; transition: transform 0.15s ease; flex: none; }
+.chevron { width: 11px; height: 11px; color: currentcolor; transition: transform 0.3s ease; flex: none; }
 .select.open .selectTrigger .chevron { transform: rotate(180deg); }
 
 .selectDropdown {

@@ -1,4 +1,5 @@
 import ConfirmDialog from "../../../components/shared/ConfirmDialog";
+import { MailIcon, TrashIcon } from "../../../components/shared/icons";
 import { isOwnerRole } from "../../../../modules/chatbots/domain/Chatbot";
 import type { Chatbot } from "../../../../modules/chatbots/domain/Chatbot";
 import InviteDialog from "../dialogs/InviteDialog";
@@ -24,7 +25,7 @@ export default function PermissionsTab({ bot }: PermissionsTabProps) {
         <div className="panel-head">
           <h2>Personas con acceso</h2>
           <button className="btn-primary" type="button" onClick={() => setInviteOpen(true)}>
-            + Invitar
+            <MailIcon /> Invitar
           </button>
         </div>
         <div className={styles.teamList}>
@@ -36,7 +37,7 @@ export default function PermissionsTab({ bot }: PermissionsTabProps) {
               </div>
               {!isOwnerRole(person.role) && (
                 <button className="btn-ghost danger" type="button" onClick={() => setRemoveIndex(idx)}>
-                  Quitar acceso
+                  <TrashIcon /> Quitar acceso
                 </button>
               )}
             </div>

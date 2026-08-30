@@ -16,7 +16,7 @@
   font-size: 0.85rem;
   font-weight: 500;
   max-width: 220px;
-  transition: filter 0.15s ease;
+  transition: filter 0.3s ease;
 
   &:hover { filter: brightness(1.1); }
 }
@@ -37,7 +37,7 @@
   flex: none;
 }
 
-.chevron { width: 11px; height: 11px; color: currentcolor; transition: transform 0.15s ease; flex: none; }
+.chevron { width: 11px; height: 11px; color: currentcolor; transition: transform 0.3s ease; flex: none; }
 .botSwitcher.open .chevron { transform: rotate(180deg); }
 
 .botSwitcherDropdown {

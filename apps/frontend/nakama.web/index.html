@@ -5,6 +5,25 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=nakama-2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nakama</title>
+    <script>
+      // Sets data-theme before first paint, synchronously — otherwise the page always
+      // paints the bare :root (light) values first and only flips to the stored theme
+      // once ThemeProvider's useEffect runs (a visible flash on every hard reload when
+      // the stored preference differs from the OS's prefers-color-scheme).
+      (function () {
+        try {
+          var stored = JSON.parse(localStorage.getItem("nakama-theme"));
+          var theme = stored === "light" || stored === "dark" ? stored : null;
+          if (!theme) {
+            theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          // localStorage unavailable (private mode, etc.) — fall back to CSS's own
+          // prefers-color-scheme handling, no attribute needed.
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

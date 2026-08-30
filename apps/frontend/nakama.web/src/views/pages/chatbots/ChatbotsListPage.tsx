@@ -1,5 +1,6 @@
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import Select from "../../components/shared/Select";
+import { ArrowRightIcon, LockIcon, PlusIcon, TrashIcon } from "../../components/shared/icons";
 import { getChatbotStatus } from "../../../lib/status";
 import { pluralWord } from "../../../lib/text";
 import { STATUS_OPTIONS, useChatbotsList } from "./hooks/useChatbotsList";
@@ -27,7 +28,7 @@ export default function ChatbotsListPage() {
             comparte entre chatbots.
           </p>
           <button className="btn-primary" type="button" onClick={() => navigate("/chatbots/new")}>
-            + Crear chatbot
+            <PlusIcon /> Crear chatbot
           </button>
         </div>
 
@@ -70,13 +71,13 @@ export default function ChatbotsListPage() {
               </div>
               <div className={styles.botCardActions}>
                 <button className="btn-primary" type="button" onClick={() => navigate(`/chatbots/${bot.key}`)}>
-                  Abrir
+                  <ArrowRightIcon /> Abrir
                 </button>
                 <button className="btn-ghost" type="button" onClick={() => navigate(`/chatbots/${bot.key}?tab=permisos`)}>
-                  Permisos
+                  <LockIcon /> Permisos
                 </button>
                 <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(bot.key)}>
-                  Eliminar
+                  <TrashIcon /> Eliminar
                 </button>
               </div>
             </div>

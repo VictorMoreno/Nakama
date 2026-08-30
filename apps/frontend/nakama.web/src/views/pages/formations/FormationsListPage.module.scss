@@ -17,7 +17,7 @@
 
 .botGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 16px;
 }
 
@@ -26,7 +26,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.3s ease, transform 0.3s ease;
 }
 
 .botCard:hover { border-color: var(--border-strong); background: var(--accent-soft); }
@@ -88,12 +88,22 @@
   overflow: hidden;
 }
 
-.botCardMeta {
+// Wraps the shared bar-track/bar-fill so the percentage reads as part of the progress
+// bar itself (trailing readout) instead of a separate "X% completado" line above it.
+// No separate module-count line — the card just shows the bar + percentage.
+.progressRow {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 10px;
+
+  :global(.bar-track) { flex: 1; margin-top: 0; }
+}
+
+.progressPct {
   font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--ink-soft);
+  font-weight: 700;
+  color: var(--accent);
+  flex: none;
 }
 
 .botCardActions {

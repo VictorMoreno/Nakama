@@ -1,4 +1,5 @@
 import StatusSelect, { type StatusSelectOption } from "../../components/shared/StatusSelect";
+import { ChevronLeftIcon } from "../../components/shared/icons";
 import { CHATBOT_STATUS_META } from "../../../lib/status";
 import { botSubText } from "../../../lib/text";
 import type { ChatbotLifecycleStatus } from "../../../modules/chatbots/domain/Chatbot";
@@ -35,7 +36,7 @@ export default function ChatbotDetailPage() {
     <section className="view active">
       <div className={styles.botDetail}>
         <button className={`btn-ghost ${styles.backBtn}`} type="button" onClick={() => navigate("/chatbots")}>
-          ← Gestión de chatbots
+          <ChevronLeftIcon /> Gestión de chatbots
         </button>
 
         <div className={styles.botDetailHead}>

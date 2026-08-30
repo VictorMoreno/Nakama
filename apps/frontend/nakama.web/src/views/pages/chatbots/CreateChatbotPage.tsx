@@ -1,6 +1,7 @@
 import IconUploadField from "../../components/shared/IconUploadField";
 import Select from "../../components/shared/Select";
 import StatusSelect, { type StatusSelectOption } from "../../components/shared/StatusSelect";
+import { ChevronLeftIcon, CloseIcon, PlusIcon } from "../../components/shared/icons";
 import { CHATBOT_STATUS_META } from "../../../lib/status";
 import type { ChatbotLifecycleStatus, LlmProvider } from "../../../modules/chatbots/domain/Chatbot";
 import { useCreateChatbot } from "./hooks/useCreateChatbot";
@@ -46,7 +47,7 @@ export default function CreateChatbotPage() {
     <section className="view active">
       <div className={styles.botDetail}>
         <button className={`btn-ghost ${styles.backBtn}`} type="button" onClick={() => navigate("/chatbots")}>
-          ← Gestión de chatbots
+          <ChevronLeftIcon /> Gestión de chatbots
         </button>
 
         <div className={styles.botDetailHead}>
@@ -174,10 +175,10 @@ export default function CreateChatbotPage() {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button className="btn-ghost" type="button" onClick={() => navigate("/chatbots")}>
-            Cancelar
+            <CloseIcon /> Cancelar
           </button>
           <button className="btn-primary" type="button" onClick={handleConfirm}>
-            Crear chatbot
+            <PlusIcon /> Crear chatbot
           </button>
         </div>
       </div>

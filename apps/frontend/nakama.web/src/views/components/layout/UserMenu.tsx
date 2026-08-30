@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import type { IUserRepository } from "../../../modules/user/domain/IUserRepository";
 import type { User } from "../../../modules/user/domain/User";
 import { Services } from "../../../shared/infrastructure/injection/Services";
@@ -26,6 +27,7 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ collapsed = false }: UserMenuProps) {
+  const navigate = useNavigate();
   const userRepo = useInjection<IUserRepository>(Services.UserRepository.id);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
@@ -91,10 +93,12 @@ export default function UserMenu({ collapsed = false }: UserMenuProps) {
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className={styles.userAvatar}>
-          <UserIcon />
-        </span>
-        <span>{currentUser.name}</span>
+        <div className={styles.userTriggerInfo}>
+          <span className={styles.userAvatar}>
+            <UserIcon />
+          </span>
+          <span>{currentUser.name}</span>
+        </div>
         <ChevronDownIcon className={styles.chevron} />
       </button>
 
@@ -150,6 +154,7 @@ export default function UserMenu({ collapsed = false }: UserMenuProps) {
               onClick={() => {
                 setOpen(false);
                 showToast("Sesión cerrada (demo)");
+                navigate("/login");
               }}
             >
               Cerrar sesión
