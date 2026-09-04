@@ -1,6 +1,6 @@
 # API Agent Guide
 
-Guía exportable para implementar y mantener APIs con el estilo de `Yq.SpareParts.Api`.
+Guía exportable para implementar y mantener APIs.
 
 ## 1) Stack y arranque
 
@@ -31,10 +31,7 @@ Guía exportable para implementar y mantener APIs con el estilo de `Yq.SparePart
 ## 3) Reglas de controladores (obligatorias)
 
 - Heredar de `ApiControllerBase` y usar bases de auth:
-  - `YqControllerBase` (YQ JWT)
-  - `GijControllerBase` (GIJ JWT)
   - `CwsControllerBase` (CWS)
-  - `YqGijControllerBase` (mixto)
 - El nombre debe terminar en método HTTP + `Controller`:
   - `*GetController`, `*PostController`, `*PutController`, `*PatchController`, `*DeleteController`.
 - Todos los controladores deben ser `sealed`.
@@ -88,6 +85,6 @@ Guía exportable para implementar y mantener APIs con el estilo de `Yq.SparePart
 ## 10) Comandos base
 
 - Build: `dotnet build`
-- Run API: `dotnet run --project .\apps\backend\Yq.SpareParts.Api\`
-- Test backend: `dotnet test .\test\Yq.SpareParts.Test\`
+- Run API: `dotnet run --project `
+- Test backend: `dotnet test `
 

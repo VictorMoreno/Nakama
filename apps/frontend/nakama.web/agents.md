@@ -91,7 +91,7 @@ Regla: cualquier nueva dependencia de acceso a datos debe entrar por este mecani
 ## 8) Routing y layouts
 
 - Centralizar rutas en `views/routes/Router.tsx`.
-- Componer páginas bajo layouts (`YqLayout`, `GijLayout`, etc.).
+- Componer páginas bajo layouts.
 - Mantener rutas de error explícitas y navegación controlada por idioma/parámetros.
 
 ## 9) Estado compartido y contextos
