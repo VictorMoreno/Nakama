@@ -1,0 +1,80 @@
+namespace Nakama.FormationDetail.Domain;
+
+public partial class FormationDetail
+{
+    private FormationDetail(
+        string key,
+        string title,
+        string audience,
+        string description,
+        string status,
+        string? linkedChatbotKey,
+        string? linkedChatbotLabel)
+    {
+        this.Key = key;
+        this.Title = title;
+        this.Audience = audience;
+        this.Description = description;
+        this.Status = status;
+        this.LinkedChatbotKey = linkedChatbotKey;
+        this.LinkedChatbotLabel = linkedChatbotLabel;
+    }
+
+    public static FormationDetail Create(
+        string key,
+        string title,
+        string audience,
+        string description,
+        string status,
+        string? linkedChatbotKey,
+        string? linkedChatbotLabel) =>
+        new(key, title, audience, description, status, linkedChatbotKey, linkedChatbotLabel);
+
+    public void UpdateStatus(string status) => this.Status = status;
+
+    public void AddModule(
+        string id,
+        string title,
+        string type,
+        string summary,
+        bool gated,
+        bool aiDraft,
+        string? resourceUrl,
+        int? durationMin,
+        int? passingScore,
+        List<QuizQuestionRow>? quiz) => this.Modules.Add(new FormationModuleRow
+    {
+        Id = id,
+        Title = title,
+        Type = type,
+        Summary = summary,
+        Gated = gated,
+        AiDraft = aiDraft,
+        ResourceUrl = resourceUrl,
+        DurationMin = durationMin,
+        PassingScore = passingScore,
+        Quiz = quiz,
+    });
+
+    public void ToggleModuleGating(string moduleId, bool gated)
+    {
+        var module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
+        if (module is not null)
+        {
+            module.Gated = gated;
+        }
+    }
+
+    public void CompleteModule(string moduleId, int? score)
+    {
+        if (!this.CompletedModuleIds.Contains(moduleId))
+        {
+            this.CompletedModuleIds.Add(moduleId);
+        }
+
+        if (score is not null)
+        {
+            this.ExamScores[moduleId] = score.Value;
+        }
+    }
+}

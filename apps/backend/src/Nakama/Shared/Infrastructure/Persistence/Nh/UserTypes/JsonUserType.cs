@@ -1,0 +1,71 @@
+using System.Data;
+using System.Data.Common;
+using System.Text.Json;
+using NHibernate.Engine;
+using NHibernate.SqlTypes;
+using NHibernate.UserTypes;
+
+namespace Nakama.Shared.Infrastructure.Persistence.Nh.UserTypes;
+
+/// <summary>
+/// Persists any complex .NET value (a list, a record, a nested value-object graph - e.g. the
+/// quiz embedded in a formation module, or a chatbot's documents/team lists) as a single JSON
+/// text column, per agents.md §6 ("tipos JSON complejos"). Avoids modelling every nested
+/// collection as its own NHibernate component/bag mapping for this scope.
+/// </summary>
+public sealed class JsonUserType<T> : IUserType
+{
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+
+    public SqlType[] SqlTypes { get; } = [new SqlType(DbType.String)];
+
+    public Type ReturnedType => typeof(T);
+
+    public bool IsMutable => true;
+
+    public object? NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
+    {
+        var index = rs.GetOrdinal(names[0]);
+        if (rs.IsDBNull(index))
+        {
+            return default(T);
+        }
+
+        var json = rs.GetString(index);
+        return JsonSerializer.Deserialize<T>(json, SerializerOptions);
+    }
+
+    public void NullSafeSet(DbCommand cmd, object? value, int index, ISessionImplementor session)
+    {
+        var parameter = (DbParameter)cmd.Parameters[index];
+        parameter.Value = value is null ? DBNull.Value : JsonSerializer.Serialize((T)value, SerializerOptions);
+    }
+
+    public object? DeepCopy(object? value) =>
+        value is null ? default(T) : JsonSerializer.Deserialize<T>(JsonSerializer.Serialize((T)value, SerializerOptions), SerializerOptions);
+
+    public object? Replace(object? original, object? target, object owner) => DeepCopy(original);
+
+    /// <summary>Second-level-cache serialization hook - the JSON string itself is already cache-safe, so this is a passthrough to <see cref="DeepCopy"/>.</summary>
+    public object? Assemble(object cached, object owner) => DeepCopy(cached);
+
+    /// <summary>Second-level-cache serialization hook - passthrough to <see cref="DeepCopy"/>, mirroring <see cref="Assemble"/>.</summary>
+    public object? Disassemble(object? value) => DeepCopy(value);
+
+    public new bool Equals(object? x, object? y)
+    {
+        if (ReferenceEquals(x, y))
+        {
+            return true;
+        }
+
+        if (x is null || y is null)
+        {
+            return false;
+        }
+
+        return JsonSerializer.Serialize(x, SerializerOptions) == JsonSerializer.Serialize(y, SerializerOptions);
+    }
+
+    public int GetHashCode(object x) => JsonSerializer.Serialize(x, SerializerOptions).GetHashCode();
+}
