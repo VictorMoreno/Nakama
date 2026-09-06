@@ -18,10 +18,11 @@ Rules:
 - A task confined to one module only needs that module's guide.
 - Small fixes that don't add new files/structure (typo, one-line bug fix, style tweak) don't need the guide re-read — use judgement.
 
-## Known drift: `apps/frontend/nakama.web/agents.md`
+## Known drift: `apps/backend/api/agents.md`
 
-That guide describes a **target/reference architecture** (`modules/<feature>/domain+infrastructure`, dependency injection via `useInjection`/`Services`, CSS Modules SCSS per component) carried over from another project's template. It does **not** match how `nakama.web` is actually built today: the current app uses a flatter `src/features/<feature>/` + `src/context/` (plain React Context, no DI container) structure, and a single shared `src/styles/design-system.css` instead of per-component CSS Modules.
-
-- Follow the **existing codebase conventions** (features/context/single stylesheet) for changes to existing code — don't silently migrate files toward the agents.md architecture as a side effect of an unrelated task.
-- Only apply the agents.md conventions (modules/domain/infrastructure split, DI, CSS Modules) if the user explicitly asks to move toward that architecture, or when it's genuinely ambiguous how to structure something brand new and no existing precedent in the codebase answers it.
-- If this drifts back into sync (someone migrates the app to match agents.md), remove this note.
+That guide describes controllers MVC + `ICommandBus`/`IQueryBus` custom, carried over from
+another project's template. The actual code uses Minimal API via the `IEndpoint` + Scrutor
+pattern, and MediatR (`ISender`/`IPublisher`) instead of the custom bus. Documented in full
+(with rationale) at the top of `apps/backend/api/agents.md` itself — read that note before
+touching `apps/backend/api`. Domain-layer conventions in `apps/backend/src/Nakama/agents.md`
+are followed literally, no drift there.

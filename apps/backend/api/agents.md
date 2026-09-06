@@ -2,6 +2,20 @@
 
 Guía exportable para implementar y mantener APIs.
 
+## Deriva conocida en `apps/backend/api`
+
+Esta guía viene de otro proyecto ("Yq.SpareParts") y describe controladores MVC +
+`ICommandBus`/`IQueryBus` custom (§3/§8). Lo que hay hoy en `apps/backend/api` es distinto y
+deliberado: **Minimal API vía el patrón `IEndpoint` + Scrutor** (`Configuration/IEndpoint.cs`,
+`Configuration/EndpointExtensions.cs`) para el ruteo HTTP, y **MediatR (`ISender`/`IPublisher`)**
+en vez del bus custom — los endpoints inyectan `ISender` y llaman `sender.Send(new
+<CasoDeUso>.Command(...))`/`sender.Send(new <CasoDeUso>.Query(...))` directo. No se migra a
+controladores MVC salvo pedido explícito — el patrón `IEndpoint` ya está en marcha y activo.
+El resto de esta guía (seguridad, pipeline HTTP, DI por extension methods, `ErrorMapping()`
+para `DomainError -> HttpStatusCode`) sigue aplicando igual, solo cambia la superficie de
+ruteo/dispatch. Ver `apps/backend/src/Nakama/agents.md` para las convenciones de dominio que
+sí se siguen al pie de la letra.
+
 ## 1) Stack y arranque
 
 - ASP.NET Core `net9.0`.
