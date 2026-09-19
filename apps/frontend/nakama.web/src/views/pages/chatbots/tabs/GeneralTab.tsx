@@ -26,7 +26,7 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
         <div style={{ padding: "0 20px 20px" }}>
           <IconUploadField
             value={bot.iconUrl}
-            onChange={(iconUrl) => updateIcon(bot.key, iconUrl)}
+            onChange={(iconUrl) => updateIcon(bot.id, iconUrl)}
             placeholderLabel={bot.label}
           />
         </div>
@@ -51,7 +51,7 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
               aria-checked={bot.settings.socratic}
               aria-label="Modo Socrático"
               type="button"
-              onClick={() => updateSettings(bot.key, { socratic: !bot.settings.socratic })}
+              onClick={() => updateSettings(bot.id, { socratic: !bot.settings.socratic })}
             />
           </div>
 
@@ -66,7 +66,7 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
               aria-checked={bot.settings.explicaMas}
               aria-label="Explícame más"
               type="button"
-              onClick={() => updateSettings(bot.key, { explicaMas: !bot.settings.explicaMas })}
+              onClick={() => updateSettings(bot.id, { explicaMas: !bot.settings.explicaMas })}
             />
           </div>
 
@@ -77,7 +77,7 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
             </div>
             <Select
               value={bot.settings.provider}
-              onChange={(provider) => updateSettings(bot.key, { provider })}
+              onChange={(provider) => updateSettings(bot.id, { provider })}
               options={PROVIDER_OPTIONS}
               ariaLabel="Modelo de lenguaje"
             />

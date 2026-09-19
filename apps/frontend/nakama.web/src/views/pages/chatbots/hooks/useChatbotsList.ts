@@ -21,7 +21,7 @@ export function useChatbotsList() {
   const navigate = useNavigate();
 
   const [deleteKey, setDeleteKey] = useState<string | null>(null);
-  const deleteTarget = activeChatbots.find((b) => b.key === deleteKey);
+  const deleteTarget = activeChatbots.find((b) => b.id === deleteKey);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");

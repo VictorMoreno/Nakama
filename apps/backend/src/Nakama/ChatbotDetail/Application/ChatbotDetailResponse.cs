@@ -5,7 +5,7 @@ namespace Nakama.ChatbotDetail.Application;
 using ChatbotDetail = Nakama.ChatbotDetail.Domain.ChatbotDetail;
 
 public sealed record ChatbotDetailResponse(
-    string Key,
+    Guid Id,
     string Label,
     string Description,
     string Status,
@@ -24,7 +24,7 @@ public sealed record ChatbotDetailResponse(
     List<StatTileRow> Stats)
 {
     public static explicit operator ChatbotDetailResponse(ChatbotDetail entity) => new(
-        entity.Key,
+        entity.Id,
         entity.Label,
         entity.Description,
         entity.Status,

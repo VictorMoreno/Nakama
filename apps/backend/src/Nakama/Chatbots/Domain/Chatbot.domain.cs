@@ -7,7 +7,7 @@ namespace Nakama.Chatbots.Domain;
 public partial class Chatbot
 {
     private Chatbot(
-        ChatbotKey key,
+        ChatbotId key,
         string label,
         string description,
         ChatbotStatus status,
@@ -25,7 +25,7 @@ public partial class Chatbot
     }
 
     public static Chatbot Create(
-        ChatbotKey key,
+        ChatbotId key,
         string label,
         string description,
         ChatbotStatus status,
@@ -46,40 +46,39 @@ public partial class Chatbot
         }
 
         this.Status = status;
-        Raise(new ChatbotStatusChanged(this.Key, status));
+        Raise(new ChatbotStatusChanged(this.Id, status));
     }
 
     public void UpdateSettings(ChatbotSettings settings)
     {
         this.Settings = settings;
-        Raise(new ChatbotSettingsUpdated(this.Key, settings));
+        Raise(new ChatbotSettingsUpdated(this.Id, settings));
     }
 
     public void UpdateIcon(string? iconUrl)
     {
         this.IconUrl = iconUrl;
-        Raise(new ChatbotIconUpdated(this.Key, iconUrl));
+        Raise(new ChatbotIconUpdated(this.Id, iconUrl));
     }
 
     public void AddDocument(ChatbotDocument document)
     {
         this._documents.Add(document);
-        Raise(new ChatbotDocumentAdded(this.Key, document));
+        Raise(new ChatbotDocumentAdded(this.Id, document));
     }
 
     public void RemoveDocument(int index)
     {
         this._documents.RemoveAt(index);
-        Raise(new ChatbotDocumentRemoved(this.Key, index));
+        Raise(new ChatbotDocumentRemoved(this.Id, index));
     }
 
     public void AddTeamMember(TeamMember member)
     {
         this._team.Add(member);
-        Raise(new ChatbotTeamMemberAdded(this.Key, member));
+        Raise(new ChatbotTeamMemberAdded(this.Id, member));
     }
 
-    /// <summary>Throws <see cref="ChatbotErrors.OwnerCannotBeRemoved"/> instead of silently allowing the owner to be removed.</summary>
     public void RemoveTeamMember(int index)
     {
         if (this._team[index].IsOwner)
@@ -88,7 +87,7 @@ public partial class Chatbot
         }
 
         this._team.RemoveAt(index);
-        Raise(new ChatbotTeamMemberRemoved(this.Key, index));
+        Raise(new ChatbotTeamMemberRemoved(this.Id, index));
     }
 
     public void Archive()
@@ -99,6 +98,6 @@ public partial class Chatbot
         }
 
         this.Archived = true;
-        Raise(new ChatbotArchived(this.Key));
+        Raise(new ChatbotArchived(this.Id));
     }
 }

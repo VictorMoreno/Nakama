@@ -3,7 +3,7 @@ using Nakama.ChatbotsList.Domain;
 namespace Nakama.ChatbotsList.Application;
 
 public sealed record ChatbotSummaryResponse(
-    string Key,
+    Guid Id,
     string Label,
     string Description,
     string Status,
@@ -15,7 +15,7 @@ public sealed record ChatbotSummaryResponse(
     string? IconUrl)
 {
     public static explicit operator ChatbotSummaryResponse(ChatbotSummary entity) => new(
-        entity.Key,
+        entity.Id,
         entity.Label,
         entity.Description,
         entity.Status,

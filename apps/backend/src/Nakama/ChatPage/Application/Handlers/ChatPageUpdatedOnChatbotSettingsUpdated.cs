@@ -1,4 +1,3 @@
-using MediatR;
 using Nakama.ChatPage.Domain;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.Shared.Infrastructure.Events;
@@ -7,22 +6,21 @@ namespace Nakama.ChatPage.Application.Handlers;
 
 using ChatPage = Nakama.ChatPage.Domain.ChatPage;
 
-/// <summary>Updates <see cref="ChatPage"/> from <see cref="ChatbotSettingsUpdated"/>.</summary>
 public sealed class ChatPageUpdatedOnChatbotSettingsUpdated(IChatPageRepository chatPageRepository)
-    : INotificationHandler<DomainEventNotification<ChatbotSettingsUpdated>>
+    : DomainEventHandler<ChatbotSettingsUpdated>
 {
-    public async Task Handle(DomainEventNotification<ChatbotSettingsUpdated> n, CancellationToken ct)
+    protected override async Task Handle(ChatbotSettingsUpdated chatbotSettingsUpdated, CancellationToken ct)
     {
-        var entry = await chatPageRepository.FindByBotKey(n.DomainEvent.Key.Value, ct);
-        if (entry is null)
+        var chatPage = await chatPageRepository.FindById(chatbotSettingsUpdated.Id.Value, ct);
+        if (chatPage is null)
         {
             return;
         }
 
-        entry.UpdateSettings(
-            n.DomainEvent.Settings.Socratic,
-            n.DomainEvent.Settings.ExplicaMas,
-            n.DomainEvent.Settings.Provider.ToString());
-        await chatPageRepository.Save(entry, ct);
+        chatPage.UpdateSettings(
+            chatbotSettingsUpdated.Settings.Socratic,
+            chatbotSettingsUpdated.Settings.ExplicaMas,
+            chatbotSettingsUpdated.Settings.Provider.ToString());
+        await chatPageRepository.Update(chatPage, ct);
     }
 }

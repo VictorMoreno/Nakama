@@ -5,14 +5,14 @@ namespace Nakama.FormationDetail.Application;
 using FormationDetail = Nakama.FormationDetail.Domain.FormationDetail;
 
 public sealed record FormationDetailResponse(
-    string Key,
+    Guid Id,
     string Title,
     string Audience,
     string Description,
     string Status,
     bool Archived,
     string? IconUrl,
-    string? LinkedChatbotKey,
+    Guid? LinkedChatbotKey,
     string? LinkedChatbotLabel,
     List<FormationModuleRow> Modules,
     List<FormationMemberRow> Team,
@@ -20,7 +20,7 @@ public sealed record FormationDetailResponse(
     Dictionary<string, int> ExamScores)
 {
     public static explicit operator FormationDetailResponse(FormationDetail entity) => new(
-        entity.Key,
+        entity.Id,
         entity.Title,
         entity.Audience,
         entity.Description,

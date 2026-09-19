@@ -2,21 +2,20 @@ namespace Nakama.FormationsList.Domain;
 
 public partial class FormationSummary
 {
-    private FormationSummary(string key, string title, string audience, string description, string status)
+    private FormationSummary(Guid key, string title, string audience, string description, string status)
     {
-        this.Key = key;
+        this.Id = key;
         this.Title = title;
         this.Audience = audience;
         this.Description = description;
         this.Status = status;
     }
 
-    public static FormationSummary Create(string key, string title, string audience, string description, string status) =>
+    public static FormationSummary Create(Guid key, string title, string audience, string description, string status) =>
         new(key, title, audience, description, status);
 
     public void UpdateStatus(string status) => this.Status = status;
 
-    /// <summary>Adding a module changes the completion denominator, so re-derive <see cref="ProgressPct"/>.</summary>
     public void IncrementModulesCount()
     {
         this.ModulesCount++;

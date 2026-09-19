@@ -10,7 +10,7 @@ import type { CreateFormationInput, IFormationsRepository } from "../domain/IFor
  */
 const seedFormations: FormationMap = {
   "onboarding-ecu": {
-    key: "onboarding-ecu",
+    id: "onboarding-ecu",
     title: "Onboarding Diagnósticos ECU",
     audience: "Diagnósticos ECU",
     description: "Formación guiada para incorporarse al equipo de Diagnósticos ECU: arquitectura de protocolos y aislamiento entre fabricantes.",
@@ -76,7 +76,7 @@ const seedFormations: FormationMap = {
   },
 
   "onboarding-talleres": {
-    key: "onboarding-talleres",
+    id: "onboarding-talleres",
     title: "Onboarding Acceso Talleres",
     audience: "Acceso Talleres",
     description: "Formación guiada sobre el flujo de autenticación y gestión de sesiones para las tablets de taller.",
@@ -111,7 +111,7 @@ const seedFormations: FormationMap = {
   },
 
   "onboarding-cloud": {
-    key: "onboarding-cloud",
+    id: "onboarding-cloud",
     title: "Onboarding Plataforma Cloud",
     audience: "Plataforma Cloud",
     description: "Formación guiada sobre aislamiento multi-departamento e infraestructura intercambiable.",
@@ -152,7 +152,7 @@ const seedFormations: FormationMap = {
   },
 
   "onboarding-empresa": {
-    key: "onboarding-empresa",
+    id: "onboarding-empresa",
     title: "Onboarding General de Empresa",
     audience: "Toda la empresa",
     description: "Formación transversal común a cualquier departamento: cultura, políticas internas y herramientas comunes.",
@@ -217,10 +217,10 @@ export class MockFormationsRepository implements IFormationsRepository {
 
   async Create(input: CreateFormationInput): Promise<Formation> {
     const { title, audience, description, status, linkedChatbotKey, iconUrl } = input;
-    const key = slugify(title, Object.keys(this.data));
+    const id = slugify(title, Object.keys(this.data));
     const trimmedDescription = description.trim();
     const newFormation: Formation = {
-      key,
+      id,
       title,
       audience: audience || "Sin definir",
       description: trimmedDescription || "Formación recién creada. Añade módulos para que el equipo pueda empezar a formarse.",
@@ -231,7 +231,7 @@ export class MockFormationsRepository implements IFormationsRepository {
       myProgress: { completedModuleIds: [], examScores: {} },
       team: []
     };
-    this.data = { ...this.data, [key]: newFormation };
+    this.data = { ...this.data, [id]: newFormation };
     return structuredClone(newFormation);
   }
 

@@ -7,12 +7,12 @@ namespace Nakama.Formations.Domain;
 public partial class Formation
 {
     private Formation(
-        FormationKey key,
+        FormationId key,
         string title,
         string audience,
         string description,
         FormationStatus status,
-        string? linkedChatbotKey)
+        Guid? linkedChatbotKey)
     {
         this.Id = key;
         this.Title = title;
@@ -23,12 +23,12 @@ public partial class Formation
     }
 
     public static Formation Create(
-        FormationKey key,
+        FormationId key,
         string title,
         string audience,
         string description,
         FormationStatus status,
-        string? linkedChatbotKey)
+        Guid? linkedChatbotKey)
     {
         var formation = new Formation(key, title, audience, description, status, linkedChatbotKey);
         formation.Raise(new FormationCreated(key, title, audience, description, status, linkedChatbotKey));
@@ -43,13 +43,13 @@ public partial class Formation
         }
 
         this.Status = status;
-        Raise(new FormationStatusChanged(this.Key, status));
+        Raise(new FormationStatusChanged(this.Id, status));
     }
 
     public void AddModule(FormationModule module)
     {
         this._modules.Add(module);
-        Raise(new FormationModuleAdded(this.Key, module));
+        Raise(new FormationModuleAdded(this.Id, module));
     }
 
     public void ToggleModuleGating(ModuleId moduleId)
@@ -57,25 +57,21 @@ public partial class Formation
         var index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
-            throw FormationErrors.ModuleNotFound(moduleId.Value, this.Key.Value);
+            throw FormationErrors.ModuleNotFound(moduleId.Value, this.Id.Value.ToString());
         }
 
         var toggled = this._modules[index] with { Gated = !this._modules[index].Gated };
         this._modules[index] = toggled;
 
-        Raise(new FormationModuleGatingToggled(this.Key, moduleId, toggled.Gated));
+        Raise(new FormationModuleGatingToggled(this.Id, moduleId, toggled.Gated));
     }
 
-    /// <summary>
-    /// Throws <see cref="FormationErrors.ModuleLockedByGating"/> when the previous module
-    /// has gating enabled and hasn't been completed yet.
-    /// </summary>
     public void CompleteModule(ModuleId moduleId, int? score)
     {
         var index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
-            throw FormationErrors.ModuleNotFound(moduleId.Value, this.Key.Value);
+            throw FormationErrors.ModuleNotFound(moduleId.Value, this.Id.Value.ToString());
         }
 
         if (index > 0)
@@ -88,6 +84,6 @@ public partial class Formation
         }
 
         this.MyProgress = this.MyProgress.WithModuleCompleted(moduleId.Value, score);
-        Raise(new FormationModuleCompleted(this.Key, moduleId, score));
+        Raise(new FormationModuleCompleted(this.Id, moduleId, score));
     }
 }

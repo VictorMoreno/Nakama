@@ -55,8 +55,8 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
 
   async function createChatbot(input: CreateChatbotInput): Promise<string> {
     const bot = await repo.Create(input);
-    setChatbots((prev) => ({ ...prev, [bot.key]: bot }));
-    return bot.key;
+    setChatbots((prev) => ({ ...prev, [bot.id]: bot }));
+    return bot.id;
   }
 
   async function archiveChatbot(key: string) {

@@ -3,15 +3,15 @@ namespace Nakama.FormationDetail.Domain;
 public partial class FormationDetail
 {
     private FormationDetail(
-        string key,
+        Guid key,
         string title,
         string audience,
         string description,
         string status,
-        string? linkedChatbotKey,
+        Guid? linkedChatbotKey,
         string? linkedChatbotLabel)
     {
-        this.Key = key;
+        this.Id = key;
         this.Title = title;
         this.Audience = audience;
         this.Description = description;
@@ -21,12 +21,12 @@ public partial class FormationDetail
     }
 
     public static FormationDetail Create(
-        string key,
+        Guid key,
         string title,
         string audience,
         string description,
         string status,
-        string? linkedChatbotKey,
+        Guid? linkedChatbotKey,
         string? linkedChatbotLabel) =>
         new(key, title, audience, description, status, linkedChatbotKey, linkedChatbotLabel);
 

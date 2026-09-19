@@ -1,21 +1,19 @@
-using MediatR;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.ChatbotsList.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.ChatbotsList.Application.Handlers;
 
-/// <summary>Creates <see cref="ChatbotSummary"/>, the read entity behind the <c>/chatbots</c> listing route.</summary>
 public sealed class ChatbotSummaryCreatedOnChatbotCreated(IChatbotSummaryRepository chatbotSummaryRepository)
-    : INotificationHandler<DomainEventNotification<ChatbotCreated>>
+    : DomainEventHandler<ChatbotCreated>
 {
-    public Task Handle(DomainEventNotification<ChatbotCreated> n, CancellationToken ct) =>
+    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken ct) =>
         chatbotSummaryRepository.Save(
             ChatbotSummary.Create(
-                n.DomainEvent.Key.Value,
-                n.DomainEvent.Label,
-                n.DomainEvent.Description,
-                n.DomainEvent.Status.ToString(),
-                n.DomainEvent.General),
+                chatbotCreated.Id.Value,
+                chatbotCreated.Label,
+                chatbotCreated.Description,
+                chatbotCreated.Status.ToString(),
+                chatbotCreated.General),
             ct);
 }

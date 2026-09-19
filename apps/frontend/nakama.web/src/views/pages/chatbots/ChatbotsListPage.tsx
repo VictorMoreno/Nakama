@@ -51,7 +51,7 @@ export default function ChatbotsListPage() {
           {filteredChatbots.map((bot) => {
             const status = getChatbotStatus(bot);
             return (
-            <div className={`${styles.botCard} glass`} key={bot.key}>
+            <div className={`${styles.botCard} glass`} key={bot.id}>
               <div className={styles.botCardTop}>
                 <div
                   className={styles.botCardIcon}
@@ -70,13 +70,13 @@ export default function ChatbotsListPage() {
                 <span>{pluralWord(bot.team.length, "persona", "personas")}</span>
               </div>
               <div className={styles.botCardActions}>
-                <button className="btn-primary" type="button" onClick={() => navigate(`/chatbots/${bot.key}`)}>
+                <button className="btn-primary" type="button" onClick={() => navigate(`/chatbots/${bot.id}`)}>
                   <ArrowRightIcon /> Abrir
                 </button>
-                <button className="btn-ghost" type="button" onClick={() => navigate(`/chatbots/${bot.key}?tab=permisos`)}>
+                <button className="btn-ghost" type="button" onClick={() => navigate(`/chatbots/${bot.id}?tab=permisos`)}>
                   <LockIcon /> Permisos
                 </button>
-                <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(bot.key)}>
+                <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(bot.id)}>
                   <TrashIcon /> Eliminar
                 </button>
               </div>

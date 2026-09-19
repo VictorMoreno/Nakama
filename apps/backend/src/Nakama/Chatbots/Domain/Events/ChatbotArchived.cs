@@ -2,4 +2,4 @@ using Nakama.Shared.Domain;
 
 namespace Nakama.Chatbots.Domain.Events;
 
-public sealed record ChatbotArchived(ChatbotKey Key) : IDomainEvent;
+public sealed record ChatbotArchived(ChatbotId Id) : IDomainEvent;

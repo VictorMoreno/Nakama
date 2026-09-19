@@ -2,20 +2,11 @@ using Nakama.Shared.Domain;
 
 namespace Nakama.Chatbots.Domain;
 
-/// <summary>
-/// Structural half of the aggregate (properties only) - split from behavior/constructors in
-/// <c>Chatbot.domain.cs</c> per agents.md §3, mirroring the split a future entity generator
-/// would produce. Protects two invariants: an owner can't be removed from the team, and status
-/// transitions/archival are explicit, event-raising operations rather than free property sets.
-/// </summary>
-public partial class Chatbot : AggregateRoot<ChatbotKey>
+public partial class Chatbot : AggregateRoot<ChatbotId>
 {
-    /// <summary>Required by NHibernate for proxies/hydration - never used by hand.</summary>
     protected Chatbot()
     {
     }
-
-    public virtual ChatbotKey Key => this.Id;
 
     public virtual string Label { get; private set; } = string.Empty;
 
@@ -23,7 +14,6 @@ public partial class Chatbot : AggregateRoot<ChatbotKey>
 
     public virtual ChatbotStatus Status { get; private set; }
 
-    /// <summary>HTML context shown in the chat panel - distinct from <see cref="Description"/>, which is the short listing blurb.</summary>
     public virtual string Context { get; private set; } = string.Empty;
 
     public virtual bool General { get; private set; }

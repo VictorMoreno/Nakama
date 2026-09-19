@@ -56,8 +56,8 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
 
   async function createFormation(input: CreateFormationInput): Promise<string> {
     const c = await repo.Create(input);
-    setFormations((prev) => ({ ...prev, [c.key]: c }));
-    return c.key;
+    setFormations((prev) => ({ ...prev, [c.id]: c }));
+    return c.id;
   }
 
   async function archiveFormation(key: string) {

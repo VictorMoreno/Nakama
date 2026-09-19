@@ -7,7 +7,7 @@ namespace Nakama.ChatPage.Infrastructure;
 using ChatPage = Nakama.ChatPage.Domain.ChatPage;
 
 public sealed class NhChatPageRepository(IReadSessionFactory readSessions)
-    : NhRepositoryBase<ChatPage, string>(readSessions), IChatPageRepository
+    : NhRepositoryBase<ChatPage, Guid>(readSessions), IChatPageRepository
 {
-    public Task<ChatPage?> FindByBotKey(string botKey, CancellationToken ct) => this.FindById(botKey, ct);
+    // FindById, Save inherited directly from the base, no redeclaration needed
 }

@@ -63,7 +63,7 @@ export default function FormationsListPage() {
           {filteredFormations.map(({ c, pct }) => {
             const status = getFormationStatus(c);
             return (
-              <div className={`${styles.botCard} glass`} key={c.key}>
+              <div className={`${styles.botCard} glass`} key={c.id}>
                 <div className={styles.botCardTop}>
                   <div
                     className={styles.botCardIcon}
@@ -84,11 +84,11 @@ export default function FormationsListPage() {
                   <span className={styles.progressPct}>{pct}%</span>
                 </div>
                 <div className={styles.botCardActions}>
-                  <button className="btn-primary" type="button" onClick={() => navigate(`/formacion/${c.key}`)}>
+                  <button className="btn-primary" type="button" onClick={() => navigate(`/formacion/${c.id}`)}>
                     <ArrowRightIcon /> Abrir
                   </button>
                   {isAdmin && (
-                    <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(c.key)}>
+                    <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(c.id)}>
                       <TrashIcon /> Eliminar
                     </button>
                   )}

@@ -7,12 +7,6 @@ using Nakama.Shared.Domain;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh.UserTypes;
 
-/// <summary>
-/// Maps a string-wrapping identity value object (e.g. <c>ChatbotKey</c>) directly onto a
-/// varchar column, round-tripping through its <c>(string)</c> constructor - every such VO is a
-/// positional record struct, so <see cref="Activator.CreateInstance(Type, object?[])"/> works
-/// generically without per-type mapping code.
-/// </summary>
 public sealed class ValueObjectUserType<T> : IUserType
     where T : IStringValueObject
 {
@@ -44,10 +38,8 @@ public sealed class ValueObjectUserType<T> : IUserType
 
     public object? Replace(object? original, object? target, object owner) => original;
 
-    /// <summary>Value object is immutable, so second-level-cache assemble/disassemble is a passthrough.</summary>
     public object? Assemble(object cached, object owner) => cached;
 
-    /// <summary>Value object is immutable, so second-level-cache assemble/disassemble is a passthrough.</summary>
     public object? Disassemble(object? value) => value;
 
     public new bool Equals(object? x, object? y) => object.Equals(x, y);

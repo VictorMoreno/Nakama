@@ -5,13 +5,13 @@ namespace Nakama.Analytics.Application;
 using Analytics = Nakama.Analytics.Domain.Analytics;
 
 public sealed record AnalyticsResponse(
-    string Key,
+    string Id,
     int ActiveBotsCount,
     int AnsweredThisWeek,
     List<UsageByBotRow> UsageByBot)
 {
     public static explicit operator AnalyticsResponse(Analytics entity) => new(
-        entity.Key,
+        entity.Id,
         entity.ActiveBotsCount,
         entity.AnsweredThisWeek,
         entity.UsageByBot);

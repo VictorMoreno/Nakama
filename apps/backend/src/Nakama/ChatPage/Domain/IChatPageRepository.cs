@@ -2,7 +2,9 @@ namespace Nakama.ChatPage.Domain;
 
 public interface IChatPageRepository
 {
-    Task<ChatPage?> FindByBotKey(string botKey, CancellationToken ct);
+    Task<ChatPage?> FindById(Guid id, CancellationToken ct);
 
     Task Save(ChatPage entry, CancellationToken ct);
+
+    Task Update(ChatPage entry, CancellationToken ct);
 }

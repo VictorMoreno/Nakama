@@ -5,7 +5,7 @@ namespace Nakama.ChatPage.Application;
 using ChatPage = Nakama.ChatPage.Domain.ChatPage;
 
 public sealed record ChatPageResponse(
-    string BotKey,
+    Guid Id,
     string Label,
     string Context,
     bool Socratic,
@@ -16,7 +16,7 @@ public sealed record ChatPageResponse(
     List<ConversationSummaryRow> History)
 {
     public static explicit operator ChatPageResponse(ChatPage entity) => new(
-        entity.BotKey,
+        entity.Id,
         entity.Label,
         entity.Context,
         entity.Socratic,

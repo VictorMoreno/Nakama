@@ -10,7 +10,7 @@ export default function BotSwitcher() {
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const current = activeChatbots.find((b) => b.key === currentBotKey);
+  const current = activeChatbots.find((b) => b.id === currentBotKey);
   const matches = activeChatbots.filter((b) => b.label.toLowerCase().includes(query.trim().toLowerCase()));
 
   useEffect(() => {
@@ -64,12 +64,12 @@ export default function BotSwitcher() {
           {matches.length === 0 && <div className={styles.botSwitcherEmpty}>Ningún chatbot coincide con tu búsqueda</div>}
           {matches.map((bot) => (
             <button
-              key={bot.key}
+              key={bot.id}
               className={styles.botSwitcherRow}
               type="button"
-              aria-current={bot.key === currentBotKey}
+              aria-current={bot.id === currentBotKey}
               onClick={() => {
-                setCurrentBotKey(bot.key);
+                setCurrentBotKey(bot.id);
                 setOpen(false);
               }}
             >

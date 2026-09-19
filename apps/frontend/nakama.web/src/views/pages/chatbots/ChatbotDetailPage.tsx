@@ -47,7 +47,7 @@ export default function ChatbotDetailPage() {
           {isAdmin ? (
             <StatusSelect
               value={bot.status}
-              onChange={(status) => updateStatus(bot.key, status)}
+              onChange={(status) => updateStatus(bot.id, status)}
               options={STATUS_OPTIONS}
               ariaLabel="Estado del chatbot"
             />

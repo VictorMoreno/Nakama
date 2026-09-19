@@ -64,7 +64,7 @@ export interface ConversationSummary {
 }
 
 export interface Chatbot {
-  key: string;
+  id: string;
   label: string;
   /** Frase corta mostrada en el listado (distinta de `context`, que es HTML largo para el panel del chat) */
   description: string;

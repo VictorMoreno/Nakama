@@ -7,12 +7,6 @@ using NHibernate.UserTypes;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh.UserTypes;
 
-/// <summary>
-/// Persists any complex .NET value (a list, a record, a nested value-object graph - e.g. the
-/// quiz embedded in a formation module, or a chatbot's documents/team lists) as a single JSON
-/// text column, per agents.md §6 ("tipos JSON complejos"). Avoids modelling every nested
-/// collection as its own NHibernate component/bag mapping for this scope.
-/// </summary>
 public sealed class JsonUserType<T> : IUserType
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
@@ -46,10 +40,8 @@ public sealed class JsonUserType<T> : IUserType
 
     public object? Replace(object? original, object? target, object owner) => DeepCopy(original);
 
-    /// <summary>Second-level-cache serialization hook - the JSON string itself is already cache-safe, so this is a passthrough to <see cref="DeepCopy"/>.</summary>
     public object? Assemble(object cached, object owner) => DeepCopy(cached);
 
-    /// <summary>Second-level-cache serialization hook - passthrough to <see cref="DeepCopy"/>, mirroring <see cref="Assemble"/>.</summary>
     public object? Disassemble(object? value) => DeepCopy(value);
 
     public new bool Equals(object? x, object? y)

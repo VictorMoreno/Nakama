@@ -106,7 +106,7 @@ export default function CreateFormationPage() {
                 id="new-formation-chatbot"
                 value={linkedChatbotKey}
                 onChange={setLinkedChatbotKey}
-                options={[{ value: "", label: "Ninguno" }, ...activeChatbots.map((bot) => ({ value: bot.key, label: bot.label }))]}
+                options={[{ value: "", label: "Ninguno" }, ...activeChatbots.map((bot) => ({ value: bot.id, label: bot.label }))]}
                 ariaLabel="Chatbot de referencia"
               />
             </div>

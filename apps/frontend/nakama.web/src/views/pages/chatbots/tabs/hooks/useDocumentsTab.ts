@@ -12,7 +12,7 @@ export function useDocumentsTab(bot: Chatbot) {
 
   function handleRemoveConfirm() {
     if (deleteIndex != null) {
-      removeDocument(bot.key, deleteIndex);
+      removeDocument(bot.id, deleteIndex);
       showToast("Documento eliminado");
     }
     setDeleteIndex(null);

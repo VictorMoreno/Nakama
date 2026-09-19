@@ -1,4 +1,3 @@
-using MediatR;
 using Nakama.FormationDetail.Domain;
 using Nakama.Formations.Domain.Events;
 using Nakama.Shared.Infrastructure.Events;
@@ -7,19 +6,18 @@ namespace Nakama.FormationDetail.Application.Handlers;
 
 using FormationDetail = Nakama.FormationDetail.Domain.FormationDetail;
 
-/// <summary>Updates <see cref="FormationDetail"/> from <see cref="FormationStatusChanged"/>.</summary>
 public sealed class FormationDetailUpdatedOnFormationStatusChanged(IFormationDetailRepository formationDetailRepository)
-    : INotificationHandler<DomainEventNotification<FormationStatusChanged>>
+    : DomainEventHandler<FormationStatusChanged>
 {
-    public async Task Handle(DomainEventNotification<FormationStatusChanged> n, CancellationToken ct)
+    protected override async Task Handle(FormationStatusChanged formationStatusChanged, CancellationToken ct)
     {
-        var entry = await formationDetailRepository.FindByKey(n.DomainEvent.Key.Value, ct);
-        if (entry is null)
+        var formationDetail = await formationDetailRepository.FindById(formationStatusChanged.Id.Value, ct);
+        if (formationDetail is null)
         {
             return;
         }
 
-        entry.UpdateStatus(n.DomainEvent.Status.ToString());
-        await formationDetailRepository.Save(entry, ct);
+        formationDetail.UpdateStatus(formationStatusChanged.Status.ToString());
+        await formationDetailRepository.Update(formationDetail, ct);
     }
 }

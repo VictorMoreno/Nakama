@@ -294,7 +294,7 @@ export default function FormationDetailPage() {
               {c.modules.map((m, idx) => (
                 <ModuleRow
                   key={m.id}
-                  formationKey={c.key}
+                  formationKey={c.id}
                   module={m}
                   index={idx}
                   locked={isLocked(idx)}
@@ -335,7 +335,7 @@ export default function FormationDetailPage() {
         )}
       </div>
 
-      <CreateModuleDialog open={createOpen} formationKey={c.key} onClose={() => setCreateOpen(false)} />
+      <CreateModuleDialog open={createOpen} formationKey={c.id} onClose={() => setCreateOpen(false)} />
 
       <ConfirmDialog
         open={deleteTarget != null}

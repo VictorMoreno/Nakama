@@ -5,7 +5,7 @@ using Nakama.Shared.Infrastructure.Persistence.Nh;
 namespace Nakama.FormationDetail.Infrastructure;
 
 public sealed class NhChatbotLabelRefRepository(IReadSessionFactory readSessions)
-    : NhRepositoryBase<ChatbotLabelRef, string>(readSessions), IChatbotLabelRefRepository
+    : NhRepositoryBase<ChatbotLabelRef, Guid>(readSessions), IChatbotLabelRefRepository
 {
-    public Task<ChatbotLabelRef?> FindByBotKey(string botKey, CancellationToken ct) => this.FindById(botKey, ct);
+    // FindById, Save inherited directly from the base, no redeclaration needed
 }

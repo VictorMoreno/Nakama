@@ -26,10 +26,45 @@ Reglas de dependencia:
 - `Application` **no** depende de `Infrastructure`.
 - `Infrastructure` **no** depende de `Application`.
 - `Domain` **no** depende de `Application` ni `Infrastructure`.
-- Un bounded context no debe depender de otro bounded context — con la única excepción de
-  §7 (modelos de lectura), donde la `Application` de un módulo de lectura puede referenciar
-  los `Domain/Events` (nunca las entidades/agregados) de un bounded context de escritura, para
-  alimentar su propia proyección.
+- Un bounded context no debe depender de otro bounded context — con dos excepciones:
+  - §7 (modelos de lectura): la `Application` de un módulo de lectura puede referenciar los
+    `Domain/Events` (nunca las entidades/agregados) de un bounded context de escritura, para
+    alimentar su propia proyección.
+  - `IQueryBus` (más abajo en esta sección): cualquier `Application` puede referenciar el
+    `Query`/`Response` (nunca el `Domain`/repositorio) de la `Application` de OTRO módulo, para
+    pedirle un dato en vivo vía `queryBus.Ask(...)` en lugar de leer su repositorio directamente.
+
+`IQueryBus` — pedir un dato de otro bounded context en vivo, sin denormalizar. Contraparte
+"síncrona" del patrón de denormalización de §7 (que es asíncrono/eventual, alimentado por
+eventos): úsalo cuando una clase necesita un valor que "pertenece" a otro módulo y no tiene
+sentido mantener una copia denormalizada actualizada por eventos — por ejemplo, un caso de uso
+nuevo que combina datos de dos ReadModels en el momento de la petición, en vez de en cada evento.
+
+- `IQueryBus`/`IQuery<TResponse>`/`IQueryHandler<TQuery,TResponse>` viven en `Shared/Domain/` —
+  igual que `ISystemClock`: son puertos que `Application` necesita consumir, y `Application` sí
+  puede depender de `Domain` (solo `Infrastructure` le está vedado). Ninguno de los tres tiene
+  ninguna referencia a MediatR (ADR-7/ADR-12b) — ni el `Query`, ni su `Handler`, ni `IQueryBus`
+  mismo. Lo mismo aplica al lado de comandos: `ICommand`/`ICommandHandler<TCommand>`/`ICommandBus`.
+- Un `Query` implementa solo `IQuery<TResponse>`. Su `Handler` implementa solo
+  `IQueryHandler<TQuery, TResponse>` — nunca `IRequestHandler<,>` de MediatR directamente.
+  Mismo patrón para `Command`/`ICommandHandler<TCommand>` (sin `TResponse`: todo `Command` de este
+  código es un efecto de lado puro, no devuelve nada — ver §2).
+- Las implementaciones (`Shared/Infrastructure/Queries/QueryBus.cs`,
+  `Shared/Infrastructure/Commands/CommandBus.cs`) resuelven el `IQueryHandler<TQuery,TResponse>`/
+  `ICommandHandler<TCommand>` concreto directo desde el contenedor de DI por reflection
+  (`MakeGenericType` con el tipo runtime del `Command`/`Query`, mismo truco que
+  `EventBus.WrapAsNotification`) e invocan `Handle` — **sin pasar por MediatR en absoluto**. Son
+  los únicos dos puntos de toda la capa de aplicación que saben que existe un contenedor de DI;
+  ninguno de los dos conoce MediatR. Ver ADR-12b para por qué NO se usa un wrapper tipo
+  `DomainEventNotification` aquí (falla en runtime con genéricos abiertos compuestos, aunque
+  compile).
+- Se pide con `await queryBus.Ask(new AnalyticsFinder.Query(), ct)` / `await
+  commandBus.Send(new ChatbotArchiver.Command(id), ct)` — el tipo de respuesta de una query se
+  infiere de `IQuery<TResponse>`, no hace falta escribirlo a mano en el call site.
+- Registro en DI (`apps/backend/api/Configuration/InfrastructureExtensions.cs`): un
+  `services.Scan(...)` (Scrutor, mismo patrón que `IEndpoint`) registra cada implementación de
+  `ICommandHandler<>`/`IQueryHandler<,>` encontrada en el ensamblado — `AddMediatR` solo cubre el
+  lado de eventos de dominio (`IEventBus`/`DomainEventHandler<TEvent>`).
 
 ## 2) Patrón de casos de uso
 
@@ -50,10 +85,12 @@ Reglas de dependencia:
     filtros, búsquedas).
 - Estructura interna recomendada:
   - `Query`/`Command`
-  - `Response` (solo para `Command` — ver más abajo el caso de `Query`)
+  - `Response` (solo para `Query` — ver más abajo)
   - `Handler`
-- **Response de un `Command`**: nested dentro del propio caso de uso, en el mismo archivo —
-  cada comando puede necesitar devolver algo distinto (p. ej. la key recién creada, o vacío).
+- **Un `Command` nunca devuelve nada** — `Command : ICommand` (sin genérico), `Handler.Handle`
+  devuelve `Task` plano, no `Task<Response>`. Los ids de recursos nuevos los provee quien llama
+  (ver §5/ADR-13b), así que ningún `Command` necesita un `Response` para comunicar de vuelta un id
+  generado — no hay ningún `record Response;` nested en un caso de uso `Command`.
 - **Response de un `Query`**: NO es nested del caso de uso. Es un tipo compartido
   `<Agregado>Response`, en su **propio archivo** (`Application/<Agregado>Response.cs`, al
   nivel de `Application/`, no dentro de la carpeta de ningún caso de uso concreto) —
@@ -61,26 +98,26 @@ Reglas de dependencia:
   devuelven la forma del mismo agregado. Lleva una conversión `explicit operator` desde la
   entidad de dominio/lectura hacia el response, para transformar de forma directa
   (`(ChatbotSummaryResponse)entity`). El `Query` del caso de uso apunta directo a ese tipo (o a
-  una colección del mismo) como su `IRequest<T>` — sin volver a envolverlo en un `Response`
+  una colección del mismo) como su `IQuery<T>` — sin volver a envolverlo en un `Response`
   nested propio. Ejemplo:
   ```csharp
   // ChatbotsList/Application/ChatbotSummaryResponse.cs
   namespace Nakama.ChatbotsList.Application;
 
-  public sealed record ChatbotSummaryResponse(string Key, string Label, string Status, int DocsCount, int TeamCount)
+  public sealed record ChatbotSummaryResponse(Guid Id, string Label, string Status, int DocsCount, int TeamCount)
   {
       public static explicit operator ChatbotSummaryResponse(ChatbotSummary entity) =>
-          new(entity.Key, entity.Label, entity.Status, entity.DocsCount, entity.TeamCount);
+          new(entity.Id, entity.Label, entity.Status, entity.DocsCount, entity.TeamCount);
   }
 
   // ChatbotsList/Application/Searcher/ChatbotSummarySearcher.cs — Searcher, no Finder: devuelve
   // 0..N elementos (un listado), no busca un único registro por identificador.
   public static class ChatbotSummarySearcher
   {
-      public sealed record Query : IRequest<IReadOnlyCollection<ChatbotSummaryResponse>>;
+      public sealed record Query : IQuery<IReadOnlyCollection<ChatbotSummaryResponse>>;
 
       public sealed class Handler(IChatbotSummaryRepository chatbotSummaryRepository)
-          : IRequestHandler<Query, IReadOnlyCollection<ChatbotSummaryResponse>>
+          : IQueryHandler<Query, IReadOnlyCollection<ChatbotSummaryResponse>>
       {
           public async Task<IReadOnlyCollection<ChatbotSummaryResponse>> Handle(Query query, CancellationToken ct)
           {
@@ -91,17 +128,17 @@ Reglas de dependencia:
   }
 
   // ChatbotDetail/Application/Finder/ChatbotDetailFinder.cs — Finder: busca UN registro por
-  // key, nunca nullable, lanza si no existe.
+  // id, nunca nullable, lanza si no existe.
   public static class ChatbotDetailFinder
   {
-      public sealed record Query(string Key) : IRequest<ChatbotDetailResponse>;
+      public sealed record Query(Guid Id) : IQuery<ChatbotDetailResponse>;
 
-      public sealed class Handler(IChatbotDetailRepository chatbotDetailRepository) : IRequestHandler<Query, ChatbotDetailResponse>
+      public sealed class Handler(IChatbotDetailRepository chatbotDetailRepository) : IQueryHandler<Query, ChatbotDetailResponse>
       {
           public async Task<ChatbotDetailResponse> Handle(Query query, CancellationToken ct)
           {
-              var chatbot = await chatbotDetailRepository.FindByKey(query.Key, ct)
-                  ?? throw ChatbotDetailErrors.NotFound(query.Key);
+              var chatbot = await chatbotDetailRepository.FindById(query.Id, ct)
+                  ?? throw ChatbotDetailErrors.NotFound(query.Id.ToString());
               return (ChatbotDetailResponse)chatbot;
           }
       }
@@ -156,7 +193,7 @@ Reglas de dependencia:
   entidad, manteniendo ese factory como la única puerta de entrada pública para construir la
   entidad con datos. Ejemplo en un agregado de escritura (`Chatbots/Domain/Chatbot.domain.cs`):
   ```csharp
-  private Chatbot(ChatbotKey key, string label, string description, ChatbotStatus status,
+  private Chatbot(ChatbotId key, string label, string description, ChatbotStatus status,
       bool general, ChatbotSettings settings, DateTime lastUsed)
   {
       this.Id = key;
@@ -168,7 +205,7 @@ Reglas de dependencia:
       this.LastUsed = lastUsed;
   }
 
-  public static Chatbot Create(ChatbotKey key, string label, string description,
+  public static Chatbot Create(ChatbotId key, string label, string description,
       ChatbotStatus status, bool general, ChatbotSettings settings, ISystemClock systemClock)
   {
       var chatbot = new Chatbot(key, label, description, status, general, settings, systemClock.UtcNow);
@@ -217,34 +254,41 @@ Reglas de dependencia:
 - Firmas de interfaces de repositorio: devolver tipos del mismo bounded context (o `Task/Task<T>/List<T>` coherentes).
 - En infraestructura, mapear DTOs externos a entidades/value objects de dominio.
 - **Toda implementación `Nh...Repository` extiende `NhRepositoryBase<TEntity, TId>`** (§5) —
-  no repite `OpenSession()`/`BeginTransaction()`/`SaveOrUpdateAsync()` a mano. El método
-  público de la interfaz (`FindByKey`, `FindByBotKey`, `FindSingleton`...) es una línea que
-  delega en el `FindById` (o `FindAll`) `protected` del base — el nombre público sigue siendo
-  el del dominio, no el genérico del base:
+  no repite `OpenSession()`/`BeginTransaction()`/`SaveOrUpdateAsync()` a mano. Toda entidad
+  identificable por su propia primary key (la mayoría) tiene esa PK modelada como `Id` — nunca
+  `Key`/`BotKey`/otro nombre de dominio — precisamente para que la interfaz declare
+  `FindById(TId, CancellationToken)` con el mismo nombre/firma que el `FindById` `public` del
+  base: el repo concreto la satisface heredando, sin redeclarar nada, igual que ya pasaba con
+  `Save`. Un campo que referencia la identidad de OTRO agregado (no la propia) sí conserva un
+  nombre de dominio (`Conversation.BotKey: ChatbotId`, FK al Chatbot dueño) — solo la propia PK
+  de la entidad se unifica a `Id`. Un lookup que no es una PK lookup pura (ej. el singleton de
+  `NhAnalyticsRepository.Find()`, sin id de por medio) sigue necesitando su propio one-liner,
+  porque ahí sí hay una forma real (no solo un nombre) que no calza con `FindById`:
   ```csharp
   public sealed class NhChatbotSummaryRepository(ISessionFactory readSessions)
       : NhRepositoryBase<ChatbotSummary, string>(readSessions), IChatbotSummaryRepository
   {
-      public Task<ChatbotSummary?> FindByKey(string key, CancellationToken ct) => this.FindById(key, ct);
       public Task<IReadOnlyCollection<ChatbotSummary>> FindAll(CancellationToken ct) => this.FindAllEntities(ct);
-      // Save se hereda directo del base, sin redeclarar
+      // FindById, Save se heredan directo del base, sin redeclarar
   }
   ```
 
 ## 5) Shared module
 
-- `Shared.Domain`: contratos transversales (`ISystemClock`, `IUuidGenerator`, `ILanguageProvider`, etc.).
+- `Shared.Domain`: contratos transversales (`ISystemClock`, `ILanguageProvider`, etc.).
 - `Shared.Infrastructure`: implementaciones técnicas (NH, clientes externos, notificaciones, language providers, migraciones).
 - **`NhRepositoryBase<TEntity, TId>`** (`Shared/Infrastructure/Persistence/Nh/NhRepositoryBase.cs`):
   base genérica que centraliza la mecánica NHibernate repetida en cada repositorio —
   `Save`/`Update` (upsert vía `SaveOrUpdateAsync`; `Update` es un alias semántico sobre el
   mismo mecanismo, NHibernate no distingue insert/update en `SaveOrUpdate`), `Remove`
   (`DeleteAsync`, disponible aunque hoy ningún repo borra físicamente — se archiva vía el
-  propio agregado, no vía el repositorio), y un `FindById`/`FindAllEntities` `protected` (no
-  `public`: cada repo expone su propio nombre de dominio, nunca el genérico, hacia su
-  interfaz). Recibe un `ISessionFactory` común — `IWriteSessionFactory`/`IReadSessionFactory`
-  extienden esa interfaz compartida (mismo `OpenSession(): ISession`, distinto token de DI),
-  así el mismo base sirve para repos de escritura y de lectura sin duplicarlo.
+  propio agregado, no vía el repositorio), y `FindById` — `public`, igual que `Save`: toda
+  interfaz cuya PK-lookup se declara como `FindById(TId, CancellationToken)` la hereda gratis,
+  sin one-liner por repo (§4). `FindAllEntities` sigue `protected`, porque un listado sí
+  necesita un nombre propio por caso de uso (`FindAll`, `FindPending`...) hacia su interfaz.
+  Recibe un `ISessionFactory` común — `IWriteSessionFactory`/`IReadSessionFactory` extienden
+  esa interfaz compartida (mismo `OpenSession(): ISession`, distinto token de DI), así el mismo
+  base sirve para repos de escritura y de lectura sin duplicarlo.
 
 ## 6) Persistencia y migraciones
 
@@ -320,15 +364,19 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
   método del `Domain` que esa clase invoca.
 - Contrato de repositorio (`I...Repository`) en `Domain`, igual que cualquier agregado.
   Implementación (`Nh...Repository`) en `Infrastructure` del propio módulo de lectura.
-- **Los handlers de evento (`INotificationHandler<DomainEventNotification<TEvent>>`) que
-  alimentan estas entidades viven en la `Application` del propio módulo de lectura** — no son
+- **Los handlers de evento (heredan de `DomainEventHandler<TEvent>`, ver `Shared/Infrastructure/Events`)
+  que alimentan estas entidades viven en la `Application` del propio módulo de lectura** — no son
   un detalle técnico de persistencia, son orquestación: reaccionan a un evento y deciden qué
   hacer, igual que el `Handler` de un `Command` (§2), solo que el disparador es un evento de
   dominio en vez de una petición del usuario. No se centralizan en `Shared` ni viven en
   `Infrastructure`: cada handler pertenece conceptualmente al módulo cuya entidad mantiene.
+  `DomainEventHandler<TEvent>` es la única pieza que sabe de MediatR (implementa
+  `INotificationHandler<DomainEventNotification<TEvent>>` y desenvuelve el sobre); el handler
+  concreto solo sobreescribe `Handle(TEvent e, CancellationToken ct)` y recibe el evento de
+  dominio crudo — el tipo `DomainEventNotification<TEvent>` nunca aparece en su firma.
 - **Una clase por handler, nunca una clase con muchas interfaces**: cada evento que afecta a
-  una entidad de lectura tiene su propia clase, implementando un único
-  `INotificationHandler<DomainEventNotification<TEvent>>`. Carpeta `Application/Handlers/`
+  una entidad de lectura tiene su propia clase, heredando un único `DomainEventHandler<TEvent>`.
+  Carpeta `Application/Handlers/`
   (agrupa todos los handlers de evento del módulo, no solo "proyecciones" de lectura — mismo
   criterio que `Application/Finder/` o `Application/Creator/`: la carpeta nombra el rol, no la
   técnica), nombre `<Entidad><Efecto>On<Evento>` — `Created` cuando ese evento es el que construye la
@@ -382,8 +430,8 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
   ya es singular, o `<Agregado>Summary` cuando el bounded context es un listado plural (§7).
 - **Parámetros/campos inyectados por constructor: el nombre de la interfaz sin el prefijo `I`,
   en camelCase — nunca una abreviatura que no revele de qué instancia se trata.**
-  `IChatbotDetailRepository` → `chatbotDetailRepository`, `IUuidGenerator` → `uuidGenerator`,
-  `ISystemClock` → `systemClock`, `IEventBus` → `eventBus`. Nunca `repo`, `ids`, `clock` a
+  `IChatbotDetailRepository` → `chatbotDetailRepository`, `ISystemClock` → `systemClock`,
+  `IEventBus` → `eventBus`. Nunca `repo`, `ids`, `clock` a
   secas: son abreviaturas que no dicen a qué repositorio/generador se refieren, y una clase con
   dos repositorios inyectados (p. ej. `FormationDetailCreatedOnFormationCreated`, que inyecta
   `IFormationDetailRepository` + `IChatbotLabelRefRepository`) directamente los necesita

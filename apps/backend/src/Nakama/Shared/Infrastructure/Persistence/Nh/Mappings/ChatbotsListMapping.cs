@@ -10,7 +10,11 @@ public sealed class ChatbotsListMapping : ClassMapping<ChatbotSummary>
     {
         Table("read_chatbots_list");
 
-        Id(x => x.Key, m => m.Generator(Generators.Assigned));
+        Id(x => x.Id, m =>
+        {
+            m.Column("key");
+            m.Generator(Generators.Assigned);
+        });
 
         Property(x => x.Label);
         Property(x => x.Description);

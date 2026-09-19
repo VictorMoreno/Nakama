@@ -77,7 +77,7 @@ export function useChat() {
     } else {
       setThread([]);
     }
-  }, [bot?.key]);
+  }, [bot?.id]);
   /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 
   useEffect(() => {

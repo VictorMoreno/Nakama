@@ -2,16 +2,16 @@ namespace Nakama.ChatbotsList.Domain;
 
 public partial class ChatbotSummary
 {
-    private ChatbotSummary(string key, string label, string description, string status, bool general)
+    private ChatbotSummary(Guid key, string label, string description, string status, bool general)
     {
-        this.Key = key;
+        this.Id = key;
         this.Label = label;
         this.Description = description;
         this.Status = status;
         this.General = general;
     }
 
-    public static ChatbotSummary Create(string key, string label, string description, string status, bool general) =>
+    public static ChatbotSummary Create(Guid key, string label, string description, string status, bool general) =>
         new(key, label, description, status, general);
 
     public void UpdateStatus(string status) => this.Status = status;

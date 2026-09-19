@@ -2,13 +2,13 @@ namespace Nakama.ChatPage.Domain;
 
 public partial class ChatPage
 {
-    private ChatPage(string botKey, string label)
+    private ChatPage(Guid botKey, string label)
     {
-        this.BotKey = botKey;
+        this.Id = botKey;
         this.Label = label;
     }
 
-    public static ChatPage Create(string botKey, string label) => new(botKey, label);
+    public static ChatPage Create(Guid botKey, string label) => new(botKey, label);
 
     public void UpdateSettings(bool socratic, bool explicaMas, string provider)
     {
@@ -17,14 +17,14 @@ public partial class ChatPage
         this.Provider = provider;
     }
 
-    public void StartConversation(string id, string botKey, string title) => this.History.Add(new ConversationSummaryRow
+    public void StartConversation(Guid id, Guid botKey, string title) => this.History.Add(new ConversationSummaryRow
     {
         Id = id,
         BotKey = botKey,
         Title = title,
     });
 
-    public void AppendExchange(string conversationId, string question, string answer, string citation, string moreExplanation, string socraticVariant)
+    public void AppendExchange(Guid conversationId, string question, string answer, string citation, string moreExplanation, string socraticVariant)
     {
         var conversation = this.History.FirstOrDefault(c => c.Id == conversationId);
         conversation?.Exchanges.Add(new ChatExampleRow

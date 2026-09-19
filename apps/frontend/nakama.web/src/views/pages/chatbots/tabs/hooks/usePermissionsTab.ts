@@ -12,7 +12,7 @@ export function usePermissionsTab(bot: Chatbot) {
 
   function handleRemoveConfirm() {
     if (removeIndex != null) {
-      removeTeamMember(bot.key, removeIndex);
+      removeTeamMember(bot.id, removeIndex);
       showToast("Acceso actualizado");
     }
     setRemoveIndex(null);

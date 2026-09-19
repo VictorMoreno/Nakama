@@ -6,12 +6,6 @@ using NHibernate.Mapping.ByCode.Conformist;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh.Mappings;
 
-/// <summary>
-/// Write-side mapping for the <see cref="Chatbot"/> aggregate. Scalar columns map 1:1;
-/// <see cref="ChatbotSettings"/> and the private <c>_documents</c>/<c>_team</c> backing fields
-/// map as JSON columns via <see cref="JsonUserType{T}"/> (agents.md §6 "tipos JSON complejos"),
-/// avoiding a full component/bag mapping for this scope.
-/// </summary>
 public sealed class ChatbotMapping : ClassMapping<Chatbot>
 {
     public ChatbotMapping()
@@ -22,7 +16,7 @@ public sealed class ChatbotMapping : ClassMapping<Chatbot>
         {
             m.Column("key");
             m.Generator(Generators.Assigned);
-            m.Type<ValueObjectUserType<ChatbotKey>>();
+            m.Type<GuidValueObjectUserType<ChatbotId>>();
         });
 
         Property(x => x.Label);

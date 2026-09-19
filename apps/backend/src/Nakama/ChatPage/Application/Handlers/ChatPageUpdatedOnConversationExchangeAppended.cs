@@ -1,4 +1,3 @@
-using MediatR;
 using Nakama.ChatPage.Domain;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.Shared.Infrastructure.Events;
@@ -7,25 +6,24 @@ namespace Nakama.ChatPage.Application.Handlers;
 
 using ChatPage = Nakama.ChatPage.Domain.ChatPage;
 
-/// <summary>Updates <see cref="ChatPage"/> from <see cref="ConversationExchangeAppended"/>.</summary>
 public sealed class ChatPageUpdatedOnConversationExchangeAppended(IChatPageRepository chatPageRepository)
-    : INotificationHandler<DomainEventNotification<ConversationExchangeAppended>>
+    : DomainEventHandler<ConversationExchangeAppended>
 {
-    public async Task Handle(DomainEventNotification<ConversationExchangeAppended> n, CancellationToken ct)
+    protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken ct)
     {
-        var entry = await chatPageRepository.FindByBotKey(n.DomainEvent.BotKey.Value, ct);
-        if (entry is null)
+        var chatPage = await chatPageRepository.FindById(conversationExchangeAppended.BotKey.Value, ct);
+        if (chatPage is null)
         {
             return;
         }
 
-        entry.AppendExchange(
-            n.DomainEvent.Id.Value,
-            n.DomainEvent.Exchange.Question,
-            n.DomainEvent.Exchange.Answer,
-            n.DomainEvent.Exchange.Citation,
-            n.DomainEvent.Exchange.MoreExplanation,
-            n.DomainEvent.Exchange.SocraticVariant);
-        await chatPageRepository.Save(entry, ct);
+        chatPage.AppendExchange(
+            conversationExchangeAppended.Id.Value,
+            conversationExchangeAppended.Exchange.Question,
+            conversationExchangeAppended.Exchange.Answer,
+            conversationExchangeAppended.Exchange.Citation,
+            conversationExchangeAppended.Exchange.MoreExplanation,
+            conversationExchangeAppended.Exchange.SocraticVariant);
+        await chatPageRepository.Update(chatPage, ct);
     }
 }

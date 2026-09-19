@@ -13,7 +13,11 @@ public sealed class FormationDetailMapping : ClassMapping<FormationDetail>
     {
         Table("read_formation_detail");
 
-        Id(x => x.Key, m => m.Generator(Generators.Assigned));
+        Id(x => x.Id, m =>
+        {
+            m.Column("key");
+            m.Generator(Generators.Assigned);
+        });
 
         Property(x => x.Title);
         Property(x => x.Audience);
@@ -31,14 +35,17 @@ public sealed class FormationDetailMapping : ClassMapping<FormationDetail>
     }
 }
 
-/// <summary>Backing mapping for FormationDetail's local Chatbot-label lookup - see <see cref="ChatbotLabelRef"/>.</summary>
 public sealed class ChatbotLabelRefMapping : ClassMapping<ChatbotLabelRef>
 {
     public ChatbotLabelRefMapping()
     {
         Table("read_formation_detail_chatbot_label_ref");
 
-        Id(x => x.BotKey, m => m.Generator(Generators.Assigned));
+        Id(x => x.Id, m =>
+        {
+            m.Column("bot_key");
+            m.Generator(Generators.Assigned);
+        });
 
         Property(x => x.Label);
     }

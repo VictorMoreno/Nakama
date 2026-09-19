@@ -8,9 +8,14 @@ public sealed class ChatbotOwnerCannotBeRemovedError()
 public sealed class ChatbotNotFoundError(string key)
     : DomainError("nakama.chatbots.not_found", $"Chatbot '{key}' not found.");
 
+public sealed class ChatbotAlreadyExistsError(string id)
+    : DomainError("nakama.chatbots.already_exists", $"Chatbot '{id}' already exists.");
+
 public static class ChatbotErrors
 {
     public static DomainError OwnerCannotBeRemoved { get; } = new ChatbotOwnerCannotBeRemovedError();
 
     public static DomainError NotFound(string key) => new ChatbotNotFoundError(key);
+
+    public static DomainError AlreadyExists(string id) => new ChatbotAlreadyExistsError(id);
 }

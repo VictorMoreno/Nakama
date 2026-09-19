@@ -1,4 +1,3 @@
-using MediatR;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.ChatbotDetail.Domain;
 using Nakama.Shared.Infrastructure.Events;
@@ -7,19 +6,18 @@ namespace Nakama.ChatbotDetail.Application.Handlers;
 
 using ChatbotDetail = Nakama.ChatbotDetail.Domain.ChatbotDetail;
 
-/// <summary>Updates <see cref="ChatbotDetail"/> from <see cref="ConversationExchangeAppended"/>.</summary>
 public sealed class ChatbotDetailUpdatedOnConversationExchangeAppended(IChatbotDetailRepository chatbotDetailRepository)
-    : INotificationHandler<DomainEventNotification<ConversationExchangeAppended>>
+    : DomainEventHandler<ConversationExchangeAppended>
 {
-    public async Task Handle(DomainEventNotification<ConversationExchangeAppended> n, CancellationToken ct)
+    protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken ct)
     {
-        var entry = await chatbotDetailRepository.FindByKey(n.DomainEvent.BotKey.Value, ct);
-        if (entry is null)
+        var chatbotDetail = await chatbotDetailRepository.FindById(conversationExchangeAppended.BotKey.Value, ct);
+        if (chatbotDetail is null)
         {
             return;
         }
 
-        entry.RecordQuestion(n.DomainEvent.Exchange.Question);
-        await chatbotDetailRepository.Save(entry, ct);
+        chatbotDetail.RecordQuestion(conversationExchangeAppended.Exchange.Question);
+        await chatbotDetailRepository.Update(chatbotDetail, ct);
     }
 }

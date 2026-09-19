@@ -15,8 +15,8 @@ public sealed class ChatExampleRow
 
 public sealed class ConversationSummaryRow
 {
-    public string Id { get; set; } = string.Empty;
-    public string BotKey { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public Guid BotKey { get; set; }
     public string Title { get; set; } = string.Empty;
     public DateTime DateLabel { get; set; }
     public List<ChatExampleRow> Exchanges { get; set; } = [];

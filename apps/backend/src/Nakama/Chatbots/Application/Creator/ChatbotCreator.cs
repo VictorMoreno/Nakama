@@ -1,5 +1,5 @@
-using MediatR;
 using Nakama.Chatbots.Domain;
+using Nakama.Chatbots.Domain.Errors;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
@@ -8,24 +8,27 @@ namespace Nakama.Chatbots.Application.Creator;
 public static class ChatbotCreator
 {
     public sealed record Command(
+        Guid Id,
         string Label,
         string Description,
         ChatbotStatus Status,
         bool General,
-        ChatbotSettings Settings) : IRequest<Response>;
-
-    public sealed record Response(string Key);
+        ChatbotSettings Settings) : ICommand;
 
     public sealed class Handler(
         IChatbotsRepository chatbotsRepository,
         IEventBus eventBus,
-        IUuidGenerator uuidGenerator,
-        ISystemClock systemClock) : IRequestHandler<Command, Response>
+        ISystemClock systemClock) : ICommandHandler<Command>
     {
-        public async Task<Response> Handle(Command cmd, CancellationToken ct)
+        public async Task Handle(Command cmd, CancellationToken ct)
         {
+            if (await chatbotsRepository.FindById(ChatbotId.From(cmd.Id), ct) is not null)
+            {
+                throw ChatbotErrors.AlreadyExists(cmd.Id.ToString());
+            }
+
             var chatbot = Chatbot.Create(
-                ChatbotKey.From(uuidGenerator.NewId()),
+                ChatbotId.From(cmd.Id),
                 cmd.Label,
                 cmd.Description,
                 cmd.Status,
@@ -34,9 +37,7 @@ public static class ChatbotCreator
                 systemClock);
 
             await chatbotsRepository.Save(chatbot, ct);
-            await eventBus.Publish([chatbot], ct);
-
-            return new Response(chatbot.Key.Value);
+            await eventBus.Publish(chatbot, ct);
         }
     }
 }

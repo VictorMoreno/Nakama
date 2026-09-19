@@ -2,21 +2,21 @@ namespace Nakama.Analytics.Domain;
 
 public partial class Analytics
 {
-    public static Analytics CreateFromChatbotCreated(string botKey)
+    public static Analytics CreateFromChatbotCreated(Guid botKey)
     {
         var analytics = new Analytics();
         analytics.ApplyChatbotCreated(botKey);
         return analytics;
     }
 
-    public static Analytics CreateFromConversationExchangeAppended(string botKey)
+    public static Analytics CreateFromConversationExchangeAppended(Guid botKey)
     {
         var analytics = new Analytics();
         analytics.ApplyConversationExchangeAppended(botKey);
         return analytics;
     }
 
-    public void ApplyChatbotCreated(string botKey)
+    public void ApplyChatbotCreated(Guid botKey)
     {
         this.ActiveBotsCount++;
         if (this.UsageByBot.All(u => u.BotKey != botKey))
@@ -25,7 +25,7 @@ public partial class Analytics
         }
     }
 
-    public void ApplyConversationExchangeAppended(string botKey)
+    public void ApplyConversationExchangeAppended(Guid botKey)
     {
         this.AnsweredThisWeek++;
 

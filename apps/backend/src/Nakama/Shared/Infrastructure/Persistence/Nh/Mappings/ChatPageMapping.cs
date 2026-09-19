@@ -13,7 +13,11 @@ public sealed class ChatPageMapping : ClassMapping<ChatPage>
     {
         Table("read_chat_page");
 
-        Id(x => x.BotKey, m => m.Generator(Generators.Assigned));
+        Id(x => x.Id, m =>
+        {
+            m.Column("bot_key");
+            m.Generator(Generators.Assigned);
+        });
 
         Property(x => x.Label);
         Property(x => x.Context);

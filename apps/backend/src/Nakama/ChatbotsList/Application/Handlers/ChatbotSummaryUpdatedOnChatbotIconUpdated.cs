@@ -1,25 +1,23 @@
-using MediatR;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.ChatbotsList.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.ChatbotsList.Application.Handlers;
 
-/// <summary>Updates <see cref="ChatbotSummary"/> from <see cref="ChatbotIconUpdated"/>.</summary>
 public sealed class ChatbotSummaryUpdatedOnChatbotIconUpdated(IChatbotSummaryRepository chatbotSummaryRepository)
-    : INotificationHandler<DomainEventNotification<ChatbotIconUpdated>>
+    : DomainEventHandler<ChatbotIconUpdated>
 {
-    public async Task Handle(DomainEventNotification<ChatbotIconUpdated> n, CancellationToken ct)
+    protected override async Task Handle(ChatbotIconUpdated chatbotIconUpdated, CancellationToken ct)
     {
-        var entry = await chatbotSummaryRepository.FindByKey(n.DomainEvent.Key.Value, ct);
+        var chatbotSummary = await chatbotSummaryRepository.FindById(chatbotIconUpdated.Id.Value, ct);
         // Event arrived before ChatbotCreated - shouldn't happen in single-process sync
         // dispatch, but not assumed (same rationale as the original raw-session projection).
-        if (entry is null)
+        if (chatbotSummary is null)
         {
             return;
         }
 
-        entry.UpdateIcon(n.DomainEvent.IconUrl);
-        await chatbotSummaryRepository.Save(entry, ct);
+        chatbotSummary.UpdateIcon(chatbotIconUpdated.IconUrl);
+        await chatbotSummaryRepository.Update(chatbotSummary, ct);
     }
 }

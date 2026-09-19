@@ -3,7 +3,7 @@ using Nakama.Shared.Domain;
 namespace Nakama.Chatbots.Domain.Events;
 
 public sealed record ChatbotCreated(
-    ChatbotKey Key,
+    ChatbotId Id,
     string Label,
     string Description,
     ChatbotStatus Status,

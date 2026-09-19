@@ -13,7 +13,11 @@ public sealed class AnalyticsMapping : ClassMapping<Analytics>
     {
         Table("read_analytics");
 
-        Id(x => x.Key, m => m.Generator(Generators.Assigned));
+        Id(x => x.Id, m =>
+        {
+            m.Column("key");
+            m.Generator(Generators.Assigned);
+        });
 
         Property(x => x.ActiveBotsCount);
         Property(x => x.AnsweredThisWeek);

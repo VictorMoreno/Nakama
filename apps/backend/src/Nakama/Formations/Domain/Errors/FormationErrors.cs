@@ -11,6 +11,12 @@ public sealed class FormationNotFoundError(string key)
 public sealed class FormationModuleNotFoundError(string moduleId, string formationKey)
     : DomainError("nakama.formations.module_not_found", $"Module '{moduleId}' not found in formation '{formationKey}'.");
 
+public sealed class FormationAlreadyExistsError(string key)
+    : DomainError("nakama.formations.already_exists", $"Formation '{key}' already exists.");
+
+public sealed class FormationModuleAlreadyExistsError(string moduleId, string formationKey)
+    : DomainError("nakama.formations.module_already_exists", $"Module '{moduleId}' already exists in formation '{formationKey}'.");
+
 public static class FormationErrors
 {
     public static DomainError ModuleLockedByGating { get; } = new FormationModuleLockedByGatingError();
@@ -18,4 +24,8 @@ public static class FormationErrors
     public static DomainError NotFound(string key) => new FormationNotFoundError(key);
 
     public static DomainError ModuleNotFound(string moduleId, string formationKey) => new FormationModuleNotFoundError(moduleId, formationKey);
+
+    public static DomainError AlreadyExists(string key) => new FormationAlreadyExistsError(key);
+
+    public static DomainError ModuleAlreadyExists(string moduleId, string formationKey) => new FormationModuleAlreadyExistsError(moduleId, formationKey);
 }

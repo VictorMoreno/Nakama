@@ -3,14 +3,6 @@ using NHibernate.Mapping.ByCode;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh;
 
-/// <summary>
-/// Centralizes every mapping-by-code registration in one place per agents.md §6 ("Mapping NH
-/// en Persistence/Nh/Mappings"), rather than scattering a mapping file per module. Both the
-/// write and read <see cref="Configuration"/> pull from the same set - the write side only
-/// ever touches the aggregate mappings (Chatbot/Conversation/Formation), the read side only
-/// the *ReadModel mappings, but there is no harm in both configurations knowing about all of
-/// them for this scope.
-/// </summary>
 internal static class NhMappings
 {
     public static void AddMappings(Configuration configuration)

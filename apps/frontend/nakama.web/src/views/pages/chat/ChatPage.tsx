@@ -140,7 +140,7 @@ export default function ChatPage() {
             <span className="eyebrow">Sobre este bot</span>
             <p dangerouslySetInnerHTML={{ __html: bot.context }} />
             {isAdmin && (
-              <button className="config-link" type="button" onClick={() => navigate(`/chatbots/${bot.key}?tab=config`)}>
+              <button className="config-link" type="button" onClick={() => navigate(`/chatbots/${bot.id}?tab=config`)}>
                 Ver configuración del chatbot →
               </button>
             )}

@@ -10,7 +10,11 @@ public sealed class FormationsListMapping : ClassMapping<FormationSummary>
     {
         Table("read_formations_list");
 
-        Id(x => x.Key, m => m.Generator(Generators.Assigned));
+        Id(x => x.Id, m =>
+        {
+            m.Column("key");
+            m.Generator(Generators.Assigned);
+        });
 
         Property(x => x.Title);
         Property(x => x.Audience);

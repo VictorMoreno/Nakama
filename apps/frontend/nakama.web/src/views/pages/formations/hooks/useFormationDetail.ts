@@ -29,16 +29,16 @@ export function useFormationDetail() {
   }
 
   async function handleUpdateStatus(status: FormationLifecycleStatus) {
-    if (c) await updateStatus(c.key, status);
+    if (c) await updateStatus(c.id, status);
   }
 
   async function handleUpdateIcon(iconUrl: string | undefined) {
-    if (c) await updateIcon(c.key, iconUrl);
+    if (c) await updateIcon(c.id, iconUrl);
   }
 
   async function confirmDeleteModule() {
     if (c && deleteId) {
-      await removeModule(c.key, deleteId);
+      await removeModule(c.id, deleteId);
       showToast("Módulo eliminado");
     }
     setDeleteId(null);

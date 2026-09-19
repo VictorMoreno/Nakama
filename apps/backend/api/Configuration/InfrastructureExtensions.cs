@@ -1,5 +1,4 @@
 ﻿using Api.Configuration.Swagger;
-using MediatR;
 using Nakama.Analytics.Domain;
 using Nakama.Analytics.Infrastructure;
 using Nakama.ChatbotDetail.Domain;
@@ -18,8 +17,10 @@ using Nakama.FormationsList.Domain;
 using Nakama.FormationsList.Infrastructure;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure;
+using Nakama.Shared.Infrastructure.Commands;
 using Nakama.Shared.Infrastructure.Events;
 using Nakama.Shared.Infrastructure.Persistence;
+using Nakama.Shared.Infrastructure.Queries;
 
 namespace Api.Configuration;
 
@@ -46,14 +47,29 @@ public static class InfrastructureExtensions
     {
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Chatbot).Assembly));
 
+        // ICommandHandler<>/IQueryHandler<,> are the pure, MediatR-free contracts every command/
+        // query use case implements (see ADR-13c) - CommandBus/QueryBus resolve them directly
+        // from this container by reflection, MediatR is not involved. AddMediatR's scan above
+        // only covers the domain-event side (IEventBus/DomainEventHandler<TEvent>, ADR-7), whose
+        // concrete handlers are non-generic and need no special registration.
+        services.Scan(scan => scan
+            .FromAssemblyOf<Chatbot>()
+            .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
+
         // ISessionFactory construction is expensive - singleton, built once, lazily on first
         // use (see NhWriteSessionFactory/NhReadSessionFactory), never per request.
         services.AddSingleton<IWriteSessionFactory, NhWriteSessionFactory>();
         services.AddSingleton<IReadSessionFactory, NhReadSessionFactory>();
 
         services.AddSingleton<ISystemClock, SystemClock>();
-        services.AddSingleton<IUuidGenerator, GuidUuidGenerator>();
         services.AddScoped<IEventBus, EventBus>();
+        services.AddScoped<ICommandBus, CommandBus>();
+        services.AddScoped<IQueryBus, QueryBus>();
 
         services.AddScoped<IChatbotsRepository, NhChatbotsRepository>();
         services.AddScoped<IConversationsRepository, NhConversationsRepository>();

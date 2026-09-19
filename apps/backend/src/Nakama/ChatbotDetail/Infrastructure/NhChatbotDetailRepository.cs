@@ -7,7 +7,4 @@ namespace Nakama.ChatbotDetail.Infrastructure;
 using ChatbotDetail = Nakama.ChatbotDetail.Domain.ChatbotDetail;
 
 public sealed class NhChatbotDetailRepository(IReadSessionFactory readSessions)
-    : NhRepositoryBase<ChatbotDetail, string>(readSessions), IChatbotDetailRepository
-{
-    public Task<ChatbotDetail?> FindByKey(string key, CancellationToken ct) => this.FindById(key, ct);
-}
+    : NhRepositoryBase<ChatbotDetail, Guid>(readSessions), IChatbotDetailRepository;

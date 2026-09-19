@@ -3,7 +3,7 @@ using Nakama.FormationsList.Domain;
 namespace Nakama.FormationsList.Application;
 
 public sealed record FormationSummaryResponse(
-    string Key,
+    Guid Id,
     string Title,
     string Audience,
     string Description,
@@ -15,7 +15,7 @@ public sealed record FormationSummaryResponse(
     int CompletedModulesCount)
 {
     public static explicit operator FormationSummaryResponse(FormationSummary entity) => new(
-        entity.Key,
+        entity.Id,
         entity.Title,
         entity.Audience,
         entity.Description,

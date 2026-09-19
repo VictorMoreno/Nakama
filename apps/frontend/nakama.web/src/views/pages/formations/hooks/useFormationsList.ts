@@ -13,7 +13,7 @@ export function useFormationsList() {
   const { showToast } = useToast();
 
   const [deleteKey, setDeleteKey] = useState<string | null>(null);
-  const deleteTarget = activeFormations.find((c) => c.key === deleteKey);
+  const deleteTarget = activeFormations.find((c) => c.id === deleteKey);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");

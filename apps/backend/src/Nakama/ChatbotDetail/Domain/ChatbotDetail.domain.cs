@@ -2,16 +2,16 @@ namespace Nakama.ChatbotDetail.Domain;
 
 public partial class ChatbotDetail
 {
-    private ChatbotDetail(string key, string label, string description, string status, bool general)
+    private ChatbotDetail(Guid key, string label, string description, string status, bool general)
     {
-        this.Key = key;
+        this.Id = key;
         this.Label = label;
         this.Description = description;
         this.Status = status;
         this.General = general;
     }
 
-    public static ChatbotDetail Create(string key, string label, string description, string status, bool general) =>
+    public static ChatbotDetail Create(Guid key, string label, string description, string status, bool general) =>
         new(key, label, description, status, general);
 
     public void UpdateStatus(string status) => this.Status = status;

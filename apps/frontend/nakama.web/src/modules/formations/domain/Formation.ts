@@ -50,7 +50,7 @@ export interface FormationMember {
  * mostrar de dónde sale el contenido), pero no depende de él para nada más.
  */
 export interface Formation {
-  key: string;
+  id: string;
   title: string;
   /** Etiqueta libre: a quién va dirigido, p. ej. "Diagnósticos ECU" o "Toda la empresa" */
   audience: string;

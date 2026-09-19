@@ -6,11 +6,6 @@ using NHibernate.Mapping.ByCode.Conformist;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh.Mappings;
 
-/// <summary>
-/// Write-side mapping for the <see cref="Formation"/> aggregate. <c>LinkedChatbotKey</c> maps
-/// as a plain string column - it's a cross-context id, never a NHibernate association, per
-/// agents.md §1 (a bounded context must not reference another context's Domain).
-/// </summary>
 public sealed class FormationMapping : ClassMapping<Formation>
 {
     public FormationMapping()
@@ -21,7 +16,7 @@ public sealed class FormationMapping : ClassMapping<Formation>
         {
             m.Column("key");
             m.Generator(Generators.Assigned);
-            m.Type<ValueObjectUserType<FormationKey>>();
+            m.Type<GuidValueObjectUserType<FormationId>>();
         });
 
         Property(x => x.Title);

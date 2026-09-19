@@ -45,7 +45,7 @@ export default function PermissionsTab({ bot }: PermissionsTabProps) {
         </div>
       </div>
 
-      <InviteDialog open={inviteOpen} botKey={bot.key} botLabel={bot.label} onClose={() => setInviteOpen(false)} />
+      <InviteDialog open={inviteOpen} botKey={bot.id} botLabel={bot.label} onClose={() => setInviteOpen(false)} />
 
       <ConfirmDialog
         open={target != null}

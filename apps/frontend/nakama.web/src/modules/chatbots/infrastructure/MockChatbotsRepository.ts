@@ -9,7 +9,7 @@ import type { CreateChatbotInput, IChatbotsRepository } from "../domain/IChatbot
  */
 const seedChatbots: ChatbotMap = {
   ecu: {
-    key: "ecu",
+    id: "ecu",
     label: "Diagnósticos ECU",
     description: "Protocolos de comunicación con la ECU, arquitectura de adaptadores y decisiones de diseño del equipo.",
     status: "activo",
@@ -60,7 +60,7 @@ const seedChatbots: ChatbotMap = {
   },
 
   auth: {
-    key: "auth",
+    id: "auth",
     label: "Acceso Talleres",
     description: "Autenticación PKCE, gestión de sesiones y políticas de acceso para las tablets de taller.",
     status: "inactivo",
@@ -108,7 +108,7 @@ const seedChatbots: ChatbotMap = {
   },
 
   cloud: {
-    key: "cloud",
+    id: "cloud",
     label: "Plataforma Cloud",
     description: "Arquitectura multi-departamento, stack técnico y decisiones de infraestructura compartida.",
     status: "inactivo",
@@ -150,7 +150,7 @@ const seedChatbots: ChatbotMap = {
   },
 
   general: {
-    key: "general",
+    id: "general",
     label: "General de Empresa",
     description: "Dudas transversales de empresa: políticas internas, RRHH, IT y herramientas comunes a todos los departamentos.",
     status: "activo",
@@ -206,7 +206,7 @@ export class MockChatbotsRepository implements IChatbotsRepository {
 
   async Create(input: CreateChatbotInput): Promise<Chatbot> {
     const { name, dept, general, description, status, settings, iconUrl } = input;
-    const key = slugify(name, Object.keys(this.data));
+    const id = slugify(name, Object.keys(this.data));
     const trimmedDescription = description.trim();
     const fallbackDescription = general
       ? "Chatbot general de empresa. Todavía sin documentos."
@@ -214,7 +214,7 @@ export class MockChatbotsRepository implements IChatbotsRepository {
         ? `Chatbot de equipo para ${dept}. Todavía sin documentos.`
         : "Chatbot recién creado. Todavía sin documentos.";
     const newBot: Chatbot = {
-      key,
+      id,
       label: name,
       description: trimmedDescription || fallbackDescription,
       status,
@@ -239,7 +239,7 @@ export class MockChatbotsRepository implements IChatbotsRepository {
         { label: "Documentos ingestados", value: "0", unit: "objetivo >100", bar: 0 }
       ]
     };
-    this.data = { ...this.data, [key]: newBot };
+    this.data = { ...this.data, [id]: newBot };
     return structuredClone(newBot);
   }
 
