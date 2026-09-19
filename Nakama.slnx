@@ -17,5 +17,6 @@
   <Folder Name="/_solutionItems/">
     <File Path=".gitignore" />
     <File Path="README.md" />
+     <File Path="Directory.Packages.props" />
   </Folder>
 </Solution>
