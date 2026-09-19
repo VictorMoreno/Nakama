@@ -30,7 +30,7 @@ public static class FormationModuleAdder
             var formation = await formationsRepository.FindById(key, ct)
                 ?? throw FormationErrors.NotFound(cmd.Id.ToString());
 
-            var moduleId = ModuleId.From(cmd.ModuleId.ToString());
+            var moduleId = ModuleId.From(cmd.ModuleId);
             if (formation.Modules.Any(m => m.Id == moduleId))
             {
                 throw FormationErrors.ModuleAlreadyExists(cmd.ModuleId.ToString(), cmd.Id.ToString());

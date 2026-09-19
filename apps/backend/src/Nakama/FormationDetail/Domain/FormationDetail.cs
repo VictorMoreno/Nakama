@@ -18,6 +18,6 @@ public partial class FormationDetail : IEntity
 
     public virtual List<FormationModuleRow> Modules { get; protected set; } = [];
     public virtual List<FormationMemberRow> Team { get; protected set; } = [];
-    public virtual List<string> CompletedModuleIds { get; protected set; } = [];
-    public virtual Dictionary<string, int> ExamScores { get; protected set; } = [];
+    public virtual List<Guid> CompletedModuleIds { get; protected set; } = [];
+    public virtual Dictionary<Guid, int> ExamScores { get; protected set; } = [];
 }

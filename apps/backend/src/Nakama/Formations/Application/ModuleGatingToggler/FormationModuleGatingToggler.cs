@@ -7,7 +7,7 @@ namespace Nakama.Formations.Application.ModuleGatingToggler;
 
 public static class FormationModuleGatingToggler
 {
-    public sealed record Command(Guid Id, string ModuleId) : ICommand;
+    public sealed record Command(Guid Id, Guid ModuleId) : ICommand;
 
     public sealed class Handler(IFormationsRepository formationsRepository, IEventBus eventBus) : ICommandHandler<Command>
     {

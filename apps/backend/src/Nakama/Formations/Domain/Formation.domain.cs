@@ -57,7 +57,7 @@ public partial class Formation
         var index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
-            throw FormationErrors.ModuleNotFound(moduleId.Value, this.Id.Value.ToString());
+            throw FormationErrors.ModuleNotFound(moduleId.Value.ToString(), this.Id.Value.ToString());
         }
 
         var toggled = this._modules[index] with { Gated = !this._modules[index].Gated };
@@ -71,7 +71,7 @@ public partial class Formation
         var index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
-            throw FormationErrors.ModuleNotFound(moduleId.Value, this.Id.Value.ToString());
+            throw FormationErrors.ModuleNotFound(moduleId.Value.ToString(), this.Id.Value.ToString());
         }
 
         if (index > 0)

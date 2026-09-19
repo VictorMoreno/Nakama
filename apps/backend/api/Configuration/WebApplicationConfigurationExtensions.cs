@@ -10,6 +10,8 @@ public static class WebApplicationConfigurationExtensions
                 .WithDocumentPerVersion();
         }
 
+        app.UseExceptionHandler();
+
         app.MapEndpoints();
         app.MapHealthChecks("/health");
 

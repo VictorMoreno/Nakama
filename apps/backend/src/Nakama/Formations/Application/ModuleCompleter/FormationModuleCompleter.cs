@@ -7,7 +7,7 @@ namespace Nakama.Formations.Application.ModuleCompleter;
 
 public static class FormationModuleCompleter
 {
-    public sealed record Command(Guid Id, string ModuleId, int? Score) : ICommand;
+    public sealed record Command(Guid Id, Guid ModuleId, int? Score) : ICommand;
 
     public sealed class Handler(IFormationsRepository formationsRepository, IEventBus eventBus) : ICommandHandler<Command>
     {

@@ -33,6 +33,11 @@ public static class InfrastructureExtensions
 
         services.AddHealthChecks();
 
+        // Maps DomainError -> HTTP status/ProblemDetails globally (see ADR entry in
+        // apps/backend/src/Nakama/ADR.md and agents.md) - no endpoint needs its own try/catch.
+        services.AddExceptionHandler<DomainErrorExceptionHandler>();
+        services.AddProblemDetails();
+
         return services;
     }
 

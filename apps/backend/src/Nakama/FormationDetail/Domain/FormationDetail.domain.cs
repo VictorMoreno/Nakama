@@ -33,7 +33,7 @@ public partial class FormationDetail
     public void UpdateStatus(string status) => this.Status = status;
 
     public void AddModule(
-        string id,
+        Guid id,
         string title,
         string type,
         string summary,
@@ -56,7 +56,7 @@ public partial class FormationDetail
         Quiz = quiz,
     });
 
-    public void ToggleModuleGating(string moduleId, bool gated)
+    public void ToggleModuleGating(Guid moduleId, bool gated)
     {
         var module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
         if (module is not null)
@@ -65,7 +65,7 @@ public partial class FormationDetail
         }
     }
 
-    public void CompleteModule(string moduleId, int? score)
+    public void CompleteModule(Guid moduleId, int? score)
     {
         if (!this.CompletedModuleIds.Contains(moduleId))
         {

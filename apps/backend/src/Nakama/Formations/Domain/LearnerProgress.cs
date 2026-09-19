@@ -1,10 +1,10 @@
 namespace Nakama.Formations.Domain;
 
-public sealed record LearnerProgress(IReadOnlyList<string> CompletedModuleIds, IReadOnlyDictionary<string, int> ExamScores)
+public sealed record LearnerProgress(IReadOnlyList<Guid> CompletedModuleIds, IReadOnlyDictionary<Guid, int> ExamScores)
 {
-    public static LearnerProgress Empty { get; } = new([], new Dictionary<string, int>());
+    public static LearnerProgress Empty { get; } = new([], new Dictionary<Guid, int>());
 
-    public LearnerProgress WithModuleCompleted(string moduleId, int? score)
+    public LearnerProgress WithModuleCompleted(Guid moduleId, int? score)
     {
         var completedModuleIds = this.CompletedModuleIds.Contains(moduleId)
             ? this.CompletedModuleIds
@@ -13,7 +13,7 @@ public sealed record LearnerProgress(IReadOnlyList<string> CompletedModuleIds, I
         var examScores = this.ExamScores;
         if (score is not null)
         {
-            examScores = new Dictionary<string, int>(this.ExamScores) { [moduleId] = score.Value };
+            examScores = new Dictionary<Guid, int>(this.ExamScores) { [moduleId] = score.Value };
         }
 
         return this with { CompletedModuleIds = completedModuleIds, ExamScores = examScores };

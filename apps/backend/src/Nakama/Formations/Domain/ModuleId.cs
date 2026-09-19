@@ -2,9 +2,9 @@ using Nakama.Shared.Domain;
 
 namespace Nakama.Formations.Domain;
 
-public readonly record struct ModuleId(string Value) : IStringValueObject
+public readonly record struct ModuleId(Guid Value) : IGuidValueObject
 {
-    public static ModuleId From(string value) => new(value);
+    public static ModuleId From(Guid value) => new(value);
 
-    public override string ToString() => this.Value;
+    public override string ToString() => this.Value.ToString();
 }
