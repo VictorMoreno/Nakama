@@ -17,7 +17,7 @@ public sealed record ChatbotDetailResponse(
     bool Socratic,
     bool ExplicaMas,
     string Provider,
-    List<ChatbotDocumentRow> Docs,
+    List<ChatbotDocumentResponse> Docs,
     List<TeamMemberRow> Team,
     List<GapQuestionRow> Gaps,
     List<GapQuestionRow> TopQuestions,
@@ -32,13 +32,32 @@ public sealed record ChatbotDetailResponse(
         entity.Context,
         entity.General,
         entity.Archived,
-        entity.IconUrl,
+        entity.IconUrl is null ? null : $"/api/chatbots/icons/{entity.IconUrl}",
         entity.Socratic,
         entity.ExplicaMas,
         entity.Provider,
-        entity.Docs,
+        entity.Docs.Select(d => (ChatbotDocumentResponse)d).ToList(),
         entity.Team,
         entity.Gaps,
         entity.TopQuestions,
         entity.Stats);
+}
+
+public sealed record ChatbotDocumentResponse(
+    Guid Id,
+    string Name,
+    string Origin,
+    string Status,
+    string StatusLabel,
+    DateTime Updated,
+    string Url)
+{
+    public static explicit operator ChatbotDocumentResponse(ChatbotDocumentRow row) => new(
+        row.Id,
+        row.Name,
+        row.Origin,
+        row.Status,
+        row.StatusLabel,
+        row.Updated,
+        $"/api/chatbots/documents/{row.FileName}");
 }

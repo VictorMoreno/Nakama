@@ -21,7 +21,7 @@ public static class FormationErrors
 {
     public static DomainError ModuleLockedByGating { get; } = new FormationModuleLockedByGatingError();
 
-    public static DomainError NotFound(string key) => new FormationNotFoundError(key);
+    public static DomainError NotFound(FormationId id) => new FormationNotFoundError(id.ToString());
 
     public static DomainError ModuleNotFound(string moduleId, string formationKey) => new FormationModuleNotFoundError(moduleId, formationKey);
 

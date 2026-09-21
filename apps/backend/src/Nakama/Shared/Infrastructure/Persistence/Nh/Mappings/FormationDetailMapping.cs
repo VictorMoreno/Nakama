@@ -12,6 +12,7 @@ public sealed class FormationDetailMapping : ClassMapping<FormationDetail>
     public FormationDetailMapping()
     {
         Table("read_formation_detail");
+        Lazy(false);
 
         Id(x => x.Id, m =>
         {
@@ -21,17 +22,17 @@ public sealed class FormationDetailMapping : ClassMapping<FormationDetail>
 
         Property(x => x.Title);
         Property(x => x.Audience);
-        Property(x => x.Description);
+        Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
         Property(x => x.Status);
         Property(x => x.Archived);
         Property(x => x.IconUrl);
         Property(x => x.LinkedChatbotKey, m => m.Column("linked_chatbot_key"));
         Property(x => x.LinkedChatbotLabel, m => m.Column("linked_chatbot_label"));
 
-        Property(x => x.Modules, m => { m.Column("modules_json"); m.Type<JsonUserType<List<FormationModuleRow>>>(); });
-        Property(x => x.Team, m => { m.Column("team_json"); m.Type<JsonUserType<List<FormationMemberRow>>>(); });
-        Property(x => x.CompletedModuleIds, m => { m.Column("completed_module_ids_json"); m.Type<JsonUserType<List<string>>>(); });
-        Property(x => x.ExamScores, m => { m.Column("exam_scores_json"); m.Type<JsonUserType<Dictionary<string, int>>>(); });
+        Property(x => x.Modules, m => { m.Column(c => { c.Name("modules_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<FormationModuleRow>>>(); });
+        Property(x => x.Team, m => { m.Column(c => { c.Name("team_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<FormationMemberRow>>>(); });
+        Property(x => x.CompletedModuleIds, m => { m.Column(c => { c.Name("completed_module_ids_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<Guid>>>(); });
+        Property(x => x.ExamScores, m => { m.Column(c => { c.Name("exam_scores_json"); c.SqlType("text"); }); m.Type<JsonUserType<Dictionary<Guid, int>>>(); });
     }
 }
 
@@ -40,6 +41,7 @@ public sealed class ChatbotLabelRefMapping : ClassMapping<ChatbotLabelRef>
     public ChatbotLabelRefMapping()
     {
         Table("read_formation_detail_chatbot_label_ref");
+        Lazy(false);
 
         Id(x => x.Id, m =>
         {

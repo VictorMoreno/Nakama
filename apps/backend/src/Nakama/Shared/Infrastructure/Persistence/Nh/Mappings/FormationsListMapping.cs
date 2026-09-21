@@ -9,6 +9,7 @@ public sealed class FormationsListMapping : ClassMapping<FormationSummary>
     public FormationsListMapping()
     {
         Table("read_formations_list");
+        Lazy(false);
 
         Id(x => x.Id, m =>
         {
@@ -18,7 +19,7 @@ public sealed class FormationsListMapping : ClassMapping<FormationSummary>
 
         Property(x => x.Title);
         Property(x => x.Audience);
-        Property(x => x.Description);
+        Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
         Property(x => x.Status);
         Property(x => x.Archived);
         Property(x => x.IconUrl);

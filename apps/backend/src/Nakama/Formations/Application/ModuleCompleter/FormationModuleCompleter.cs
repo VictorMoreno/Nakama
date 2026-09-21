@@ -1,5 +1,6 @@
 using Nakama.Formations.Domain;
-using Nakama.Formations.Domain.Errors;
+using Nakama.Formations.Domain.Services;
+using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
@@ -9,18 +10,26 @@ public static class FormationModuleCompleter
 {
     public sealed record Command(Guid Id, Guid ModuleId, int? Score) : ICommand;
 
-    public sealed class Handler(IFormationsRepository formationsRepository, IEventBus eventBus) : ICommandHandler<Command>
+    public sealed class Handler(Completer completer) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            var key = FormationId.From(cmd.Id);
-            var formation = await formationsRepository.FindById(key, ct)
-                ?? throw FormationErrors.NotFound(cmd.Id.ToString());
+            await completer.Execute(FormationId.From(cmd.Id), cmd.ModuleId, cmd.Score, ct);
+        }
+    }
 
-            formation.CompleteModule(Domain.ModuleId.From(cmd.ModuleId), cmd.Score);
+    public sealed class Completer(IFormationsRepository repository, IEventBus eventBus) : IService
+    {
+        private readonly FormationFinderById _finder = new(repository);
 
-            await formationsRepository.Save(formation, ct);
-            await eventBus.Publish(formation, ct);
+        public async Task Execute(FormationId id, Guid moduleId, int? score, CancellationToken cancellationToken)
+        {
+            Formation formation = await _finder.Execute(id, cancellationToken);
+
+            formation.CompleteModule(Domain.ModuleId.From(moduleId), score);
+
+            await repository.Save(formation, cancellationToken);
+            await eventBus.Publish(formation, cancellationToken);
         }
     }
 }

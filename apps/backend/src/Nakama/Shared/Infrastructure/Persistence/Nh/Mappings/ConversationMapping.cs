@@ -10,6 +10,7 @@ public sealed class ConversationMapping : ClassMapping<Conversation>
     public ConversationMapping()
     {
         Table("conversations");
+        Lazy(false);
 
         Id(x => x.Id, m =>
         {
@@ -29,7 +30,7 @@ public sealed class ConversationMapping : ClassMapping<Conversation>
 
         Property("_exchanges", m =>
         {
-            m.Column("exchanges_json");
+            m.Column(c => { c.Name("exchanges_json"); c.SqlType("text"); });
             m.Access(Accessor.Field);
             m.Type<JsonUserType<List<ConversationExchange>>>();
         });

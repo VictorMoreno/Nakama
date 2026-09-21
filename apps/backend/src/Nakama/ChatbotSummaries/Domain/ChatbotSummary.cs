@@ -1,6 +1,6 @@
 using Nakama.Shared.Domain;
 
-namespace Nakama.ChatbotsList.Domain;
+namespace Nakama.ChatbotSummaries.Domain;
 
 public partial class ChatbotSummary : IEntity
 {

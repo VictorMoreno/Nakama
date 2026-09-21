@@ -1,8 +1,8 @@
 using Nakama.Chatbots.Domain.Events;
-using Nakama.ChatbotsList.Domain;
+using Nakama.ChatbotSummaries.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
-namespace Nakama.ChatbotsList.Application.Handlers;
+namespace Nakama.ChatbotSummaries.Application.Handlers;
 
 public sealed class ChatbotSummaryCreatedOnChatbotCreated(IChatbotSummaryRepository chatbotSummaryRepository)
     : DomainEventHandler<ChatbotCreated>

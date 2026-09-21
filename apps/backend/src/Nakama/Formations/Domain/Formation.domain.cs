@@ -1,6 +1,5 @@
 using Nakama.Formations.Domain.Errors;
 using Nakama.Formations.Domain.Events;
-using Nakama.Shared.Domain;
 
 namespace Nakama.Formations.Domain;
 
@@ -44,6 +43,12 @@ public partial class Formation
 
         this.Status = status;
         Raise(new FormationStatusChanged(this.Id, status));
+    }
+
+    public void UpdateIcon(string? iconUrl)
+    {
+        this.IconUrl = iconUrl;
+        Raise(new FormationIconUpdated(this.Id, iconUrl));
     }
 
     public void AddModule(FormationModule module)

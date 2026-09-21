@@ -1,5 +1,6 @@
 using Nakama.Chatbots.Domain;
-using Nakama.Chatbots.Domain.Errors;
+using Nakama.Chatbots.Domain.Services;
+using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
@@ -9,19 +10,26 @@ public static class ChatbotStatusUpdater
 {
     public sealed record Command(Guid Id, ChatbotStatus Status) : ICommand;
 
-    public sealed class Handler(IChatbotsRepository chatbotsRepository, IEventBus eventBus)
-        : ICommandHandler<Command>
+    public sealed class Handler(Updater updater) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            var key = ChatbotId.From(cmd.Id);
-            var chatbot = await chatbotsRepository.FindById(key, ct)
-                          ?? throw ChatbotErrors.NotFound(cmd.Id.ToString());
+            await updater.Execute(ChatbotId.From(cmd.Id), cmd.Status, ct);
+        }
+    }
 
-            chatbot.UpdateStatus(cmd.Status);
+    public sealed class Updater(IChatbotsRepository repository, IEventBus eventBus) : IService
+    {
+        private readonly ChatbotFinderById _finder = new(repository);
 
-            await chatbotsRepository.Save(chatbot, ct);
-            await eventBus.Publish(chatbot, ct);
+        public async Task Execute(ChatbotId id,ChatbotStatus status, CancellationToken cancellationToken)
+        {
+            Chatbot chatbot = await _finder.Execute(id, cancellationToken);
+
+            chatbot.UpdateStatus(status);
+
+            await repository.Save(chatbot, cancellationToken);
+            await eventBus.Publish(chatbot, cancellationToken);
         }
     }
 }

@@ -21,7 +21,7 @@ public sealed record FormationSummaryResponse(
         entity.Description,
         entity.Status,
         entity.Archived,
-        entity.IconUrl,
+        entity.IconUrl is null ? null : $"/api/formations/icons/{entity.IconUrl}",
         entity.ProgressPct,
         entity.ModulesCount,
         entity.CompletedModulesCount);

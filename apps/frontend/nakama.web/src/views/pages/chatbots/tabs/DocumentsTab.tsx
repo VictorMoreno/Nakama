@@ -33,8 +33,16 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
             </thead>
             <tbody>
               {bot.docs.map((doc, idx) => (
-                <tr key={doc.name}>
-                  <td className={`${styles.td} ${styles.docName}`}>{doc.name}</td>
+                <tr key={doc.id ?? doc.name}>
+                  <td className={`${styles.td} ${styles.docName}`}>
+                    {doc.url ? (
+                      <a href={doc.url} target="_blank" rel="noreferrer">
+                        {doc.name}
+                      </a>
+                    ) : (
+                      doc.name
+                    )}
+                  </td>
                   <td className={styles.td}>
                     <span className={`status-tag ${doc.status}`}>{doc.statusLabel}</span>
                   </td>
@@ -51,7 +59,7 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
         </div>
       </div>
 
-      <UploadDocumentDialog open={uploadOpen} botLabel={bot.label} onClose={() => setUploadOpen(false)} />
+      <UploadDocumentDialog open={uploadOpen} botId={bot.id} botLabel={bot.label} onClose={() => setUploadOpen(false)} />
 
       <ConfirmDialog
         open={target != null}

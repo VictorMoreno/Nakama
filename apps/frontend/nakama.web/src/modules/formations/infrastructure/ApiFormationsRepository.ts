@@ -45,6 +45,26 @@ function toFormationMember(row: FormationMemberRow): FormationMember {
   return { name: row.name ?? "", progress: row.progress ?? 0 };
 }
 
+// No generated client method exists for these - see the identical helpers in
+// ApiChatbotsRepository.ts for the full rationale (multipart endpoints, same base URL
+// convention as Container.ts). Kept duplicated rather than shared - two call sites, matches
+// this codebase's existing preference for independent repository files over a premature
+// shared module.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
+async function uploadIcon(id: string, dataUrl: string): Promise<void> {
+  const blob = await (await fetch(dataUrl)).blob();
+  const form = new FormData();
+  form.append("file", blob, "icon");
+  const response = await fetch(`${API_BASE_URL}/api/formations/${id}/icon`, { method: "POST", body: form });
+  if (!response.ok) throw new Error(`No se pudo subir el icono (HTTP ${response.status}).`);
+}
+
+async function deleteIcon(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/formations/${id}/icon`, { method: "DELETE" });
+  if (!response.ok) throw new Error(`No se pudo quitar el icono (HTTP ${response.status}).`);
+}
+
 /**
  * Merges the list + detail endpoints into the flat `Formation` shape the rest of the app
  * already expects (N+1 fetch per FindAll - same accepted tradeoff as ApiChatbotsRepository).
@@ -98,6 +118,10 @@ export class ApiFormationsRepository implements IFormationsRepository {
       linkedChatbotKey
     } satisfies CreateFormationRequest);
 
+    if (iconUrl) {
+      await uploadIcon(id, iconUrl);
+    }
+
     // Built locally instead of a follow-up GET, same reasoning as ApiChatbotsRepository.Create.
     return {
       id,
@@ -123,8 +147,12 @@ export class ApiFormationsRepository implements IFormationsRepository {
     await this.client.status2(id, { status: STATUS_TO_ORDINAL[status] } satisfies UpdateFormationStatusRequest);
   }
 
-  async UpdateIcon(): Promise<void> {
-    throw new Error("ApiFormationsRepository.UpdateIcon: no existe todavía un endpoint en la API para actualizar el icono de una formación.");
+  async UpdateIcon(id: string, iconUrl: string | undefined): Promise<void> {
+    if (iconUrl) {
+      await uploadIcon(id, iconUrl);
+    } else {
+      await deleteIcon(id);
+    }
   }
 
   async AddModule(id: string, module: Omit<FormationModule, "id">): Promise<void> {

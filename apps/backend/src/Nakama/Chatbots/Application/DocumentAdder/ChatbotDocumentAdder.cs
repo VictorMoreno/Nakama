@@ -1,5 +1,6 @@
 using Nakama.Chatbots.Domain;
-using Nakama.Chatbots.Domain.Errors;
+using Nakama.Chatbots.Domain.Services;
+using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
@@ -7,23 +8,33 @@ namespace Nakama.Chatbots.Application.DocumentAdder;
 
 public static class ChatbotDocumentAdder
 {
-    public sealed record Command(Guid Id, string Name, string Origin, DocStatus Status, string StatusLabel) : ICommand;
+    public sealed record Command(Guid Id, Guid DocumentId, string Name, string Origin, string FileName) : ICommand;
 
-    public sealed class Handler(
-        IChatbotsRepository chatbotsRepository,
-        IEventBus eventBus,
-        ISystemClock systemClock) : ICommandHandler<Command>
+    public sealed class Handler(Adder adder) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            var key = ChatbotId.From(cmd.Id);
-            var chatbot = await chatbotsRepository.FindById(key, ct)
-                ?? throw ChatbotErrors.NotFound(cmd.Id.ToString());
+            await adder.Execute(ChatbotId.From(cmd.Id), cmd.DocumentId, cmd.Name, cmd.Origin, cmd.FileName, ct);
+        }
+    }
 
-            chatbot.AddDocument(new ChatbotDocument(cmd.Name, cmd.Origin, cmd.Status, cmd.StatusLabel, systemClock.UtcNow));
+    public sealed class Adder(
+        IChatbotsRepository repository,
+        IEventBus eventBus,
+        ISystemClock systemClock) : IService
+    {
+        private readonly ChatbotFinderById _finder = new(repository);
 
-            await chatbotsRepository.Save(chatbot, ct);
-            await eventBus.Publish(chatbot, ct);
+        public async Task Execute(ChatbotId id, Guid documentId, string name, string origin, string fileName,
+            CancellationToken cancellationToken)
+        {
+            Chatbot chatbot = await _finder.Execute(id, cancellationToken);
+
+            chatbot.AddDocument(new ChatbotDocument(
+                documentId, name, origin, DocStatus.Pending, "Pendiente", systemClock.UtcNow, fileName));
+
+            await repository.Save(chatbot, cancellationToken);
+            await eventBus.Publish(chatbot, cancellationToken);
         }
     }
 }

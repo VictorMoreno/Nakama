@@ -1,5 +1,6 @@
 using Nakama.Formations.Domain;
-using Nakama.Formations.Domain.Errors;
+using Nakama.Formations.Domain.Services;
+using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
@@ -9,18 +10,26 @@ public static class FormationModuleGatingToggler
 {
     public sealed record Command(Guid Id, Guid ModuleId) : ICommand;
 
-    public sealed class Handler(IFormationsRepository formationsRepository, IEventBus eventBus) : ICommandHandler<Command>
+    public sealed class Handler(Toggler toggler) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            var key = FormationId.From(cmd.Id);
-            var formation = await formationsRepository.FindById(key, ct)
-                ?? throw FormationErrors.NotFound(cmd.Id.ToString());
+            await toggler.Execute(FormationId.From(cmd.Id), cmd.ModuleId, ct);
+        }
+    }
 
-            formation.ToggleModuleGating(Domain.ModuleId.From(cmd.ModuleId));
+    public sealed class Toggler(IFormationsRepository repository, IEventBus eventBus) : IService
+    {
+        private readonly FormationFinderById _finder = new(repository);
 
-            await formationsRepository.Save(formation, ct);
-            await eventBus.Publish(formation, ct);
+        public async Task Execute(FormationId id, Guid moduleId, CancellationToken cancellationToken)
+        {
+            Formation formation = await _finder.Execute(id, cancellationToken);
+
+            formation.ToggleModuleGating(Domain.ModuleId.From(moduleId));
+
+            await repository.Save(formation, cancellationToken);
+            await eventBus.Publish(formation, cancellationToken);
         }
     }
 }

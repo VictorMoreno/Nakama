@@ -15,7 +15,7 @@ public static class ChatbotErrors
 {
     public static DomainError OwnerCannotBeRemoved { get; } = new ChatbotOwnerCannotBeRemovedError();
 
-    public static DomainError NotFound(string key) => new ChatbotNotFoundError(key);
+    public static DomainError NotFound(ChatbotId id) => new ChatbotNotFoundError(id.ToString());
 
     public static DomainError AlreadyExists(string id) => new ChatbotAlreadyExistsError(id);
 }

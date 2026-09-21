@@ -21,7 +21,7 @@ misma carpeta para el porqué de las decisiones arquitectónicas referenciadas a
 - Cada bounded context tiene **una** clase en `Endpoints/<BoundedContext>Endpoints.cs`
   implementando `Configuration/IEndpoint.cs` (`void MapEndpoints(IEndpointRouteBuilder app)`) —
   no una clase por módulo de `Application`. Los read-models que proyectan el mismo agregado
-  (ej. `ChatbotsList`/`ChatbotDetail`/`ChatPage` para el bounded context Chatbots, ver ADR-9/ADR-10)
+  (ej. `ChatbotSummaries`/`ChatbotDetail`/`ChatPage` para el bounded context Chatbots, ver ADR-9/ADR-10)
   agrupan en el mismo `IEndpoint` que los commands de su propio agregado.
 - Se auto-registra vía el scan de Scrutor ya existente en `Configuration/EndpointExtensions.cs` —
   no hace falta tocar DI al agregar una clase nueva.

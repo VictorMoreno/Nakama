@@ -4,8 +4,6 @@ using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.ChatPage.Application.Handlers;
 
-using ChatPage = Nakama.ChatPage.Domain.ChatPage;
-
 public sealed class ChatPageUpdatedOnConversationStarted(IChatPageRepository chatPageRepository)
     : DomainEventHandler<ConversationStarted>
 {

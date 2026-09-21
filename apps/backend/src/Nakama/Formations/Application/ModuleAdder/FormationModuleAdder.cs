@@ -1,5 +1,7 @@
 using Nakama.Formations.Domain;
 using Nakama.Formations.Domain.Errors;
+using Nakama.Formations.Domain.Services;
+using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
@@ -20,15 +22,21 @@ public static class FormationModuleAdder
         IReadOnlyList<QuizQuestion>? Quiz,
         int? PassingScore) : ICommand;
 
-    public sealed class Handler(
-        IFormationsRepository formationsRepository,
-        IEventBus eventBus) : ICommandHandler<Command>
+    public sealed class Handler(Adder adder) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            var key = FormationId.From(cmd.Id);
-            var formation = await formationsRepository.FindById(key, ct)
-                ?? throw FormationErrors.NotFound(cmd.Id.ToString());
+            await adder.Execute(FormationId.From(cmd.Id), cmd, ct);
+        }
+    }
+
+    public sealed class Adder(IFormationsRepository repository, IEventBus eventBus) : IService
+    {
+        private readonly FormationFinderById _finder = new(repository);
+
+        public async Task Execute(FormationId id, Command cmd, CancellationToken cancellationToken)
+        {
+            Formation formation = await _finder.Execute(id, cancellationToken);
 
             var moduleId = ModuleId.From(cmd.ModuleId);
             if (formation.Modules.Any(m => m.Id == moduleId))
@@ -50,8 +58,8 @@ public static class FormationModuleAdder
 
             formation.AddModule(module);
 
-            await formationsRepository.Save(formation, ct);
-            await eventBus.Publish(formation, ct);
+            await repository.Save(formation, cancellationToken);
+            await eventBus.Publish(formation, cancellationToken);
         }
     }
 }

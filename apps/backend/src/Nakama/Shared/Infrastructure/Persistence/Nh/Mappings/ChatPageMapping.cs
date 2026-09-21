@@ -12,6 +12,7 @@ public sealed class ChatPageMapping : ClassMapping<ChatPage>
     public ChatPageMapping()
     {
         Table("read_chat_page");
+        Lazy(false);
 
         Id(x => x.Id, m =>
         {
@@ -20,13 +21,13 @@ public sealed class ChatPageMapping : ClassMapping<ChatPage>
         });
 
         Property(x => x.Label);
-        Property(x => x.Context);
+        Property(x => x.Context, m => m.Column(c => c.SqlType("text")));
         Property(x => x.Socratic);
         Property(x => x.ExplicaMas);
         Property(x => x.Provider);
 
-        Property(x => x.Opening, m => { m.Column("opening_json"); m.Type<JsonUserType<ChatExampleRow>>(); });
-        Property(x => x.Chips, m => { m.Column("chips_json"); m.Type<JsonUserType<List<ChatExampleRow>>>(); });
-        Property(x => x.History, m => { m.Column("history_json"); m.Type<JsonUserType<List<ConversationSummaryRow>>>(); });
+        Property(x => x.Opening, m => { m.Column(c => { c.Name("opening_json"); c.SqlType("text"); }); m.Type<JsonUserType<ChatExampleRow>>(); });
+        Property(x => x.Chips, m => { m.Column(c => { c.Name("chips_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ChatExampleRow>>>(); });
+        Property(x => x.History, m => { m.Column(c => { c.Name("history_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ConversationSummaryRow>>>(); });
     }
 }

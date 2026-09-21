@@ -101,8 +101,8 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   una colección del mismo) como su `IQuery<T>` — sin volver a envolverlo en un `Response`
   nested propio. Ejemplo:
   ```csharp
-  // ChatbotsList/Application/ChatbotSummaryResponse.cs
-  namespace Nakama.ChatbotsList.Application;
+  // ChatbotSummaries/Application/ChatbotSummaryResponse.cs
+  namespace Nakama.ChatbotSummaries.Application;
 
   public sealed record ChatbotSummaryResponse(Guid Id, string Label, string Status, int DocsCount, int TeamCount)
   {
@@ -110,7 +110,7 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
           new(entity.Id, entity.Label, entity.Status, entity.DocsCount, entity.TeamCount);
   }
 
-  // ChatbotsList/Application/Searcher/ChatbotSummarySearcher.cs — Searcher, no Finder: devuelve
+  // ChatbotSummaries/Application/Searcher/ChatbotSummarySearcher.cs — Searcher, no Finder: devuelve
   // 0..N elementos (un listado), no busca un único registro por identificador.
   public static class ChatbotSummarySearcher
   {
@@ -151,7 +151,7 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   "Status" no es el contexto sino qué se actualiza), ese calificador se mantiene en la
   carpeta: `StatusUpdater/`. Ejemplos completos:
   - `Analytics/Application/Finder/AnalyticsFinder.cs` (singleton — Finder)
-  - `ChatbotsList/Application/Searcher/ChatbotSummarySearcher.cs` (listado — Searcher)
+  - `ChatbotSummaries/Application/Searcher/ChatbotSummarySearcher.cs` (listado — Searcher)
   - `Chatbots/Application/Creator/ChatbotCreator.cs`
   - `Chatbots/Application/StatusUpdater/ChatbotStatusUpdater.cs`
   - `Chatbots/Application/SettingsUpdater/ChatbotSettingsUpdater.cs`
@@ -182,7 +182,7 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
     entidad (agregado o ReadModel).
   Ejemplo: `Analytics/Domain/Analytics.cs` (propiedades + ctor NHibernate) +
   `Analytics/Domain/Analytics.domain.cs` (`From`/`Apply`); mismo split en
-  `Chatbots/Domain/Chatbot.cs`/`.domain.cs`, `ChatbotsList/Domain/ChatbotSummary.cs`/`.domain.cs`,
+  `Chatbots/Domain/Chatbot.cs`/`.domain.cs`, `ChatbotSummaries/Domain/ChatbotSummary.cs`/`.domain.cs`,
   etc.
 - **Toda entidad de dominio construye con un constructor `private` con todos los parámetros de
   negocio, nunca con `new() { Prop = valor, ... }` en el factory — agregados de escritura Y
@@ -325,9 +325,9 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
   "es una proyección" (`Entry`/`ReadModel`/`Row`): se nombra como un concepto de dominio, igual
   que `ChatbotDetail`/`ChatPage`/`FormationDetail`. Coincide con el nombre del bounded context
   solo cuando ese nombre ya es singular. Cuando el bounded context describe una vista de
-  listado y por eso es plural (`ChatbotsList`, `FormationsList` — una por ruta de listado:
+  listado y por eso es plural (`ChatbotSummaries`, `FormationsList` — una por ruta de listado:
   `/chatbots`, `/formacion`), la entidad **no** hereda ese plural: se nombra
-  `<Agregado>Summary` — `ChatbotSummary` en `ChatbotsList/Domain/ChatbotSummary.cs`,
+  `<Agregado>Summary` — `ChatbotSummary` en `ChatbotSummaries/Domain/ChatbotSummary.cs`,
   `FormationSummary` en `FormationsList/Domain/FormationSummary.cs` (una fila = el resumen de
   un agregado para esa lista). Mismo criterio que ya usa el lado de escritura, donde el módulo
   `Chatbots` (plural, área de dominio) contiene el agregado `Chatbot` (singular): el nombre del
@@ -408,7 +408,7 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
   efectos).
 - **Denormalización cross-módulo entre dos ReadModels**: si el ReadModel A necesita un dato
   que "pertenece" a otro ReadModel B (p. ej. `FormationDetail` necesita el label del chatbot
-  vinculado, que en teoría "vive" en `ChatbotsList`), **no** lee el repositorio de B — eso
+  vinculado, que en teoría "vive" en `ChatbotSummaries`), **no** lee el repositorio de B — eso
   violaría la regla de dependencia (§1: ningún bounded context referencia el `Domain` de otro,
   ReadModels incluidos). En vez de eso, A modela su propia entidad interna, pequeña, dentro de
   su propio `Domain` (p. ej. `FormationDetail/Domain/ChatbotLabelRef.cs`), alimentada

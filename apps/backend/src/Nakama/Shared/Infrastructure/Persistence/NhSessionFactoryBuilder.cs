@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
-using NHibernate;
 using NHibernate.Cfg;
-using NHibernate.Dialect;
 using NHibernate.Driver;
 
 namespace Nakama.Shared.Infrastructure.Persistence;
@@ -18,7 +16,7 @@ internal static class NhSessionFactoryBuilder
         var cfg = new Configuration();
         cfg.DataBaseIntegration(db =>
         {
-            db.Dialect<PostgreSQLDialect>();
+            db.Dialect<NakamaPostgreSqlDialect>();
             db.Driver<NpgsqlDriver>();
             db.ConnectionString = connectionString;
         });

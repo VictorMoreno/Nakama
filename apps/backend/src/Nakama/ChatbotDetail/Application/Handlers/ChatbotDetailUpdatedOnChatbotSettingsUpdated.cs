@@ -4,8 +4,6 @@ using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.ChatbotDetail.Application.Handlers;
 
-using ChatbotDetail = Nakama.ChatbotDetail.Domain.ChatbotDetail;
-
 public sealed class ChatbotDetailUpdatedOnChatbotSettingsUpdated(IChatbotDetailRepository chatbotDetailRepository)
     : DomainEventHandler<ChatbotSettingsUpdated>
 {

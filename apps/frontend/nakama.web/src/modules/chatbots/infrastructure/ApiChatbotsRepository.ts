@@ -64,11 +64,13 @@ function toChatExample(row: { question?: string; answer?: string; citation?: str
 
 function toDocument(row: ChatbotDocumentRow): ChatbotDocument {
   return {
+    id: row.id,
     name: row.name ?? "",
     origin: row.origin ?? "",
     status: DOC_STATUS_FROM_API[row.status ?? "Ok"] ?? "ok",
     statusLabel: row.statusLabel ?? "",
-    updated: formatDate(row.updated)
+    updated: formatDate(row.updated),
+    url: row.url
   };
 }
 
@@ -82,6 +84,38 @@ function toGapQuestion(row: GapQuestionRow): GapQuestion {
 
 function toStatTile(row: StatTileRow): StatTile {
   return { label: row.label ?? "", value: row.value ?? "", unit: row.unit ?? "", bar: row.bar ?? 0 };
+}
+
+// No generated client method exists for these - the icon upload/delete endpoints accept
+// multipart/form-data and didn't exist yet when GeneratedNakamaClient.ts was generated from
+// the OpenAPI spec. Same base URL convention as Container.ts's client construction (empty in
+// dev, proxied by vite.config.ts; VITE_API_BASE_URL for a real deployment target).
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
+async function uploadIcon(resource: "chatbots" | "formations", id: string, dataUrl: string): Promise<void> {
+  const blob = await (await fetch(dataUrl)).blob();
+  const form = new FormData();
+  form.append("file", blob, "icon");
+  const response = await fetch(`${API_BASE_URL}/api/${resource}/${id}/icon`, { method: "POST", body: form });
+  if (!response.ok) throw new Error(`No se pudo subir el icono (HTTP ${response.status}).`);
+}
+
+async function deleteIcon(resource: "chatbots" | "formations", id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/${resource}/${id}/icon`, { method: "DELETE" });
+  if (!response.ok) throw new Error(`No se pudo quitar el icono (HTTP ${response.status}).`);
+}
+
+async function uploadDocument(chatbotId: string, file: File, name: string, origin: string): Promise<void> {
+  const documentId = crypto.randomUUID();
+  const form = new FormData();
+  form.append("file", file, file.name);
+  form.append("name", name);
+  form.append("origin", origin);
+  const response = await fetch(`${API_BASE_URL}/api/chatbots/${chatbotId}/documents/${documentId}`, {
+    method: "PUT",
+    body: form
+  });
+  if (!response.ok) throw new Error(`No se pudo subir el documento (HTTP ${response.status}).`);
 }
 
 /**
@@ -148,6 +182,10 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       settings: toApiSettings(settings)
     } satisfies CreateChatbotRequest);
 
+    if (iconUrl) {
+      await uploadIcon("chatbots", id, iconUrl);
+    }
+
     // Built locally instead of a follow-up GET - same pattern the mock used, and the
     // backend response body is empty (201 Created) anyway, so there's nothing to read back.
     return {
@@ -199,10 +237,16 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     await this.client.status(id, { status: STATUS_TO_ORDINAL[status] } satisfies UpdateChatbotStatusRequest);
   }
 
-  async UpdateIcon(): Promise<void> {
-    // No backend endpoint for this yet (not in the 12 chatbot routes built this session) -
-    // failing loudly rather than pretending it saved, per this repo's own convention.
-    throw new Error("ApiChatbotsRepository.UpdateIcon: no existe todavía un endpoint en la API para actualizar el icono de un chatbot.");
+  async UpdateIcon(id: string, iconUrl: string | undefined): Promise<void> {
+    if (iconUrl) {
+      await uploadIcon("chatbots", id, iconUrl);
+    } else {
+      await deleteIcon("chatbots", id);
+    }
+  }
+
+  async AddDocument(id: string, file: File, name: string, origin: string): Promise<void> {
+    await uploadDocument(id, file, name, origin);
   }
 
   async RemoveDocument(id: string, index: number): Promise<void> {

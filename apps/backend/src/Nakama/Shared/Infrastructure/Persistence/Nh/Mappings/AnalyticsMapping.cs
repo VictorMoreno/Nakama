@@ -12,6 +12,7 @@ public sealed class AnalyticsMapping : ClassMapping<Analytics>
     public AnalyticsMapping()
     {
         Table("read_analytics");
+        Lazy(false);
 
         Id(x => x.Id, m =>
         {
@@ -21,6 +22,6 @@ public sealed class AnalyticsMapping : ClassMapping<Analytics>
 
         Property(x => x.ActiveBotsCount);
         Property(x => x.AnsweredThisWeek);
-        Property(x => x.UsageByBot, m => { m.Column("usage_by_bot_json"); m.Type<JsonUserType<List<UsageByBotRow>>>(); });
+        Property(x => x.UsageByBot, m => { m.Column(c => { c.Name("usage_by_bot_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<UsageByBotRow>>>(); });
     }
 }

@@ -10,5 +10,12 @@ public sealed class ChatPageCreatedOnChatbotCreated(IChatPageRepository chatPage
     : DomainEventHandler<ChatbotCreated>
 {
     protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken ct) =>
-        chatPageRepository.Save(ChatPage.Create(chatbotCreated.Id.Value, chatbotCreated.Label), ct);
+        chatPageRepository.Save(
+            ChatPage.Create(
+                chatbotCreated.Id.Value,
+                chatbotCreated.Label,
+                chatbotCreated.Settings.Socratic,
+                chatbotCreated.Settings.ExplicaMas,
+                chatbotCreated.Settings.Provider.ToString()),
+            ct);
 }

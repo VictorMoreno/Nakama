@@ -2,17 +2,34 @@ namespace Nakama.ChatbotDetail.Domain;
 
 public partial class ChatbotDetail
 {
-    private ChatbotDetail(Guid key, string label, string description, string status, bool general)
+    private ChatbotDetail(Guid key,
+        string label,
+        string description,
+        string status,
+        bool general,
+        bool socratic,
+        bool explicaMas,
+        string provider)
     {
         this.Id = key;
         this.Label = label;
         this.Description = description;
         this.Status = status;
         this.General = general;
+        this.Socratic = socratic;
+        this.ExplicaMas = explicaMas;
+        this.Provider = provider;
     }
 
-    public static ChatbotDetail Create(Guid key, string label, string description, string status, bool general) =>
-        new(key, label, description, status, general);
+    public static ChatbotDetail Create(Guid key,
+        string label,
+        string description,
+        string status,
+        bool general,
+        bool socratic,
+        bool explicaMas,
+        string provider) =>
+        new(key, label, description, status, general, socratic, explicaMas, provider);
 
     public void UpdateStatus(string status) => this.Status = status;
 
@@ -27,14 +44,17 @@ public partial class ChatbotDetail
 
     public void MarkArchived() => this.Archived = true;
 
-    public void AddDocument(string name, string origin, string status, string statusLabel, DateTime updated) =>
+    public void AddDocument(Guid id, string name, string origin, string status, string statusLabel, DateTime updated,
+        string fileName) =>
         this.Docs.Add(new ChatbotDocumentRow
         {
+            Id = id,
             Name = name,
             Origin = origin,
             Status = status,
             StatusLabel = statusLabel,
             Updated = updated,
+            FileName = fileName,
         });
 
     public void RemoveDocument(int index)

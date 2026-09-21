@@ -1193,11 +1193,13 @@ export interface ChatbotDetailResponse {
 }
 
 export interface ChatbotDocumentRow {
+    id?: string;
     name?: string;
     origin?: string;
     status?: string;
     statusLabel?: string;
     updated?: Date;
+    url?: string;
 
     [key: string]: any;
 }

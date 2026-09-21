@@ -4,8 +4,6 @@ using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.ChatbotDetail.Application.Handlers;
 
-using ChatbotDetail = Nakama.ChatbotDetail.Domain.ChatbotDetail;
-
 public sealed class ChatbotDetailUpdatedOnChatbotDocumentAdded(IChatbotDetailRepository chatbotDetailRepository)
     : DomainEventHandler<ChatbotDocumentAdded>
 {
@@ -18,11 +16,13 @@ public sealed class ChatbotDetailUpdatedOnChatbotDocumentAdded(IChatbotDetailRep
         }
 
         chatbotDetail.AddDocument(
+            chatbotDocumentAdded.Document.Id,
             chatbotDocumentAdded.Document.Name,
             chatbotDocumentAdded.Document.Origin,
             chatbotDocumentAdded.Document.Status.ToString(),
             chatbotDocumentAdded.Document.StatusLabel,
-            chatbotDocumentAdded.Document.Updated);
+            chatbotDocumentAdded.Document.Updated,
+            chatbotDocumentAdded.Document.FileName);
         await chatbotDetailRepository.Update(chatbotDetail, ct);
     }
 }

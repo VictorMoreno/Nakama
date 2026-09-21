@@ -4,8 +4,6 @@ using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.FormationDetail.Application.Handlers;
 
-using FormationDetail = Nakama.FormationDetail.Domain.FormationDetail;
-
 public sealed class FormationDetailUpdatedOnFormationModuleCompleted(IFormationDetailRepository formationDetailRepository)
     : DomainEventHandler<FormationModuleCompleted>
 {

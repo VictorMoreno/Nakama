@@ -1,5 +1,6 @@
 using Nakama.Formations.Domain;
-using Nakama.Formations.Domain.Errors;
+using Nakama.Formations.Domain.Services;
+using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
@@ -9,18 +10,26 @@ public static class FormationStatusUpdater
 {
     public sealed record Command(Guid Id, FormationStatus Status) : ICommand;
 
-    public sealed class Handler(IFormationsRepository formationsRepository, IEventBus eventBus) : ICommandHandler<Command>
+    public sealed class Handler(Updater updater) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            var key = FormationId.From(cmd.Id);
-            var formation = await formationsRepository.FindById(key, ct)
-                ?? throw FormationErrors.NotFound(cmd.Id.ToString());
+            await updater.Execute(FormationId.From(cmd.Id), cmd.Status, ct);
+        }
+    }
 
-            formation.UpdateStatus(cmd.Status);
+    public sealed class Updater(IFormationsRepository repository, IEventBus eventBus) : IService
+    {
+        private readonly FormationFinderById _finder = new(repository);
 
-            await formationsRepository.Save(formation, ct);
-            await eventBus.Publish(formation, ct);
+        public async Task Execute(FormationId id, FormationStatus status, CancellationToken cancellationToken)
+        {
+            Formation formation = await _finder.Execute(id, cancellationToken);
+
+            formation.UpdateStatus(status);
+
+            await repository.Save(formation, cancellationToken);
+            await eventBus.Publish(formation, cancellationToken);
         }
     }
 }

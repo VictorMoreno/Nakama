@@ -1,6 +1,6 @@
-using Nakama.ChatbotsList.Domain;
+using Nakama.ChatbotSummaries.Domain;
 
-namespace Nakama.ChatbotsList.Application;
+namespace Nakama.ChatbotSummaries.Application;
 
 public sealed record ChatbotSummaryResponse(
     Guid Id,
@@ -24,5 +24,5 @@ public sealed record ChatbotSummaryResponse(
         entity.TeamCount,
         entity.General,
         entity.Archived,
-        entity.IconUrl);
+        entity.IconUrl is null ? null : $"/api/chatbots/icons/{entity.IconUrl}");
 }

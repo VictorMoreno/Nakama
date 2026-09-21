@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nakama-postgres
+    environment:
+      POSTGRES_DB: nakama
+      POSTGRES_USER: nakama
+      POSTGRES_PASSWORD: nakama
+    ports:
+      - "5432:5432"
+    volumes:
+      - nakama-postgres-data:/var/lib/postgresql/data
+volumes:
+  nakama-postgres-data:

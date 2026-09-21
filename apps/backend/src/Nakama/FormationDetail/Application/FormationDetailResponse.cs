@@ -26,7 +26,7 @@ public sealed record FormationDetailResponse(
         entity.Description,
         entity.Status,
         entity.Archived,
-        entity.IconUrl,
+        entity.IconUrl is null ? null : $"/api/formations/icons/{entity.IconUrl}",
         entity.LinkedChatbotKey,
         entity.LinkedChatbotLabel,
         entity.Modules,

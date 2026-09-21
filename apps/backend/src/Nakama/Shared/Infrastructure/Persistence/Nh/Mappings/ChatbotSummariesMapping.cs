@@ -1,14 +1,15 @@
-using Nakama.ChatbotsList.Domain;
+using Nakama.ChatbotSummaries.Domain;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh.Mappings;
 
-public sealed class ChatbotsListMapping : ClassMapping<ChatbotSummary>
+public sealed class ChatbotSummariesMapping : ClassMapping<ChatbotSummary>
 {
-    public ChatbotsListMapping()
+    public ChatbotSummariesMapping()
     {
-        Table("read_chatbots_list");
+        Table("read_chatbot_summaries");
+        Lazy(false);
 
         Id(x => x.Id, m =>
         {
@@ -17,7 +18,7 @@ public sealed class ChatbotsListMapping : ClassMapping<ChatbotSummary>
         });
 
         Property(x => x.Label);
-        Property(x => x.Description);
+        Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
         Property(x => x.Status);
         Property(x => x.LastUsed);
         Property(x => x.DocsCount);

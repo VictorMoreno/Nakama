@@ -1,4 +1,5 @@
 using Api.Configuration;
+using Microsoft.AspNetCore.Mvc;
 using Nakama.ChatbotDetail.Application;
 using Nakama.ChatbotDetail.Application.Finder;
 using Nakama.Chatbots.Application.Archiver;
@@ -6,13 +7,14 @@ using Nakama.Chatbots.Application.Creator;
 using Nakama.Chatbots.Application.DocumentAdder;
 using Nakama.Chatbots.Application.DocumentRemover;
 using Nakama.Chatbots.Application.ExchangeAppender;
+using Nakama.Chatbots.Application.IconUpdater;
 using Nakama.Chatbots.Application.SettingsUpdater;
 using Nakama.Chatbots.Application.StatusUpdater;
 using Nakama.Chatbots.Application.TeamMemberAdder;
 using Nakama.Chatbots.Application.TeamMemberRemover;
 using Nakama.Chatbots.Domain;
-using Nakama.ChatbotsList.Application;
-using Nakama.ChatbotsList.Application.Searcher;
+using Nakama.ChatbotSummaries.Application;
+using Nakama.ChatbotSummaries.Application.Searcher;
 using Nakama.ChatPage.Application;
 using Nakama.ChatPage.Application.Finder;
 using Nakama.Shared.Domain;
@@ -45,9 +47,12 @@ public sealed class ChatbotEndpoints : IEndpoint
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapPost("/{id:guid}/documents", AddChatbotDocument)
-            .WithSummary("Adds a document to a chatbot's knowledge base.")
-            .Produces(StatusCodes.Status204NoContent)
+        group.MapPut("/{id:guid}/documents/{documentId:guid}", AddChatbotDocument)
+            .WithSummary("Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a chatbot's knowledge base.")
+            .WithDescription("Newly uploaded documents are always reported as Pending - this codebase has no real indexing pipeline yet.")
+            .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}/documents/{index:int}", RemoveChatbotDocument)
@@ -65,6 +70,18 @@ public sealed class ChatbotEndpoints : IEndpoint
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
+        group.MapPost("/{id:guid}/icon", UploadChatbotIcon)
+            .WithSummary("Uploads or replaces a chatbot's icon image (PNG or JPEG, max 2 MB).")
+            .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapDelete("/{id:guid}/icon", RemoveChatbotIcon)
+            .WithSummary("Removes a chatbot's icon image.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{botKey:guid}/conversations/{conversationId:guid}/exchanges", AppendConversationExchange)
             .WithSummary("Appends a question/answer exchange to a conversation.")
@@ -126,19 +143,41 @@ public sealed class ChatbotEndpoints : IEndpoint
 
     private static async Task<IResult> AddChatbotDocument(
         Guid id,
-        AddChatbotDocumentRequest body,
+        Guid documentId,
+        IFormFile file,
+        [FromForm] string name,
+        [FromForm] string origin,
         ICommandBus commandBus,
+        IConfiguration configuration,
+        IWebHostEnvironment env,
         CancellationToken ct)
     {
-        await commandBus.Send(
-            new ChatbotDocumentAdder.Command(id, body.Name, body.Origin, body.Status, body.StatusLabel), ct);
-        return Results.NoContent();
+        var basePath = DocumentStorage.ResolvePath(configuration, env, "ChatbotDocumentsPath");
+        var fileName = await DocumentStorage.SaveAsync(basePath, documentId, file, ct);
+        await commandBus.Send(new ChatbotDocumentAdder.Command(id, documentId, name, origin, fileName), ct);
+        return Results.Created();
     }
 
-    private static async Task<IResult> RemoveChatbotDocument(Guid id, int index, ICommandBus commandBus,
+    private static async Task<IResult> RemoveChatbotDocument(
+        Guid id,
+        int index,
+        ICommandBus commandBus,
+        IQueryBus queryBus,
+        IConfiguration configuration,
+        IWebHostEnvironment env,
         CancellationToken ct)
     {
+        var detail = await queryBus.Ask(new ChatbotDetailFinder.Query(id), ct);
+        var fileName = index >= 0 && index < detail.Docs.Count ? Path.GetFileName(detail.Docs[index].Url) : null;
+
         await commandBus.Send(new ChatbotDocumentRemover.Command(id, index), ct);
+
+        if (fileName is not null)
+        {
+            var basePath = DocumentStorage.ResolvePath(configuration, env, "ChatbotDocumentsPath");
+            DocumentStorage.Delete(basePath, fileName);
+        }
+
         return Results.NoContent();
     }
 
@@ -158,6 +197,33 @@ public sealed class ChatbotEndpoints : IEndpoint
         CancellationToken ct)
     {
         await commandBus.Send(new ChatbotTeamMemberRemover.Command(id, index), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> UploadChatbotIcon(
+        Guid id,
+        IFormFile file,
+        ICommandBus commandBus,
+        IConfiguration configuration,
+        IWebHostEnvironment env,
+        CancellationToken ct)
+    {
+        var basePath = IconStorage.ResolvePath(configuration, env, "ChatbotIconsPath");
+        var fileName = await IconStorage.SaveAsync(basePath, id, file, ct);
+        await commandBus.Send(new ChatbotIconUpdater.Command(id, fileName), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> RemoveChatbotIcon(
+        Guid id,
+        ICommandBus commandBus,
+        IConfiguration configuration,
+        IWebHostEnvironment env,
+        CancellationToken ct)
+    {
+        var basePath = IconStorage.ResolvePath(configuration, env, "ChatbotIconsPath");
+        IconStorage.DeleteExisting(basePath, id);
+        await commandBus.Send(new ChatbotIconUpdater.Command(id, null), ct);
         return Results.NoContent();
     }
 
@@ -202,8 +268,6 @@ public sealed class ChatbotEndpoints : IEndpoint
         ChatbotSettings Settings);
 
     private sealed record UpdateChatbotStatusRequest(ChatbotStatus Status);
-
-    private sealed record AddChatbotDocumentRequest(string Name, string Origin, DocStatus Status, string StatusLabel);
 
     private sealed record AddChatbotTeamMemberRequest(string Name, TeamRole Role);
 

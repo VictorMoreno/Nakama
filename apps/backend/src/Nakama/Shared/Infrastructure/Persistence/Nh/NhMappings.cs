@@ -13,7 +13,7 @@ internal static class NhMappings
         mapper.AddMapping<Mappings.ConversationMapping>();
         mapper.AddMapping<Mappings.FormationMapping>();
 
-        mapper.AddMapping<Mappings.ChatbotsListMapping>();
+        mapper.AddMapping<Mappings.ChatbotSummariesMapping>();
         mapper.AddMapping<Mappings.ChatbotDetailMapping>();
         mapper.AddMapping<Mappings.ChatPageMapping>();
         mapper.AddMapping<Mappings.FormationsListMapping>();

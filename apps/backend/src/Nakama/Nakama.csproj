@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <!-- MediatR Community Edition (RPL-1.5, free under $5M/year revenue) -->
+        <PackageReference Include="dbup-postgresql" />
         <PackageReference Include="MediatR" />
         <PackageReference Include="NHibernate" />
         <PackageReference Include="Npgsql" />
@@ -16,6 +17,10 @@
 
     <ItemGroup>
       <Folder Include="Shared\Infrastructure\NswagStudio\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Shared\Infrastructure\Persistence\Migrations\*.sql" />
     </ItemGroup>
 
 </Project>

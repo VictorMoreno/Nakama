@@ -16,7 +16,9 @@
   <Folder Name="/apps/test/" />
   <Folder Name="/_solutionItems/">
     <File Path=".gitignore" />
+    <File Path="docker-compose.yaml" />
     <File Path="README.md" />
      <File Path="Directory.Packages.props" />
+    <File Path="TODO.md" />
   </Folder>
 </Solution>

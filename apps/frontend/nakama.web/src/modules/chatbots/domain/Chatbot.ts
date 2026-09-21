@@ -12,11 +12,13 @@ export interface ChatbotSettings {
 export type DocStatus = "ok" | "pending";
 
 export interface ChatbotDocument {
+  id?: string;
   name: string;
   origin: string;
   status: DocStatus;
   statusLabel: string;
   updated: string;
+  url?: string;
 }
 
 export interface GapQuestion {

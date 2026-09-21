@@ -2,6 +2,7 @@ using Api.Configuration;
 using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Application.Finder;
 using Nakama.Formations.Application.Creator;
+using Nakama.Formations.Application.IconUpdater;
 using Nakama.Formations.Application.ModuleAdder;
 using Nakama.Formations.Application.ModuleCompleter;
 using Nakama.Formations.Application.ModuleGatingToggler;
@@ -26,6 +27,18 @@ public sealed class FormationEndpoints : IEndpoint
 
         group.MapPatch("/{id:guid}/status", UpdateFormationStatus)
             .WithSummary("Updates a formation's status.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/{id:guid}/icon", UploadFormationIcon)
+            .WithSummary("Uploads or replaces a formation's icon image (PNG or JPEG, max 2 MB).")
+            .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapDelete("/{id:guid}/icon", RemoveFormationIcon)
+            .WithSummary("Removes a formation's icon image.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -77,6 +90,33 @@ public sealed class FormationEndpoints : IEndpoint
         CancellationToken ct)
     {
         await commandBus.Send(new FormationStatusUpdater.Command(id, body.Status), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> UploadFormationIcon(
+        Guid id,
+        IFormFile file,
+        ICommandBus commandBus,
+        IConfiguration configuration,
+        IWebHostEnvironment env,
+        CancellationToken ct)
+    {
+        var basePath = IconStorage.ResolvePath(configuration, env, "FormationIconsPath");
+        var fileName = await IconStorage.SaveAsync(basePath, id, file, ct);
+        await commandBus.Send(new FormationIconUpdater.Command(id, fileName), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> RemoveFormationIcon(
+        Guid id,
+        ICommandBus commandBus,
+        IConfiguration configuration,
+        IWebHostEnvironment env,
+        CancellationToken ct)
+    {
+        var basePath = IconStorage.ResolvePath(configuration, env, "FormationIconsPath");
+        IconStorage.DeleteExisting(basePath, id);
+        await commandBus.Send(new FormationIconUpdater.Command(id, null), ct);
         return Results.NoContent();
     }
 

@@ -16,6 +16,8 @@ public partial class FormationSummary
 
     public void UpdateStatus(string status) => this.Status = status;
 
+    public void UpdateIcon(string? iconUrl) => this.IconUrl = iconUrl;
+
     public void IncrementModulesCount()
     {
         this.ModulesCount++;

@@ -34,7 +34,7 @@ public partial class Chatbot
         ISystemClock systemClock)
     {
         var chatbot = new Chatbot(key, label, description, status, general, settings, systemClock.UtcNow);
-        chatbot.Raise(new ChatbotCreated(key, label, description, status, general));
+        chatbot.Raise(new ChatbotCreated(key, label, description, status, general, settings));
         return chatbot;
     }
 
