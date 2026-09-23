@@ -15,8 +15,10 @@ public static class SwaggerExtensions
             .AddApiExplorer(options =>
             {
                 options.GroupNameFormat = "'v'VVV";
-            })
-            .AddOpenApi();
+            });
+
+        services.ConfigureOptions<ConfigureSwaggerOptions>();
+        services.AddSwaggerGen();
 
         return services;
     }

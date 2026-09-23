@@ -16,7 +16,7 @@ public sealed class ChatbotDetailMapping : ClassMapping<ChatbotDetail>
 
         Id(x => x.Id, m =>
         {
-            m.Column("key");
+            m.Column("id");
             m.Generator(Generators.Assigned);
         });
 

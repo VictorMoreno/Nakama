@@ -8,13 +8,16 @@ namespace Nakama.Chatbots.Application.SettingsUpdater;
 
 public static class ChatbotSettingsUpdater
 {
-    public sealed record Command(Guid Id, ChatbotSettings Settings) : ICommand;
+    public sealed record Command(Guid Id, bool Socratic, bool ExplicaMas, int Provider) : ICommand;
 
     public sealed class Handler(Updater updater) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            await updater.Execute(ChatbotId.From(cmd.Id), cmd.Settings, ct);
+            await updater.Execute(
+                ChatbotId.From(cmd.Id),
+                new ChatbotSettings(cmd.Socratic, cmd.ExplicaMas, (LlmProvider)cmd.Provider),
+                ct);
         }
     }
 

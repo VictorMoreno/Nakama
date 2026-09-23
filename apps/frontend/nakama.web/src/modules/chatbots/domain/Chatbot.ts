@@ -72,7 +72,6 @@ export interface Chatbot {
   description: string;
   /** Configurado por el admin del chatbot */
   status: ChatbotLifecycleStatus;
-  lastUsed: string;
   context: string;
   /** null for a freshly created chatbot with no indexed content yet */
   opening: ChatExample | null;

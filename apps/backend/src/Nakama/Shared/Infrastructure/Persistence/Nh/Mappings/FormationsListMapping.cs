@@ -13,7 +13,7 @@ public sealed class FormationsListMapping : ClassMapping<FormationSummary>
 
         Id(x => x.Id, m =>
         {
-            m.Column("key");
+            m.Column("id");
             m.Generator(Generators.Assigned);
         });
 

@@ -49,7 +49,8 @@ public sealed class ChatbotEndpoints : IEndpoint
 
         group.MapPut("/{id:guid}/documents/{documentId:guid}", AddChatbotDocument)
             .WithSummary("Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a chatbot's knowledge base.")
-            .WithDescription("Newly uploaded documents are always reported as Pending - this codebase has no real indexing pipeline yet.")
+            .WithDescription(
+                "Newly uploaded documents are always reported as Pending - this codebase has no real indexing pipeline yet.")
             .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -107,11 +108,18 @@ public sealed class ChatbotEndpoints : IEndpoint
     private static async Task<IResult> CreateChatbot(
         Guid id,
         CreateChatbotRequest body,
-        ICommandBus commandBus, 
+        ICommandBus commandBus,
         CancellationToken ct)
     {
         await commandBus.Send(
-            new ChatbotCreator.Command(id, body.Label, body.Description, body.Status, body.General, body.Settings), ct);
+            new ChatbotCreator.Command(id,
+                body.Label,
+                body.Description,
+                body.Status,
+                body.General,
+                body.Socratic,
+                body.ExplicaMas,
+                body.Provider), ct);
         return Results.Created();
     }
 
@@ -122,9 +130,9 @@ public sealed class ChatbotEndpoints : IEndpoint
     }
 
     private static async Task<IResult> UpdateChatbotStatus(
-        Guid id, 
-        UpdateChatbotStatusRequest body, 
-        ICommandBus commandBus, 
+        Guid id,
+        UpdateChatbotStatusRequest body,
+        ICommandBus commandBus,
         CancellationToken ct)
     {
         await commandBus.Send(new ChatbotStatusUpdater.Command(id, body.Status), ct);
@@ -133,11 +141,12 @@ public sealed class ChatbotEndpoints : IEndpoint
 
     private static async Task<IResult> UpdateChatbotSettings(
         Guid id,
-        ChatbotSettings body, 
+        UpdateChatbotSettingsRequest body,
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await commandBus.Send(new ChatbotSettingsUpdater.Command(id, body), ct);
+        await commandBus.Send(new ChatbotSettingsUpdater.Command(id, body.Socratic, body.ExplicaMas, body.Provider),
+            ct);
         return Results.NoContent();
     }
 
@@ -182,7 +191,7 @@ public sealed class ChatbotEndpoints : IEndpoint
     }
 
     private static async Task<IResult> AddChatbotTeamMember(
-        Guid id, 
+        Guid id,
         AddChatbotTeamMemberRequest body,
         ICommandBus commandBus,
         CancellationToken ct)
@@ -191,7 +200,7 @@ public sealed class ChatbotEndpoints : IEndpoint
         return Results.NoContent();
     }
 
-    private static async Task<IResult> RemoveChatbotTeamMember(Guid id, 
+    private static async Task<IResult> RemoveChatbotTeamMember(Guid id,
         int index,
         ICommandBus commandBus,
         CancellationToken ct)
@@ -228,7 +237,7 @@ public sealed class ChatbotEndpoints : IEndpoint
     }
 
     private static async Task<IResult> AppendConversationExchange(
-        Guid botKey, 
+        Guid botKey,
         Guid conversationId,
         AppendConversationExchangeRequest body,
         ICommandBus commandBus,
@@ -263,13 +272,17 @@ public sealed class ChatbotEndpoints : IEndpoint
     private sealed record CreateChatbotRequest(
         string Label,
         string Description,
-        ChatbotStatus Status,
+        int Status,
         bool General,
-        ChatbotSettings Settings);
+        bool Socratic,
+        bool ExplicaMas,
+        int Provider);
 
-    private sealed record UpdateChatbotStatusRequest(ChatbotStatus Status);
+    private sealed record UpdateChatbotStatusRequest(int Status);
 
-    private sealed record AddChatbotTeamMemberRequest(string Name, TeamRole Role);
+    private sealed record UpdateChatbotSettingsRequest(bool Socratic, bool ExplicaMas, int Provider);
+
+    private sealed record AddChatbotTeamMemberRequest(string Name, int Role);
 
     private sealed record AppendConversationExchangeRequest(
         string Title,

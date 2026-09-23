@@ -32,6 +32,8 @@ public partial class FormationDetail
 
     public void UpdateStatus(string status) => this.Status = status;
 
+    public void MarkArchived() => this.Archived = true;
+
     public void UpdateIcon(string? iconUrl) => this.IconUrl = iconUrl;
 
     public void AddModule(

@@ -13,14 +13,13 @@ public sealed class ChatbotSummariesMapping : ClassMapping<ChatbotSummary>
 
         Id(x => x.Id, m =>
         {
-            m.Column("key");
+            m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
         Property(x => x.Label);
         Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
         Property(x => x.Status);
-        Property(x => x.LastUsed);
         Property(x => x.DocsCount);
         Property(x => x.TeamCount);
         Property(x => x.General);

@@ -8,13 +8,13 @@ namespace Nakama.Chatbots.Application.TeamMemberAdder;
 
 public static class ChatbotTeamMemberAdder
 {
-    public sealed record Command(Guid Id, string Name, TeamRole Role) : ICommand;
+    public sealed record Command(Guid Id, string Name, int Role) : ICommand;
 
     public sealed class Handler(Adder adder) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            await adder.Execute(ChatbotId.From(cmd.Id), cmd.Name, cmd.Role, ct);
+            await adder.Execute(ChatbotId.From(cmd.Id), cmd.Name, (TeamRole)cmd.Role, ct);
         }
     }
 

@@ -1,6 +1,7 @@
 using Api.Configuration;
 using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Application.Finder;
+using Nakama.Formations.Application.Archiver;
 using Nakama.Formations.Application.Creator;
 using Nakama.Formations.Application.IconUpdater;
 using Nakama.Formations.Application.ModuleAdder;
@@ -24,6 +25,11 @@ public sealed class FormationEndpoints : IEndpoint
             .WithSummary("Creates a new formation with a caller-supplied id.")
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict);
+
+        group.MapPost("/{id:guid}/archive", ArchiveFormation)
+            .WithSummary("Marks a formation as archived.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPatch("/{id:guid}/status", UpdateFormationStatus)
             .WithSummary("Updates a formation's status.")
@@ -83,6 +89,12 @@ public sealed class FormationEndpoints : IEndpoint
         return Results.Created();
     }
 
+    private static async Task<IResult> ArchiveFormation(Guid id, ICommandBus commandBus, CancellationToken ct)
+    {
+        await commandBus.Send(new FormationArchiver.Command(id), ct);
+        return Results.NoContent();
+    }
+
     private static async Task<IResult> UpdateFormationStatus(
         Guid id,
         UpdateFormationStatusRequest body,
@@ -126,7 +138,9 @@ public sealed class FormationEndpoints : IEndpoint
         await commandBus.Send(
             new FormationModuleAdder.Command(
                 id, moduleId, body.Title, body.Type, body.Summary, body.Gated, body.AiDraft,
-                body.ResourceUrl, body.DurationMin, body.Quiz, body.PassingScore),
+                body.ResourceUrl, body.DurationMin,
+                body.Quiz?.Select(q => new FormationModuleAdder.QuizQuestionInput(q.Question, q.Options, q.CorrectIndex)).ToList(),
+                body.PassingScore),
             ct);
         return Results.Created();
     }
@@ -163,20 +177,22 @@ public sealed class FormationEndpoints : IEndpoint
         string Title,
         string Audience,
         string Description,
-        FormationStatus Status,
+        int Status,
         Guid? LinkedChatbotKey);
 
-    private sealed record UpdateFormationStatusRequest(FormationStatus Status);
+    private sealed record UpdateFormationStatusRequest(int Status);
+
+    private sealed record QuizQuestionRequest(string Question, IReadOnlyList<string> Options, int CorrectIndex);
 
     private sealed record AddFormationModuleRequest(
         string Title,
-        ModuleType Type,
+        int Type,
         string Summary,
         bool Gated,
         bool AiDraft,
         string? ResourceUrl,
         int? DurationMin,
-        IReadOnlyList<QuizQuestion>? Quiz,
+        IReadOnlyList<QuizQuestionRequest>? Quiz,
         int? PassingScore);
 
     private sealed record CompleteFormationModuleRequest(int? Score);

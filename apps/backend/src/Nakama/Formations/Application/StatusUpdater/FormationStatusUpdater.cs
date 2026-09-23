@@ -8,13 +8,13 @@ namespace Nakama.Formations.Application.StatusUpdater;
 
 public static class FormationStatusUpdater
 {
-    public sealed record Command(Guid Id, FormationStatus Status) : ICommand;
+    public sealed record Command(Guid Id, int Status) : ICommand;
 
     public sealed class Handler(Updater updater) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            await updater.Execute(FormationId.From(cmd.Id), cmd.Status, ct);
+            await updater.Execute(FormationId.From(cmd.Id), (FormationStatus)cmd.Status, ct);
         }
     }
 

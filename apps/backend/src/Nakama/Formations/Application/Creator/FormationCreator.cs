@@ -13,33 +13,41 @@ public static class FormationCreator
         string Title,
         string Audience,
         string Description,
-        FormationStatus Status,
+        int Status,
         Guid? LinkedChatbotKey) : ICommand;
 
     public sealed class Handler(Creator creator) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            await creator.Execute(FormationId.From(cmd.Id), cmd, ct);
+            await creator.Execute(
+                FormationId.From(cmd.Id),
+                cmd.Title,
+                cmd.Audience,
+                cmd.Description,
+                (FormationStatus)cmd.Status,
+                cmd.LinkedChatbotKey,
+                ct);
         }
     }
 
     public sealed class Creator(IFormationsRepository repository, IEventBus eventBus) : IService
     {
-        public async Task Execute(FormationId id, Command cmd, CancellationToken cancellationToken)
+        public async Task Execute(
+            FormationId id,
+            string title,
+            string audience,
+            string description,
+            FormationStatus status,
+            Guid? linkedChatbotKey,
+            CancellationToken cancellationToken)
         {
             if (await repository.FindById(id, cancellationToken) is not null)
             {
                 throw FormationErrors.AlreadyExists(id.ToString());
             }
 
-            var formation = Formation.Create(
-                id,
-                cmd.Title,
-                cmd.Audience,
-                cmd.Description,
-                cmd.Status,
-                cmd.LinkedChatbotKey);
+            var formation = Formation.Create(id, title, audience, description, status, linkedChatbotKey);
 
             await repository.Save(formation, cancellationToken);
             await eventBus.Publish(formation, cancellationToken);

@@ -14,7 +14,7 @@ public sealed class ChatbotMapping : ClassMapping<Chatbot>
 
         Id(x => x.Id, m =>
         {
-            m.Column("key");
+            m.Column("id");
             m.Generator(Generators.Assigned);
             m.Type<GuidValueObjectUserType<ChatbotId>>();
         });

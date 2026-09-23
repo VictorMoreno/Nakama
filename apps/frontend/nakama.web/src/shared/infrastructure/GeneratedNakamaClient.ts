@@ -13,7 +13,7 @@ export class ApiClientBase {
         return options_;
     }
 
-    protected async transformResult(_url: string, response: Response, processor: (_response: Response) => Promise<any>): Promise<any> {
+    protected async transformResult(url: string, response: Response, processor: (_response: Response) => Promise<any>): Promise<any> {
         return processor(response);
     }
 }
@@ -54,13 +54,16 @@ export interface IGeneratedNakamaClient {
      * Replaces a chatbot's settings (Socratic mode, ExplicaMas, LLM provider).
      * @return No Content
      */
-    settings(id: string, body: ChatbotSettings): Promise<void>;
+    settings(id: string, body: UpdateChatbotSettingsRequest): Promise<void>;
 
     /**
-     * Adds a document to a chatbot's knowledge base.
-     * @return No Content
+     * Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a chatbot's knowledge base.
+     * @param file (optional) 
+     * @param name (optional) 
+     * @param origin (optional) 
+     * @return Created
      */
-    documentsPOST(id: string, body: AddChatbotDocumentRequest): Promise<void>;
+    documentsPUT(id: string, documentId: string, file: FileParameter | undefined, name: string | undefined, origin: string | undefined): Promise<void>;
 
     /**
      * Removes a document by its list position.
@@ -79,6 +82,19 @@ export interface IGeneratedNakamaClient {
      * @return No Content
      */
     teamDELETE(id: string, index: number): Promise<void>;
+
+    /**
+     * Uploads or replaces a chatbot's icon image (PNG or JPEG, max 2 MB).
+     * @param file (optional) 
+     * @return No Content
+     */
+    iconPOST(id: string, file: FileParameter | undefined): Promise<void>;
+
+    /**
+     * Removes a chatbot's icon image.
+     * @return No Content
+     */
+    iconDELETE(id: string): Promise<void>;
 
     /**
      * Appends a question/answer exchange to a conversation.
@@ -111,10 +127,29 @@ export interface IGeneratedNakamaClient {
     formationsGET(id: string): Promise<FormationDetailResponse>;
 
     /**
+     * Marks a formation as archived.
+     * @return No Content
+     */
+    archive2(id: string): Promise<void>;
+
+    /**
      * Updates a formation's status.
      * @return No Content
      */
     status2(id: string, body: UpdateFormationStatusRequest): Promise<void>;
+
+    /**
+     * Uploads or replaces a formation's icon image (PNG or JPEG, max 2 MB).
+     * @param file (optional) 
+     * @return No Content
+     */
+    iconPOST2(id: string, file: FileParameter | undefined): Promise<void>;
+
+    /**
+     * Removes a formation's icon image.
+     * @return No Content
+     */
+    iconDELETE2(id: string): Promise<void>;
 
     /**
      * Adds a module to a formation, using a caller-supplied module id.
@@ -149,7 +184,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
         super();
         this.http = http ? http : window as any;
-        this.baseUrl = baseUrl ?? "https://localhost:7080/";
+        this.baseUrl = baseUrl ?? "";
     }
 
     /**
@@ -392,7 +427,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
      * Replaces a chatbot's settings (Socratic mode, ExplicaMas, LLM provider).
      * @return No Content
      */
-    settings(id: string, body: ChatbotSettings): Promise<void> {
+    settings(id: string, body: UpdateChatbotSettingsRequest): Promise<void> {
         let url_ = this.baseUrl + "/api/chatbots/{id}/settings";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -438,39 +473,62 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Adds a document to a chatbot's knowledge base.
-     * @return No Content
+     * Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a chatbot's knowledge base.
+     * @param file (optional) 
+     * @param name (optional) 
+     * @param origin (optional) 
+     * @return Created
      */
-    documentsPOST(id: string, body: AddChatbotDocumentRequest): Promise<void> {
-        let url_ = this.baseUrl + "/api/chatbots/{id}/documents";
+    documentsPUT(id: string, documentId: string, file: FileParameter | undefined, name: string | undefined, origin: string | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{id}/documents/{documentId}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (documentId === undefined || documentId === null)
+            throw new globalThis.Error("The parameter 'documentId' must be defined.");
+        url_ = url_.replace("{documentId}", encodeURIComponent("" + documentId));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+        if (name === null || name === undefined)
+            throw new globalThis.Error("The parameter 'name' cannot be null.");
+        else
+            content_.append("name", name.toString());
+        if (origin === null || origin === undefined)
+            throw new globalThis.Error("The parameter 'origin' cannot be null.");
+        else
+            content_.append("origin", origin.toString());
 
         let options_: RequestInit = {
             body: content_,
-            method: "POST",
+            method: "PUT",
             headers: {
-                "Content-Type": "application/json",
             }
         };
 
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processDocumentsPOST(_response));
+            return this.transformResult(url_, _response, (_response: Response) => this.processDocumentsPUT(_response));
         });
     }
 
-    protected processDocumentsPOST(response: Response): Promise<void> {
+    protected processDocumentsPUT(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 204) {
+        if (status === 201) {
             return response.text().then((_responseText) => {
             return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Bad Request", status, _responseText, _headers, result400);
             });
         } else if (status === 404) {
             return response.text().then((_responseText) => {
@@ -627,7 +685,111 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             return response.text().then((_responseText) => {
             let result422: any = null;
             result422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
-            return throwException("Unprocessable Entity", status, _responseText, _headers, result422);
+            return throwException("Unprocessable Content", status, _responseText, _headers, result422);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Uploads or replaces a chatbot's icon image (PNG or JPEG, max 2 MB).
+     * @param file (optional) 
+     * @return No Content
+     */
+    iconPOST(id: string, file: FileParameter | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{id}/icon";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processIconPOST(_response));
+        });
+    }
+
+    protected processIconPOST(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Removes a chatbot's icon image.
+     * @return No Content
+     */
+    iconDELETE(id: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{id}/icon";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processIconDELETE(_response));
+        });
+    }
+
+    protected processIconDELETE(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -868,6 +1030,51 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Marks a formation as archived.
+     * @return No Content
+     */
+    archive2(id: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/archive";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processArchive2(_response));
+        });
+    }
+
+    protected processArchive2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
      * Updates a formation's status.
      * @return No Content
      */
@@ -896,6 +1103,110 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     protected processStatus2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Uploads or replaces a formation's icon image (PNG or JPEG, max 2 MB).
+     * @param file (optional) 
+     * @return No Content
+     */
+    iconPOST2(id: string, file: FileParameter | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/icon";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processIconPOST2(_response));
+        });
+    }
+
+    protected processIconPOST2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Removes a formation's icon image.
+     * @return No Content
+     */
+    iconDELETE2(id: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/icon";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processIconDELETE2(_response));
+        });
+    }
+
+    protected processIconDELETE2(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -1022,7 +1333,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             return response.text().then((_responseText) => {
             let result422: any = null;
             result422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
-            return throwException("Unprocessable Entity", status, _responseText, _headers, result422);
+            return throwException("Unprocessable Content", status, _responseText, _headers, result422);
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -1120,233 +1431,181 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 }
 
-export interface AddChatbotDocumentRequest {
-    name: string;
-    origin: string;
-    status: number;
-    statusLabel: string;
-
-    [key: string]: any;
-}
-
 export interface AddChatbotTeamMemberRequest {
-    name: string;
-    role: number;
-
-    [key: string]: any;
+    name?: string | undefined;
+    role?: number;
 }
 
 export interface AddFormationModuleRequest {
-    title: string;
-    type: number;
-    summary: string;
-    gated: boolean;
-    aiDraft: boolean;
-    resourceUrl: string | undefined;
-    durationMin: number | undefined;
-    quiz: QuizQuestion[] | undefined;
-    passingScore: number | undefined;
-
-    [key: string]: any;
+    title?: string | undefined;
+    type?: number;
+    summary?: string | undefined;
+    gated?: boolean;
+    aiDraft?: boolean;
+    resourceUrl?: string | undefined;
+    durationMin?: number | undefined;
+    quiz?: QuizQuestionRequest[] | undefined;
+    passingScore?: number | undefined;
 }
 
 export interface AnalyticsResponse {
-    id: string;
-    activeBotsCount: number;
-    answeredThisWeek: number;
-    usageByBot: UsageByBotRow[];
-
-    [key: string]: any;
+    id?: string | undefined;
+    activeBotsCount?: number;
+    answeredThisWeek?: number;
+    usageByBot?: UsageByBotRow[] | undefined;
 }
 
 export interface AppendConversationExchangeRequest {
-    title: string;
-    question: string;
-    answer: string;
-    citation: string;
-    moreExplanation: string;
-    socraticVariant: string;
-
-    [key: string]: any;
-}
-
-export interface ChatbotDetailResponse {
-    id: string;
-    label: string;
-    description: string;
-    status: string;
-    lastUsed: Date;
-    context: string;
-    general: boolean;
-    archived: boolean;
-    iconUrl: string | undefined;
-    socratic: boolean;
-    explicaMas: boolean;
-    provider: string;
-    docs: ChatbotDocumentRow[];
-    team: TeamMemberRow[];
-    gaps: GapQuestionRow[];
-    topQuestions: GapQuestionRow[];
-    stats: StatTileRow[];
-
-    [key: string]: any;
-}
-
-export interface ChatbotDocumentRow {
-    id?: string;
-    name?: string;
-    origin?: string;
-    status?: string;
-    statusLabel?: string;
-    updated?: Date;
-    url?: string;
-
-    [key: string]: any;
-}
-
-export interface ChatbotSettings {
-    socratic: boolean;
-    explicaMas: boolean;
-    provider: number;
-
-    [key: string]: any;
-}
-
-export interface ChatbotSummaryResponse {
-    id: string;
-    label: string;
-    description: string;
-    status: string;
-    lastUsed: Date;
-    docsCount: number;
-    teamCount: number;
-    general: boolean;
-    archived: boolean;
-    iconUrl: string | undefined;
-
-    [key: string]: any;
+    title?: string | undefined;
+    question?: string | undefined;
+    answer?: string | undefined;
+    citation?: string | undefined;
+    moreExplanation?: string | undefined;
+    socraticVariant?: string | undefined;
 }
 
 export interface ChatExampleRow {
-    question?: string;
-    answer?: string;
-    citation?: string;
-    moreExplanation?: string;
-    socraticVariant?: string;
-
-    [key: string]: any;
+    question?: string | undefined;
+    answer?: string | undefined;
+    citation?: string | undefined;
+    moreExplanation?: string | undefined;
+    socraticVariant?: string | undefined;
 }
 
 export interface ChatPageResponse {
-    id: string;
-    label: string;
-    context: string;
-    socratic: boolean;
-    explicaMas: boolean;
-    provider: string;
-    opening: ChatExampleRow | undefined;
-    chips: ChatExampleRow[];
-    history: ConversationSummaryRow[];
+    id?: string;
+    label?: string | undefined;
+    context?: string | undefined;
+    socratic?: boolean;
+    explicaMas?: boolean;
+    provider?: string | undefined;
+    opening?: ChatExampleRow;
+    chips?: ChatExampleRow[] | undefined;
+    history?: ConversationSummaryRow[] | undefined;
+}
 
-    [key: string]: any;
+export interface ChatbotDetailResponse {
+    id?: string;
+    label?: string | undefined;
+    description?: string | undefined;
+    status?: string | undefined;
+    lastUsed?: Date;
+    context?: string | undefined;
+    general?: boolean;
+    archived?: boolean;
+    iconUrl?: string | undefined;
+    socratic?: boolean;
+    explicaMas?: boolean;
+    provider?: string | undefined;
+    docs?: ChatbotDocumentResponse[] | undefined;
+    team?: TeamMemberRow[] | undefined;
+    gaps?: GapQuestionRow[] | undefined;
+    topQuestions?: GapQuestionRow[] | undefined;
+    stats?: StatTileRow[] | undefined;
+}
+
+export interface ChatbotDocumentResponse {
+    id?: string;
+    name?: string | undefined;
+    origin?: string | undefined;
+    status?: string | undefined;
+    statusLabel?: string | undefined;
+    updated?: Date;
+    url?: string | undefined;
+}
+
+export interface ChatbotSummaryResponse {
+    id?: string;
+    label?: string | undefined;
+    description?: string | undefined;
+    status?: string | undefined;
+    docsCount?: number;
+    teamCount?: number;
+    general?: boolean;
+    archived?: boolean;
+    iconUrl?: string | undefined;
 }
 
 export interface CompleteFormationModuleRequest {
-    score: number | undefined;
-
-    [key: string]: any;
+    score?: number | undefined;
 }
 
 export interface ConversationSummaryRow {
     id?: string;
     botKey?: string;
-    title?: string;
+    title?: string | undefined;
     dateLabel?: Date;
-    exchanges?: ChatExampleRow[];
-
-    [key: string]: any;
+    exchanges?: ChatExampleRow[] | undefined;
 }
 
 export interface CreateChatbotRequest {
-    label: string;
-    description: string;
-    status: number;
-    general: boolean;
-    settings: ChatbotSettings;
-
-    [key: string]: any;
+    label?: string | undefined;
+    description?: string | undefined;
+    status?: number;
+    general?: boolean;
+    socratic?: boolean;
+    explicaMas?: boolean;
+    provider?: number;
 }
 
 export interface CreateFormationRequest {
-    title: string;
-    audience: string;
-    description: string;
-    status: number;
-    linkedChatbotKey: string | undefined;
-
-    [key: string]: any;
+    title?: string | undefined;
+    audience?: string | undefined;
+    description?: string | undefined;
+    status?: number;
+    linkedChatbotKey?: string | undefined;
 }
 
 export interface FormationDetailResponse {
-    id: string;
-    title: string;
-    audience: string;
-    description: string;
-    status: string;
-    archived: boolean;
-    iconUrl: string | undefined;
-    linkedChatbotKey: string | undefined;
-    linkedChatbotLabel: string | undefined;
-    modules: FormationModuleRow[];
-    team: FormationMemberRow[];
-    completedModuleIds: string[];
-    examScores: { [key: string]: number; };
-
-    [key: string]: any;
+    id?: string;
+    title?: string | undefined;
+    audience?: string | undefined;
+    description?: string | undefined;
+    status?: string | undefined;
+    archived?: boolean;
+    iconUrl?: string | undefined;
+    linkedChatbotKey?: string | undefined;
+    linkedChatbotLabel?: string | undefined;
+    modules?: FormationModuleRow[] | undefined;
+    team?: FormationMemberRow[] | undefined;
+    completedModuleIds?: string[] | undefined;
+    examScores?: { [key: string]: number; } | undefined;
 }
 
 export interface FormationMemberRow {
-    name?: string;
+    name?: string | undefined;
     progress?: number;
-
-    [key: string]: any;
 }
 
 export interface FormationModuleRow {
     id?: string;
-    title?: string;
-    type?: string;
-    summary?: string;
+    title?: string | undefined;
+    type?: string | undefined;
+    summary?: string | undefined;
     gated?: boolean;
     aiDraft?: boolean;
     resourceUrl?: string | undefined;
     durationMin?: number | undefined;
     quiz?: QuizQuestionRow[] | undefined;
     passingScore?: number | undefined;
-
-    [key: string]: any;
 }
 
 export interface FormationSummaryResponse {
-    id: string;
-    title: string;
-    audience: string;
-    description: string;
-    status: string;
-    archived: boolean;
-    iconUrl: string | undefined;
-    progressPct: number;
-    modulesCount: number;
-    completedModulesCount: number;
-
-    [key: string]: any;
+    id?: string;
+    title?: string | undefined;
+    audience?: string | undefined;
+    description?: string | undefined;
+    status?: string | undefined;
+    archived?: boolean;
+    iconUrl?: string | undefined;
+    progressPct?: number;
+    modulesCount?: number;
+    completedModulesCount?: number;
 }
 
 export interface GapQuestionRow {
-    question?: string;
+    question?: string | undefined;
     count?: number;
-
-    [key: string]: any;
 }
 
 export interface ProblemDetails {
@@ -1359,55 +1618,52 @@ export interface ProblemDetails {
     [key: string]: any;
 }
 
-export interface QuizQuestion {
-    question: string;
-    options: string[];
-    correctIndex: number;
-
-    [key: string]: any;
+export interface QuizQuestionRequest {
+    question?: string | undefined;
+    options?: string[] | undefined;
+    correctIndex?: number;
 }
 
 export interface QuizQuestionRow {
-    question?: string;
-    options?: string[];
+    question?: string | undefined;
+    options?: string[] | undefined;
     correctIndex?: number;
-
-    [key: string]: any;
 }
 
 export interface StatTileRow {
-    label?: string;
-    value?: string;
-    unit?: string;
+    label?: string | undefined;
+    value?: string | undefined;
+    unit?: string | undefined;
     bar?: number;
-
-    [key: string]: any;
 }
 
 export interface TeamMemberRow {
-    name?: string;
-    role?: string;
+    name?: string | undefined;
+    role?: string | undefined;
+}
 
-    [key: string]: any;
+export interface UpdateChatbotSettingsRequest {
+    socratic?: boolean;
+    explicaMas?: boolean;
+    provider?: number;
 }
 
 export interface UpdateChatbotStatusRequest {
-    status: number;
-
-    [key: string]: any;
+    status?: number;
 }
 
 export interface UpdateFormationStatusRequest {
-    status: number;
-
-    [key: string]: any;
+    status?: number;
 }
 
 export interface UsageByBotRow {
     botKey?: string;
     value?: number;
+}
 
-    [key: string]: any;
+export interface FileParameter {
+    data: any;
+    fileName: string;
 }
 
 export class GeneratedApiException extends Error {

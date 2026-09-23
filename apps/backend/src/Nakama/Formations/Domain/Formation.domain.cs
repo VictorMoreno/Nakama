@@ -91,4 +91,15 @@ public partial class Formation
         this.MyProgress = this.MyProgress.WithModuleCompleted(moduleId.Value, score);
         Raise(new FormationModuleCompleted(this.Id, moduleId, score));
     }
+
+    public void Archive()
+    {
+        if (this.Archived)
+        {
+            return;
+        }
+
+        this.Archived = true;
+        Raise(new FormationArchived(this.Id));
+    }
 }

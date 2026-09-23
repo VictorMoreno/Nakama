@@ -16,7 +16,7 @@ public sealed class AnalyticsMapping : ClassMapping<Analytics>
 
         Id(x => x.Id, m =>
         {
-            m.Column("key");
+            m.Column("id");
             m.Generator(Generators.Assigned);
         });
 

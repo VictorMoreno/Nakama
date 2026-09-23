@@ -16,7 +16,7 @@ public sealed class FormationDetailMapping : ClassMapping<FormationDetail>
 
         Id(x => x.Id, m =>
         {
-            m.Column("key");
+            m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
@@ -45,7 +45,7 @@ public sealed class ChatbotLabelRefMapping : ClassMapping<ChatbotLabelRef>
 
         Id(x => x.Id, m =>
         {
-            m.Column("bot_key");
+            m.Column("id");
             m.Generator(Generators.Assigned);
         });
 

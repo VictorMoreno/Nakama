@@ -10,7 +10,6 @@ public partial class ChatbotSummary : IEntity
     public virtual string Label { get; protected set; } = string.Empty;
     public virtual string Description { get; protected set; } = string.Empty;
     public virtual string Status { get; protected set; } = string.Empty;
-    public virtual DateTime LastUsed { get; protected set; }
     public virtual int DocsCount { get; protected set; }
     public virtual int TeamCount { get; protected set; }
     public virtual bool General { get; protected set; }

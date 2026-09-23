@@ -36,7 +36,7 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
 
   const [chatbots, setChatbots] = useState<ChatbotMap>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [currentBotKey, setCurrentBotKey] = useState<string>("ecu");
+  const [currentBotKey, setCurrentBotKey] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState(true);
 
   useEffect(() => {
@@ -53,6 +53,16 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
   }, [repo]);
 
   const activeChatbots = useMemo(() => Object.values(chatbots).filter((bot) => !bot.archived), [chatbots]);
+
+  // Defaults the selection to the first active chatbot once the list loads, and re-picks
+  // one if the current selection stops being valid (e.g. it gets archived) - the alternative
+  // of leaving it empty would show "Selecciona un chatbot" even when chats already exist.
+  useEffect(() => {
+    if (activeChatbots.length === 0) return;
+    if (!activeChatbots.some((bot) => bot.id === currentBotKey)) {
+      setCurrentBotKey(activeChatbots[0].id);
+    }
+  }, [activeChatbots, currentBotKey]);
 
   async function createChatbot(input: CreateChatbotInput): Promise<string> {
     const bot = await repo.Create(input);

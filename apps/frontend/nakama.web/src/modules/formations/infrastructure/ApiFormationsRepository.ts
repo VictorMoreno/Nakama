@@ -65,6 +65,11 @@ async function deleteIcon(id: string): Promise<void> {
   if (!response.ok) throw new Error(`No se pudo quitar el icono (HTTP ${response.status}).`);
 }
 
+async function archiveFormation(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/formations/${id}/archive`, { method: "POST" });
+  if (!response.ok) throw new Error(`No se pudo eliminar la formación (HTTP ${response.status}).`);
+}
+
 /**
  * Merges the list + detail endpoints into the flat `Formation` shape the rest of the app
  * already expects (N+1 fetch per FindAll - same accepted tradeoff as ApiChatbotsRepository).
@@ -137,10 +142,8 @@ export class ApiFormationsRepository implements IFormationsRepository {
     };
   }
 
-  async Archive(): Promise<void> {
-    // No backend endpoint for this yet (not among the 7 formation routes built this
-    // session) - failing loudly rather than pretending it saved.
-    throw new Error("ApiFormationsRepository.Archive: no existe todavía un endpoint en la API para archivar una formación.");
+  async Archive(id: string): Promise<void> {
+    await archiveFormation(id);
   }
 
   async UpdateStatus(id: string, status: FormationLifecycleStatus): Promise<void> {

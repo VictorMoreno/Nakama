@@ -74,7 +74,6 @@ export default function BotSwitcher() {
               }}
             >
               <span>{bot.label}</span>
-              <span className={styles.meta}>{bot.lastUsed}</span>
             </button>
           ))}
         </div>

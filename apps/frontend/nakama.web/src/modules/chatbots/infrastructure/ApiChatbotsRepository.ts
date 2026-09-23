@@ -1,7 +1,6 @@
 import type {
   ChatbotDetailResponse,
-  ChatbotDocumentRow,
-  ChatbotSettings as ApiChatbotSettings,
+  ChatbotDocumentResponse,
   ChatbotSummaryResponse,
   ChatPageResponse,
   CreateChatbotRequest,
@@ -9,6 +8,7 @@ import type {
   GeneratedNakamaClient,
   StatTileRow,
   TeamMemberRow,
+  UpdateChatbotSettingsRequest,
   UpdateChatbotStatusRequest
 } from "../../../shared/infrastructure/GeneratedNakamaClient";
 import type {
@@ -45,13 +45,13 @@ const DOC_STATUS_FROM_API: Record<string, DocStatus> = { Ok: "ok", Pending: "pen
 const ROLE_TO_ORDINAL: Record<TeamRole, number> = { Propietario: 0, Propietaria: 0, Editor: 1, Lector: 2 };
 const ROLE_FROM_API: Record<string, TeamRole> = { Owner: "Propietario", Editor: "Editor", Reader: "Lector" };
 
-function toApiSettings(settings: ChatbotSettings): ApiChatbotSettings {
+function toApiSettings(settings: ChatbotSettings): UpdateChatbotSettingsRequest {
   return { socratic: settings.socratic, explicaMas: settings.explicaMas, provider: PROVIDER_TO_ORDINAL[settings.provider] };
 }
 
-// Backend sends a raw Date for "lastUsed"/"updated" (no relative-time label like the old
-// mock's scripted "hace 2 días" copy) - this is a plain, honest date format, not an attempt
-// to reproduce that flavor text. A nicer relative-time formatter is a follow-up, not this swap.
+// Backend sends a raw Date for "updated" (no relative-time label like the old mock's
+// scripted "hace 2 días" copy) - this is a plain, honest date format, not an attempt to
+// reproduce that flavor text. A nicer relative-time formatter is a follow-up, not this swap.
 function formatDate(value: Date | string | undefined): string {
   if (!value) return "";
   const date = typeof value === "string" ? new Date(value) : value;
@@ -62,7 +62,7 @@ function toChatExample(row: { question?: string; answer?: string; citation?: str
   return { q: row.question ?? "", a: row.answer ?? "", cite: row.citation ?? "", more: row.moreExplanation ?? "", socratic: row.socraticVariant ?? "" };
 }
 
-function toDocument(row: ChatbotDocumentRow): ChatbotDocument {
+function toDocument(row: ChatbotDocumentResponse): ChatbotDocument {
   return {
     id: row.id,
     name: row.name ?? "",
@@ -129,7 +129,6 @@ function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailRespons
     label: summary.label,
     description: summary.description,
     status: STATUS_FROM_API[summary.status] ?? "borrador",
-    lastUsed: formatDate(summary.lastUsed),
     context: detail.context,
     opening: chatPage.opening ? toChatExample(chatPage.opening) : null,
     chips: chatPage.chips.map(toChatExample),
@@ -179,7 +178,7 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       description: finalDescription,
       status: STATUS_TO_ORDINAL[status],
       general,
-      settings: toApiSettings(settings)
+      ...toApiSettings(settings)
     } satisfies CreateChatbotRequest);
 
     if (iconUrl) {
@@ -193,7 +192,6 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       label: name,
       description: finalDescription,
       status,
-      lastUsed: "Aún no has usado este chatbot",
       context:
         "Chatbot recién creado" +
         (general ? " para toda la empresa" : dept ? ` para el equipo de <strong>${dept}</strong>` : "") +

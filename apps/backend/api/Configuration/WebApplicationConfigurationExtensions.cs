@@ -9,8 +9,10 @@ public static class WebApplicationConfigurationExtensions
     {
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi()
-                .WithDocumentPerVersion();
+            app.UseSwagger(options =>
+            {
+                options.RouteTemplate = "openapi/{documentName}.json";
+            });
 
             MigrationRunner.Run(app.Configuration.GetConnectionString("Nakama")!);
         }

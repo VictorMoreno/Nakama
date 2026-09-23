@@ -16,7 +16,7 @@ public sealed class ChatPageMapping : ClassMapping<ChatPage>
 
         Id(x => x.Id, m =>
         {
-            m.Column("bot_key");
+            m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
