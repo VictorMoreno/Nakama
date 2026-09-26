@@ -14,6 +14,11 @@ const CHART_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"];
 
 export default function UsageChart({ usage }: UsageChartProps) {
   const { chatbots } = useChatbots();
+
+  if (usage.length === 0) {
+    return <p style={{ fontSize: "0.82rem", color: "var(--ink-faint)" }}>Todavía no hay conversaciones registradas.</p>;
+  }
+
   const maxV = Math.max(...usage.map((u) => u.value));
 
   return (

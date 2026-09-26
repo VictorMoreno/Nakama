@@ -1,5 +1,5 @@
 import { useAnalytics } from "./hooks/useAnalytics";
-import { costByBot, enpsByMilestone, escalatedToSenior, overviewStats, resolvedByBot, usageByBot, weeklyLabels } from "./analyticsData";
+import { costByBot, enpsByMilestone, escalatedToSenior, overviewStats, resolvedByBot, weeklyLabels } from "./analyticsData";
 import TrendChart from "./TrendChart";
 import UsageChart from "./UsageChart";
 import styles from "./AnalyticsPage.module.scss";
@@ -7,7 +7,8 @@ import styles from "./AnalyticsPage.module.scss";
 const ENPS_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"];
 
 export default function AnalyticsPage() {
-  const { chatbots, globalGaps } = useAnalytics();
+  const { chatbots, globalGaps, snapshot } = useAnalytics();
+  const usageByBot = snapshot.usageByBot.map((u) => ({ key: u.botKey, value: u.value }));
 
   return (
     <section className="view active">
@@ -23,12 +24,11 @@ export default function AnalyticsPage() {
           </div>
         </div>
         <div className={`${styles.statCard} glass`}>
-          <div className={styles.label}>Preguntas respondidas esta semana</div>
+          <div className={styles.label}>Preguntas respondidas</div>
           <div className={styles.value}>
-            {overviewStats.answeredThisWeek}
+            {snapshot.answeredThisWeek}
             <span className={styles.target}>en total</span>
           </div>
-          <div className={styles.statDelta}>{overviewStats.answeredDelta}</div>
         </div>
         <div className={`${styles.statCard} glass`}>
           <div className={styles.label}>Tiempo de seniors liberado</div>
