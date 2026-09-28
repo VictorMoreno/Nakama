@@ -17,4 +17,8 @@ public partial class Analytics : IEntity
     public virtual int AnsweredThisWeek { get; protected set; }
 
     public virtual List<UsageByBotRow> UsageByBot { get; protected set; } = [];
+
+    public virtual int UsefulFeedbackCount { get; protected set; }
+
+    public virtual int TotalFeedbackCount { get; protected set; }
 }

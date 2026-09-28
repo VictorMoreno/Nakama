@@ -17,7 +17,5 @@ export const enpsByMilestone = [
 
 export const overviewStats = {
   hoursSaved: "≈17 h",
-  hoursSavedDelta: "↑ 9% vs. semana anterior",
-  usefulRate: "77",
-  usefulRateBar: 77
+  hoursSavedDelta: "↑ 9% vs. semana anterior"
 };

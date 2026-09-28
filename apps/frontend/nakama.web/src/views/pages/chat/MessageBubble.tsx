@@ -28,21 +28,21 @@ interface BotBubbleProps {
   state: BotMessageState;
   settings: ChatbotSettings;
   onReveal: (id: string) => void;
+  onFeedback: (useful: boolean) => void;
 }
 
 type Feedback = "up" | "down" | null;
 
-export function BotBubble({ state, settings, onReveal }: BotBubbleProps) {
+export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubbleProps) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const { showToast } = useToast();
 
   function handleFeedback(choice: "up" | "down") {
-    setFeedback((f) => {
-      const next = f === choice ? null : choice;
-      if (next) showToast(next === "up" ? "Gracias por tu valoración" : "Gracias, lo tendremos en cuenta");
-      return next;
-    });
+    if (feedback) return;
+    setFeedback(choice);
+    onFeedback(choice === "up");
+    showToast(choice === "up" ? "Gracias por tu valoración" : "Gracias, lo tendremos en cuenta");
   }
 
   const showSocratic = state.useSocratic && !state.revealed;
@@ -87,6 +87,7 @@ export function BotBubble({ state, settings, onReveal }: BotBubbleProps) {
                 aria-pressed={feedback === "up"}
                 aria-label="Respuesta útil"
                 type="button"
+                disabled={feedback !== null}
                 onClick={() => handleFeedback("up")}
               >
                 <ThumbUpIcon />
@@ -97,6 +98,7 @@ export function BotBubble({ state, settings, onReveal }: BotBubbleProps) {
                 aria-pressed={feedback === "down"}
                 aria-label="Respuesta no útil"
                 type="button"
+                disabled={feedback !== null}
                 onClick={() => handleFeedback("down")}
               >
                 <ThumbDownIcon />

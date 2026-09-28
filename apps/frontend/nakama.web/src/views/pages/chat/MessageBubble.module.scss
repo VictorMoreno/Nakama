@@ -120,6 +120,8 @@
 
   svg { width: 14px; height: 14px; }
   &:hover { background: var(--border-strong); color: var(--ink-soft); }
+  &:disabled { cursor: default; }
+  &:disabled:not([aria-pressed="true"]) { opacity: 0.5; }
 
   &[data-fb="up"][aria-pressed="true"] {
     background: var(--cyan-soft);

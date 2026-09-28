@@ -9,4 +9,6 @@ export interface AnalyticsSnapshot {
   usageByBot: UsageByBot[];
   activeUsersCount: number;
   totalUsersCount: number;
+  usefulFeedbackCount: number;
+  totalFeedbackCount: number;
 }

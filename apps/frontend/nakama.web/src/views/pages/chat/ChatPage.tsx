@@ -21,7 +21,8 @@ export default function ChatPage() {
     activeConversationId,
     openConversation,
     handleSend,
-    handleReveal
+    handleReveal,
+    submitFeedback
   } = useChat();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -69,7 +70,7 @@ export default function ChatPage() {
               item.kind === "user" ? (
                 <UserBubble key={item.id} text={item.text} />
               ) : (
-                <BotBubble key={item.id} state={item.bot} settings={bot.settings} onReveal={handleReveal} />
+                <BotBubble key={item.id} state={item.bot} settings={bot.settings} onReveal={handleReveal} onFeedback={submitFeedback} />
               )
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { IAnalyticsRepository } from "../../../../modules/analytics/domain/IAnalyticsRepository";
 import type { ChatExample, ConversationSummary } from "../../../../modules/chatbots/domain/Chatbot";
 import type { IConversationsRepository } from "../../../../modules/chatbots/domain/IConversationsRepository";
 import { Services } from "../../../../shared/infrastructure/injection/Services";
@@ -41,6 +42,7 @@ export function useChat() {
   const { chatbots, currentBotKey } = useChatbots();
   const { isAdmin } = useUser();
   const conversationsRepo = useInjection<IConversationsRepository>(Services.ConversationsRepository.id);
+  const analyticsRepo = useInjection<IAnalyticsRepository>(Services.AnalyticsRepository.id);
   const navigate = useNavigate();
   const { showToast } = useToast();
   const bot = chatbots[currentBotKey];
@@ -143,6 +145,13 @@ export function useChat() {
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
+  // Global feedback (👍/👎), decoupled from any specific exchange - see AnalyticsFeedbackSubmitter:
+  // today's chat is demo-only and never persists a real, identifiable exchange server-side, so this
+  // is the same "global useful-answer rate" the Analytics dashboard already shows, not a per-message rating.
+  function submitFeedback(useful: boolean) {
+    void analyticsRepo.SubmitFeedback(useful);
+  }
+
   return {
     bot,
     isAdmin,
@@ -159,6 +168,7 @@ export function useChat() {
     activeConversationId,
     openConversation,
     handleSend,
-    handleReveal
+    handleReveal,
+    submitFeedback
   };
 }

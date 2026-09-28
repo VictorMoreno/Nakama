@@ -10,6 +10,8 @@ export default function AnalyticsPage() {
   const { chatbots, globalGaps, snapshot } = useAnalytics();
   const usageByBot = snapshot.usageByBot.map((u) => ({ key: u.botKey, value: u.value }));
   const activeUsersPct = snapshot.totalUsersCount > 0 ? Math.round((snapshot.activeUsersCount / snapshot.totalUsersCount) * 100) : 0;
+  const hasFeedback = snapshot.totalFeedbackCount > 0;
+  const usefulRatePct = hasFeedback ? Math.round((snapshot.usefulFeedbackCount / snapshot.totalFeedbackCount) * 100) : 0;
 
   return (
     <section className="view active">
@@ -41,13 +43,21 @@ export default function AnalyticsPage() {
         </div>
         <div className={`${styles.statCard} glass`}>
           <div className={styles.label}>Respuestas útiles (global)</div>
-          <div className={styles.value}>
-            {overviewStats.usefulRate}
-            <span className={styles.target}>% · objetivo 80%</span>
-          </div>
-          <div className={styles.barTrack}>
-            <div className={styles.barFill} style={{ width: `${overviewStats.usefulRateBar}%` }} />
-          </div>
+          {hasFeedback ? (
+            <>
+              <div className={styles.value}>
+                {usefulRatePct}
+                <span className={styles.target}>% · objetivo 80%</span>
+              </div>
+              <div className={styles.barTrack}>
+                <div className={styles.barFill} style={{ width: `${usefulRatePct}%` }} />
+              </div>
+            </>
+          ) : (
+            <div className={styles.value}>
+              <span className={styles.target}>Sin datos todavía</span>
+            </div>
+          )}
         </div>
       </div>
 

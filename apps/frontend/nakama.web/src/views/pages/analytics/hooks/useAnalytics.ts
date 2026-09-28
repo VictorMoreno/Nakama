@@ -5,7 +5,15 @@ import { Services } from "../../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 
-const EMPTY_SNAPSHOT: AnalyticsSnapshot = { activeBotsCount: 0, answeredThisWeek: 0, usageByBot: [] };
+const EMPTY_SNAPSHOT: AnalyticsSnapshot = {
+  activeBotsCount: 0,
+  answeredThisWeek: 0,
+  usageByBot: [],
+  activeUsersCount: 0,
+  totalUsersCount: 0,
+  usefulFeedbackCount: 0,
+  totalFeedbackCount: 0
+};
 
 export function useAnalytics() {
   const { chatbots } = useChatbots();

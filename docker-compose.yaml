@@ -9,6 +9,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - nakama-postgres-data:/var/lib/postgresql/data
+      - nakama-postgres-data:/var/lib/postgresql
 volumes:
   nakama-postgres-data:

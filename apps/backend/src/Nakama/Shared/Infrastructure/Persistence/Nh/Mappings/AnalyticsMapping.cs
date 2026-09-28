@@ -23,5 +23,7 @@ public sealed class AnalyticsMapping : ClassMapping<Analytics>
         Property(x => x.ActiveBotsCount);
         Property(x => x.AnsweredThisWeek);
         Property(x => x.UsageByBot, m => { m.Column(c => { c.Name("usage_by_bot_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<UsageByBotRow>>>(); });
+        Property(x => x.UsefulFeedbackCount);
+        Property(x => x.TotalFeedbackCount);
     }
 }

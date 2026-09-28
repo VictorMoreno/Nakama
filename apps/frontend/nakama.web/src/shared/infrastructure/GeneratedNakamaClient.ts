@@ -27,6 +27,18 @@ export interface IGeneratedNakamaClient {
     analytics(): Promise<AnalyticsResponse>;
 
     /**
+     * Records whether a chat answer was useful, towards the global useful-answer rate.
+     * @return No Content
+     */
+    feedback(body: SubmitFeedbackRequest): Promise<void>;
+
+    /**
+     * Verifies email/password credentials and records real activity.
+     * @return OK
+     */
+    login(body: LoginRequest): Promise<UserResponse>;
+
+    /**
      * Creates a new chatbot with a caller-supplied id.
      * @return Created
      */
@@ -174,6 +186,12 @@ export interface IGeneratedNakamaClient {
      * @return OK
      */
     formationsAll(): Promise<FormationSummaryResponse[]>;
+
+    /**
+     * Admin-provisions a new user with an initial password.
+     * @return Created
+     */
+    users(body: CreateUserRequest): Promise<void>;
 }
 
 export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNakamaClient {
@@ -230,6 +248,95 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             });
         }
         return Promise.resolve<AnalyticsResponse>(null as any);
+    }
+
+    /**
+     * Records whether a chat answer was useful, towards the global useful-answer rate.
+     * @return No Content
+     */
+    feedback(body: SubmitFeedbackRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/analytics/feedback";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processFeedback(_response));
+        });
+    }
+
+    protected processFeedback(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Verifies email/password credentials and records real activity.
+     * @return OK
+     */
+    login(body: LoginRequest): Promise<UserResponse> {
+        let url_ = this.baseUrl + "/api/auth/login";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processLogin(_response));
+        });
+    }
+
+    protected processLogin(response: Response): Promise<UserResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as UserResponse;
+            return result200;
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            result401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserResponse>(null as any);
     }
 
     /**
@@ -1429,6 +1536,52 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
         }
         return Promise.resolve<FormationSummaryResponse[]>(null as any);
     }
+
+    /**
+     * Admin-provisions a new user with an initial password.
+     * @return Created
+     */
+    users(body: CreateUserRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/users";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processUsers(_response));
+        });
+    }
+
+    protected processUsers(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 201) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 409) {
+            return response.text().then((_responseText) => {
+            let result409: any = null;
+            result409 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Conflict", status, _responseText, _headers, result409);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
 }
 
 export interface AddChatbotTeamMemberRequest {
@@ -1453,6 +1606,10 @@ export interface AnalyticsResponse {
     activeBotsCount?: number;
     answeredThisWeek?: number;
     usageByBot?: UsageByBotRow[] | undefined;
+    activeUsersCount?: number;
+    totalUsersCount?: number;
+    usefulFeedbackCount?: number;
+    totalFeedbackCount?: number;
 }
 
 export interface AppendConversationExchangeRequest {
@@ -1556,6 +1713,13 @@ export interface CreateFormationRequest {
     linkedChatbotKey?: string | undefined;
 }
 
+export interface CreateUserRequest {
+    email?: string | undefined;
+    name?: string | undefined;
+    isAdmin?: boolean;
+    initialPassword?: string | undefined;
+}
+
 export interface FormationDetailResponse {
     id?: string;
     title?: string | undefined;
@@ -1608,6 +1772,11 @@ export interface GapQuestionRow {
     count?: number;
 }
 
+export interface LoginRequest {
+    email?: string | undefined;
+    password?: string | undefined;
+}
+
 export interface ProblemDetails {
     type?: string | undefined;
     title?: string | undefined;
@@ -1637,6 +1806,10 @@ export interface StatTileRow {
     bar?: number;
 }
 
+export interface SubmitFeedbackRequest {
+    useful?: boolean;
+}
+
 export interface TeamMemberRow {
     name?: string | undefined;
     role?: string | undefined;
@@ -1659,6 +1832,13 @@ export interface UpdateFormationStatusRequest {
 export interface UsageByBotRow {
     botKey?: string;
     value?: number;
+}
+
+export interface UserResponse {
+    id?: string;
+    email?: string | undefined;
+    name?: string | undefined;
+    isAdmin?: boolean;
 }
 
 export interface FileParameter {

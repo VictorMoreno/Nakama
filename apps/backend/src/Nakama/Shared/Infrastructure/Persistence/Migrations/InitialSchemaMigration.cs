@@ -117,7 +117,9 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("id").AsString(255).PrimaryKey()
             .WithColumn("activebotscount").AsInt32().Nullable()
             .WithColumn("answeredthisweek").AsInt32().Nullable()
-            .WithColumn("usage_by_bot_json").AsCustom("text").Nullable();
+            .WithColumn("usage_by_bot_json").AsCustom("text").Nullable()
+            .WithColumn("usefulfeedbackcount").AsInt32().Nullable()
+            .WithColumn("totalfeedbackcount").AsInt32().Nullable();
 
         Create.Table("users")
             .WithColumn("id").AsGuid().PrimaryKey()

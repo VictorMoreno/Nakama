@@ -10,7 +10,9 @@ public sealed record AnalyticsResponse(
     int AnsweredThisWeek,
     List<UsageByBotRow> UsageByBot,
     int ActiveUsersCount,
-    int TotalUsersCount);
+    int TotalUsersCount,
+    int UsefulFeedbackCount,
+    int TotalFeedbackCount);
 
 public static class AnalyticsExtensions
 {
@@ -20,5 +22,7 @@ public static class AnalyticsExtensions
         entity.AnsweredThisWeek,
         entity.UsageByBot,
         activeUsersCount,
-        totalUsersCount);
+        totalUsersCount,
+        entity.UsefulFeedbackCount,
+        entity.TotalFeedbackCount);
 }

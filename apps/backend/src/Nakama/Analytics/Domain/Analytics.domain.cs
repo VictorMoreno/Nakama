@@ -16,6 +16,13 @@ public partial class Analytics
         return analytics;
     }
 
+    public static Analytics CreateFromFeedbackSubmitted(bool useful)
+    {
+        var analytics = new Analytics();
+        analytics.ApplyFeedbackSubmitted(useful);
+        return analytics;
+    }
+
     public void ApplyChatbotCreated(Guid botKey)
     {
         this.ActiveBotsCount++;
@@ -38,6 +45,15 @@ public partial class Analytics
         else
         {
             this.UsageByBot.Add(new UsageByBotRow { BotKey = botKey, Value = 1 });
+        }
+    }
+
+    public void ApplyFeedbackSubmitted(bool useful)
+    {
+        this.TotalFeedbackCount++;
+        if (useful)
+        {
+            this.UsefulFeedbackCount++;
         }
     }
 }
