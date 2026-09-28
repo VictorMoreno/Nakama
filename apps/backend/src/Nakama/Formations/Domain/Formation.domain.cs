@@ -30,7 +30,7 @@ public partial class Formation
         Guid? linkedChatbotKey)
     {
         var formation = new Formation(key, title, audience, description, status, linkedChatbotKey);
-        formation.Raise(new FormationCreated(key, title, audience, description, status, linkedChatbotKey));
+        formation.Record(new FormationCreated(key, title, audience, description, status, linkedChatbotKey));
         return formation;
     }
 
@@ -42,19 +42,19 @@ public partial class Formation
         }
 
         this.Status = status;
-        Raise(new FormationStatusChanged(this.Id, status));
+        Record(new FormationStatusChanged(this.Id, status));
     }
 
     public void UpdateIcon(string? iconUrl)
     {
         this.IconUrl = iconUrl;
-        Raise(new FormationIconUpdated(this.Id, iconUrl));
+        Record(new FormationIconUpdated(this.Id, iconUrl));
     }
 
     public void AddModule(FormationModule module)
     {
         this._modules.Add(module);
-        Raise(new FormationModuleAdded(this.Id, module));
+        Record(new FormationModuleAdded(this.Id, module));
     }
 
     public void ToggleModuleGating(ModuleId moduleId)
@@ -68,7 +68,7 @@ public partial class Formation
         var toggled = this._modules[index] with { Gated = !this._modules[index].Gated };
         this._modules[index] = toggled;
 
-        Raise(new FormationModuleGatingToggled(this.Id, moduleId, toggled.Gated));
+        Record(new FormationModuleGatingToggled(this.Id, moduleId, toggled.Gated));
     }
 
     public void CompleteModule(ModuleId moduleId, int? score)
@@ -89,7 +89,7 @@ public partial class Formation
         }
 
         this.MyProgress = this.MyProgress.WithModuleCompleted(moduleId.Value, score);
-        Raise(new FormationModuleCompleted(this.Id, moduleId, score));
+        Record(new FormationModuleCompleted(this.Id, moduleId, score));
     }
 
     public void Archive()
@@ -100,6 +100,6 @@ public partial class Formation
         }
 
         this.Archived = true;
-        Raise(new FormationArchived(this.Id));
+        Record(new FormationArchived(this.Id));
     }
 }

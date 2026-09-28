@@ -112,6 +112,16 @@
 
   svg { width: 16px; height: 16px; flex: none; }
 
+  // No font-weight change between states: bumping to 600 only on the active item made
+  // its (already tight, 220px-rail-wide) label wider than its inactive glyphs, wrapping
+  // "Gestión de chatbots" onto a second line the moment it got selected. Active state
+  // reads through background/color alone, same convention as .btn-primary hover/active.
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   &:hover {
     background: var(--accent-soft);
     color: var(--ink-on-navy);
@@ -121,7 +131,6 @@
     background: var(--accent);
     color: var(--accent-ink);
     border-color: transparent;
-    font-weight: 600;
   }
 }
 

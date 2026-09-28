@@ -2,13 +2,6 @@ using FluentMigrator;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Migrations;
 
-// Column names are lowercase on purpose, even though the NHibernate mappings reference
-// PascalCase property names (Property(x => x.Label) etc.): FluentMigrator's Postgres
-// provider quotes every identifier it creates, which preserves exact case, while NHibernate
-// emits its generated SQL unquoted, which Postgres case-folds to lowercase - a quoted
-// "Label" and an unquoted Label (-> label) are different identifiers to Postgres, and the
-// mismatch throws "column ... does not exist" at query time. Lowercase here keeps both sides
-// pointing at the same folded identifier.
 [Migration(1)]
 public sealed class InitialSchemaMigration : Migration
 {
@@ -125,6 +118,22 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("activebotscount").AsInt32().Nullable()
             .WithColumn("answeredthisweek").AsInt32().Nullable()
             .WithColumn("usage_by_bot_json").AsCustom("text").Nullable();
+
+        Create.Table("users")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("email").AsString(255).Nullable()
+            .WithColumn("normalizedemail").AsString(255).Nullable()
+            .WithColumn("name").AsString(255).Nullable()
+            .WithColumn("isadmin").AsBoolean().Nullable()
+            .WithColumn("passwordhash").AsString(255).Nullable()
+            .WithColumn("lastactiveat").AsDateTime().Nullable()
+            .WithColumn("createdat").AsDateTime().Nullable();
+
+        Create.Table("read_user_activity")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("userid").AsGuid().Nullable()
+            .WithColumn("type").AsString(255).Nullable()
+            .WithColumn("occurredat").AsDateTime().Nullable();
     }
 
     public override void Down() => throw new NotSupportedException("No down migrations - see ADR entry.");

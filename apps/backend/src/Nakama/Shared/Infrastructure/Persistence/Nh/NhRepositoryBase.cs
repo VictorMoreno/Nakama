@@ -4,6 +4,8 @@ namespace Nakama.Shared.Infrastructure.Persistence.Nh;
 
 public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) where TEntity : class
 {
+    protected ISessionFactory Sessions => sessions;
+
     public async Task<TEntity?> FindById(TId id, CancellationToken ct)
     {
         using var session = sessions.OpenSession();

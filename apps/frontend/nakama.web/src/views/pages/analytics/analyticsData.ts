@@ -16,9 +16,6 @@ export const enpsByMilestone = [
 ];
 
 export const overviewStats = {
-  activeUsers: "34",
-  activeUsersNote: "de 48 con acceso",
-  activeUsersBar: 71,
   hoursSaved: "≈17 h",
   hoursSavedDelta: "↑ 9% vs. semana anterior",
   usefulRate: "77",

@@ -34,7 +34,7 @@ public partial class Chatbot
         ISystemClock systemClock)
     {
         var chatbot = new Chatbot(key, label, description, status, general, settings, systemClock.UtcNow);
-        chatbot.Raise(new ChatbotCreated(key, label, description, status, general, settings));
+        chatbot.Record(new ChatbotCreated(key, label, description, status, general, settings));
         return chatbot;
     }
 
@@ -46,37 +46,37 @@ public partial class Chatbot
         }
 
         this.Status = status;
-        Raise(new ChatbotStatusChanged(this.Id, status));
+        Record(new ChatbotStatusChanged(this.Id, status));
     }
 
     public void UpdateSettings(ChatbotSettings settings)
     {
         this.Settings = settings;
-        Raise(new ChatbotSettingsUpdated(this.Id, settings));
+        Record(new ChatbotSettingsUpdated(this.Id, settings));
     }
 
     public void UpdateIcon(string? iconUrl)
     {
         this.IconUrl = iconUrl;
-        Raise(new ChatbotIconUpdated(this.Id, iconUrl));
+        Record(new ChatbotIconUpdated(this.Id, iconUrl));
     }
 
     public void AddDocument(ChatbotDocument document)
     {
         this._documents.Add(document);
-        Raise(new ChatbotDocumentAdded(this.Id, document));
+        Record(new ChatbotDocumentAdded(this.Id, document));
     }
 
     public void RemoveDocument(int index)
     {
         this._documents.RemoveAt(index);
-        Raise(new ChatbotDocumentRemoved(this.Id, index));
+        Record(new ChatbotDocumentRemoved(this.Id, index));
     }
 
     public void AddTeamMember(TeamMember member)
     {
         this._team.Add(member);
-        Raise(new ChatbotTeamMemberAdded(this.Id, member));
+        Record(new ChatbotTeamMemberAdded(this.Id, member));
     }
 
     public void RemoveTeamMember(int index)
@@ -87,7 +87,7 @@ public partial class Chatbot
         }
 
         this._team.RemoveAt(index);
-        Raise(new ChatbotTeamMemberRemoved(this.Id, index));
+        Record(new ChatbotTeamMemberRemoved(this.Id, index));
     }
 
     public void Archive()
@@ -98,6 +98,6 @@ public partial class Chatbot
         }
 
         this.Archived = true;
-        Raise(new ChatbotArchived(this.Id));
+        Record(new ChatbotArchived(this.Id));
     }
 }

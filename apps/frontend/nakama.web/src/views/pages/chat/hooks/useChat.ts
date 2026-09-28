@@ -6,6 +6,7 @@ import { Services } from "../../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
+import { useUser } from "../../../shared/contexts/UserContext";
 import type { BotMessageState } from "../MessageBubble";
 
 type ThreadItem = { kind: "user"; id: string; text: string } | { kind: "bot"; id: string; bot: BotMessageState };
@@ -37,7 +38,8 @@ const DEMO_FALLBACK: ChatExample = {
 };
 
 export function useChat() {
-  const { chatbots, currentBotKey, isAdmin } = useChatbots();
+  const { chatbots, currentBotKey } = useChatbots();
+  const { isAdmin } = useUser();
   const conversationsRepo = useInjection<IConversationsRepository>(Services.ConversationsRepository.id);
   const navigate = useNavigate();
   const { showToast } = useToast();

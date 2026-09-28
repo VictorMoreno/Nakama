@@ -9,6 +9,7 @@ const ENPS_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"];
 export default function AnalyticsPage() {
   const { chatbots, globalGaps, snapshot } = useAnalytics();
   const usageByBot = snapshot.usageByBot.map((u) => ({ key: u.botKey, value: u.value }));
+  const activeUsersPct = snapshot.totalUsersCount > 0 ? Math.round((snapshot.activeUsersCount / snapshot.totalUsersCount) * 100) : 0;
 
   return (
     <section className="view active">
@@ -16,11 +17,11 @@ export default function AnalyticsPage() {
         <div className={`${styles.statCard} glass`}>
           <div className={styles.label}>Usuarios activos esta semana</div>
           <div className={styles.value}>
-            {overviewStats.activeUsers}
-            <span className={styles.target}>{overviewStats.activeUsersNote}</span>
+            {snapshot.activeUsersCount}
+            <span className={styles.target}>de {snapshot.totalUsersCount} con acceso</span>
           </div>
           <div className={styles.barTrack}>
-            <div className={styles.barFill} style={{ width: `${overviewStats.activeUsersBar}%` }} />
+            <div className={styles.barFill} style={{ width: `${activeUsersPct}%` }} />
           </div>
         </div>
         <div className={`${styles.statCard} glass`}>

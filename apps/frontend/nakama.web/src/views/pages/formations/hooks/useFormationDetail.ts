@@ -4,12 +4,14 @@ import type { FormationLifecycleStatus } from "../../../../modules/formations/do
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useFormations } from "../../../shared/contexts/FormationsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
+import { useUser } from "../../../shared/contexts/UserContext";
 import { getFormationProgressPct } from "../../../../lib/status";
 
 export function useFormationDetail() {
   const { key } = useParams<{ key: string }>();
   const { formations, updateStatus, updateIcon, removeModule } = useFormations();
-  const { chatbots, isAdmin } = useChatbots();
+  const { chatbots } = useChatbots();
+  const { isAdmin } = useUser();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);

@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { useChatbots } from "../../shared/contexts/ChatbotsContext";
 import { useLocalStorageState } from "../../shared/hooks/useLocalStorageState";
+import { useUser } from "../../shared/contexts/UserContext";
 import { AnalyticsIcon, BrandMarkIcon, ChatIcon, ChevronLeftIcon, GridIcon, LearningIcon } from "../shared/icons";
 import styles from "./Rail.module.scss";
 import UserMenu from "./UserMenu";
@@ -12,7 +12,7 @@ function isBoolean(value: unknown): value is boolean {
 }
 
 export default function Rail() {
-  const { isAdmin } = useChatbots();
+  const { isAdmin } = useUser();
   const [collapsed, setCollapsed] = useLocalStorageState(STORAGE_KEY, false, isBoolean);
 
   return (

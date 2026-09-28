@@ -16,13 +16,13 @@ public partial class Conversation
     public static Conversation Start(ConversationId id, ChatbotId botKey, string title, ISystemClock systemClock)
     {
         var conversation = new Conversation(id, botKey, title, systemClock.UtcNow);
-        conversation.Raise(new ConversationStarted(id, botKey, title));
+        conversation.Record(new ConversationStarted(id, botKey, title));
         return conversation;
     }
 
     public void AppendExchange(ConversationExchange exchange)
     {
         this._exchanges.Add(exchange);
-        Raise(new ConversationExchangeAppended(this.Id, this.BotKey, exchange));
+        Record(new ConversationExchangeAppended(this.Id, this.BotKey, exchange));
     }
 }

@@ -15,8 +15,6 @@ interface ChatbotsContextValue {
   isLoading: boolean;
   currentBotKey: string;
   setCurrentBotKey: (key: string) => void;
-  isAdmin: boolean;
-  setIsAdmin: (admin: boolean) => void;
 
   createChatbot: (input: CreateChatbotInput) => Promise<string>;
   archiveChatbot: (key: string) => Promise<void>;
@@ -37,7 +35,6 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
   const [chatbots, setChatbots] = useState<ChatbotMap>({});
   const [isLoading, setIsLoading] = useState(true);
   const [currentBotKey, setCurrentBotKey] = useState<string>("");
-  const [isAdmin, setIsAdmin] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -121,8 +118,6 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
     isLoading,
     currentBotKey,
     setCurrentBotKey,
-    isAdmin,
-    setIsAdmin,
     createChatbot,
     archiveChatbot,
     updateSettings,

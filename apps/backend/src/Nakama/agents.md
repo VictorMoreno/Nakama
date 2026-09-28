@@ -209,13 +209,13 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
       ChatbotStatus status, bool general, ChatbotSettings settings, ISystemClock systemClock)
   {
       var chatbot = new Chatbot(key, label, description, status, general, settings, systemClock.UtcNow);
-      chatbot.Raise(new ChatbotCreated(key, label, description, status, general));
+      chatbot.Record(new ChatbotCreated(key, label, description, status, general));
       return chatbot;
   }
   ```
   `Id` (heredado de `AggregateRoot<TId>`) tiene `protected set`, así que el constructor —parte
   de la misma clase `partial`— lo asigna sin problema. Mismo criterio en una entidad de lectura
-  (`ChatbotDetail/Domain/ChatbotDetail.domain.cs`), sin `AggregateRoot`/`Raise`, solo asignar y
+  (`ChatbotDetail/Domain/ChatbotDetail.domain.cs`), sin `AggregateRoot`/`Record`, solo asignar y
   devolver:
   ```csharp
   private ChatbotDetail(string key, string label, string description, string status, bool general)

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
+import { useUser } from "../../../shared/contexts/UserContext";
 
 export type TabKey = "config" | "docs" | "permisos" | "analitica";
 
@@ -13,7 +14,8 @@ export const TABS: { key: TabKey; label: string }[] = [
 
 export function useChatbotDetail() {
   const { key } = useParams<{ key: string }>();
-  const { chatbots, isAdmin, updateStatus } = useChatbots();
+  const { chatbots, updateStatus } = useChatbots();
+  const { isAdmin } = useUser();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab = (searchParams.get("tab") as TabKey | null) ?? "config";

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppShell from "../components/layout/AppShell";
-import { useChatbots } from "../shared/contexts/ChatbotsContext";
+import { useUser } from "../shared/contexts/UserContext";
 import AnalyticsPage from "../pages/analytics/AnalyticsPage";
 import LoginPage from "../pages/auth/LoginPage";
 import ChatPage from "../pages/chat/ChatPage";
@@ -14,16 +14,16 @@ import FormationsListPage from "../pages/formations/FormationsListPage";
 
 /** Bounces non-admins back to Chat — gates the admin-only sections (Chatbots, Analítica). */
 function RequireAdmin({ children }: { children: ReactNode }) {
-  const { isAdmin } = useChatbots();
+  const { isAdmin } = useUser();
   return isAdmin ? <>{children}</> : <Navigate to="/chat" replace />;
 }
 
 export default function Router() {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="login" element={<LoginPage />} />
       <Route element={<AppShell />}>
-        <Route index element={<Navigate to="/chat" replace />} />
         <Route path="chat" element={<ChatPage />} />
         <Route
           path="chatbots"

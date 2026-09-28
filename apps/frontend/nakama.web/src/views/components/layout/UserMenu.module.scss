@@ -126,41 +126,6 @@
   &.active { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 }
 
-.userDropdownDemoRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.userDropdownDemoLabel { font-size: 0.74rem; color: var(--ink-soft); }
-
-.demoSwitch {
-  position: relative;
-  flex: none;
-  width: 32px;
-  height: 18px;
-  border-radius: 999px;
-  background: var(--border);
-
-  &.active {
-    background: var(--border-strong);
-    .demoSwitchThumb { background: var(--ink-soft); transform: translateX(14px); }
-  }
-}
-
-.demoSwitchThumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--ink-faint);
-  transition: transform 0.3s ease, background 0.3s ease;
-}
-
 .userDropdownLogout {
   width: 100%;
   background: transparent;
