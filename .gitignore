@@ -129,3 +129,12 @@ Desktop.ini
 # ---------------------------------------------------------
 *.log
 .eslintcache
+
+# ---------------------------------------------------------
+# Local agent/AI tooling config (never shared via the repo)
+# ---------------------------------------------------------
+.agents/
+.atl/
+.claude/
+.codegraph/
+.config/
