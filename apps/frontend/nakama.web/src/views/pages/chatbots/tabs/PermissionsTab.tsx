@@ -1,7 +1,8 @@
 import ConfirmDialog from "../../../components/shared/ConfirmDialog";
-import { MailIcon, TrashIcon } from "../../../components/shared/icons";
+import { MailIcon, RecycleBinIcon } from "../../../components/shared/icons";
 import { isOwnerRole } from "../../../../modules/chatbots/domain/Chatbot";
 import type { Chatbot } from "../../../../modules/chatbots/domain/Chatbot";
+import { useUsers } from "../../../shared/contexts/UsersContext";
 import InviteDialog from "../dialogs/InviteDialog";
 import { usePermissionsTab } from "./hooks/usePermissionsTab";
 import styles from "./PermissionsTab.module.scss";
@@ -18,6 +19,7 @@ function roleClass(role: string): string {
 
 export default function PermissionsTab({ bot }: PermissionsTabProps) {
   const { inviteOpen, setInviteOpen, setRemoveIndex, target, handleRemoveConfirm } = usePermissionsTab(bot);
+  const { findUser } = useUsers();
 
   return (
     <div className="tab-panel active">
@@ -30,14 +32,14 @@ export default function PermissionsTab({ bot }: PermissionsTabProps) {
         </div>
         <div className={styles.teamList}>
           {bot.team.map((person, idx) => (
-            <div className={styles.teamItem} key={`${person.name}-${idx}`}>
+            <div className={styles.teamItem} key={`${person.userId}-${idx}`}>
               <div>
-                <span className={styles.teamItemName}>{person.name}</span>
+                <span className={styles.teamItemName}>{findUser(person.userId)?.name ?? "Usuario eliminado"}</span>
                 <span className={`${styles.roleBadge} ${styles[roleClass(person.role)]}`}>{person.role}</span>
               </div>
               {!isOwnerRole(person.role) && (
                 <button className="btn-ghost danger" type="button" onClick={() => setRemoveIndex(idx)}>
-                  <TrashIcon /> Quitar acceso
+                  <RecycleBinIcon /> Quitar acceso
                 </button>
               )}
             </div>
@@ -45,14 +47,14 @@ export default function PermissionsTab({ bot }: PermissionsTabProps) {
         </div>
       </div>
 
-      <InviteDialog open={inviteOpen} botKey={bot.id} botLabel={bot.label} onClose={() => setInviteOpen(false)} />
+      <InviteDialog open={inviteOpen} botKey={bot.id} botLabel={bot.label} existingUserIds={bot.team.map((m) => m.userId)} onClose={() => setInviteOpen(false)} />
 
       <ConfirmDialog
         open={target != null}
         title="Quitar acceso"
         message={
           <>
-            ¿Quitar acceso de <strong>{target?.name}</strong> a este chatbot?
+            ¿Quitar acceso de <strong>{target ? (findUser(target.userId)?.name ?? "esta persona") : ""}</strong> a este chatbot?
           </>
         }
         confirmLabel="Quitar acceso"

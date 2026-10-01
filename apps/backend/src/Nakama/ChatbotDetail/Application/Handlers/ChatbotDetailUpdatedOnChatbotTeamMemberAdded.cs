@@ -15,7 +15,7 @@ public sealed class ChatbotDetailUpdatedOnChatbotTeamMemberAdded(IChatbotDetailR
             return;
         }
 
-        chatbotDetail.AddTeamMember(chatbotTeamMemberAdded.Member.Name, chatbotTeamMemberAdded.Member.Role.ToString());
+        chatbotDetail.AddTeamMember(chatbotTeamMemberAdded.Member.UserId, chatbotTeamMemberAdded.Member.Role.ToString());
         await chatbotDetailRepository.Update(chatbotDetail, ct);
     }
 }

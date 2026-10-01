@@ -7,6 +7,7 @@ import { FormationsProvider } from "./views/shared/contexts/FormationsContext.ts
 import { ThemeProvider } from "./views/shared/contexts/ThemeContext.tsx";
 import { ToastProvider } from "./views/shared/contexts/ToastContext.tsx";
 import { UserProvider } from "./views/shared/contexts/UserContext.tsx";
+import { UsersProvider } from "./views/shared/contexts/UsersContext.tsx";
 import Router from "./views/routes/Router.tsx";
 import "./index.css";
 
@@ -16,13 +17,15 @@ createRoot(document.getElementById("root")!).render(
       <ThemeProvider>
         <ToastProvider>
           <UserProvider>
-            <ChatbotsProvider>
-              <FormationsProvider>
-                <BrowserRouter>
-                  <Router />
-                </BrowserRouter>
-              </FormationsProvider>
-            </ChatbotsProvider>
+            <UsersProvider>
+              <ChatbotsProvider>
+                <FormationsProvider>
+                  <BrowserRouter>
+                    <Router />
+                  </BrowserRouter>
+                </FormationsProvider>
+              </ChatbotsProvider>
+            </UsersProvider>
           </UserProvider>
         </ToastProvider>
       </ThemeProvider>

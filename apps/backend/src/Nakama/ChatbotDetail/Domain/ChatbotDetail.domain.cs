@@ -65,9 +65,9 @@ public partial class ChatbotDetail
         }
     }
 
-    public void AddTeamMember(string name, string role) => this.Team.Add(new TeamMemberRow
+    public void AddTeamMember(Guid userId, string role) => this.Team.Add(new TeamMemberRow
     {
-        Name = name,
+        UserId = userId,
         Role = role,
     });
 

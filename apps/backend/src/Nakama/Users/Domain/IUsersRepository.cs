@@ -6,6 +6,8 @@ public interface IUsersRepository
 {
     Task<User?> FindById(UserId id, CancellationToken ct);
 
+    Task<IReadOnlyList<User>> FindAll(CancellationToken ct);
+
     Task<User?> GetByEmail(Email email, CancellationToken ct);
 
     Task Save(User user, CancellationToken ct);

@@ -3,5 +3,6 @@ export const Services = {
   AnalyticsRepository: { id: "AnalyticsRepository" },
   ChatbotsRepository: { id: "ChatbotsRepository" },
   ConversationsRepository: { id: "ConversationsRepository" },
-  FormationsRepository: { id: "FormationsRepository" }
+  FormationsRepository: { id: "FormationsRepository" },
+  UsersRepository: { id: "UsersRepository" }
 } as const;

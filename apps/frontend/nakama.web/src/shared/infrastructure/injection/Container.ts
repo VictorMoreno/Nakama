@@ -2,6 +2,7 @@ import { ApiAnalyticsRepository } from "../../../modules/analytics/infrastructur
 import { ApiChatbotsRepository } from "../../../modules/chatbots/infrastructure/ApiChatbotsRepository";
 import { ApiConversationsRepository } from "../../../modules/chatbots/infrastructure/ApiConversationsRepository";
 import { ApiFormationsRepository } from "../../../modules/formations/infrastructure/ApiFormationsRepository";
+import { ApiUsersRepository } from "../../../modules/users/infrastructure/ApiUsersRepository";
 import { GeneratedNakamaClient } from "../GeneratedNakamaClient";
 import { Services } from "./Services";
 
@@ -17,7 +18,8 @@ const registry = new Map<string, unknown>([
   [Services.AnalyticsRepository.id, new ApiAnalyticsRepository(client)],
   [Services.ChatbotsRepository.id, new ApiChatbotsRepository(client)],
   [Services.ConversationsRepository.id, new ApiConversationsRepository(client)],
-  [Services.FormationsRepository.id, new ApiFormationsRepository(client)]
+  [Services.FormationsRepository.id, new ApiFormationsRepository(client)],
+  [Services.UsersRepository.id, new ApiUsersRepository(client)]
 ]);
 
 export function resolve<T>(id: string): T {

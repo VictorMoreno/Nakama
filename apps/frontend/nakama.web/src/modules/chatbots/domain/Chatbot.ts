@@ -29,7 +29,7 @@ export interface GapQuestion {
 export type TeamRole = "Propietario" | "Propietaria" | "Editor" | "Lector";
 
 export interface TeamMember {
-  name: string;
+  userId: string;
   role: TeamRole;
 }
 

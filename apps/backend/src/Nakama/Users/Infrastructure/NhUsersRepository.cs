@@ -25,6 +25,12 @@ public sealed class NhUsersRepository(IWriteSessionFactory writeSessions, UserMa
         return await session.Query<User>().SingleOrDefaultAsync(u => u.NormalizedEmail == email.Normalized, ct);
     }
 
+    public async Task<IReadOnlyList<User>> FindAll(CancellationToken ct)
+    {
+        using var session = this.Sessions.OpenSession();
+        return await session.Query<User>().ToListAsync(ct);
+    }
+
     public async Task<int> CountAll(CancellationToken ct)
     {
         using var session = this.Sessions.OpenSession();

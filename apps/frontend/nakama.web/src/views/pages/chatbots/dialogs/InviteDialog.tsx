@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Dialog from "../../../components/shared/Dialog";
 import Select from "../../../components/shared/Select";
 import { CloseIcon, MailIcon } from "../../../components/shared/icons";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
+import { useUsers } from "../../../shared/contexts/UsersContext";
 import type { TeamRole } from "../../../../modules/chatbots/domain/Chatbot";
 
 const ROLE_OPTIONS: { value: TeamRole; label: string }[] = [
@@ -15,29 +16,29 @@ interface InviteDialogProps {
   open: boolean;
   botKey: string;
   botLabel: string;
+  /** userIds already on this chatbot's team - excluded from the picker to avoid duplicate assignments. */
+  existingUserIds: string[];
   onClose: () => void;
 }
 
-function isValidEmail(email: string): boolean {
-  const at = email.indexOf("@");
-  return at > 0 && email.indexOf(".", at) > -1;
-}
-
-export default function InviteDialog({ open, botKey, botLabel, onClose }: InviteDialogProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+export default function InviteDialog({ open, botKey, botLabel, existingUserIds, onClose }: InviteDialogProps) {
+  const { users } = useUsers();
+  const availableUsers = useMemo(
+    () => users.filter((u) => !existingUserIds.includes(u.id)),
+    [users, existingUserIds]
+  );
+  const [userId, setUserId] = useState("");
   const [role, setRole] = useState<TeamRole>("Lector");
-  const [nameError, setNameError] = useState(false);
-  const [emailError, setEmailError] = useState(false);
+  const [userError, setUserError] = useState(false);
   const { addTeamMember } = useChatbots();
   const { showToast } = useToast();
 
+  const userOptions = availableUsers.map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
+
   function reset() {
-    setName("");
-    setEmail("");
+    setUserId("");
     setRole("Lector");
-    setNameError(false);
-    setEmailError(false);
+    setUserError(false);
   }
 
   function handleClose() {
@@ -46,15 +47,12 @@ export default function InviteDialog({ open, botKey, botLabel, onClose }: Invite
   }
 
   function handleConfirm() {
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-    const validEmail = isValidEmail(trimmedEmail);
-    setNameError(!trimmedName);
-    setEmailError(!validEmail);
-    if (!trimmedName || !validEmail) return;
+    setUserError(!userId);
+    if (!userId) return;
 
-    addTeamMember(botKey, { name: trimmedName, role });
-    showToast(`Invitación enviada a ${trimmedEmail}`);
+    const user = availableUsers.find((u) => u.id === userId);
+    addTeamMember(botKey, { userId, role });
+    showToast(`${user?.name ?? "Persona"} añadida al chatbot`);
     reset();
     onClose();
   }
@@ -62,46 +60,32 @@ export default function InviteDialog({ open, botKey, botLabel, onClose }: Invite
   return (
     <Dialog open={open} onClose={handleClose} title={`Invitar a ${botLabel}`}>
       <div className="form-field">
-        <label htmlFor="invite-name">Nombre</label>
-        <input
-          id="invite-name"
-          type="text"
-          className={`form-input${nameError ? " field-error" : ""}`}
-          placeholder="Nombre y apellido"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            if (nameError) setNameError(false);
-          }}
-          autoFocus
-        />
-      </div>
-      <div className="form-field">
-        <label htmlFor="invite-email">Email</label>
-        <input
-          id="invite-email"
-          type="email"
-          className={`form-input${emailError ? " field-error" : ""}`}
-          placeholder="nombre@empresa.com"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (emailError) setEmailError(false);
-          }}
-        />
+        <label htmlFor="invite-user">Persona</label>
+        {userOptions.length === 0 ? (
+          <p className="form-hint">Todos los usuarios del sistema ya tienen acceso a este chatbot.</p>
+        ) : (
+          <Select
+            id="invite-user"
+            value={userId}
+            onChange={(v) => {
+              setUserId(v);
+              if (userError) setUserError(false);
+            }}
+            options={userOptions}
+            ariaLabel="Persona"
+            fullWidth
+          />
+        )}
       </div>
       <div className="form-field">
         <label htmlFor="invite-role">Rol</label>
         <Select id="invite-role" value={role} onChange={setRole} options={ROLE_OPTIONS} ariaLabel="Rol" fullWidth />
       </div>
-      <p className="form-hint">
-        <em>Modo demo: no se envía ningún email real.</em>
-      </p>
       <div className="modal-actions">
         <button className="btn-ghost" type="button" onClick={handleClose}>
           <CloseIcon /> Cancelar
         </button>
-        <button className="btn-primary" type="button" onClick={handleConfirm}>
+        <button className="btn-primary" type="button" disabled={userOptions.length === 0} onClick={handleConfirm}>
           <MailIcon /> Invitar
         </button>
       </div>
