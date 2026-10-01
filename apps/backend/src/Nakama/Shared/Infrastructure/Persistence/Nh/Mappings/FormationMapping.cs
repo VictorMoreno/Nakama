@@ -26,24 +26,12 @@ public sealed class FormationMapping : ClassMapping<Formation>
         Property(x => x.LinkedChatbotKey, m => m.Column("linked_chatbot_key"));
         Property(x => x.Archived);
         Property(x => x.IconUrl);
-        Property(x => x.MyProgress, m =>
-        {
-            m.Type<JsonUserType<LearnerProgress>>();
-            m.Column(c => c.SqlType("text"));
-        });
 
         Property("_modules", m =>
         {
             m.Column(c => { c.Name("modules_json"); c.SqlType("text"); });
             m.Access(Accessor.Field);
             m.Type<JsonUserType<List<FormationModule>>>();
-        });
-
-        Property("_team", m =>
-        {
-            m.Column(c => { c.Name("team_json"); c.SqlType("text"); });
-            m.Access(Accessor.Field);
-            m.Type<JsonUserType<List<FormationMember>>>();
         });
     }
 }

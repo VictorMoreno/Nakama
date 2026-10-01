@@ -1,17 +1,19 @@
 using Api.Configuration;
 using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Application.Finder;
+using Nakama.FormationEnrollment.Application;
+using Nakama.FormationEnrollment.Application.Finder;
+using Nakama.FormationEnrollment.Application.ModuleCompleter;
+using Nakama.FormationEnrollment.Application.TeamMemberAdder;
+using Nakama.FormationEnrollment.Application.TeamMemberRemover;
 using Nakama.Formations.Application.Archiver;
 using Nakama.Formations.Application.Creator;
 using Nakama.Formations.Application.IconUpdater;
 using Nakama.Formations.Application.ModuleAdder;
-using Nakama.Formations.Application.ModuleCompleter;
 using Nakama.Formations.Application.ModuleGatingToggler;
+using Nakama.Formations.Application.ModuleRemover;
 using Nakama.Formations.Application.ModuleUpdater;
 using Nakama.Formations.Application.StatusUpdater;
-using Nakama.Formations.Application.TeamMemberAdder;
-using Nakama.Formations.Application.TeamMemberRemover;
-using Nakama.Formations.Domain;
 using Nakama.FormationsList.Application;
 using Nakama.FormationsList.Application.Searcher;
 using Nakama.Shared.Domain;
@@ -62,6 +64,11 @@ public sealed class FormationEndpoints : IEndpoint
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        group.MapDelete("/{id:guid}/modules/{moduleId:guid}", RemoveFormationModule)
+            .WithSummary("Removes a module from a formation's curriculum.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         group.MapPost("/{id:guid}/modules/{moduleId:guid}/complete", CompleteFormationModule)
             .WithSummary("Marks a module complete, with an optional score.")
             .WithDescription(
@@ -76,22 +83,29 @@ public sealed class FormationEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/team", AddFormationTeamMember)
-            .WithSummary("Adds a team member to a formation.")
+            .WithSummary("Assigns a person to a formation - this is also their enrollment (fused with progress).")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapDelete("/{id:guid}/team/{index:int}", RemoveFormationTeamMember)
-            .WithSummary("Removes a team member by their list position.")
+        group.MapDelete("/{id:guid}/team/{userId:guid}", RemoveFormationTeamMember)
+            .WithSummary(
+                "Unassigns a person from a formation - also deletes their progress (enrollment fused with team membership).")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapGet("/", SearchFormationSummaries)
-            .WithSummary("Lists all formations (summary view).")
+            .WithSummary(
+                "Lists formations (summary view), scoped to the caller: admins see every formation, anyone else only the ones they're assigned to.")
             .Produces<IReadOnlyCollection<FormationSummaryResponse>>();
 
         group.MapGet("/{id:guid}", FindFormationDetail)
             .WithSummary("Gets the full detail page projection for one formation.")
             .Produces<FormationDetailResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet("/{id:guid}/enrollment", FindFormationEnrollment)
+            .WithSummary("Gets one user's own progress in a formation. 404 if they're not assigned.")
+            .Produces<FormationEnrollmentResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
@@ -157,7 +171,9 @@ public sealed class FormationEndpoints : IEndpoint
             new FormationModuleAdder.Command(
                 id, moduleId, body.Title, body.Type, body.Summary, body.Gated, body.AiDraft,
                 body.ResourceUrl, body.DurationMin,
-                body.Quiz?.Select(q => new FormationModuleAdder.QuizQuestionInput(q.Question, q.Options, q.CorrectIndex)).ToList(),
+                body.Quiz
+                    ?.Select(q => new FormationModuleAdder.QuizQuestionInput(q.Question, q.Options, q.CorrectIndex))
+                    .ToList(),
                 body.PassingScore),
             ct);
         return Results.Created();
@@ -170,16 +186,24 @@ public sealed class FormationEndpoints : IEndpoint
             new FormationModuleUpdater.Command(
                 id, moduleId, body.Title, body.Type, body.Summary, body.Gated, body.AiDraft,
                 body.ResourceUrl, body.DurationMin,
-                body.Quiz?.Select(q => new FormationModuleUpdater.QuizQuestionInput(q.Question, q.Options, q.CorrectIndex)).ToList(),
+                body.Quiz?.Select(q =>
+                    new FormationModuleUpdater.QuizQuestionInput(q.Question, q.Options, q.CorrectIndex)).ToList(),
                 body.PassingScore),
             ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> RemoveFormationModule(
+        Guid id, Guid moduleId, ICommandBus commandBus, CancellationToken ct)
+    {
+        await commandBus.Send(new FormationModuleRemover.Command(id, moduleId), ct);
         return Results.NoContent();
     }
 
     private static async Task<IResult> CompleteFormationModule(
         Guid id, Guid moduleId, CompleteFormationModuleRequest body, ICommandBus commandBus, CancellationToken ct)
     {
-        await commandBus.Send(new FormationModuleCompleter.Command(id, moduleId, body.Score), ct);
+        await commandBus.Send(new FormationModuleCompleter.Command(id, moduleId, body.UserId, body.Score), ct);
         return Results.NoContent();
     }
 
@@ -200,21 +224,36 @@ public sealed class FormationEndpoints : IEndpoint
     }
 
     private static async Task<IResult> RemoveFormationTeamMember(
-        Guid id, int index, ICommandBus commandBus, CancellationToken ct)
+        Guid id,
+        Guid userId,
+        ICommandBus commandBus,
+        CancellationToken ct)
     {
-        await commandBus.Send(new FormationTeamMemberRemover.Command(id, index), ct);
+        await commandBus.Send(new FormationTeamMemberRemover.Command(id, userId), ct);
         return Results.NoContent();
     }
 
-    private static async Task<IResult> SearchFormationSummaries(IQueryBus queryBus, CancellationToken ct)
+    private static async Task<IResult> SearchFormationSummaries(Guid userId,
+        bool isAdmin,
+        IQueryBus queryBus,
+        CancellationToken ct)
     {
-        var response = await queryBus.Ask(new FormationSummarySearcher.Query(), ct);
+        var response = await queryBus.Ask(new FormationSummarySearcher.Query(userId, isAdmin), ct);
         return Results.Ok(response);
     }
 
     private static async Task<IResult> FindFormationDetail(Guid id, IQueryBus queryBus, CancellationToken ct)
     {
         var response = await queryBus.Ask(new FormationDetailFinder.Query(id), ct);
+        return Results.Ok(response);
+    }
+
+    private static async Task<IResult> FindFormationEnrollment(Guid id,
+        Guid userId, 
+        IQueryBus queryBus,
+        CancellationToken ct)
+    {
+        var response = await queryBus.Ask(new FormationEnrollmentFinder.Query(id, userId), ct);
         return Results.Ok(response);
     }
 
@@ -251,7 +290,7 @@ public sealed class FormationEndpoints : IEndpoint
         IReadOnlyList<QuizQuestionRequest>? Quiz,
         int? PassingScore);
 
-    private sealed record CompleteFormationModuleRequest(int? Score);
+    private sealed record CompleteFormationModuleRequest(Guid UserId, int? Score);
 
     private sealed record AddFormationTeamMemberRequest(Guid UserId);
 }

@@ -6,6 +6,8 @@ public interface IFormationSummaryRepository
 
     Task<IReadOnlyCollection<FormationSummary>> FindAll(CancellationToken ct);
 
+    Task<IReadOnlyCollection<FormationSummary>> FindByIds(IReadOnlyCollection<Guid> ids, CancellationToken ct);
+
     Task Save(FormationSummary entry, CancellationToken ct);
 
     Task Update(FormationSummary entry, CancellationToken ct);

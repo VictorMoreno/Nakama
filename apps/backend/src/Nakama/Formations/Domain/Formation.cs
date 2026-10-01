@@ -22,11 +22,6 @@ public partial class Formation : AggregateRoot<FormationId>
 
     public virtual string? IconUrl { get; private set; }
 
-    public virtual LearnerProgress MyProgress { get; private set; } = LearnerProgress.Empty;
-
     private readonly List<FormationModule> _modules = [];
     public virtual IReadOnlyCollection<FormationModule> Modules => _modules;
-
-    private readonly List<FormationMember> _team = [];
-    public virtual IReadOnlyCollection<FormationMember> Team => _team;
 }

@@ -8,6 +8,7 @@ using Nakama.ChatPage.Domain;
 using Nakama.ConversationAudit.Domain;
 using Nakama.ConversationHistory.Domain;
 using Nakama.FormationDetail.Domain;
+using Nakama.FormationEnrollment.Domain;
 using Nakama.Formations.Domain;
 using Nakama.Users.Domain;
 
@@ -405,10 +406,21 @@ public sealed class SeedDemoTestDataMigration : Migration
                 Quiz = m.Quiz?.Select(q => new QuizQuestionRow { Question = q.Question, Options = q.Options.ToList(), CorrectIndex = q.CorrectIndex }).ToList()
             }).ToList();
 
+            // Each team member gets their OWN progress now (real FormationEnrollment rows) instead
+            // of a single shared blob on the formation - this is the bug the whole feature fixes.
             var teamSize = rng.Next(2, 6);
             var teamUserIds = PickDistinct(rng, userIds, teamSize);
-            var writeTeam = teamUserIds.Select(uid => new FormationMember(uid, rng.Next(0, 4) * 33)).ToList();
-            var detailTeam = writeTeam.Select(m => new FormationMemberRow { UserId = m.UserId, Progress = m.Progress }).ToList();
+            var moduleIds = new[] { moduleId1.Value, moduleId2.Value, moduleId3.Value };
+            var enrollments = teamUserIds.Select(uid =>
+            {
+                var completedCount = rng.Next(0, modules.Count + 1);
+                var progress = moduleIds.Take(completedCount)
+                    .Aggregate(LearnerProgress.Empty, (p, moduleId) => p.WithModuleCompleted(moduleId, null));
+                return (UserId: uid, Progress: progress);
+            }).ToList();
+            var detailTeam = enrollments
+                .Select(e => new FormationMemberRow { UserId = e.UserId, Progress = e.Progress.CompletedModuleIds.Count * 100 / modules.Count })
+                .ToList();
 
             Insert.IntoTable("formations").Row(new
             {
@@ -420,10 +432,19 @@ public sealed class SeedDemoTestDataMigration : Migration
                 linked_chatbot_key = (object?)linkedChatbotKey ?? DBNull.Value,
                 archived = false,
                 iconurl = (string?)null,
-                myprogress = Json(LearnerProgress.Empty),
-                modules_json = Json(modules),
-                team_json = Json(writeTeam)
+                modules_json = Json(modules)
             });
+
+            foreach (var enrollment in enrollments)
+            {
+                Insert.IntoTable("formation_enrollments").Row(new
+                {
+                    id = Guid.NewGuid(),
+                    formation_id = formId,
+                    user_id = enrollment.UserId,
+                    progress_json = Json(enrollment.Progress)
+                });
+            }
 
             Insert.IntoTable("read_formations_list").Row(new
             {
@@ -434,9 +455,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 status = status.ToString(),
                 archived = false,
                 iconurl = (string?)null,
-                progresspct = 0,
-                modulescount = modules.Count,
-                completedmodulescount = 0
+                modulescount = modules.Count
             });
 
             Insert.IntoTable("read_formation_detail").Row(new
@@ -451,9 +470,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 linked_chatbot_key = (object?)linkedChatbotKey ?? DBNull.Value,
                 linked_chatbot_label = (object?)linkedChatbotLabel ?? DBNull.Value,
                 modules_json = Json(detailModules),
-                team_json = Json(detailTeam),
-                completed_module_ids_json = Json(new List<Guid>()),
-                exam_scores_json = Json(new Dictionary<Guid, int>())
+                team_json = Json(detailTeam)
             });
 
             if (linkedChatbotKey is not null)

@@ -1,4 +1,4 @@
-namespace Nakama.Formations.Domain;
+namespace Nakama.FormationEnrollment.Domain;
 
 public sealed record LearnerProgress(IReadOnlyList<Guid> CompletedModuleIds, IReadOnlyDictionary<Guid, int> ExamScores)
 {

@@ -89,6 +89,8 @@ public partial class FormationDetail
         module.Quiz = quiz;
     }
 
+    public void RemoveModule(Guid moduleId) => this.Modules.RemoveAll(m => m.Id == moduleId);
+
     public void ToggleModuleGating(Guid moduleId, bool gated)
     {
         var module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
@@ -98,30 +100,26 @@ public partial class FormationDetail
         }
     }
 
-    public void CompleteModule(Guid moduleId, int? score)
+    public void AddMember(Guid userId)
     {
-        if (!this.CompletedModuleIds.Contains(moduleId))
+        if (this.Team.Any(m => m.UserId == userId))
         {
-            this.CompletedModuleIds.Add(moduleId);
+            return;
         }
 
-        if (score is not null)
-        {
-            this.ExamScores[moduleId] = score.Value;
-        }
+        this.Team.Add(new FormationMemberRow { UserId = userId, Progress = 0 });
     }
 
-    public void AddTeamMember(Guid userId) => this.Team.Add(new FormationMemberRow
-    {
-        UserId = userId,
-        Progress = 0,
-    });
+    public void RemoveMember(Guid userId) => this.Team.RemoveAll(m => m.UserId == userId);
 
-    public void RemoveTeamMember(int index)
+    public void UpdateMemberProgress(Guid userId, int completedModuleCount, int totalModuleCount)
     {
-        if (index >= 0 && index < this.Team.Count)
+        var member = this.Team.FirstOrDefault(m => m.UserId == userId);
+        if (member is null)
         {
-            this.Team.RemoveAt(index);
+            return;
         }
+
+        member.Progress = totalModuleCount == 0 ? 0 : completedModuleCount * 100 / totalModuleCount;
     }
 }

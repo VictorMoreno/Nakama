@@ -85,9 +85,11 @@ export default function FormationsListPage() {
                 </div>
                 <div className={styles.botCardActions}>
                   <div className={styles.botCardActionsMain}>
-                    <button className="btn-primary" type="button" onClick={() => navigate(`/formacion/${c.id}`)}>
-                      <ArrowRightIcon /> Abrir
-                    </button>
+                    {c.isEnrolled && (
+                      <button className="btn-primary" type="button" onClick={() => navigate(`/formacion/${c.id}`)}>
+                        <ArrowRightIcon /> Abrir
+                      </button>
+                    )}
                     {isAdmin && (
                       <button className="btn-ghost" type="button" onClick={() => navigate(`/formacion/${c.id}/gestionar`)}>
                         <LockIcon /> Gestionar

@@ -20,17 +20,7 @@ public partial class FormationSummary
 
     public void UpdateIcon(string? iconUrl) => this.IconUrl = iconUrl;
 
-    public void IncrementModulesCount()
-    {
-        this.ModulesCount++;
-        Recalculate();
-    }
+    public void IncrementModulesCount() => this.ModulesCount++;
 
-    public void IncrementCompletedModulesCount()
-    {
-        this.CompletedModulesCount++;
-        Recalculate();
-    }
-
-    private void Recalculate() => this.ProgressPct = this.ModulesCount == 0 ? 0 : this.CompletedModulesCount * 100 / this.ModulesCount;
+    public void DecrementModulesCount() => this.ModulesCount = Math.Max(0, this.ModulesCount - 1);
 }

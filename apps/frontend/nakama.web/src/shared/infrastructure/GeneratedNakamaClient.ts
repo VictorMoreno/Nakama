@@ -189,6 +189,12 @@ export interface IGeneratedNakamaClient {
     modulesPATCH(id: string, moduleId: string, body: UpdateFormationModuleRequest): Promise<void>;
 
     /**
+     * Removes a module from a formation's curriculum.
+     * @return No Content
+     */
+    modulesDELETE(id: string, moduleId: string): Promise<void>;
+
+    /**
      * Marks a module complete, with an optional score.
      * @return No Content
      */
@@ -201,22 +207,28 @@ export interface IGeneratedNakamaClient {
     toggleGating(id: string, moduleId: string): Promise<void>;
 
     /**
-     * Adds a team member to a formation.
+     * Assigns a person to a formation - this is also their enrollment (fused with progress).
      * @return No Content
      */
     teamPOST2(id: string, body: AddFormationTeamMemberRequest): Promise<void>;
 
     /**
-     * Removes a team member by their list position.
+     * Unassigns a person from a formation - also deletes their progress (enrollment fused with team membership).
      * @return No Content
      */
-    teamDELETE2(id: string, index: number): Promise<void>;
+    teamDELETE2(id: string, userId: string): Promise<void>;
 
     /**
-     * Lists all formations (summary view).
+     * Lists formations (summary view), scoped to the caller: admins see every formation, anyone else only the ones they're assigned to.
      * @return OK
      */
-    formationsAll(): Promise<FormationSummaryResponse[]>;
+    formationsAll(userId: string, isAdmin: boolean): Promise<FormationSummaryResponse[]>;
+
+    /**
+     * Gets one user's own progress in a formation. 404 if they're not assigned.
+     * @return OK
+     */
+    enrollment(id: string, userId: string): Promise<FormationEnrollmentResponse>;
 
     /**
      * Admin-provisions a new user with an initial password.
@@ -1587,6 +1599,54 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Removes a module from a formation's curriculum.
+     * @return No Content
+     */
+    modulesDELETE(id: string, moduleId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/modules/{moduleId}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (moduleId === undefined || moduleId === null)
+            throw new globalThis.Error("The parameter 'moduleId' must be defined.");
+        url_ = url_.replace("{moduleId}", encodeURIComponent("" + moduleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processModulesDELETE(_response));
+        });
+    }
+
+    protected processModulesDELETE(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
      * Marks a module complete, with an optional score.
      * @return No Content
      */
@@ -1693,7 +1753,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Adds a team member to a formation.
+     * Assigns a person to a formation - this is also their enrollment (fused with progress).
      * @return No Content
      */
     teamPOST2(id: string, body: AddFormationTeamMemberRequest): Promise<void> {
@@ -1742,17 +1802,17 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Removes a team member by their list position.
+     * Unassigns a person from a formation - also deletes their progress (enrollment fused with team membership).
      * @return No Content
      */
-    teamDELETE2(id: string, index: number): Promise<void> {
-        let url_ = this.baseUrl + "/api/formations/{id}/team/{index}";
+    teamDELETE2(id: string, userId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/team/{userId}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (index === undefined || index === null)
-            throw new globalThis.Error("The parameter 'index' must be defined.");
-        url_ = url_.replace("{index}", encodeURIComponent("" + index));
+        if (userId === undefined || userId === null)
+            throw new globalThis.Error("The parameter 'userId' must be defined.");
+        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1790,11 +1850,19 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Lists all formations (summary view).
+     * Lists formations (summary view), scoped to the caller: admins see every formation, anyone else only the ones they're assigned to.
      * @return OK
      */
-    formationsAll(): Promise<FormationSummaryResponse[]> {
-        let url_ = this.baseUrl + "/api/formations";
+    formationsAll(userId: string, isAdmin: boolean): Promise<FormationSummaryResponse[]> {
+        let url_ = this.baseUrl + "/api/formations?";
+        if (userId === undefined || userId === null)
+            throw new globalThis.Error("The parameter 'userId' must be defined and cannot be null.");
+        else
+            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
+        if (isAdmin === undefined || isAdmin === null)
+            throw new globalThis.Error("The parameter 'isAdmin' must be defined and cannot be null.");
+        else
+            url_ += "isAdmin=" + encodeURIComponent("" + isAdmin) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1826,6 +1894,58 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             });
         }
         return Promise.resolve<FormationSummaryResponse[]>(null as any);
+    }
+
+    /**
+     * Gets one user's own progress in a formation. 404 if they're not assigned.
+     * @return OK
+     */
+    enrollment(id: string, userId: string): Promise<FormationEnrollmentResponse> {
+        let url_ = this.baseUrl + "/api/formations/{id}/enrollment?";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (userId === undefined || userId === null)
+            throw new globalThis.Error("The parameter 'userId' must be defined and cannot be null.");
+        else
+            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processEnrollment(_response));
+        });
+    }
+
+    protected processEnrollment(response: Response): Promise<FormationEnrollmentResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as FormationEnrollmentResponse;
+            return result200;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FormationEnrollmentResponse>(null as any);
     }
 
     /**
@@ -2018,6 +2138,7 @@ export interface ChatbotSummaryResponse {
 }
 
 export interface CompleteFormationModuleRequest {
+    userId?: string;
     score?: number | undefined;
 }
 
@@ -2072,6 +2193,11 @@ export interface FormationDetailResponse {
     linkedChatbotLabel?: string | undefined;
     modules?: FormationModuleRow[] | undefined;
     team?: FormationMemberRow[] | undefined;
+}
+
+export interface FormationEnrollmentResponse {
+    formationId?: string;
+    userId?: string;
     completedModuleIds?: string[] | undefined;
     examScores?: { [key: string]: number; } | undefined;
 }
@@ -2105,6 +2231,7 @@ export interface FormationSummaryResponse {
     progressPct?: number;
     modulesCount?: number;
     completedModulesCount?: number;
+    isEnrolled?: boolean;
 }
 
 export interface GapQuestionRow {

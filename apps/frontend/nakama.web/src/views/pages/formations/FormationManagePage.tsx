@@ -145,7 +145,7 @@ export default function FormationManagePage() {
     addTeamMemberOpen,
     setAddTeamMemberOpen,
     teamMemberTarget,
-    setRemoveTeamMemberIndex,
+    setRemoveTeamMemberUserId,
     confirmRemoveTeamMember
   } = useFormationManage();
   const { findUser } = useUsers();
@@ -244,7 +244,7 @@ export default function FormationManagePage() {
                     <div className="bar-fill" style={{ width: `${m.progress}%` }} />
                   </div>
                   <span className={styles.pct}>{m.progress}%</span>
-                  <button className="btn-ghost danger" type="button" onClick={() => setRemoveTeamMemberIndex(idx)}>
+                  <button className="btn-ghost danger" type="button" onClick={() => setRemoveTeamMemberUserId(m.userId)}>
                     <RecycleBinIcon /> Quitar
                   </button>
                 </div>
@@ -285,7 +285,7 @@ export default function FormationManagePage() {
         }
         confirmLabel="Quitar"
         danger
-        onCancel={() => setRemoveTeamMemberIndex(null)}
+        onCancel={() => setRemoveTeamMemberUserId(null)}
         onConfirm={confirmRemoveTeamMember}
       />
     </section>

@@ -23,8 +23,6 @@ public sealed class FormationsListMapping : ClassMapping<FormationSummary>
         Property(x => x.Status);
         Property(x => x.Archived);
         Property(x => x.IconUrl);
-        Property(x => x.ProgressPct);
         Property(x => x.ModulesCount);
-        Property(x => x.CompletedModulesCount);
     }
 }

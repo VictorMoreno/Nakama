@@ -85,10 +85,12 @@ function toFormation(summary: FormationSummaryResponse, detail: FormationDetailR
     status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
     linkedChatbotKey: detail.linkedChatbotKey,
     modules: (detail.modules ?? []).map(toFormationModule),
-    myProgress: { completedModuleIds: detail.completedModuleIds ?? [], examScores: detail.examScores ?? {} },
     team: (detail.team ?? []).map(toFormationMember),
     archived: summary.archived ?? false,
-    iconUrl: summary.iconUrl
+    iconUrl: summary.iconUrl,
+    isEnrolled: summary.isEnrolled ?? false,
+    progressPct: summary.progressPct ?? 0,
+    completedModulesCount: summary.completedModulesCount ?? 0
   };
 }
 
@@ -99,8 +101,8 @@ export class ApiFormationsRepository implements IFormationsRepository {
     this.client = client;
   }
 
-  async FindAll(): Promise<FormationMap> {
-    const summaries = await this.client.formationsAll();
+  async FindAll(userId: string, isAdmin: boolean): Promise<FormationMap> {
+    const summaries = await this.client.formationsAll(userId, isAdmin);
     const entries = await Promise.all(
       summaries.map(async (summary) => {
         const id = summary.id ?? "";
@@ -140,8 +142,10 @@ export class ApiFormationsRepository implements IFormationsRepository {
       linkedChatbotKey,
       iconUrl,
       modules: [],
-      myProgress: { completedModuleIds: [], examScores: {} },
-      team: []
+      team: [],
+      isEnrolled: false,
+      progressPct: 0,
+      completedModulesCount: 0
     };
   }
 
@@ -190,25 +194,23 @@ export class ApiFormationsRepository implements IFormationsRepository {
     } satisfies UpdateFormationModuleRequest);
   }
 
-  async RemoveModule(): Promise<void> {
-    // No DELETE-module endpoint exists on the backend - same "fail loudly" rule as Archive/
-    // UpdateIcon above.
-    throw new Error("ApiFormationsRepository.RemoveModule: no existe todavía un endpoint en la API para eliminar un módulo.");
+  async RemoveModule(id: string, moduleId: string): Promise<void> {
+    await this.client.modulesDELETE(id, moduleId);
   }
 
   async ToggleModuleGating(id: string, moduleId: string): Promise<void> {
     await this.client.toggleGating(id, moduleId);
   }
 
-  async CompleteModule(id: string, moduleId: string, score?: number): Promise<void> {
-    await this.client.complete(id, moduleId, { score } satisfies CompleteFormationModuleRequest);
+  async CompleteModule(id: string, moduleId: string, userId: string, score?: number): Promise<void> {
+    await this.client.complete(id, moduleId, { userId, score } satisfies CompleteFormationModuleRequest);
   }
 
   async AddTeamMember(id: string, userId: string): Promise<void> {
     await this.client.teamPOST2(id, { userId } satisfies AddFormationTeamMemberRequest);
   }
 
-  async RemoveTeamMember(id: string, index: number): Promise<void> {
-    await this.client.teamDELETE2(id, index);
+  async RemoveTeamMember(id: string, userId: string): Promise<void> {
+    await this.client.teamDELETE2(id, userId);
   }
 }

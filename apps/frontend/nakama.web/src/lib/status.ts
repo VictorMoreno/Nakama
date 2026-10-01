@@ -33,9 +33,3 @@ export function getChatbotStatus(bot: Chatbot): EntityStatus {
 export function getFormationStatus(formation: Formation): EntityStatus {
   return FORMATION_STATUS_META[formation.status];
 }
-
-export function getFormationProgressPct(formation: Formation): number {
-  return formation.modules.length
-    ? Math.round((formation.myProgress.completedModuleIds.length / formation.modules.length) * 100)
-    : 0;
-}

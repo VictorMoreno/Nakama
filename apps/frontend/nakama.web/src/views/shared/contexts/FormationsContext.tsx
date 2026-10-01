@@ -6,6 +6,7 @@ import type { Formation, FormationMap, FormationModule } from "../../../modules/
 import type { CreateFormationInput, IFormationsRepository } from "../../../modules/formations/domain/IFormationsRepository";
 import { Services } from "../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../shared/infrastructure/injection/useInjection";
+import { useUser } from "./UserContext";
 
 export type { CreateFormationInput };
 
@@ -24,20 +25,30 @@ interface FormationsContextValue {
   toggleModuleGating: (key: string, moduleId: string) => Promise<void>;
   completeModule: (key: string, moduleId: string, score?: number) => Promise<void>;
   addTeamMember: (key: string, userId: string) => Promise<void>;
-  removeTeamMember: (key: string, index: number) => Promise<void>;
+  removeTeamMember: (key: string, userId: string) => Promise<void>;
 }
 
 const FormationsContext = createContext<FormationsContextValue | null>(null);
 
 export function FormationsProvider({ children }: { children: ReactNode }) {
   const repo = useInjection<IFormationsRepository>(Services.FormationsRepository.id);
+  const { currentUser, isAdmin } = useUser();
 
   const [formations, setFormations] = useState<FormationMap>({});
   const [isLoading, setIsLoading] = useState(true);
 
+  // The list is scoped server-side by the logged-in user (non-admins only see formations
+  // they're enrolled in) - no session/token exists (ADR-20), so this re-fetches whenever the
+  // in-memory current user changes (login/logout), same as Chat/Conversations elsewhere.
   useEffect(() => {
+    if (!currentUser) {
+      setFormations({});
+      setIsLoading(false);
+      return;
+    }
     let cancelled = false;
-    repo.FindAll().then((data) => {
+    setIsLoading(true);
+    repo.FindAll(currentUser.id, isAdmin).then((data) => {
       if (!cancelled) {
         setFormations(data);
         setIsLoading(false);
@@ -46,7 +57,7 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [repo]);
+  }, [repo, currentUser, isAdmin]);
 
   const activeFormations = useMemo(() => Object.values(formations).filter((c) => !c.archived), [formations]);
 
@@ -54,7 +65,8 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
   // repository afterward instead of hand-rolling the same update logic twice — the
   // repository already owns the authoritative result of the mutation.
   async function refresh() {
-    setFormations(await repo.FindAll());
+    if (!currentUser) return;
+    setFormations(await repo.FindAll(currentUser.id, isAdmin));
   }
 
   async function createFormation(input: CreateFormationInput): Promise<string> {
@@ -99,22 +111,19 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
   }
 
   async function completeModule(key: string, moduleId: string, score?: number) {
-    await repo.CompleteModule(key, moduleId, score);
+    if (!currentUser) return;
+    await repo.CompleteModule(key, moduleId, currentUser.id, score);
     await refresh();
   }
 
   async function addTeamMember(key: string, userId: string) {
     await repo.AddTeamMember(key, userId);
-    setFormations((prev) =>
-      prev[key] ? { ...prev, [key]: { ...prev[key], team: [...prev[key].team, { userId, progress: 0 }] } } : prev
-    );
+    await refresh();
   }
 
-  async function removeTeamMember(key: string, index: number) {
-    await repo.RemoveTeamMember(key, index);
-    setFormations((prev) =>
-      prev[key] ? { ...prev, [key]: { ...prev[key], team: prev[key].team.filter((_, i) => i !== index) } } : prev
-    );
+  async function removeTeamMember(key: string, userId: string) {
+    await repo.RemoveTeamMember(key, userId);
+    await refresh();
   }
 
   const value: FormationsContextValue = {

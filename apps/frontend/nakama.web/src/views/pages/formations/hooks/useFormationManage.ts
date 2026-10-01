@@ -17,11 +17,11 @@ export function useFormationManage() {
   const [creatingNew, setCreatingNew] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [addTeamMemberOpen, setAddTeamMemberOpen] = useState(false);
-  const [removeTeamMemberIndex, setRemoveTeamMemberIndex] = useState<number | null>(null);
+  const [removeTeamMemberUserId, setRemoveTeamMemberUserId] = useState<string | null>(null);
 
   const c = key ? formations[key] : undefined;
   const deleteTarget = c?.modules.find((m) => m.id === deleteId);
-  const teamMemberTarget = removeTeamMemberIndex != null ? c?.team[removeTeamMemberIndex] : undefined;
+  const teamMemberTarget = removeTeamMemberUserId != null ? c?.team.find((m) => m.userId === removeTeamMemberUserId) : undefined;
   const avgTeamProgress = c?.team.length ? Math.round(c.team.reduce((sum, m) => sum + m.progress, 0) / c.team.length) : 0;
   const linkedBot = c?.linkedChatbotKey ? chatbots[c.linkedChatbotKey] : undefined;
 
@@ -52,11 +52,11 @@ export function useFormationManage() {
   }
 
   async function confirmRemoveTeamMember() {
-    if (c && removeTeamMemberIndex != null) {
-      await removeTeamMember(c.id, removeTeamMemberIndex);
+    if (c && removeTeamMemberUserId != null) {
+      await removeTeamMember(c.id, removeTeamMemberUserId);
       showToast("Persona quitada de la formación");
     }
-    setRemoveTeamMemberIndex(null);
+    setRemoveTeamMemberUserId(null);
   }
 
   return {
@@ -77,7 +77,7 @@ export function useFormationManage() {
     addTeamMemberOpen,
     setAddTeamMemberOpen,
     teamMemberTarget,
-    setRemoveTeamMemberIndex,
+    setRemoveTeamMemberUserId,
     confirmRemoveTeamMember
   };
 }

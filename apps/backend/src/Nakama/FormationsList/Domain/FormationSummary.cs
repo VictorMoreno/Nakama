@@ -13,10 +13,5 @@ public partial class FormationSummary : IEntity
     public virtual string Status { get; protected set; } = string.Empty;
     public virtual bool Archived { get; protected set; }
     public virtual string? IconUrl { get; protected set; }
-
-    public virtual int ProgressPct { get; protected set; }
-
     public virtual int ModulesCount { get; protected set; }
-
-    public virtual int CompletedModulesCount { get; protected set; }
 }

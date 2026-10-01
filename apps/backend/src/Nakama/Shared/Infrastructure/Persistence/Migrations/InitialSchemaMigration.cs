@@ -38,9 +38,19 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("linked_chatbot_key").AsGuid().Nullable()
             .WithColumn("archived").AsBoolean().Nullable()
             .WithColumn("iconurl").AsString(255).Nullable()
-            .WithColumn("myprogress").AsCustom("text").Nullable()
-            .WithColumn("modules_json").AsCustom("text").Nullable()
-            .WithColumn("team_json").AsCustom("text").Nullable();
+            .WithColumn("modules_json").AsCustom("text").Nullable();
+
+        Create.Table("formation_enrollments")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("formation_id").AsGuid().NotNullable()
+            .WithColumn("user_id").AsGuid().NotNullable()
+            .WithColumn("progress_json").AsCustom("text").Nullable();
+
+        Create.Index("ix_formation_enrollments_formation_user")
+            .OnTable("formation_enrollments")
+            .OnColumn("formation_id").Ascending()
+            .OnColumn("user_id").Ascending()
+            .WithOptions().Unique();
 
         Create.Table("read_chatbot_summaries")
             .WithColumn("id").AsGuid().PrimaryKey()
@@ -90,9 +100,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("status").AsString(255).Nullable()
             .WithColumn("archived").AsBoolean().Nullable()
             .WithColumn("iconurl").AsString(255).Nullable()
-            .WithColumn("progresspct").AsInt32().Nullable()
-            .WithColumn("modulescount").AsInt32().Nullable()
-            .WithColumn("completedmodulescount").AsInt32().Nullable();
+            .WithColumn("modulescount").AsInt32().Nullable();
 
         Create.Table("read_formation_detail")
             .WithColumn("id").AsGuid().PrimaryKey()
@@ -105,9 +113,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("linked_chatbot_key").AsGuid().Nullable()
             .WithColumn("linked_chatbot_label").AsString(255).Nullable()
             .WithColumn("modules_json").AsCustom("text").Nullable()
-            .WithColumn("team_json").AsCustom("text").Nullable()
-            .WithColumn("completed_module_ids_json").AsCustom("text").Nullable()
-            .WithColumn("exam_scores_json").AsCustom("text").Nullable();
+            .WithColumn("team_json").AsCustom("text").Nullable();
 
         Create.Table("read_formation_detail_chatbot_label_ref")
             .WithColumn("id").AsGuid().PrimaryKey()

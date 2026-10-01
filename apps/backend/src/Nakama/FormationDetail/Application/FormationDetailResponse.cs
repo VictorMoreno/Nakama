@@ -15,9 +15,7 @@ public sealed record FormationDetailResponse(
     Guid? LinkedChatbotKey,
     string? LinkedChatbotLabel,
     List<FormationModuleRow> Modules,
-    List<FormationMemberRow> Team,
-    List<Guid> CompletedModuleIds,
-    Dictionary<Guid, int> ExamScores)
+    List<FormationMemberRow> Team)
 {
     public static explicit operator FormationDetailResponse(FormationDetail entity) => new(
         entity.Id,
@@ -30,7 +28,5 @@ public sealed record FormationDetailResponse(
         entity.LinkedChatbotKey,
         entity.LinkedChatbotLabel,
         entity.Modules,
-        entity.Team,
-        entity.CompletedModuleIds,
-        entity.ExamScores);
+        entity.Team);
 }

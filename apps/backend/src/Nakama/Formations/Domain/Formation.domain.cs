@@ -92,6 +92,19 @@ public partial class Formation
         Record(new FormationModuleUpdated(this.Id, updated));
     }
 
+    public void RemoveModule(ModuleId moduleId)
+    {
+        var index = this._modules.FindIndex(m => m.Id == moduleId);
+        if (index < 0)
+        {
+            throw FormationErrors.ModuleNotFound(moduleId.Value.ToString(), this.Id.Value.ToString());
+        }
+
+        this._modules.RemoveAt(index);
+
+        Record(new FormationModuleRemoved(this.Id, moduleId));
+    }
+
     public void ToggleModuleGating(ModuleId moduleId)
     {
         var index = this._modules.FindIndex(m => m.Id == moduleId);
@@ -106,27 +119,6 @@ public partial class Formation
         Record(new FormationModuleGatingToggled(this.Id, moduleId, toggled.Gated));
     }
 
-    public void CompleteModule(ModuleId moduleId, int? score)
-    {
-        var index = this._modules.FindIndex(m => m.Id == moduleId);
-        if (index < 0)
-        {
-            throw FormationErrors.ModuleNotFound(moduleId.Value.ToString(), this.Id.Value.ToString());
-        }
-
-        if (index > 0)
-        {
-            var previous = this._modules[index - 1];
-            if (previous.Gated && !this.MyProgress.CompletedModuleIds.Contains(previous.Id.Value))
-            {
-                throw FormationErrors.ModuleLockedByGating;
-            }
-        }
-
-        this.MyProgress = this.MyProgress.WithModuleCompleted(moduleId.Value, score);
-        Record(new FormationModuleCompleted(this.Id, moduleId, score));
-    }
-
     public void Archive()
     {
         if (this.Archived)
@@ -136,17 +128,5 @@ public partial class Formation
 
         this.Archived = true;
         Record(new FormationArchived(this.Id));
-    }
-
-    public void AddTeamMember(FormationMember member)
-    {
-        this._team.Add(member);
-        Record(new FormationTeamMemberAdded(this.Id, member));
-    }
-
-    public void RemoveTeamMember(int index)
-    {
-        this._team.RemoveAt(index);
-        Record(new FormationTeamMemberRemoved(this.Id, index));
     }
 }

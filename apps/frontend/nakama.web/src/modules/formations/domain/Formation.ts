@@ -60,11 +60,15 @@ export interface Formation {
   /** Chatbot key opcional, solo para contexto de generación por IA */
   linkedChatbotKey?: string;
   modules: FormationModule[];
-  myProgress: LearnerProgress;
   team: FormationMember[];
   archived?: boolean;
   /** Imagen subida por un admin (al crear o desde la ficha del currículo), mostrada en la card del listado en vez del icono por defecto */
   iconUrl?: string;
+  /** Si el usuario actual está asignado a esta formación (solo las personas asignadas pueden cursarla) */
+  isEnrolled: boolean;
+  /** Progreso del usuario actual (0-100), calculado en el backend */
+  progressPct: number;
+  completedModulesCount: number;
 }
 
 export type FormationMap = Record<string, Formation>;

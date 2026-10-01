@@ -4,5 +4,6 @@ export const Services = {
   ChatbotsRepository: { id: "ChatbotsRepository" },
   ConversationsRepository: { id: "ConversationsRepository" },
   FormationsRepository: { id: "FormationsRepository" },
+  FormationEnrollmentRepository: { id: "FormationEnrollmentRepository" },
   UsersRepository: { id: "UsersRepository" }
 } as const;

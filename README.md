@@ -101,9 +101,10 @@ proyecto_master/
 │   │       ├── ChatPage/         #   guion de ejemplo (opening/chips) del chat
 │   │       ├── ConversationHistory/ # historial de conversaciones por usuario
 │   │       ├── ConversationAudit/   # log de auditoría inmutable de conversaciones
-│   │       ├── Formations/       #   agregado Formation (currículo, módulos, equipo)
+│   │       ├── Formations/       #   agregado Formation (currículo y módulos)
+│   │       ├── FormationEnrollment/ # agregado FormationEnrollment (asignación + progreso por persona)
 │   │       ├── FormationDetail/  #   proyección de lectura del detalle de una formación
-│   │       ├── FormationsList/   #   proyección de lectura del listado de formaciones
+│   │       ├── FormationsList/   #   proyección de lectura del listado de formaciones (escopeado por usuario)
 │   │       ├── Users/            #   usuarios y autenticación
 │   │       ├── UserActivity/     #   actividad de usuario para analítica
 │   │       ├── Analytics/        #   agregación de métricas de uso
@@ -128,6 +129,7 @@ Cada módulo relevante tiene su propio `agents.md` con las convenciones de imple
 - **Chat con chatbots por equipo**: conversaciones con citación de fuente, modo socrático y explicación ampliada opcionales; historial de conversaciones por persona, retomable y borrable.
 - **Gestión de chatbots** (admin): alta/baja, estado (borrador/activo/inactivo), icono, ingesta de documentos, equipo con roles (propietario/editor/lector), analítica de preguntas sin respuesta (*gaps*) y preguntas más frecuentes.
 - **Formaciones por módulos**: tipos vídeo, documento, ejercicio y examen (con editor de preguntas/opciones/respuesta correcta); bloqueo secuencial configurable entre módulos.
+- **Asignación y progreso por persona**: solo quien está asignado a una formación puede cursarla; el progreso (módulos completados, notas de examen) es individual por persona, no compartido entre quienes cursan la misma formación. El listado de `/formacion` se carga en función del usuario: una persona no-admin solo ve las formaciones a las que fue asignada; un admin ve todas, pero "Abrir" solo aparece en las que él mismo cursa.
 - **Vistas separadas Abrir / Gestionar**: la persona que cursa una formación usa `/formacion/:id` (progreso, módulos bloqueados, exámenes respondibles); un admin la configura en `/formacion/:id/gestionar` (alta/edición inline de módulos sin diálogo, equipo asignado) — son páginas y hooks independientes, no una sola vista condicionada por rol.
 - **Analítica global**: chatbots activos, preguntas respondidas, uso por bot, tasa de respuestas útiles.
 - **Autenticación propia**: login por email/contraseña contra la base de usuarios propia (sin sesión persistida ni SSO todavía — ver nota de stack planificado más arriba).

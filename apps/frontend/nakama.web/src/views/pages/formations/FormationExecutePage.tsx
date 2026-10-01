@@ -167,7 +167,7 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
 }
 
 export default function FormationExecutePage() {
-  const { c, navigate, pct, linkedBot, isLocked } = useFormationExecute();
+  const { c, navigate, pct, linkedBot, isLocked, myProgress } = useFormationExecute();
 
   if (!c) {
     return (
@@ -230,8 +230,8 @@ export default function FormationExecutePage() {
                   module={m}
                   index={idx}
                   locked={isLocked(idx)}
-                  done={c.myProgress.completedModuleIds.includes(m.id)}
-                  examScore={c.myProgress.examScores[m.id]}
+                  done={myProgress.completedModuleIds.includes(m.id)}
+                  examScore={myProgress.examScores[m.id]}
                 />
               ))}
             </div>

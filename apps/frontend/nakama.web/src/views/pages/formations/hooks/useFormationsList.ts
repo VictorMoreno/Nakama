@@ -4,7 +4,6 @@ import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useFormations } from "../../../shared/contexts/FormationsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
 import { useUser } from "../../../shared/contexts/UserContext";
-import { getFormationProgressPct } from "../../../../lib/status";
 
 export type StatusFilter = "all" | FormationLifecycleStatus;
 
@@ -20,7 +19,7 @@ export function useFormationsList() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
-  const withProgress = activeFormations.map((c) => ({ c, pct: getFormationProgressPct(c) }));
+  const withProgress = activeFormations.map((c) => ({ c, pct: c.progressPct }));
 
   const filteredFormations = withProgress.filter(({ c }) => {
     const query = search.trim().toLowerCase();
