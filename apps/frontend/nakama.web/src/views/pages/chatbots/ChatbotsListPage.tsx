@@ -1,6 +1,6 @@
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import Select from "../../components/shared/Select";
-import { ArrowRightIcon, LockIcon, PlusIcon, TrashIcon } from "../../components/shared/icons";
+import { ArrowRightIcon, LockIcon, PlusIcon, RecycleBinIcon } from "../../components/shared/icons";
 import { getChatbotStatus } from "../../../lib/status";
 import { pluralWord } from "../../../lib/text";
 import { STATUS_OPTIONS, useChatbotsList } from "./hooks/useChatbotsList";
@@ -70,14 +70,16 @@ export default function ChatbotsListPage() {
                 <span>{pluralWord(bot.team.length, "persona", "personas")}</span>
               </div>
               <div className={styles.botCardActions}>
-                <button className="btn-primary" type="button" onClick={() => navigate(`/chatbots/${bot.id}`)}>
-                  <ArrowRightIcon /> Abrir
-                </button>
-                <button className="btn-ghost" type="button" onClick={() => navigate(`/chatbots/${bot.id}?tab=permisos`)}>
-                  <LockIcon /> Permisos
-                </button>
+                <div className={styles.botCardActionsMain}>
+                  <button className="btn-primary" type="button" onClick={() => navigate(`/chatbots/${bot.id}`)}>
+                    <ArrowRightIcon /> Abrir
+                  </button>
+                  <button className="btn-ghost" type="button" onClick={() => navigate(`/chatbots/${bot.id}?tab=permisos`)}>
+                    <LockIcon /> Permisos
+                  </button>
+                </div>
                 <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(bot.id)}>
-                  <TrashIcon /> Eliminar
+                  <RecycleBinIcon /> Eliminar
                 </button>
               </div>
             </div>

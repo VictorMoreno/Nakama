@@ -9,30 +9,32 @@
   &.selectFull { display: block; width: 100%; }
 }
 
-// Verified against the real kit (select2-choice, computed styles): the closed trigger
-// is a solid accent-color fill with white/light text, not a neutral input-like box —
-// same "color as identity" logic as .btn-primary, applied to our own accent instead of
-// the kit's teal.
+// Same look as .form-input (utilities.scss) - a neutral bordered field, not a solid-accent
+// button - so a picker reads as "a form field you fill in" rather than "an action you trigger",
+// consistent with every other control in the same form. StatusSelect still overrides this
+// entirely with its own per-status tinted fill (see StatusSelect.module.scss) since a status
+// badge legitimately is "color as identity" - only the plain default trigger changed here.
 .selectTrigger {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 11px 14px;
   font-size: 0.85rem;
   font-family: inherit;
   text-align: left;
   white-space: nowrap;
-  transition: filter 0.3s ease;
+  transition: border-color 0.3s ease;
 
-  &:hover { filter: brightness(1.1); }
+  &:hover { border-color: var(--ink-faint); }
 }
 
-.select.open .selectTrigger { filter: brightness(0.92); }
+.select.open .selectTrigger { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 .selectValue {
   overflow: hidden;
@@ -40,9 +42,9 @@
   white-space: nowrap;
 }
 
-// currentColor so this chevron always matches whatever text color its trigger sets —
-// white on the default solid-accent trigger, but StatusSelect overrides the trigger's
-// own color per status (see StatusSelect.module.scss) and the chevron follows along.
+// currentColor so this chevron always matches whatever text color its trigger sets - ink on
+// the default bordered trigger, but StatusSelect overrides the trigger's own color per status
+// (see StatusSelect.module.scss) and the chevron follows along.
 .chevron { width: 11px; height: 11px; color: currentcolor; transition: transform 0.3s ease; flex: none; }
 .select.open .selectTrigger .chevron { transform: rotate(180deg); }
 

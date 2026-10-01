@@ -1,6 +1,6 @@
 import { useId, type ChangeEvent } from "react";
 import { useToast } from "../../shared/contexts/ToastContext";
-import { TrashIcon, UploadIcon } from "./icons";
+import { RecycleBinIcon, UploadIcon } from "./icons";
 import styles from "./IconUploadField.module.scss";
 
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -51,7 +51,7 @@ export default function IconUploadField({ value, onChange, placeholderLabel }: I
           <input id={inputId} type="file" accept="image/*" onChange={handleFile} hidden />
           {value && (
             <button type="button" className="btn-ghost" onClick={() => onChange(undefined)}>
-              <TrashIcon /> Quitar
+              <RecycleBinIcon /> Quitar
             </button>
           )}
         </div>

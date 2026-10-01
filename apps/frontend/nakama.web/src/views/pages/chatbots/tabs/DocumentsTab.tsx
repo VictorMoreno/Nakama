@@ -1,5 +1,5 @@
 import ConfirmDialog from "../../../components/shared/ConfirmDialog";
-import { TrashIcon, UploadIcon } from "../../../components/shared/icons";
+import { RecycleBinIcon, UploadIcon } from "../../../components/shared/icons";
 import type { Chatbot } from "../../../../modules/chatbots/domain/Chatbot";
 import UploadDocumentDialog from "../dialogs/UploadDocumentDialog";
 import { useDocumentsTab } from "./hooks/useDocumentsTab";
@@ -49,7 +49,7 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
                   <td className={styles.td}>{doc.updated}</td>
                   <td className={styles.td}>
                     <button className="btn-ghost danger" type="button" onClick={() => setDeleteIndex(idx)}>
-                      <TrashIcon /> Eliminar
+                      <RecycleBinIcon /> Eliminar
                     </button>
                   </td>
                 </tr>

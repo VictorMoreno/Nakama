@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Dialog from "./Dialog";
-import { CheckIcon, CloseIcon, TrashIcon } from "./icons";
+import { CheckIcon, CloseIcon, RecycleBinIcon } from "./icons";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -21,7 +21,7 @@ export default function ConfirmDialog({ open, title, message, confirmLabel, dang
           <CloseIcon /> Cancelar
         </button>
         <button className={`btn-primary${danger ? " danger" : ""}`} type="button" onClick={onConfirm}>
-          {danger ? <TrashIcon /> : <CheckIcon />} {confirmLabel}
+          {danger ? <RecycleBinIcon /> : <CheckIcon />} {confirmLabel}
         </button>
       </div>
     </Dialog>

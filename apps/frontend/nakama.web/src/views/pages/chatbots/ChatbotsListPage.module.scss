@@ -98,8 +98,12 @@
 
 // nowrap + tightened padding/gap/icon-size (Abrir + Permisos + Eliminar, each with its
 // own icon now) so all 3 actions stay on one line instead of the third wrapping down.
+// Eliminar sits apart on purpose - pinned to the right edge via space-between, not just a
+// bigger gap, so the destructive action never reads as "one more button in the group"
+// (see .botCardActionsMain below for the grouped Abrir/Permisos pair).
 .botCardActions {
   display: flex;
+  justify-content: space-between;
   gap: 4px;
   margin-top: auto;
   flex-wrap: nowrap;
@@ -111,4 +115,9 @@
     padding: 6px 8px;
     white-space: nowrap;
   }
+}
+
+.botCardActionsMain {
+  display: flex;
+  gap: 4px;
 }
