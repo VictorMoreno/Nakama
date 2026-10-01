@@ -25,6 +25,8 @@ public sealed class ConversationMapping : ClassMapping<Conversation>
             m.Type<GuidValueObjectUserType<ChatbotId>>();
         });
 
+        Property(x => x.UserId, m => m.Column("user_id"));
+
         Property(x => x.Title);
         Property(x => x.StartedAt);
 

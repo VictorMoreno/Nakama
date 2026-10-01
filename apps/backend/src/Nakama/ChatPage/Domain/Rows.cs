@@ -12,12 +12,3 @@ public sealed class ChatExampleRow
     public string MoreExplanation { get; set; } = string.Empty;
     public string SocraticVariant { get; set; } = string.Empty;
 }
-
-public sealed class ConversationSummaryRow
-{
-    public Guid Id { get; set; }
-    public Guid BotKey { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public DateTime DateLabel { get; set; }
-    public List<ChatExampleRow> Exchanges { get; set; } = [];
-}

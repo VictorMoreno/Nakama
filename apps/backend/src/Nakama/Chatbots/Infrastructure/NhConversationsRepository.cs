@@ -7,5 +7,5 @@ namespace Nakama.Chatbots.Infrastructure;
 public sealed class NhConversationsRepository(IWriteSessionFactory writeSessions)
     : NhRepositoryBase<Conversation, ConversationId>(writeSessions), IConversationsRepository
 {
-    // FindById, Save inherited directly from the base, no redeclaration needed
+    // FindById, Save, Remove inherited directly from the base, no redeclaration needed
 }

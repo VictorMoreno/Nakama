@@ -75,7 +75,7 @@ function toDocument(row: ChatbotDocumentResponse): ChatbotDocument {
 }
 
 function toTeamMember(row: TeamMemberRow): TeamMember {
-  return { name: row.name ?? "", role: ROLE_FROM_API[row.role ?? "Owner"] ?? "Lector" };
+  return { userId: row.userId ?? "", role: ROLE_FROM_API[row.role ?? "Owner"] ?? "Lector" };
 }
 
 function toGapQuestion(row: GapQuestionRow): GapQuestion {
@@ -125,21 +125,25 @@ async function uploadDocument(chatbotId: string, file: File, name: string, origi
  */
 function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailResponse, chatPage: ChatPageResponse): Chatbot {
   return {
-    id: summary.id,
-    label: summary.label,
-    description: summary.description,
-    status: STATUS_FROM_API[summary.status] ?? "borrador",
-    context: detail.context,
+    id: summary.id ?? "",
+    label: summary.label ?? "",
+    description: summary.description ?? "",
+    status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
+    context: detail.context ?? "",
     opening: chatPage.opening ? toChatExample(chatPage.opening) : null,
-    chips: chatPage.chips.map(toChatExample),
-    settings: { socratic: detail.socratic, explicaMas: detail.explicaMas, provider: PROVIDER_FROM_API[detail.provider] ?? "anthropic" },
-    docs: detail.docs.map(toDocument),
-    gaps: detail.gaps.map(toGapQuestion),
-    topQuestions: detail.topQuestions.map(toGapQuestion),
-    team: detail.team.map(toTeamMember),
-    stats: detail.stats.map(toStatTile),
-    archived: summary.archived,
-    general: summary.general,
+    chips: (chatPage.chips ?? []).map(toChatExample),
+    settings: {
+      socratic: detail.socratic ?? false,
+      explicaMas: detail.explicaMas ?? false,
+      provider: PROVIDER_FROM_API[detail.provider ?? "Anthropic"] ?? "anthropic"
+    },
+    docs: (detail.docs ?? []).map(toDocument),
+    gaps: (detail.gaps ?? []).map(toGapQuestion),
+    topQuestions: (detail.topQuestions ?? []).map(toGapQuestion),
+    team: (detail.team ?? []).map(toTeamMember),
+    stats: (detail.stats ?? []).map(toStatTile),
+    archived: summary.archived ?? false,
+    general: summary.general ?? false,
     iconUrl: summary.iconUrl
   };
 }
@@ -155,8 +159,9 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     const summaries = await this.client.chatbotsAll();
     const entries = await Promise.all(
       summaries.map(async (summary) => {
-        const [detail, chatPage] = await Promise.all([this.client.chatbotsGET(summary.id), this.client.chatPage(summary.id)]);
-        return [summary.id, toChatbot(summary, detail, chatPage)] as const;
+        const id = summary.id ?? "";
+        const [detail, chatPage] = await Promise.all([this.client.chatbotsGET(id), this.client.chatPage(id)]);
+        return [id, toChatbot(summary, detail, chatPage)] as const;
       })
     );
     return Object.fromEntries(entries);
@@ -204,7 +209,7 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       docs: [],
       gaps: [],
       topQuestions: [],
-      team: [{ name: "Iker Sola", role: "Propietario" }],
+      team: [],
       stats: [
         { label: "Tiempo hasta productividad", value: "—", unit: "sin datos todavía", bar: 0 },
         { label: "Preguntas directas a seniors / semana", value: "—", unit: "sin datos todavía", bar: 0 },
@@ -224,9 +229,9 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     // GET; acceptable at this stage, same "don't over-engineer batching yet" call as FindAll.
     const current = await this.client.chatbotsGET(id);
     const merged: ChatbotSettings = {
-      socratic: patch.socratic ?? current.socratic,
-      explicaMas: patch.explicaMas ?? current.explicaMas,
-      provider: patch.provider ?? (PROVIDER_FROM_API[current.provider] ?? "anthropic")
+      socratic: patch.socratic ?? current.socratic ?? false,
+      explicaMas: patch.explicaMas ?? current.explicaMas ?? false,
+      provider: patch.provider ?? (PROVIDER_FROM_API[current.provider ?? "Anthropic"] ?? "anthropic")
     };
     await this.client.settings(id, toApiSettings(merged));
   }
@@ -252,7 +257,7 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
   }
 
   async AddTeamMember(id: string, member: TeamMember): Promise<void> {
-    await this.client.teamPOST(id, { name: member.name, role: ROLE_TO_ORDINAL[member.role] });
+    await this.client.teamPOST(id, { userId: member.userId, role: ROLE_TO_ORDINAL[member.role] });
   }
 
   async RemoveTeamMember(id: string, index: number): Promise<void> {

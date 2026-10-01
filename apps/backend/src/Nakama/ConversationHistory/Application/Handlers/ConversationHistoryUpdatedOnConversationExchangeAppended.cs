@@ -1,27 +1,27 @@
-using Nakama.ChatPage.Domain;
+using Nakama.ConversationHistory.Domain;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.Shared.Infrastructure.Events;
 
-namespace Nakama.ChatPage.Application.Handlers;
+namespace Nakama.ConversationHistory.Application.Handlers;
 
-public sealed class ChatPageUpdatedOnConversationExchangeAppended(IChatPageRepository chatPageRepository)
+public sealed class ConversationHistoryUpdatedOnConversationExchangeAppended(IConversationHistoryRepository conversationHistoryRepository)
     : DomainEventHandler<ConversationExchangeAppended>
 {
     protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken ct)
     {
-        var chatPage = await chatPageRepository.FindById(conversationExchangeAppended.BotKey.Value, ct);
-        if (chatPage is null)
+        var history = await conversationHistoryRepository.FindById(conversationExchangeAppended.BotKey.Value, ct);
+        if (history is null)
         {
             return;
         }
 
-        chatPage.AppendExchange(
+        history.AppendExchange(
             conversationExchangeAppended.Id.Value,
             conversationExchangeAppended.Exchange.Question,
             conversationExchangeAppended.Exchange.Answer,
             conversationExchangeAppended.Exchange.Citation,
             conversationExchangeAppended.Exchange.MoreExplanation,
             conversationExchangeAppended.Exchange.SocraticVariant);
-        await chatPageRepository.Update(chatPage, ct);
+        await conversationHistoryRepository.Update(history, ct);
     }
 }

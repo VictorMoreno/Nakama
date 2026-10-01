@@ -20,24 +20,4 @@ public partial class ChatPage
         this.ExplicaMas = explicaMas;
         this.Provider = provider;
     }
-
-    public void StartConversation(Guid id, Guid botKey, string title) => this.History.Add(new ConversationSummaryRow
-    {
-        Id = id,
-        BotKey = botKey,
-        Title = title,
-    });
-
-    public void AppendExchange(Guid conversationId, string question, string answer, string citation, string moreExplanation, string socraticVariant)
-    {
-        var conversation = this.History.FirstOrDefault(c => c.Id == conversationId);
-        conversation?.Exchanges.Add(new ChatExampleRow
-        {
-            Question = question,
-            Answer = answer,
-            Citation = citation,
-            MoreExplanation = moreExplanation,
-            SocraticVariant = socraticVariant,
-        });
-    }
 }

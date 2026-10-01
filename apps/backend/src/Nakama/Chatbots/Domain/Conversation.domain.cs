@@ -5,24 +5,27 @@ namespace Nakama.Chatbots.Domain;
 
 public partial class Conversation
 {
-    private Conversation(ConversationId id, ChatbotId botKey, string title, DateTime startedAt)
+    private Conversation(ConversationId id, ChatbotId botKey, Guid userId, string title, DateTime startedAt)
     {
         this.Id = id;
         this.BotKey = botKey;
+        this.UserId = userId;
         this.Title = title;
         this.StartedAt = startedAt;
     }
 
-    public static Conversation Start(ConversationId id, ChatbotId botKey, string title, ISystemClock systemClock)
+    public static Conversation Start(ConversationId id, ChatbotId botKey, Guid userId, string title, ISystemClock systemClock)
     {
-        var conversation = new Conversation(id, botKey, title, systemClock.UtcNow);
-        conversation.Record(new ConversationStarted(id, botKey, title));
+        var conversation = new Conversation(id, botKey, userId, title, systemClock.UtcNow);
+        conversation.Record(new ConversationStarted(id, botKey, userId, title));
         return conversation;
     }
 
     public void AppendExchange(ConversationExchange exchange)
     {
         this._exchanges.Add(exchange);
-        Record(new ConversationExchangeAppended(this.Id, this.BotKey, exchange));
+        Record(new ConversationExchangeAppended(this.Id, this.BotKey, this.UserId, exchange));
     }
+
+    public void Delete() => Record(new ConversationDeleted(this.Id, this.BotKey));
 }

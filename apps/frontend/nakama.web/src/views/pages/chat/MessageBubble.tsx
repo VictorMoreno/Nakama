@@ -24,6 +24,24 @@ export function UserBubble({ text }: UserBubbleProps) {
   );
 }
 
+// Shown instead of BotBubble when there's no real exchange yet (new/empty conversation,
+// no scripted opening configured for this bot) - just a friendly greeting from the bot
+// itself, none of BotBubble's Q&A chrome (no citation chip, no feedback, no "explícame más"),
+// since there's no actual answer here to cite or rate.
+export function WelcomeBubble() {
+  return (
+    <div className={`${styles.msg} ${styles.bot}`}>
+      <div className={styles.msgAvatar}>🤖</div>
+      <div className={styles.bubble}>
+        <span>
+          ¡Hola! Estoy a tu disposición para resolver cualquier duda que tengas sobre este chatbot. Preguntame lo que necesites, ¡vamos a
+          resolverlo juntos! 💪
+        </span>
+      </div>
+    </div>
+  );
+}
+
 interface BotBubbleProps {
   state: BotMessageState;
   settings: ChatbotSettings;

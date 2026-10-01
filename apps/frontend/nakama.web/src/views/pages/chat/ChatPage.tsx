@@ -1,7 +1,8 @@
-import { useRef } from "react";
-import { AttachIcon, CloseIcon, SendIcon } from "../../components/shared/icons";
+import { useRef, useState } from "react";
+import ConfirmDialog from "../../components/shared/ConfirmDialog";
+import { AttachIcon, CloseIcon, PlusIcon, RecycleBinIcon, SendIcon } from "../../components/shared/icons";
 import { useChat } from "./hooks/useChat";
-import { BotBubble, UserBubble } from "./MessageBubble";
+import { BotBubble, UserBubble, WelcomeBubble } from "./MessageBubble";
 import styles from "./ChatPage.module.scss";
 
 export default function ChatPage() {
@@ -20,11 +21,15 @@ export default function ChatPage() {
     botConversations,
     activeConversationId,
     openConversation,
+    startNewConversation,
     handleSend,
     handleReveal,
-    submitFeedback
+    submitFeedback,
+    deleteConversation
   } = useChat();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const deleteTarget = botConversations.find((c) => c.id === deleteTargetId);
 
   if (!bot) {
     return (
@@ -60,12 +65,7 @@ export default function ChatPage() {
           </div>
 
           <div className={styles.thread} ref={threadRef}>
-            {thread.length === 0 && (
-              <div className={styles.threadEmpty}>
-                Este chatbot todavía no tiene documentos indexados. En cuanto se suba contenido en <strong>Documentos</strong>, podrás
-                empezar a preguntar aquí.
-              </div>
-            )}
+            {thread.length === 0 && <WelcomeBubble />}
             {thread.map((item) =>
               item.kind === "user" ? (
                 <UserBubble key={item.id} text={item.text} />
@@ -148,27 +148,56 @@ export default function ChatPage() {
           </div>
 
           <div className={`${styles.historyCard} glass`}>
-            <span className="eyebrow">Historial de conversaciones</span>
+            <div className={styles.historyCardHead}>
+              <span className="eyebrow">Historial de conversaciones</span>
+              <button className={`btn-ghost ${styles.newConversationBtn}`} type="button" onClick={startNewConversation}>
+                <PlusIcon /> Nueva
+              </button>
+            </div>
             <div className={styles.historyPanel}>
               {botConversations.length === 0 ? (
                 <div className={styles.historyEmpty}>Todavía no tienes conversaciones guardadas con este chatbot.</div>
               ) : (
                 botConversations.map((conv) => (
-                  <button
-                    key={conv.id}
-                    className={`${styles.historyRow}${conv.id === activeConversationId ? ` ${styles.active}` : ""}`}
-                    type="button"
-                    onClick={() => openConversation(conv)}
-                  >
-                    <span className={styles.historyRowTitle}>{conv.title}</span>
-                    <span className={styles.historyRowDate}>{conv.dateLabel}</span>
-                  </button>
+                  <div key={conv.id} className={`${styles.historyRow}${conv.id === activeConversationId ? ` ${styles.active}` : ""}`}>
+                    <button className={styles.historyRowMain} type="button" onClick={() => openConversation(conv)}>
+                      <span className={styles.historyRowTitle}>{conv.title}</span>
+                      <span className={styles.historyRowDate}>{conv.dateLabel}</span>
+                    </button>
+                    <button
+                      className={styles.historyRowDelete}
+                      type="button"
+                      aria-label="Eliminar conversación"
+                      title="Eliminar conversación"
+                      onClick={() => setDeleteTargetId(conv.id)}
+                    >
+                      <RecycleBinIcon />
+                    </button>
+                  </div>
                 ))
               )}
             </div>
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteTargetId != null}
+        title="Eliminar conversación"
+        message={
+          <>
+            ¿Seguro que quieres eliminar &ldquo;{deleteTarget?.title}&rdquo;? No vas a poder recuperarla ni seguir la conversación desde
+            acá.
+          </>
+        }
+        confirmLabel="Eliminar"
+        danger
+        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={() => {
+          if (deleteTargetId) void deleteConversation(deleteTargetId);
+          setDeleteTargetId(null);
+        }}
+      />
     </section>
   );
 }

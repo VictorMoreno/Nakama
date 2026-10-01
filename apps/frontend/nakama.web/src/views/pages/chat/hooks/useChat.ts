@@ -40,7 +40,7 @@ const DEMO_FALLBACK: ChatExample = {
 
 export function useChat() {
   const { chatbots, currentBotKey } = useChatbots();
-  const { isAdmin } = useUser();
+  const { isAdmin, currentUser } = useUser();
   const conversationsRepo = useInjection<IConversationsRepository>(Services.ConversationsRepository.id);
   const analyticsRepo = useInjection<IAnalyticsRepository>(Services.AnalyticsRepository.id);
   const navigate = useNavigate();
@@ -56,16 +56,24 @@ export function useChat() {
   const composerRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    if (!currentUser) return;
     let cancelled = false;
-    conversationsRepo.FindAll().then((data) => {
+    conversationsRepo.FindAll(currentUser.id).then((data) => {
       if (!cancelled) setConversations(data);
     });
     return () => {
       cancelled = true;
     };
-  }, [conversationsRepo]);
+  }, [conversationsRepo, currentUser]);
 
   const botConversations = conversations.filter((conv) => conv.botKey === currentBotKey);
+
+  // Shared by the bot-switch effect below and by the explicit "Nueva conversación" action -
+  // both mean the same thing: drop the active conversation and go back to the bot's opening.
+  function resetThread(openingExample: ChatExample | null | undefined, useSocratic: boolean) {
+    setActiveConversationId(null);
+    setThread(openingExample ? exchangesToThread([openingExample], useSocratic) : []);
+  }
 
   // Intentionally keyed only on bot.key: this should reset the thread when switching
   // chatbots, not when the current bot's settings change mid-conversation. A `key`-prop
@@ -75,12 +83,7 @@ export function useChat() {
   /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
   useEffect(() => {
     if (!bot) return;
-    setActiveConversationId(null);
-    if (bot.opening) {
-      setThread(exchangesToThread([bot.opening], bot.settings.socratic));
-    } else {
-      setThread([]);
-    }
+    resetThread(bot.opening, bot.settings.socratic);
   }, [bot?.id]);
   /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 
@@ -107,8 +110,12 @@ export function useChat() {
     setActiveConversationId(conv.id);
   }
 
+  function startNewConversation() {
+    if (!bot) return;
+    resetThread(bot.opening, bot.settings.socratic);
+  }
+
   function appendExchange(question: string, example: ChatExample) {
-    setActiveConversationId(null);
     setThread((prev) => [
       ...prev,
       { kind: "user", id: nextId(), text: question },
@@ -127,9 +134,43 @@ export function useChat() {
     if (!val || !bot) return;
 
     const match = bot.chips.find((c) => c.q === val) ?? (bot.opening && bot.opening.q === val ? bot.opening : null);
-    appendExchange(val, match ?? DEMO_FALLBACK);
+    const example = match ?? DEMO_FALLBACK;
+
+    appendExchange(val, example);
     setInput("");
     setAttachedFiles([]);
+
+    // The bot's answer stays scripted/demo (chips + DEMO_FALLBACK) - connecting a real LLM is a
+    // separate concern. What's real from here on is persistence: every exchange is saved for the
+    // logged-in user so it can be resumed later, same backend AppendConversationExchange/
+    // ConversationExchangeAppender that already existed but was never called from the chat UI.
+    if (!currentUser) return;
+    const isNewConversation = !activeConversationId;
+    const conversationId = activeConversationId ?? crypto.randomUUID();
+    if (isNewConversation) setActiveConversationId(conversationId);
+    const title = val.length > 60 ? `${val.slice(0, 60)}…` : val;
+    const persistedExchange: ChatExample = { q: val, a: example.a, cite: example.cite, more: example.more, socratic: example.socratic };
+
+    // Optimistic local update: `conversations` is only ever fetched once on mount, so without
+    // this the new/updated conversation wouldn't show up in the sidebar until the component
+    // remounts (e.g. leaving the page and coming back) and refetches for real.
+    setConversations((prev) =>
+      isNewConversation
+        ? [{ id: conversationId, botKey: bot.id, title, dateLabel: new Date().toLocaleDateString("es-ES"), exchanges: [persistedExchange] }, ...prev]
+        : prev.map((c) => (c.id === conversationId ? { ...c, exchanges: [...c.exchanges, persistedExchange] } : c))
+    );
+
+    void conversationsRepo.AppendExchange(
+      conversationId,
+      bot.id,
+      currentUser.id,
+      title,
+      val,
+      example.a,
+      example.cite,
+      example.more,
+      example.socratic
+    );
   }
 
   // Attaching only stages files locally for this prototype — there's no upload
@@ -146,10 +187,22 @@ export function useChat() {
   }
 
   // Global feedback (👍/👎), decoupled from any specific exchange - see AnalyticsFeedbackSubmitter:
-  // today's chat is demo-only and never persists a real, identifiable exchange server-side, so this
-  // is the same "global useful-answer rate" the Analytics dashboard already shows, not a per-message rating.
+  // ConversationExchange still has no id of its own (a plain item in an embedded list, not a row
+  // with identity), so per-message rating isn't viable - this stays the same "global useful-answer
+  // rate" the Analytics dashboard already shows, not a per-message rating.
   function submitFeedback(useful: boolean) {
     void analyticsRepo.SubmitFeedback(useful);
+  }
+
+  async function deleteConversation(id: string) {
+    if (!bot || !currentUser) return;
+
+    await conversationsRepo.Delete(bot.id, id, currentUser.id);
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+
+    if (activeConversationId === id) {
+      resetThread(bot.opening, bot.settings.socratic);
+    }
   }
 
   return {
@@ -167,8 +220,10 @@ export function useChat() {
     botConversations,
     activeConversationId,
     openConversation,
+    startNewConversation,
     handleSend,
     handleReveal,
-    submitFeedback
+    submitFeedback,
+    deleteConversation
   };
 }

@@ -8,15 +8,17 @@ using Nakama.Chatbots.Application.DocumentAdder;
 using Nakama.Chatbots.Application.DocumentRemover;
 using Nakama.Chatbots.Application.ExchangeAppender;
 using Nakama.Chatbots.Application.IconUpdater;
+using Nakama.Chatbots.Application.Remover;
 using Nakama.Chatbots.Application.SettingsUpdater;
 using Nakama.Chatbots.Application.StatusUpdater;
 using Nakama.Chatbots.Application.TeamMemberAdder;
 using Nakama.Chatbots.Application.TeamMemberRemover;
-using Nakama.Chatbots.Domain;
 using Nakama.ChatbotSummaries.Application;
 using Nakama.ChatbotSummaries.Application.Searcher;
 using Nakama.ChatPage.Application;
 using Nakama.ChatPage.Application.Finder;
+using Nakama.ConversationHistory.Application;
+using Nakama.ConversationHistory.Application.Finder;
 using Nakama.Shared.Domain;
 
 namespace Api.Endpoints;
@@ -90,6 +92,11 @@ public sealed class ChatbotEndpoints : IEndpoint
                 "If no conversation exists yet with the given conversationId, one is started implicitly using that exact id - this endpoint covers both 'first message in a new chat' and 'reply within an existing conversation'.")
             .Produces(StatusCodes.Status204NoContent);
 
+        group.MapDelete("/{botKey:guid}/conversations/{conversationId:guid}", DeleteConversation)
+            .WithSummary("Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         group.MapGet("/", SearchChatbotSummaries)
             .WithSummary("Lists all chatbots (summary view).")
             .Produces<IReadOnlyCollection<ChatbotSummaryResponse>>();
@@ -100,8 +107,13 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapGet("/{id:guid}/chat-page", FindChatPage)
-            .WithSummary("Gets the chat UI projection for one chatbot (opening example, chips, conversation history).")
+            .WithSummary("Gets the chat UI projection for one chatbot (opening example and chips).")
             .Produces<ChatPageResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet("/{botKey:guid}/conversation-history", FindConversationHistory)
+            .WithSummary("Gets a user's conversation history for one chatbot.")
+            .Produces<ConversationHistoryResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
@@ -196,7 +208,7 @@ public sealed class ChatbotEndpoints : IEndpoint
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await commandBus.Send(new ChatbotTeamMemberAdder.Command(id, body.Name, body.Role), ct);
+        await commandBus.Send(new ChatbotTeamMemberAdder.Command(id, body.UserId, body.Role), ct);
         return Results.NoContent();
     }
 
@@ -245,9 +257,20 @@ public sealed class ChatbotEndpoints : IEndpoint
     {
         await commandBus.Send(
             new ConversationExchangeAppender.Command(
-                conversationId, botKey, body.Title, body.Question, body.Answer, body.Citation, body.MoreExplanation,
-                body.SocraticVariant),
+                conversationId, botKey, body.UserId, body.Title, body.Question, body.Answer, body.Citation,
+                body.MoreExplanation, body.SocraticVariant),
             ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> DeleteConversation(
+        Guid botKey,
+        Guid conversationId,
+        Guid userId,
+        ICommandBus commandBus,
+        CancellationToken ct)
+    {
+        await commandBus.Send(new ConversationRemover.Command(conversationId, userId), ct);
         return Results.NoContent();
     }
 
@@ -269,6 +292,12 @@ public sealed class ChatbotEndpoints : IEndpoint
         return Results.Ok(response);
     }
 
+    private static async Task<IResult> FindConversationHistory(Guid botKey, Guid? userId, IQueryBus queryBus, CancellationToken ct)
+    {
+        var response = await queryBus.Ask(new ConversationHistoryFinder.Query(botKey, userId), ct);
+        return Results.Ok(response);
+    }
+
     private sealed record CreateChatbotRequest(
         string Label,
         string Description,
@@ -282,9 +311,10 @@ public sealed class ChatbotEndpoints : IEndpoint
 
     private sealed record UpdateChatbotSettingsRequest(bool Socratic, bool ExplicaMas, int Provider);
 
-    private sealed record AddChatbotTeamMemberRequest(string Name, int Role);
+    private sealed record AddChatbotTeamMemberRequest(Guid UserId, int Role);
 
     private sealed record AppendConversationExchangeRequest(
+        Guid UserId,
         string Title,
         string Question,
         string Answer,

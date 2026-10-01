@@ -28,6 +28,5 @@ public sealed class ChatPageMapping : ClassMapping<ChatPage>
 
         Property(x => x.Opening, m => { m.Column(c => { c.Name("opening_json"); c.SqlType("text"); }); m.Type<JsonUserType<ChatExampleRow>>(); });
         Property(x => x.Chips, m => { m.Column(c => { c.Name("chips_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ChatExampleRow>>>(); });
-        Property(x => x.History, m => { m.Column(c => { c.Name("history_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ConversationSummaryRow>>>(); });
     }
 }

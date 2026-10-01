@@ -24,6 +24,7 @@ public sealed class InitialSchemaMigration : Migration
         Create.Table("conversations")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("bot_key").AsGuid().Nullable()
+            .WithColumn("user_id").AsGuid().Nullable()
             .WithColumn("title").AsString(255).Nullable()
             .WithColumn("startedat").AsDateTime().Nullable()
             .WithColumn("exchanges_json").AsCustom("text").Nullable();
@@ -79,8 +80,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("explicamas").AsBoolean().Nullable()
             .WithColumn("provider").AsString(255).Nullable()
             .WithColumn("opening_json").AsCustom("text").Nullable()
-            .WithColumn("chips_json").AsCustom("text").Nullable()
-            .WithColumn("history_json").AsCustom("text").Nullable();
+            .WithColumn("chips_json").AsCustom("text").Nullable();
 
         Create.Table("read_formations_list")
             .WithColumn("id").AsGuid().PrimaryKey()
@@ -136,6 +136,18 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("userid").AsGuid().Nullable()
             .WithColumn("type").AsString(255).Nullable()
             .WithColumn("occurredat").AsDateTime().Nullable();
+
+        Create.Table("read_conversation_audit")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("user_id").AsGuid().Nullable()
+            .WithColumn("bot_key").AsGuid().Nullable()
+            .WithColumn("title").AsString(255).Nullable()
+            .WithColumn("startedat").AsDateTime().Nullable()
+            .WithColumn("messages_json").AsCustom("text").Nullable();
+
+        Create.Table("read_conversation_history")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("entries_json").AsCustom("text").Nullable();
     }
 
     public override void Down() => throw new NotSupportedException("No down migrations - see ADR entry.");

@@ -10,6 +10,7 @@ public static class ConversationExchangeAppender
     public sealed record Command(
         Guid ConversationId,
         Guid BotKey,
+        Guid UserId,
         string Title,
         string Question,
         string Answer,
@@ -38,7 +39,7 @@ public static class ConversationExchangeAppender
             var conversationId = ConversationId.From(cmd.ConversationId);
 
             var conversation = await repository.FindById(conversationId, cancellationToken)
-                               ?? Conversation.Start(conversationId, botKey, cmd.Title, systemClock);
+                               ?? Conversation.Start(conversationId, botKey, cmd.UserId, cmd.Title, systemClock);
 
             conversation.AppendExchange(new ConversationExchange(cmd.Question, cmd.Answer, cmd.Citation,
                 cmd.MoreExplanation, cmd.SocraticVariant));

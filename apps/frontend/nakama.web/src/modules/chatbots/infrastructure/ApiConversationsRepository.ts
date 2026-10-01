@@ -14,8 +14,8 @@ function toChatExample(row: { question?: string; answer?: string; citation?: str
 
 /**
  * No backend endpoint returns "every conversation across every chatbot" directly - history
- * only exists nested inside each chatbot's chat-page projection (chatPage(id).history), so
- * this fans out over chatbotsAll()+chatPage(id) per bot and flattens the result.
+ * lives in its own per-bot projection (conversationHistory(botKey, userId).entries), so this
+ * fans out over chatbotsAll()+conversationHistory(botKey, userId) per bot and flattens the result.
  */
 export class ApiConversationsRepository implements IConversationsRepository {
   private readonly client: GeneratedNakamaClient;
@@ -24,15 +24,16 @@ export class ApiConversationsRepository implements IConversationsRepository {
     this.client = client;
   }
 
-  async FindAll(): Promise<ConversationSummary[]> {
+  async FindAll(userId: string): Promise<ConversationSummary[]> {
     const summaries = await this.client.chatbotsAll();
     const perBot = await Promise.all(
       summaries.map(async (summary) => {
-        const chatPage = await this.client.chatPage(summary.id);
-        return chatPage.history.map(
+        const botId = summary.id ?? "";
+        const history = await this.client.conversationHistory(botId, userId);
+        return (history.entries ?? []).map(
           (row): ConversationSummary => ({
             id: row.id ?? "",
-            botKey: row.botKey ?? summary.id,
+            botKey: row.botKey ?? botId,
             title: row.title ?? "",
             dateLabel: formatDate(row.dateLabel),
             exchanges: (row.exchanges ?? []).map(toChatExample)
@@ -41,5 +42,31 @@ export class ApiConversationsRepository implements IConversationsRepository {
       })
     );
     return perBot.flat();
+  }
+
+  async AppendExchange(
+    conversationId: string,
+    botKey: string,
+    userId: string,
+    title: string,
+    question: string,
+    answer: string,
+    citation: string,
+    moreExplanation: string,
+    socraticVariant: string
+  ): Promise<void> {
+    await this.client.exchanges(botKey, conversationId, {
+      userId,
+      title,
+      question,
+      answer,
+      citation,
+      moreExplanation,
+      socraticVariant
+    });
+  }
+
+  async Delete(botKey: string, conversationId: string, userId: string): Promise<void> {
+    await this.client.conversations(botKey, conversationId, userId);
   }
 }

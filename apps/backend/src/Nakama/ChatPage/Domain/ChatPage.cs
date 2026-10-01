@@ -15,5 +15,4 @@ public partial class ChatPage : IEntity
 
     public virtual ChatExampleRow? Opening { get; protected set; }
     public virtual List<ChatExampleRow> Chips { get; protected set; } = [];
-    public virtual List<ConversationSummaryRow> History { get; protected set; } = [];
 }
