@@ -56,6 +56,25 @@
 
 .moduleItemDesc { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.5; max-width: 56ch; }
 
+// A bare <a> inherits color/no-underline from the global reset (tokens.scss) - indistinguishable
+// from plain text until hover. This is a real affordance fix, not just decoration: a filled chip
+// with an icon reads as clickable at rest, the same "color as identity" logic every interactive
+// control in this app already uses (see .btn-ghost, .moduleTypeBadge above).
+.resourceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover { background: var(--accent); color: var(--accent-ink); }
+}
+
 .moduleTypeBadge {
   font-size: 0.64rem;
   font-weight: 600;
@@ -77,20 +96,4 @@
   border-radius: 999px;
   border: 1px dashed var(--border-strong);
   color: var(--ink-faint);
-}
-
-.progressList { padding: 4px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
-
-.progressRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.8rem;
-
-  .name { color: var(--ink); flex: none; min-width: 14ch; }
-
-  // Composed with the global `bar-track` utility class — see FormationDetailPage.tsx.
-  :global(.bar-track) { flex: 1; margin-top: 0; }
-
-  .pct { font-variant-numeric: tabular-nums; color: var(--ink-soft); min-width: 34px; text-align: right; flex: none; }
 }

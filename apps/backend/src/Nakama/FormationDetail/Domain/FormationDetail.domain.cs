@@ -60,6 +60,35 @@ public partial class FormationDetail
         Quiz = quiz,
     });
 
+    public void UpdateModule(
+        Guid moduleId,
+        string title,
+        string type,
+        string summary,
+        bool gated,
+        bool aiDraft,
+        string? resourceUrl,
+        int? durationMin,
+        int? passingScore,
+        List<QuizQuestionRow>? quiz)
+    {
+        var module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
+        if (module is null)
+        {
+            return;
+        }
+
+        module.Title = title;
+        module.Type = type;
+        module.Summary = summary;
+        module.Gated = gated;
+        module.AiDraft = aiDraft;
+        module.ResourceUrl = resourceUrl;
+        module.DurationMin = durationMin;
+        module.PassingScore = passingScore;
+        module.Quiz = quiz;
+    }
+
     public void ToggleModuleGating(Guid moduleId, bool gated)
     {
         var module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
@@ -79,6 +108,20 @@ public partial class FormationDetail
         if (score is not null)
         {
             this.ExamScores[moduleId] = score.Value;
+        }
+    }
+
+    public void AddTeamMember(Guid userId) => this.Team.Add(new FormationMemberRow
+    {
+        UserId = userId,
+        Progress = 0,
+    });
+
+    public void RemoveTeamMember(int index)
+    {
+        if (index >= 0 && index < this.Team.Count)
+        {
+            this.Team.RemoveAt(index);
         }
     }
 }

@@ -16,7 +16,10 @@ export interface IFormationsRepository {
   UpdateStatus(id: string, status: FormationLifecycleStatus): Promise<void>;
   UpdateIcon(id: string, iconUrl: string | undefined): Promise<void>;
   AddModule(id: string, module: Omit<FormationModule, "id">): Promise<void>;
+  UpdateModule(id: string, module: FormationModule): Promise<void>;
   RemoveModule(id: string, moduleId: string): Promise<void>;
   ToggleModuleGating(id: string, moduleId: string): Promise<void>;
   CompleteModule(id: string, moduleId: string, score?: number): Promise<void>;
+  AddTeamMember(id: string, userId: string): Promise<void>;
+  RemoveTeamMember(id: string, index: number): Promise<void>;
 }

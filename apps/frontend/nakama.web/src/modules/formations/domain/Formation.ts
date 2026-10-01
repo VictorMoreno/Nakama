@@ -40,7 +40,7 @@ export interface LearnerProgress {
 }
 
 export interface FormationMember {
-  name: string;
+  userId: string;
   progress: number;
 }
 

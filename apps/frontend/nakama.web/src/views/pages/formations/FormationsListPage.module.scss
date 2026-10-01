@@ -106,12 +106,26 @@
   flex: none;
 }
 
+// Eliminar sits apart from Abrir/Gestionar on purpose - pinned to the opposite edge via
+// space-between, not just a bigger gap, so the destructive action never reads as "one more
+// button in the group" (see .botCardActionsMain below for the grouped pair).
 .botCardActions {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 4px;
   margin-top: auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 
   :global(.btn-primary),
-  :global(.btn-ghost) { font-size: 0.74rem; padding: 6px 11px; }
+  :global(.btn-ghost) {
+    gap: 4px;
+    font-size: 0.72rem;
+    padding: 6px 8px;
+    white-space: nowrap;
+  }
+}
+
+.botCardActionsMain {
+  display: flex;
+  gap: 4px;
 }

@@ -1,5 +1,6 @@
 import type {
   AddFormationModuleRequest,
+  AddFormationTeamMemberRequest,
   CompleteFormationModuleRequest,
   CreateFormationRequest,
   FormationDetailResponse,
@@ -8,6 +9,7 @@ import type {
   FormationSummaryResponse,
   GeneratedNakamaClient,
   QuizQuestionRow,
+  UpdateFormationModuleRequest,
   UpdateFormationStatusRequest
 } from "../../../shared/infrastructure/GeneratedNakamaClient";
 import type { Formation, FormationLifecycleStatus, FormationMap, FormationMember, FormationModule, ModuleType, QuizQuestion } from "../domain/Formation";
@@ -42,7 +44,7 @@ function toFormationModule(row: FormationModuleRow): FormationModule {
 }
 
 function toFormationMember(row: FormationMemberRow): FormationMember {
-  return { name: row.name ?? "", progress: row.progress ?? 0 };
+  return { userId: row.userId ?? "", progress: row.progress ?? 0 };
 }
 
 // No generated client method exists for these - see the identical helpers in
@@ -76,16 +78,16 @@ async function archiveFormation(id: string): Promise<void> {
  */
 function toFormation(summary: FormationSummaryResponse, detail: FormationDetailResponse): Formation {
   return {
-    id: summary.id,
-    title: summary.title,
-    audience: summary.audience,
-    description: summary.description,
-    status: STATUS_FROM_API[summary.status] ?? "borrador",
+    id: summary.id ?? "",
+    title: summary.title ?? "",
+    audience: summary.audience ?? "",
+    description: summary.description ?? "",
+    status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
     linkedChatbotKey: detail.linkedChatbotKey,
-    modules: detail.modules.map(toFormationModule),
-    myProgress: { completedModuleIds: detail.completedModuleIds, examScores: detail.examScores },
-    team: detail.team.map(toFormationMember),
-    archived: summary.archived,
+    modules: (detail.modules ?? []).map(toFormationModule),
+    myProgress: { completedModuleIds: detail.completedModuleIds ?? [], examScores: detail.examScores ?? {} },
+    team: (detail.team ?? []).map(toFormationMember),
+    archived: summary.archived ?? false,
     iconUrl: summary.iconUrl
   };
 }
@@ -101,8 +103,9 @@ export class ApiFormationsRepository implements IFormationsRepository {
     const summaries = await this.client.formationsAll();
     const entries = await Promise.all(
       summaries.map(async (summary) => {
-        const detail = await this.client.formationsGET(summary.id);
-        return [summary.id, toFormation(summary, detail)] as const;
+        const id = summary.id ?? "";
+        const detail = await this.client.formationsGET(id);
+        return [id, toFormation(summary, detail)] as const;
       })
     );
     return Object.fromEntries(entries);
@@ -160,7 +163,7 @@ export class ApiFormationsRepository implements IFormationsRepository {
 
   async AddModule(id: string, module: Omit<FormationModule, "id">): Promise<void> {
     const moduleId = crypto.randomUUID();
-    await this.client.modules(id, moduleId, {
+    await this.client.modulesPUT(id, moduleId, {
       title: module.title,
       type: MODULE_TYPE_TO_ORDINAL[module.type],
       summary: module.summary,
@@ -171,6 +174,20 @@ export class ApiFormationsRepository implements IFormationsRepository {
       quiz: module.quiz,
       passingScore: module.passingScore
     } satisfies AddFormationModuleRequest);
+  }
+
+  async UpdateModule(id: string, module: FormationModule): Promise<void> {
+    await this.client.modulesPATCH(id, module.id, {
+      title: module.title,
+      type: MODULE_TYPE_TO_ORDINAL[module.type],
+      summary: module.summary,
+      gated: module.gated,
+      aiDraft: module.aiDraft,
+      resourceUrl: module.resourceUrl,
+      durationMin: module.durationMin,
+      quiz: module.quiz,
+      passingScore: module.passingScore
+    } satisfies UpdateFormationModuleRequest);
   }
 
   async RemoveModule(): Promise<void> {
@@ -185,5 +202,13 @@ export class ApiFormationsRepository implements IFormationsRepository {
 
   async CompleteModule(id: string, moduleId: string, score?: number): Promise<void> {
     await this.client.complete(id, moduleId, { score } satisfies CompleteFormationModuleRequest);
+  }
+
+  async AddTeamMember(id: string, userId: string): Promise<void> {
+    await this.client.teamPOST2(id, { userId } satisfies AddFormationTeamMemberRequest);
+  }
+
+  async RemoveTeamMember(id: string, index: number): Promise<void> {
+    await this.client.teamDELETE2(id, index);
   }
 }

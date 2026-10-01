@@ -27,6 +27,6 @@ public sealed class FormationModuleRow
 
 public sealed class FormationMemberRow
 {
-    public string Name { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
     public int Progress { get; set; }
 }

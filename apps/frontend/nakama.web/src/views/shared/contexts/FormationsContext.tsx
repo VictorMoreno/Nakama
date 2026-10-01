@@ -19,9 +19,12 @@ interface FormationsContextValue {
   updateStatus: (key: string, status: Formation["status"]) => Promise<void>;
   updateIcon: (key: string, iconUrl: string | undefined) => Promise<void>;
   addModule: (key: string, module: Omit<FormationModule, "id">) => Promise<void>;
+  updateModule: (key: string, module: FormationModule) => Promise<void>;
   removeModule: (key: string, moduleId: string) => Promise<void>;
   toggleModuleGating: (key: string, moduleId: string) => Promise<void>;
   completeModule: (key: string, moduleId: string, score?: number) => Promise<void>;
+  addTeamMember: (key: string, userId: string) => Promise<void>;
+  removeTeamMember: (key: string, index: number) => Promise<void>;
 }
 
 const FormationsContext = createContext<FormationsContextValue | null>(null);
@@ -80,6 +83,11 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     await refresh();
   }
 
+  async function updateModule(key: string, module: FormationModule) {
+    await repo.UpdateModule(key, module);
+    await refresh();
+  }
+
   async function removeModule(key: string, moduleId: string) {
     await repo.RemoveModule(key, moduleId);
     await refresh();
@@ -95,6 +103,20 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     await refresh();
   }
 
+  async function addTeamMember(key: string, userId: string) {
+    await repo.AddTeamMember(key, userId);
+    setFormations((prev) =>
+      prev[key] ? { ...prev, [key]: { ...prev[key], team: [...prev[key].team, { userId, progress: 0 }] } } : prev
+    );
+  }
+
+  async function removeTeamMember(key: string, index: number) {
+    await repo.RemoveTeamMember(key, index);
+    setFormations((prev) =>
+      prev[key] ? { ...prev, [key]: { ...prev[key], team: prev[key].team.filter((_, i) => i !== index) } } : prev
+    );
+  }
+
   const value: FormationsContextValue = {
     formations,
     activeFormations,
@@ -104,9 +126,12 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     updateStatus,
     updateIcon,
     addModule,
+    updateModule,
     removeModule,
     toggleModuleGating,
-    completeModule
+    completeModule,
+    addTeamMember,
+    removeTeamMember
   };
 
   return <FormationsContext.Provider value={value}>{children}</FormationsContext.Provider>;

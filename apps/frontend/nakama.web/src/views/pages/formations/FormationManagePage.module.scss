@@ -1,0 +1,145 @@
+// Detail-page shell — mirrors ChatbotDetailPage.module.scss (same layout, different feature).
+
+.botDetail { display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+
+.backBtn { align-self: flex-start; }
+
+.botDetailHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  h2 { font-family: var(--font-display); font-size: 1.15rem; }
+  p { color: var(--ink-soft); font-size: 0.82rem; margin-top: 4px; }
+}
+
+// currículo de formación (RF23)
+
+.moduleList { padding: 10px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
+
+.moduleItem {
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  // Collapsed rows don't need the column gap/stacking - the header IS the whole row.
+  &:not(.expanded) { gap: 0; }
+}
+
+.moduleItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.expandToggle {
+  padding: 8px;
+
+  svg { transition: transform 0.2s ease; }
+}
+
+.expandToggleOpen svg { transform: rotate(180deg); }
+
+// Virtual "add module" card - same box as a real .moduleItem (padding/radius/width) so it reads
+// as the next card in the list, not a stray button; dashed border + centered label is what marks
+// it as the add affordance instead of a real module.
+.moduleItemAddTrigger {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  transition: border-color 0.2s ease, color 0.2s ease;
+
+  svg { flex-shrink: 0; }
+  &:hover { border-color: var(--accent); color: var(--accent); }
+}
+
+.moduleItemMain { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+
+.moduleItemTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.moduleItemDesc { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.5; max-width: 56ch; }
+
+// A bare <a> inherits color/no-underline from the global reset (tokens.scss) - indistinguishable
+// from plain text until hover. This is a real affordance fix, not just decoration: a filled chip
+// with an icon reads as clickable at rest, the same "color as identity" logic every interactive
+// control in this app already uses (see .btn-ghost, .moduleTypeBadge above).
+.resourceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover { background: var(--accent); color: var(--accent-ink); }
+}
+
+.moduleTypeBadge {
+  font-size: 0.64rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.video { background: var(--accent-soft); color: var(--accent); }
+.documento { background: var(--cyan-soft); color: var(--cyan); }
+.ejercicio { background: var(--gold-soft); color: var(--gold); }
+.examen { background: var(--border); color: var(--ink-soft); }
+
+.moduleDraftBadge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-strong);
+  color: var(--ink-faint);
+}
+
+// ModuleForm.tsx — inline replacement for the old modal, mounted directly inside an expanded
+// .moduleItem (see .moduleItem.expanded above), so it just needs its own spacing/actions row.
+.moduleForm { padding-top: 4px; }
+
+.moduleFormActions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+
+.progressList { padding: 4px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+
+  .name { color: var(--ink); flex: none; min-width: 14ch; }
+
+  // Composed with the global `bar-track` utility class — see FormationManagePage.tsx.
+  :global(.bar-track) { flex: 1; margin-top: 0; }
+
+  .pct { font-variant-numeric: tabular-nums; color: var(--ink-soft); min-width: 34px; text-align: right; flex: none; }
+}

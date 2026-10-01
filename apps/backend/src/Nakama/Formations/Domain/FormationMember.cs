@@ -1,3 +1,3 @@
 namespace Nakama.Formations.Domain;
 
-public sealed record FormationMember(string Name, int Progress);
+public sealed record FormationMember(Guid UserId, int Progress);

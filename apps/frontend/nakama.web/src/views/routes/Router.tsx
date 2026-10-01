@@ -9,7 +9,8 @@ import ChatbotDetailPage from "../pages/chatbots/ChatbotDetailPage";
 import ChatbotsListPage from "../pages/chatbots/ChatbotsListPage";
 import CreateChatbotPage from "../pages/chatbots/CreateChatbotPage";
 import CreateFormationPage from "../pages/formations/CreateFormationPage";
-import FormationDetailPage from "../pages/formations/FormationDetailPage";
+import FormationExecutePage from "../pages/formations/FormationExecutePage";
+import FormationManagePage from "../pages/formations/FormationManagePage";
 import FormationsListPage from "../pages/formations/FormationsListPage";
 
 /** Bounces non-admins back to Chat — gates the admin-only sections (Chatbots, Analítica). */
@@ -58,7 +59,15 @@ export default function Router() {
             </RequireAdmin>
           }
         />
-        <Route path="formacion/:key" element={<FormationDetailPage />} />
+        <Route path="formacion/:key" element={<FormationExecutePage />} />
+        <Route
+          path="formacion/:key/gestionar"
+          element={
+            <RequireAdmin>
+              <FormationManagePage />
+            </RequireAdmin>
+          }
+        />
         <Route
           path="analytics"
           element={

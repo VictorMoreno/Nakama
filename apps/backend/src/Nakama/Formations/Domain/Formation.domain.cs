@@ -57,6 +57,41 @@ public partial class Formation
         Record(new FormationModuleAdded(this.Id, module));
     }
 
+    public void UpdateModule(
+        ModuleId moduleId,
+        string title,
+        ModuleType type,
+        string summary,
+        bool gated,
+        bool aiDraft,
+        string? resourceUrl,
+        int? durationMin,
+        IReadOnlyList<QuizQuestion>? quiz,
+        int? passingScore)
+    {
+        var index = this._modules.FindIndex(m => m.Id == moduleId);
+        if (index < 0)
+        {
+            throw FormationErrors.ModuleNotFound(moduleId.Value.ToString(), this.Id.Value.ToString());
+        }
+
+        var updated = this._modules[index] with
+        {
+            Title = title,
+            Type = type,
+            Summary = summary,
+            Gated = gated,
+            AiDraft = aiDraft,
+            ResourceUrl = resourceUrl,
+            DurationMin = durationMin,
+            Quiz = quiz,
+            PassingScore = passingScore,
+        };
+        this._modules[index] = updated;
+
+        Record(new FormationModuleUpdated(this.Id, updated));
+    }
+
     public void ToggleModuleGating(ModuleId moduleId)
     {
         var index = this._modules.FindIndex(m => m.Id == moduleId);
@@ -101,5 +136,17 @@ public partial class Formation
 
         this.Archived = true;
         Record(new FormationArchived(this.Id));
+    }
+
+    public void AddTeamMember(FormationMember member)
+    {
+        this._team.Add(member);
+        Record(new FormationTeamMemberAdded(this.Id, member));
+    }
+
+    public void RemoveTeamMember(int index)
+    {
+        this._team.RemoveAt(index);
+        Record(new FormationTeamMemberRemoved(this.Id, index));
     }
 }

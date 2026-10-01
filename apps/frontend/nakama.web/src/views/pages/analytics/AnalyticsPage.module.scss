@@ -1,6 +1,6 @@
 // NOTE for the integration pass: .statGrid/.statCard/.gapsList/.gapItem/.barTrack/.barFill
 // below are also used by chatbots/tabs/AnalyticsTab.tsx (confirmed via grep) and
-// formations/FormationDetailPage.tsx (.bar-track/.bar-fill only) — genuinely cross-cutting
+// formations/FormationExecutePage.tsx and FormationManagePage.tsx (.bar-track/.bar-fill only) — genuinely cross-cutting
 // like everything already in utilities.scss, but that file was out of scope for this fork.
 // Worth promoting there later; UsageChart.module.scss duplicates .barTrack/.barFill for
 // now rather than reaching into this file from a sibling component.

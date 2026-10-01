@@ -115,16 +115,29 @@ export interface IGeneratedNakamaClient {
     exchanges(botKey: string, conversationId: string, body: AppendConversationExchangeRequest): Promise<void>;
 
     /**
+     * Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.
+     * @return No Content
+     */
+    conversations(botKey: string, conversationId: string, userId: string): Promise<void>;
+
+    /**
      * Lists all chatbots (summary view).
      * @return OK
      */
     chatbotsAll(): Promise<ChatbotSummaryResponse[]>;
 
     /**
-     * Gets the chat UI projection for one chatbot (opening example, chips, conversation history).
+     * Gets the chat UI projection for one chatbot (opening example and chips).
      * @return OK
      */
     chatPage(id: string): Promise<ChatPageResponse>;
+
+    /**
+     * Gets a user's conversation history for one chatbot.
+     * @param userId (optional) 
+     * @return OK
+     */
+    conversationHistory(botKey: string, userId: string | undefined): Promise<ConversationHistoryResponse>;
 
     /**
      * Creates a new formation with a caller-supplied id.
@@ -167,7 +180,13 @@ export interface IGeneratedNakamaClient {
      * Adds a module to a formation, using a caller-supplied module id.
      * @return Created
      */
-    modules(id: string, moduleId: string, body: AddFormationModuleRequest): Promise<void>;
+    modulesPUT(id: string, moduleId: string, body: AddFormationModuleRequest): Promise<void>;
+
+    /**
+     * Updates an existing module's fields.
+     * @return No Content
+     */
+    modulesPATCH(id: string, moduleId: string, body: UpdateFormationModuleRequest): Promise<void>;
 
     /**
      * Marks a module complete, with an optional score.
@@ -182,6 +201,18 @@ export interface IGeneratedNakamaClient {
     toggleGating(id: string, moduleId: string): Promise<void>;
 
     /**
+     * Adds a team member to a formation.
+     * @return No Content
+     */
+    teamPOST2(id: string, body: AddFormationTeamMemberRequest): Promise<void>;
+
+    /**
+     * Removes a team member by their list position.
+     * @return No Content
+     */
+    teamDELETE2(id: string, index: number): Promise<void>;
+
+    /**
      * Lists all formations (summary view).
      * @return OK
      */
@@ -192,6 +223,12 @@ export interface IGeneratedNakamaClient {
      * @return Created
      */
     users(body: CreateUserRequest): Promise<void>;
+
+    /**
+     * Lists all users in the system (id, name, email) - e.g. to populate a team-assignment picker.
+     * @return OK
+     */
+    usersAll(): Promise<UserSummaryResponse[]>;
 }
 
 export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNakamaClient {
@@ -953,6 +990,58 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.
+     * @return No Content
+     */
+    conversations(botKey: string, conversationId: string, userId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversations/{conversationId}?";
+        if (botKey === undefined || botKey === null)
+            throw new globalThis.Error("The parameter 'botKey' must be defined.");
+        url_ = url_.replace("{botKey}", encodeURIComponent("" + botKey));
+        if (conversationId === undefined || conversationId === null)
+            throw new globalThis.Error("The parameter 'conversationId' must be defined.");
+        url_ = url_.replace("{conversationId}", encodeURIComponent("" + conversationId));
+        if (userId === undefined || userId === null)
+            throw new globalThis.Error("The parameter 'userId' must be defined and cannot be null.");
+        else
+            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processConversations(_response));
+        });
+    }
+
+    protected processConversations(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
      * Lists all chatbots (summary view).
      * @return OK
      */
@@ -992,7 +1081,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Gets the chat UI projection for one chatbot (opening example, chips, conversation history).
+     * Gets the chat UI projection for one chatbot (opening example and chips).
      * @return OK
      */
     chatPage(id: string): Promise<ChatPageResponse> {
@@ -1037,6 +1126,59 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             });
         }
         return Promise.resolve<ChatPageResponse>(null as any);
+    }
+
+    /**
+     * Gets a user's conversation history for one chatbot.
+     * @param userId (optional) 
+     * @return OK
+     */
+    conversationHistory(botKey: string, userId: string | undefined): Promise<ConversationHistoryResponse> {
+        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversation-history?";
+        if (botKey === undefined || botKey === null)
+            throw new globalThis.Error("The parameter 'botKey' must be defined.");
+        url_ = url_.replace("{botKey}", encodeURIComponent("" + botKey));
+        if (userId === null)
+            throw new globalThis.Error("The parameter 'userId' cannot be null.");
+        else if (userId !== undefined)
+            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processConversationHistory(_response));
+        });
+    }
+
+    protected processConversationHistory(response: Response): Promise<ConversationHistoryResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ConversationHistoryResponse;
+            return result200;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ConversationHistoryResponse>(null as any);
     }
 
     /**
@@ -1338,7 +1480,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
      * Adds a module to a formation, using a caller-supplied module id.
      * @return Created
      */
-    modules(id: string, moduleId: string, body: AddFormationModuleRequest): Promise<void> {
+    modulesPUT(id: string, moduleId: string, body: AddFormationModuleRequest): Promise<void> {
         let url_ = this.baseUrl + "/api/formations/{id}/modules/{moduleId}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1361,11 +1503,11 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processModules(_response));
+            return this.transformResult(url_, _response, (_response: Response) => this.processModulesPUT(_response));
         });
     }
 
-    protected processModules(response: Response): Promise<void> {
+    protected processModulesPUT(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -1383,6 +1525,58 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             let result409: any = null;
             result409 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
             return throwException("Conflict", status, _responseText, _headers, result409);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Updates an existing module's fields.
+     * @return No Content
+     */
+    modulesPATCH(id: string, moduleId: string, body: UpdateFormationModuleRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/modules/{moduleId}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (moduleId === undefined || moduleId === null)
+            throw new globalThis.Error("The parameter 'moduleId' must be defined.");
+        url_ = url_.replace("{moduleId}", encodeURIComponent("" + moduleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processModulesPATCH(_response));
+        });
+    }
+
+    protected processModulesPATCH(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -1499,6 +1693,103 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Adds a team member to a formation.
+     * @return No Content
+     */
+    teamPOST2(id: string, body: AddFormationTeamMemberRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/team";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processTeamPOST2(_response));
+        });
+    }
+
+    protected processTeamPOST2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Removes a team member by their list position.
+     * @return No Content
+     */
+    teamDELETE2(id: string, index: number): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/team/{index}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (index === undefined || index === null)
+            throw new globalThis.Error("The parameter 'index' must be defined.");
+        url_ = url_.replace("{index}", encodeURIComponent("" + index));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processTeamDELETE2(_response));
+        });
+    }
+
+    protected processTeamDELETE2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
      * Lists all formations (summary view).
      * @return OK
      */
@@ -1582,10 +1873,49 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
         }
         return Promise.resolve<void>(null as any);
     }
+
+    /**
+     * Lists all users in the system (id, name, email) - e.g. to populate a team-assignment picker.
+     * @return OK
+     */
+    usersAll(): Promise<UserSummaryResponse[]> {
+        let url_ = this.baseUrl + "/api/users";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processUsersAll(_response));
+        });
+    }
+
+    protected processUsersAll(response: Response): Promise<UserSummaryResponse[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as UserSummaryResponse[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserSummaryResponse[]>(null as any);
+    }
 }
 
 export interface AddChatbotTeamMemberRequest {
-    name?: string | undefined;
+    userId?: string;
     role?: number;
 }
 
@@ -1601,6 +1931,10 @@ export interface AddFormationModuleRequest {
     passingScore?: number | undefined;
 }
 
+export interface AddFormationTeamMemberRequest {
+    userId?: string;
+}
+
 export interface AnalyticsResponse {
     id?: string | undefined;
     activeBotsCount?: number;
@@ -1613,6 +1947,7 @@ export interface AnalyticsResponse {
 }
 
 export interface AppendConversationExchangeRequest {
+    userId?: string;
     title?: string | undefined;
     question?: string | undefined;
     answer?: string | undefined;
@@ -1638,7 +1973,6 @@ export interface ChatPageResponse {
     provider?: string | undefined;
     opening?: ChatExampleRow;
     chips?: ChatExampleRow[] | undefined;
-    history?: ConversationSummaryRow[] | undefined;
 }
 
 export interface ChatbotDetailResponse {
@@ -1687,12 +2021,18 @@ export interface CompleteFormationModuleRequest {
     score?: number | undefined;
 }
 
+export interface ConversationHistoryResponse {
+    botKey?: string;
+    entries?: ConversationSummaryRow[] | undefined;
+}
+
 export interface ConversationSummaryRow {
     id?: string;
     botKey?: string;
+    userId?: string;
     title?: string | undefined;
     dateLabel?: Date;
-    exchanges?: ChatExampleRow[] | undefined;
+    exchanges?: HistoryExampleRow[] | undefined;
 }
 
 export interface CreateChatbotRequest {
@@ -1737,7 +2077,7 @@ export interface FormationDetailResponse {
 }
 
 export interface FormationMemberRow {
-    name?: string | undefined;
+    userId?: string;
     progress?: number;
 }
 
@@ -1770,6 +2110,14 @@ export interface FormationSummaryResponse {
 export interface GapQuestionRow {
     question?: string | undefined;
     count?: number;
+}
+
+export interface HistoryExampleRow {
+    question?: string | undefined;
+    answer?: string | undefined;
+    citation?: string | undefined;
+    moreExplanation?: string | undefined;
+    socraticVariant?: string | undefined;
 }
 
 export interface LoginRequest {
@@ -1811,7 +2159,7 @@ export interface SubmitFeedbackRequest {
 }
 
 export interface TeamMemberRow {
-    name?: string | undefined;
+    userId?: string;
     role?: string | undefined;
 }
 
@@ -1823,6 +2171,18 @@ export interface UpdateChatbotSettingsRequest {
 
 export interface UpdateChatbotStatusRequest {
     status?: number;
+}
+
+export interface UpdateFormationModuleRequest {
+    title?: string | undefined;
+    type?: number;
+    summary?: string | undefined;
+    gated?: boolean;
+    aiDraft?: boolean;
+    resourceUrl?: string | undefined;
+    durationMin?: number | undefined;
+    quiz?: QuizQuestionRequest[] | undefined;
+    passingScore?: number | undefined;
 }
 
 export interface UpdateFormationStatusRequest {
@@ -1839,6 +2199,12 @@ export interface UserResponse {
     email?: string | undefined;
     name?: string | undefined;
     isAdmin?: boolean;
+}
+
+export interface UserSummaryResponse {
+    id?: string;
+    name?: string | undefined;
+    email?: string | undefined;
 }
 
 export interface FileParameter {

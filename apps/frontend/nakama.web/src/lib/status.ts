@@ -5,7 +5,7 @@ import type { Formation, FormationLifecycleStatus } from "../modules/formations/
  * Single source of truth for the "estado" shown as the LED dot on cards and as the
  * status-tag in detail views — both must always agree, so both read from here instead
  * of computing their own condition inline. The status itself is configured by the admin
- * on each chatbot/currículo (see GeneralTab / FormationDetailPage), not inferred.
+ * on each chatbot/currículo (see GeneralTab / FormationManagePage), not inferred.
  */
 export type StatusLevel = "ok" | "pending" | "muted" | "danger";
 

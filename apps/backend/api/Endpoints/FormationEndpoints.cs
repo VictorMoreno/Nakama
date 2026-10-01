@@ -7,7 +7,10 @@ using Nakama.Formations.Application.IconUpdater;
 using Nakama.Formations.Application.ModuleAdder;
 using Nakama.Formations.Application.ModuleCompleter;
 using Nakama.Formations.Application.ModuleGatingToggler;
+using Nakama.Formations.Application.ModuleUpdater;
 using Nakama.Formations.Application.StatusUpdater;
+using Nakama.Formations.Application.TeamMemberAdder;
+using Nakama.Formations.Application.TeamMemberRemover;
 using Nakama.Formations.Domain;
 using Nakama.FormationsList.Application;
 using Nakama.FormationsList.Application.Searcher;
@@ -54,6 +57,11 @@ public sealed class FormationEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
+        group.MapPatch("/{id:guid}/modules/{moduleId:guid}", UpdateFormationModule)
+            .WithSummary("Updates an existing module's fields.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         group.MapPost("/{id:guid}/modules/{moduleId:guid}/complete", CompleteFormationModule)
             .WithSummary("Marks a module complete, with an optional score.")
             .WithDescription(
@@ -64,6 +72,16 @@ public sealed class FormationEndpoints : IEndpoint
 
         group.MapPost("/{id:guid}/modules/{moduleId:guid}/toggle-gating", ToggleFormationModuleGating)
             .WithSummary("Flips a module's gated flag.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/{id:guid}/team", AddFormationTeamMember)
+            .WithSummary("Adds a team member to a formation.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapDelete("/{id:guid}/team/{index:int}", RemoveFormationTeamMember)
+            .WithSummary("Removes a team member by their list position.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -145,6 +163,19 @@ public sealed class FormationEndpoints : IEndpoint
         return Results.Created();
     }
 
+    private static async Task<IResult> UpdateFormationModule(
+        Guid id, Guid moduleId, UpdateFormationModuleRequest body, ICommandBus commandBus, CancellationToken ct)
+    {
+        await commandBus.Send(
+            new FormationModuleUpdater.Command(
+                id, moduleId, body.Title, body.Type, body.Summary, body.Gated, body.AiDraft,
+                body.ResourceUrl, body.DurationMin,
+                body.Quiz?.Select(q => new FormationModuleUpdater.QuizQuestionInput(q.Question, q.Options, q.CorrectIndex)).ToList(),
+                body.PassingScore),
+            ct);
+        return Results.NoContent();
+    }
+
     private static async Task<IResult> CompleteFormationModule(
         Guid id, Guid moduleId, CompleteFormationModuleRequest body, ICommandBus commandBus, CancellationToken ct)
     {
@@ -158,6 +189,20 @@ public sealed class FormationEndpoints : IEndpoint
         CancellationToken ct)
     {
         await commandBus.Send(new FormationModuleGatingToggler.Command(id, moduleId), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> AddFormationTeamMember(
+        Guid id, AddFormationTeamMemberRequest body, ICommandBus commandBus, CancellationToken ct)
+    {
+        await commandBus.Send(new FormationTeamMemberAdder.Command(id, body.UserId), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> RemoveFormationTeamMember(
+        Guid id, int index, ICommandBus commandBus, CancellationToken ct)
+    {
+        await commandBus.Send(new FormationTeamMemberRemover.Command(id, index), ct);
         return Results.NoContent();
     }
 
@@ -195,5 +240,18 @@ public sealed class FormationEndpoints : IEndpoint
         IReadOnlyList<QuizQuestionRequest>? Quiz,
         int? PassingScore);
 
+    private sealed record UpdateFormationModuleRequest(
+        string Title,
+        int Type,
+        string Summary,
+        bool Gated,
+        bool AiDraft,
+        string? ResourceUrl,
+        int? DurationMin,
+        IReadOnlyList<QuizQuestionRequest>? Quiz,
+        int? PassingScore);
+
     private sealed record CompleteFormationModuleRequest(int? Score);
+
+    private sealed record AddFormationTeamMemberRequest(Guid UserId);
 }

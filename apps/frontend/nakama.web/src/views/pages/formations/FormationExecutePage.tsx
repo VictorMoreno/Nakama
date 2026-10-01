@@ -1,26 +1,21 @@
 import { useState } from "react";
-import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import {
+  ArrowRightIcon,
   CheckIcon,
   ChevronLeftIcon,
   DocumentIcon,
   ExerciseIcon,
   LockIcon,
-  PlusIcon,
   QuizIcon,
   SendIcon,
-  TrashIcon,
   VideoIcon
 } from "../../components/shared/icons";
-import IconUploadField from "../../components/shared/IconUploadField";
-import StatusSelect, { type StatusSelectOption } from "../../components/shared/StatusSelect";
 import { useFormations } from "../../shared/contexts/FormationsContext";
 import { useToast } from "../../shared/contexts/ToastContext";
 import { FORMATION_STATUS_META } from "../../../lib/status";
-import type { FormationLifecycleStatus, FormationModule, ModuleType } from "../../../modules/formations/domain/Formation";
-import CreateModuleDialog from "./CreateModuleDialog";
-import styles from "./FormationDetailPage.module.scss";
-import { useFormationDetail } from "./hooks/useFormationDetail";
+import type { FormationModule, ModuleType } from "../../../modules/formations/domain/Formation";
+import styles from "./FormationExecutePage.module.scss";
+import { useFormationExecute } from "./hooks/useFormationExecute";
 
 const TYPE_LABEL: Record<ModuleType, string> = {
   video: "Vídeo",
@@ -29,10 +24,6 @@ const TYPE_LABEL: Record<ModuleType, string> = {
   examen: "Examen"
 };
 
-const STATUS_OPTIONS: StatusSelectOption<FormationLifecycleStatus>[] = (
-  Object.keys(FORMATION_STATUS_META) as FormationLifecycleStatus[]
-).map((value) => ({ value, label: FORMATION_STATUS_META[value].label, level: FORMATION_STATUS_META[value].level }));
-
 const TYPE_ICON: Record<ModuleType, typeof VideoIcon> = {
   video: VideoIcon,
   documento: DocumentIcon,
@@ -40,19 +31,17 @@ const TYPE_ICON: Record<ModuleType, typeof VideoIcon> = {
   examen: QuizIcon
 };
 
-interface ModuleRowProps {
+interface ExecuteModuleRowProps {
   formationKey: string;
   module: FormationModule;
   index: number;
   locked: boolean;
   done: boolean;
   examScore?: number;
-  isAdmin: boolean;
-  onDelete: () => void;
 }
 
-function ModuleRow({ formationKey, module: m, index, locked, done, examScore, isAdmin, onDelete }: ModuleRowProps) {
-  const { completeModule, toggleModuleGating } = useFormations();
+function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examScore }: ExecuteModuleRowProps) {
+  const { completeModule } = useFormations();
   const { showToast } = useToast();
   const TypeIcon = TYPE_ICON[m.type];
   const [answers, setAnswers] = useState<number[]>(() => new Array(m.quiz?.length ?? 0).fill(-1));
@@ -92,16 +81,16 @@ function ModuleRow({ formationKey, module: m, index, locked, done, examScore, is
           <>
             {m.type === "video" && (
               <div className={styles.moduleItemDesc}>
-                {m.durationMin} min ·{" "}
-                <a href={m.resourceUrl} target="_blank" rel="noreferrer">
-                  Ver vídeo
+                {m.durationMin} min
+                <a className={styles.resourceLink} href={m.resourceUrl} target="_blank" rel="noreferrer">
+                  <ArrowRightIcon width={12} height={12} /> Ver vídeo
                 </a>
               </div>
             )}
             {(m.type === "documento" || m.type === "ejercicio") && (
               <div className={styles.moduleItemDesc}>
-                <a href={m.resourceUrl} target="_blank" rel="noreferrer">
-                  {m.type === "documento" ? "Abrir documento" : "Abrir ejercicio"}
+                <a className={styles.resourceLink} href={m.resourceUrl} target="_blank" rel="noreferrer">
+                  <ArrowRightIcon width={12} height={12} /> {m.type === "documento" ? "Abrir documento" : "Abrir ejercicio"}
                 </a>
               </div>
             )}
@@ -144,20 +133,6 @@ function ModuleRow({ formationKey, module: m, index, locked, done, examScore, is
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, flex: "none" }}>
-        {isAdmin && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: "0.72rem", color: "var(--ink-faint)", whiteSpace: "nowrap" }}>Bloquea el siguiente</span>
-            <button
-              className="switch"
-              role="switch"
-              aria-checked={m.gated}
-              aria-label={`Bloquear el siguiente módulo hasta completar "${m.title}"`}
-              type="button"
-              onClick={() => toggleModuleGating(formationKey, m.id)}
-            />
-          </div>
-        )}
-
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {!locked && m.type !== "examen" && (
             <button
@@ -185,35 +160,14 @@ function ModuleRow({ formationKey, module: m, index, locked, done, examScore, is
               )}
             </button>
           )}
-
-          {isAdmin && (
-            <button className="btn-ghost danger" type="button" onClick={onDelete}>
-              <TrashIcon /> Eliminar
-            </button>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default function FormationDetailPage() {
-  const {
-    c,
-    isAdmin,
-    navigate,
-    createOpen,
-    setCreateOpen,
-    deleteTarget,
-    setDeleteId,
-    pct,
-    linkedBot,
-    avgTeamProgress,
-    isLocked,
-    handleUpdateStatus,
-    handleUpdateIcon,
-    confirmDeleteModule
-  } = useFormationDetail();
+export default function FormationExecutePage() {
+  const { c, navigate, pct, linkedBot, isLocked } = useFormationExecute();
 
   if (!c) {
     return (
@@ -245,23 +199,8 @@ export default function FormationDetailPage() {
               {linkedBot && <> · Basado en la documentación de <strong>{linkedBot.label}</strong></>}
             </p>
           </div>
-          {isAdmin ? (
-            <StatusSelect value={c.status} onChange={handleUpdateStatus} options={STATUS_OPTIONS} ariaLabel="Estado de la formación" />
-          ) : (
-            <span className={`status-tag ${FORMATION_STATUS_META[c.status].level}`}>{FORMATION_STATUS_META[c.status].label}</span>
-          )}
+          <span className={`status-tag ${FORMATION_STATUS_META[c.status].level}`}>{FORMATION_STATUS_META[c.status].label}</span>
         </div>
-
-        {isAdmin && (
-          <div className="glass">
-            <div className="panel-head">
-              <h2>Icono de la formación</h2>
-            </div>
-            <div style={{ padding: "0 20px 20px" }}>
-              <IconUploadField value={c.iconUrl} onChange={handleUpdateIcon} placeholderLabel={c.title} />
-            </div>
-          </div>
-        )}
 
         <div className="glass">
           <div className={styles.formationProgress}>
@@ -276,23 +215,16 @@ export default function FormationDetailPage() {
 
           <div className="panel-head">
             <h2>Módulos de la formación</h2>
-            {isAdmin && (
-              <button className="btn-primary" type="button" onClick={() => setCreateOpen(true)}>
-                <PlusIcon /> Nuevo módulo
-              </button>
-            )}
           </div>
 
           {c.modules.length === 0 ? (
             <p style={{ padding: "0 20px 20px", fontSize: "0.82rem", color: "var(--ink-faint)" }}>
-              {isAdmin
-                ? 'Esta formación todavía no tiene módulos. Crea el primero con "+ Nuevo módulo".'
-                : "Esta formación todavía no tiene módulos."}
+              Esta formación todavía no tiene módulos.
             </p>
           ) : (
             <div className={styles.moduleList}>
               {c.modules.map((m, idx) => (
-                <ModuleRow
+                <ExecuteModuleRow
                   key={m.id}
                   formationKey={c.id}
                   module={m}
@@ -300,56 +232,12 @@ export default function FormationDetailPage() {
                   locked={isLocked(idx)}
                   done={c.myProgress.completedModuleIds.includes(m.id)}
                   examScore={c.myProgress.examScores[m.id]}
-                  isAdmin={isAdmin}
-                  onDelete={() => setDeleteId(m.id)}
                 />
               ))}
             </div>
           )}
         </div>
-
-        {isAdmin && (
-          <div className="glass" style={{ marginTop: 14 }}>
-            <div className="panel-head">
-              <h2>Progreso del equipo</h2>
-              <span className="count">Media: {avgTeamProgress}%</span>
-            </div>
-            {c.team.length === 0 ? (
-              <p style={{ padding: "0 20px 20px", fontSize: "0.82rem", color: "var(--ink-faint)" }}>
-                Todavía no hay personas asignadas a esta formación.
-              </p>
-            ) : (
-              <div className={styles.progressList}>
-                {c.team.map((m, idx) => (
-                  <div className={styles.progressRow} key={`${m.name}-${idx}`}>
-                    <span className={styles.name}>{m.name}</span>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${m.progress}%` }} />
-                    </div>
-                    <span className={styles.pct}>{m.progress}%</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </div>
-
-      <CreateModuleDialog open={createOpen} formationKey={c.id} onClose={() => setCreateOpen(false)} />
-
-      <ConfirmDialog
-        open={deleteTarget != null}
-        title="Eliminar módulo"
-        message={
-          <>
-            ¿Eliminar <strong>{deleteTarget?.title}</strong> de esta formación?
-          </>
-        }
-        confirmLabel="Eliminar"
-        danger
-        onCancel={() => setDeleteId(null)}
-        onConfirm={confirmDeleteModule}
-      />
     </section>
   );
 }
