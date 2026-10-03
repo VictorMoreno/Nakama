@@ -51,7 +51,11 @@ export default function ChatPage() {
   }
 
   return (
-    <section className="view active">
+    // data-fixed-panel opts this page into AppShell's bounded-height layout (see
+    // .mainContent's :has([data-fixed-panel]) rule in AppShell.module.scss) - needed so
+    // .thread below has a real height to shrink against and scrolls internally instead of
+    // growing the whole page. No other page sets this attribute.
+    <section className="view active" data-fixed-panel>
       <div className={styles.chatShell}>
         <div className={`${styles.chatPanel} glass`}>
           <div className={styles.chatPanelHead}>
