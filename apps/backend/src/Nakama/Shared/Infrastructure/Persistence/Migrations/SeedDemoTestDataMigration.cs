@@ -128,7 +128,8 @@ public sealed class SeedDemoTestDataMigration : Migration
             var isAdmin = i < 2;
             var createdAt = now.AddDays(-rng.Next(30, 400));
 
-            var user = User.Create(UserId.From(Guid.NewGuid()), new Email(email), $"{first} {last}", isAdmin, new SystemClock());
+            var user = User.Create(UserId.From(Guid.NewGuid()), new Email(email), $"{first} {last}", isAdmin,
+                new SystemClock());
             userIds.Add(user.Id.Value);
 
             var loginCount = rng.Next(1, 4);
@@ -158,6 +159,12 @@ public sealed class SeedDemoTestDataMigration : Migration
             Insert.IntoTable("read_user_activity").Row(new { id, userid = userId, type, occurredat = occurredAt });
         }
 
+        var conversationAuthorIds = new List<Guid>(userIds)
+        {
+            Guid.Parse("48D7EAD2-BAB5-468C-B7C5-CEF4D4A3842F"), // admin@nakama.com
+            Guid.Parse("EFB5209F-13C5-40B4-8E72-35AFA54CBEF8"), // user@nakama.com
+        };
+
         // ---- Chatbots -------------------------------------------------------------------------
         var chatbotIds = new List<Guid>();
         var usageByBot = new List<UsageByBotRow>();
@@ -172,56 +179,45 @@ public sealed class SeedDemoTestDataMigration : Migration
 
             var status = (ChatbotStatus)(rng.Next(0, 10) < 7 ? 1 : rng.Next(0, 2) == 0 ? 0 : 2); // mostly Active
             var general = rng.Next(0, 4) == 0; // ~25% company-wide
-            var settings = new ChatbotSettings(Socratic: rng.Next(0, 2) == 0, ExplicaMas: rng.Next(0, 2) == 0, Provider: (LlmProvider)rng.Next(0, 3));
-            var context = $"Chatbot entrenado con la documentación interna de {topic}. Datos de prueba generados por SeedDemoTestDataMigration.";
+            var settings = new ChatbotSettings(Socratic: rng.Next(0, 2) == 0, ExplicaMas: rng.Next(0, 2) == 0,
+                Provider: (LlmProvider)rng.Next(0, 3));
+            var context =
+                $"Chatbot entrenado con la documentación interna de {topic}. Datos de prueba generados por SeedDemoTestDataMigration.";
             var description = $"Resuelve dudas frecuentes sobre {topic}.";
             var lastUsed = now.AddDays(-rng.Next(0, 30));
 
             // Team: 1-2 members from the seeded user pool
             var teamSize = rng.Next(1, 3);
             var teamUserIds = PickDistinct(rng, userIds, teamSize);
-            var writeTeam = teamUserIds.Select((uid, idx) => new TeamMember(uid, idx == 0 ? TeamRole.Owner : TeamRole.Editor)).ToList();
-            var detailTeam = writeTeam.Select(m => new TeamMemberRow { UserId = m.UserId, Role = m.Role.ToString() }).ToList();
+            var writeTeam = teamUserIds
+                .Select((uid, idx) => new TeamMember(uid, idx == 0 ? TeamRole.Owner : TeamRole.Editor)).ToList();
+            var detailTeam = writeTeam.Select(m => new TeamMemberRow { UserId = m.UserId, Role = m.Role.ToString() })
+                .ToList();
 
             // Documents: 2 metadata rows per bot - no real file on disk, status always Pending
             // (matches ChatbotDocumentAdder - this app has no real indexing pipeline yet).
             var docs = new List<ChatbotDocument>();
             for (var d = 0; d < 2; d++)
             {
-                docs.Add(new ChatbotDocument(Guid.NewGuid(), $"Guía de {topic} #{d + 1}.pdf", "Seed", DocStatus.Pending, "Pendiente",
+                docs.Add(new ChatbotDocument(Guid.NewGuid(), $"Guía de {topic} #{d + 1}.pdf", "Seed", DocStatus.Pending,
+                    "Pendiente",
                     now.AddDays(-rng.Next(1, 60)), $"seed-{botId}-{d}.pdf"));
             }
+
             var detailDocs = docs.Select(doc => new ChatbotDocumentRow
             {
                 Id = doc.Id, Name = doc.Name, Origin = doc.Origin, Status = doc.Status.ToString(),
                 StatusLabel = doc.StatusLabel, Updated = doc.Updated, FileName = doc.FileName
             }).ToList();
 
-            // Opening example + demo chips for the chat widget
             var opening = new ChatExampleRow
             {
                 Question = $"¿Cómo empiezo con {topic}?",
-                Answer = $"Te recomiendo arrancar por la guía de {topic} en la documentación interna. Si te trabás en algún paso, preguntame acá mismo.",
+                Answer =
+                    $"Te recomiendo arrancar por la guía de {topic} en la documentación interna. Si te trabás en algún paso, preguntame acá mismo.",
                 Citation = $"Guía de {topic} #1.pdf",
                 MoreExplanation = $"El equipo de {topic} mantiene esta documentación actualizada semanalmente.",
                 SocraticVariant = $"¿Qué parte de {topic} te genera más dudas hoy?"
-            };
-            var chips = new List<ChatExampleRow>
-            {
-                new()
-                {
-                    Question = $"¿Dónde encuentro la documentación de {topic}?",
-                    Answer = $"Está centralizada en el repositorio interno, sección {topic}.",
-                    Citation = $"Guía de {topic} #1.pdf", MoreExplanation = "Se actualiza cada sprint.",
-                    SocraticVariant = "¿Ya revisaste el índice general?"
-                },
-                new()
-                {
-                    Question = $"¿A quién contacto si tengo un problema con {topic}?",
-                    Answer = $"El canal de referencia es el equipo de {topic}; si es urgente, escalá directamente.",
-                    Citation = $"Guía de {topic} #2.pdf", MoreExplanation = "Tiempos de respuesta habituales: 24-48h.",
-                    SocraticVariant = "¿Es bloqueante para tu trabajo hoy?"
-                }
             };
 
             Insert.IntoTable("chatbots").Row(new
@@ -281,10 +277,26 @@ public sealed class SeedDemoTestDataMigration : Migration
                 }),
                 stats_json = Json(new List<StatTileRow>
                 {
-                    new() { Label = "Tiempo hasta productividad", Value = $"{rng.Next(1, 5)} días", Unit = "objetivo <3 días", Bar = rng.Next(30, 95) },
-                    new() { Label = "Preguntas directas a seniors / semana", Value = rng.Next(1, 10).ToString(), Unit = "antes vs ahora", Bar = rng.Next(20, 80) },
-                    new() { Label = "Respuestas útiles del bot", Value = $"{rng.Next(60, 98)}%", Unit = "sobre el total de feedback", Bar = rng.Next(60, 98) },
-                    new() { Label = "Documentos ingestados", Value = docs.Count.ToString(), Unit = "objetivo >20", Bar = Math.Min(100, docs.Count * 5) }
+                    new()
+                    {
+                        Label = "Tiempo hasta productividad", Value = $"{rng.Next(1, 5)} días",
+                        Unit = "objetivo <3 días", Bar = rng.Next(30, 95)
+                    },
+                    new()
+                    {
+                        Label = "Preguntas directas a seniors / semana", Value = rng.Next(1, 10).ToString(),
+                        Unit = "antes vs ahora", Bar = rng.Next(20, 80)
+                    },
+                    new()
+                    {
+                        Label = "Respuestas útiles del bot", Value = $"{rng.Next(60, 98)}%",
+                        Unit = "sobre el total de feedback", Bar = rng.Next(60, 98)
+                    },
+                    new()
+                    {
+                        Label = "Documentos ingestados", Value = docs.Count.ToString(), Unit = "objetivo >20",
+                        Bar = Math.Min(100, docs.Count * 5)
+                    }
                 })
             });
 
@@ -296,8 +308,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 socratic = settings.Socratic,
                 explicamas = settings.ExplicaMas,
                 provider = settings.Provider.ToString(),
-                opening_json = Json(opening),
-                chips_json = Json(chips)
+                opening_json = Json(opening)
             });
 
             // ---- Conversations for this bot (write + audit + history) -------------------------
@@ -307,7 +318,12 @@ public sealed class SeedDemoTestDataMigration : Migration
             for (var c = 0; c < conversationCount; c++)
             {
                 var convId = Guid.NewGuid();
-                var author = userIds[rng.Next(userIds.Count)];
+                var author = (i < 3, c) switch
+                {
+                    (true, 0) => Guid.Parse("48D7EAD2-BAB5-468C-B7C5-CEF4D4A3842F"), // admin@nakama.com
+                    (true, 1) => Guid.Parse("EFB5209F-13C5-40B4-8E72-35AFA54CBEF8"), // user@nakama.com
+                    _ => conversationAuthorIds[rng.Next(conversationAuthorIds.Count)]
+                };
                 var title = $"Duda sobre {topic.ToLowerInvariant()} #{c + 1}";
                 var startedAt = now.AddDays(-rng.Next(0, 60)).AddHours(-rng.Next(0, 24));
 
@@ -332,7 +348,8 @@ public sealed class SeedDemoTestDataMigration : Migration
                     });
                     historyExchanges.Add(new HistoryExampleRow
                     {
-                        Question = q, Answer = a, Citation = citation, MoreExplanation = moreExplanation, SocraticVariant = socraticVariant
+                        Question = q, Answer = a, Citation = citation, MoreExplanation = moreExplanation,
+                        SocraticVariant = socraticVariant
                     });
                 }
 
@@ -360,7 +377,8 @@ public sealed class SeedDemoTestDataMigration : Migration
 
                 historyEntries.Add(new ConversationSummaryRow
                 {
-                    Id = convId, BotKey = botId, UserId = author, Title = title, DateLabel = startedAt, Exchanges = historyExchanges
+                    Id = convId, BotKey = botId, UserId = author, Title = title, DateLabel = startedAt,
+                    Exchanges = historyExchanges
                 });
             }
 
@@ -386,24 +404,35 @@ public sealed class SeedDemoTestDataMigration : Migration
             var quiz = new List<QuizQuestion>
             {
                 new($"¿Cuál es el primer paso al abordar {topic.ToLowerInvariant()}?",
-                    ["Leer la guía introductoria", "Improvisar", "Preguntar en el canal general", "Ignorar la documentación"], 0),
+                [
+                    "Leer la guía introductoria", "Improvisar", "Preguntar en el canal general",
+                    "Ignorar la documentación"
+                ], 0),
                 new($"¿Dónde se documenta el proceso de {topic.ToLowerInvariant()}?",
-                    ["En un chat privado", "En la documentación interna del equipo", "No está documentado", "En un email suelto"], 1)
+                [
+                    "En un chat privado", "En la documentación interna del equipo", "No está documentado",
+                    "En un email suelto"
+                ], 1)
             };
             var modules = new List<FormationModule>
             {
-                new(moduleId1, $"Introducción a {topic}", ModuleType.Document, $"Documento base sobre {topic.ToLowerInvariant()}.", Gated: true, AiDraft: false,
+                new(moduleId1, $"Introducción a {topic}", ModuleType.Document,
+                    $"Documento base sobre {topic.ToLowerInvariant()}.", Gated: true, AiDraft: false,
                     ResourceUrl: FormationDocUrls[i]),
-                new(moduleId2, $"Vídeo: recorrido por {topic}", ModuleType.Video, $"Recorrido guiado en vídeo sobre {topic.ToLowerInvariant()}.", Gated: true, AiDraft: false,
+                new(moduleId2, $"Vídeo: recorrido por {topic}", ModuleType.Video,
+                    $"Recorrido guiado en vídeo sobre {topic.ToLowerInvariant()}.", Gated: true, AiDraft: false,
                     ResourceUrl: FormationVideoUrls[i], DurationMin: rng.Next(8, 25)),
-                new(moduleId3, $"Examen de {topic}", ModuleType.Exam, $"Evaluación final de {topic.ToLowerInvariant()}.", Gated: false, AiDraft: false,
+                new(moduleId3, $"Examen de {topic}", ModuleType.Exam,
+                    $"Evaluación final de {topic.ToLowerInvariant()}.", Gated: false, AiDraft: false,
                     Quiz: quiz, PassingScore: 70)
             };
             var detailModules = modules.Select(m => new FormationModuleRow
             {
-                Id = m.Id.Value, Title = m.Title, Type = m.Type.ToString(), Summary = m.Summary, Gated = m.Gated, AiDraft = m.AiDraft,
+                Id = m.Id.Value, Title = m.Title, Type = m.Type.ToString(), Summary = m.Summary, Gated = m.Gated,
+                AiDraft = m.AiDraft,
                 ResourceUrl = m.ResourceUrl, DurationMin = m.DurationMin, PassingScore = m.PassingScore,
-                Quiz = m.Quiz?.Select(q => new QuizQuestionRow { Question = q.Question, Options = q.Options.ToList(), CorrectIndex = q.CorrectIndex }).ToList()
+                Quiz = m.Quiz?.Select(q => new QuizQuestionRow
+                    { Question = q.Question, Options = q.Options.ToList(), CorrectIndex = q.CorrectIndex }).ToList()
             }).ToList();
 
             // Each team member gets their OWN progress now (real FormationEnrollment rows) instead
@@ -419,7 +448,8 @@ public sealed class SeedDemoTestDataMigration : Migration
                 return (UserId: uid, Progress: progress);
             }).ToList();
             var detailTeam = enrollments
-                .Select(e => new FormationMemberRow { UserId = e.UserId, Progress = e.Progress.CompletedModuleIds.Count * 100 / modules.Count })
+                .Select(e => new FormationMemberRow
+                    { UserId = e.UserId, Progress = e.Progress.CompletedModuleIds.Count * 100 / modules.Count })
                 .ToList();
 
             Insert.IntoTable("formations").Row(new
@@ -475,7 +505,8 @@ public sealed class SeedDemoTestDataMigration : Migration
 
             if (linkedChatbotKey is not null)
             {
-                Insert.IntoTable("read_formation_detail_chatbot_label_ref").Row(new { id = linkedChatbotKey.Value, label = linkedChatbotLabel });
+                Insert.IntoTable("read_formation_detail_chatbot_label_ref")
+                    .Row(new { id = linkedChatbotKey.Value, label = linkedChatbotLabel });
             }
         }
 
@@ -494,15 +525,15 @@ public sealed class SeedDemoTestDataMigration : Migration
             using var cmd = connection.CreateCommand();
             cmd.Transaction = transaction;
             cmd.CommandText = """
-                INSERT INTO read_analytics (id, activebotscount, answeredthisweek, usage_by_bot_json, usefulfeedbackcount, totalfeedbackcount)
-                VALUES (@id, @activebotscount, @answeredthisweek, @usage_by_bot_json, @usefulfeedbackcount, @totalfeedbackcount)
-                ON CONFLICT (id) DO UPDATE SET
-                    activebotscount = read_analytics.activebotscount + EXCLUDED.activebotscount,
-                    answeredthisweek = read_analytics.answeredthisweek + EXCLUDED.answeredthisweek,
-                    usage_by_bot_json = (COALESCE(read_analytics.usage_by_bot_json, '[]')::jsonb || EXCLUDED.usage_by_bot_json::jsonb)::text,
-                    usefulfeedbackcount = read_analytics.usefulfeedbackcount + EXCLUDED.usefulfeedbackcount,
-                    totalfeedbackcount = read_analytics.totalfeedbackcount + EXCLUDED.totalfeedbackcount
-                """;
+                              INSERT INTO read_analytics (id, activebotscount, answeredthisweek, usage_by_bot_json, usefulfeedbackcount, totalfeedbackcount)
+                              VALUES (@id, @activebotscount, @answeredthisweek, @usage_by_bot_json, @usefulfeedbackcount, @totalfeedbackcount)
+                              ON CONFLICT (id) DO UPDATE SET
+                                  activebotscount = read_analytics.activebotscount + EXCLUDED.activebotscount,
+                                  answeredthisweek = read_analytics.answeredthisweek + EXCLUDED.answeredthisweek,
+                                  usage_by_bot_json = (COALESCE(read_analytics.usage_by_bot_json, '[]')::jsonb || EXCLUDED.usage_by_bot_json::jsonb)::text,
+                                  usefulfeedbackcount = read_analytics.usefulfeedbackcount + EXCLUDED.usefulfeedbackcount,
+                                  totalfeedbackcount = read_analytics.totalfeedbackcount + EXCLUDED.totalfeedbackcount
+                              """;
 
             AddParam(cmd, "@id", Analytics.SingletonKey);
             AddParam(cmd, "@activebotscount", chatbotIds.Count);

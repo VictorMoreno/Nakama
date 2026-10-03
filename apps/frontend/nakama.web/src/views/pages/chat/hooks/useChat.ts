@@ -68,34 +68,20 @@ export function useChat() {
 
   const botConversations = conversations.filter((conv) => conv.botKey === currentBotKey);
 
-  // Shared by the bot-switch effect below and by the explicit "Nueva conversación" action -
-  // both mean the same thing: drop the active conversation and go back to the bot's opening.
-  function resetThread(openingExample: ChatExample | null | undefined, useSocratic: boolean) {
+  function resetThread() {
     setActiveConversationId(null);
-    setThread(openingExample ? exchangesToThread([openingExample], useSocratic) : []);
+    setThread([]);
   }
 
-  // Intentionally keyed only on bot.key: this should reset the thread when switching
-  // chatbots, not when the current bot's settings change mid-conversation. A `key`-prop
-  // reset isn't viable here since ChatPage itself doesn't remount on bot switch (the rail
-  // stays mounted), so the effect is the correct tool despite the lint rule's default bias
-  // toward computing state during render.
-  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
   useEffect(() => {
     if (!bot) return;
-    resetThread(bot.opening, bot.settings.socratic);
+    resetThread();
   }, [bot?.id]);
-  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 
   useEffect(() => {
     threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight });
   }, [thread]);
 
-  // Auto-grows the composer with its content (up to MAX_COMPOSER_HEIGHT) instead of
-  // staying pinned to a single line — resetting to "auto" first is what lets it shrink
-  // back down again after deleting text, not just grow. overflowY only turns on once
-  // content actually exceeds the cap, otherwise the browser reserves a scrollbar gutter
-  // (or shows one outright) for a box that never needs to scroll.
   useEffect(() => {
     const el = composerRef.current;
     if (!el) return;
@@ -112,7 +98,7 @@ export function useChat() {
 
   function startNewConversation() {
     if (!bot) return;
-    resetThread(bot.opening, bot.settings.socratic);
+    resetThread();
   }
 
   function appendExchange(question: string, example: ChatExample) {
@@ -133,7 +119,7 @@ export function useChat() {
     const val = input.trim();
     if (!val || !bot) return;
 
-    const match = bot.chips.find((c) => c.q === val) ?? (bot.opening && bot.opening.q === val ? bot.opening : null);
+    const match = bot.opening && bot.opening.q === val ? bot.opening : null;
     const example = match ?? DEMO_FALLBACK;
 
     appendExchange(val, example);
@@ -201,7 +187,7 @@ export function useChat() {
     setConversations((prev) => prev.filter((c) => c.id !== id));
 
     if (activeConversationId === id) {
-      resetThread(bot.opening, bot.settings.socratic);
+      resetThread();
     }
   }
 

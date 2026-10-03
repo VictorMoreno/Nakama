@@ -127,7 +127,7 @@ export interface IGeneratedNakamaClient {
     chatbotsAll(): Promise<ChatbotSummaryResponse[]>;
 
     /**
-     * Gets the chat UI projection for one chatbot (opening example and chips).
+     * Gets the chat UI projection for one chatbot (opening example).
      * @return OK
      */
     chatPage(id: string): Promise<ChatPageResponse>;
@@ -1093,7 +1093,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Gets the chat UI projection for one chatbot (opening example and chips).
+     * Gets the chat UI projection for one chatbot (opening example).
      * @return OK
      */
     chatPage(id: string): Promise<ChatPageResponse> {
@@ -2092,7 +2092,6 @@ export interface ChatPageResponse {
     explicaMas?: boolean;
     provider?: string | undefined;
     opening?: ChatExampleRow;
-    chips?: ChatExampleRow[] | undefined;
 }
 
 export interface ChatbotDetailResponse {

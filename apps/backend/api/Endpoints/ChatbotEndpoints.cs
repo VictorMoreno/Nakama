@@ -107,7 +107,7 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapGet("/{id:guid}/chat-page", FindChatPage)
-            .WithSummary("Gets the chat UI projection for one chatbot (opening example and chips).")
+            .WithSummary("Gets the chat UI projection for one chatbot (opening example).")
             .Produces<ChatPageResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 

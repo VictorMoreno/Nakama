@@ -131,7 +131,6 @@ function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailRespons
     status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
     context: detail.context ?? "",
     opening: chatPage.opening ? toChatExample(chatPage.opening) : null,
-    chips: (chatPage.chips ?? []).map(toChatExample),
     settings: {
       socratic: detail.socratic ?? false,
       explicaMas: detail.explicaMas ?? false,
@@ -202,7 +201,6 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
         (general ? " para toda la empresa" : dept ? ` para el equipo de <strong>${dept}</strong>` : "") +
         ". Todavía no tiene documentos — añade contenido en la pestaña Documentos para que pueda empezar a responder.",
       opening: null,
-      chips: [],
       settings,
       general,
       iconUrl,

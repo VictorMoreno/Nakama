@@ -11,8 +11,7 @@ public sealed record ChatPageResponse(
     bool Socratic,
     bool ExplicaMas,
     string Provider,
-    ChatExampleRow? Opening,
-    List<ChatExampleRow> Chips)
+    ChatExampleRow? Opening)
 {
     public static explicit operator ChatPageResponse(ChatPage entity) => new(
         entity.Id,
@@ -21,6 +20,5 @@ public sealed record ChatPageResponse(
         entity.Socratic,
         entity.ExplicaMas,
         entity.Provider,
-        entity.Opening,
-        entity.Chips);
+        entity.Opening);
 }

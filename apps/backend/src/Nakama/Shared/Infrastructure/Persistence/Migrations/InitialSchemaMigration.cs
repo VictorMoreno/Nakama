@@ -89,8 +89,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("socratic").AsBoolean().Nullable()
             .WithColumn("explicamas").AsBoolean().Nullable()
             .WithColumn("provider").AsString(255).Nullable()
-            .WithColumn("opening_json").AsCustom("text").Nullable()
-            .WithColumn("chips_json").AsCustom("text").Nullable();
+            .WithColumn("opening_json").AsCustom("text").Nullable();
 
         Create.Table("read_formations_list")
             .WithColumn("id").AsGuid().PrimaryKey()
