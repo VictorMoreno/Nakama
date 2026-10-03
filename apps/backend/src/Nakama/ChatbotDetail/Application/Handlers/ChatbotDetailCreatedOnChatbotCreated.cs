@@ -19,6 +19,7 @@ public sealed class ChatbotDetailCreatedOnChatbotCreated(IChatbotDetailRepositor
                 chatbotCreated.General,
                 chatbotCreated.Settings.Socratic,
                 chatbotCreated.Settings.ExplicaMas,
-                chatbotCreated.Settings.Provider.ToString()),
+                chatbotCreated.Settings.Provider.ToString(),
+                chatbotCreated.Settings.Model),
             ct);
 }

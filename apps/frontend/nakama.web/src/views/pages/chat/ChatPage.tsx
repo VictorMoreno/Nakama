@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import { AttachIcon, CloseIcon, PlusIcon, RecycleBinIcon, SendIcon } from "../../components/shared/icons";
 import { useChat } from "./hooks/useChat";
-import { BotBubble, UserBubble, WelcomeBubble } from "./MessageBubble";
+import { BotBubble, PendingBubble, UserBubble, WelcomeBubble } from "./MessageBubble";
 import styles from "./ChatPage.module.scss";
 
 export default function ChatPage() {
@@ -73,6 +73,8 @@ export default function ChatPage() {
             {thread.map((item) =>
               item.kind === "user" ? (
                 <UserBubble key={item.id} text={item.text} />
+              ) : item.kind === "pending" ? (
+                <PendingBubble key={item.id} />
               ) : (
                 <BotBubble key={item.id} state={item.bot} settings={bot.settings} onReveal={handleReveal} onFeedback={submitFeedback} />
               )
@@ -128,11 +130,11 @@ export default function ChatPage() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    handleSend();
+                    void handleSend();
                   }
                 }}
               />
-              <button className={styles.sendBtn} type="button" onClick={handleSend}>
+              <button className={styles.sendBtn} type="button" onClick={() => void handleSend()}>
                 <SendIcon />
                 Enviar
               </button>

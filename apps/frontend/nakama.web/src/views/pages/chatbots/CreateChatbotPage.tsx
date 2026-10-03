@@ -11,11 +11,7 @@ const STATUS_OPTIONS: StatusSelectOption<ChatbotLifecycleStatus>[] = (
   Object.keys(CHATBOT_STATUS_META) as ChatbotLifecycleStatus[]
 ).map((value) => ({ value, label: CHATBOT_STATUS_META[value].label, level: CHATBOT_STATUS_META[value].level }));
 
-const PROVIDER_OPTIONS: { value: LlmProvider; label: string }[] = [
-  { value: "anthropic", label: "Anthropic (Claude)" },
-  { value: "openai", label: "OpenAI (GPT)" },
-  { value: "local", label: "Modelo local" }
-];
+const PROVIDER_OPTIONS: { value: LlmProvider; label: string }[] = [{ value: "anthropic", label: "Anthropic (Claude)" }];
 
 export default function CreateChatbotPage() {
   const {

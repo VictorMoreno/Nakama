@@ -10,6 +10,7 @@ using Nakama.ConversationHistory.Domain;
 using Nakama.FormationDetail.Domain;
 using Nakama.FormationEnrollment.Domain;
 using Nakama.Formations.Domain;
+using Nakama.LlmProviders.Domain;
 using Nakama.Users.Domain;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Migrations;
@@ -179,8 +180,9 @@ public sealed class SeedDemoTestDataMigration : Migration
 
             var status = (ChatbotStatus)(rng.Next(0, 10) < 7 ? 1 : rng.Next(0, 2) == 0 ? 0 : 2); // mostly Active
             var general = rng.Next(0, 4) == 0; // ~25% company-wide
+            var seedProvider = (LlmProvider)rng.Next(0, 3);
             var settings = new ChatbotSettings(Socratic: rng.Next(0, 2) == 0, ExplicaMas: rng.Next(0, 2) == 0,
-                Provider: (LlmProvider)rng.Next(0, 3));
+                Provider: seedProvider, Model: seedProvider == LlmProvider.Anthropic ? "claude-opus-5-5" : string.Empty);
             var context =
                 $"Chatbot entrenado con la documentación interna de {topic}. Datos de prueba generados por SeedDemoTestDataMigration.";
             var description = $"Resuelve dudas frecuentes sobre {topic}.";
@@ -263,6 +265,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 socratic = settings.Socratic,
                 explicamas = settings.ExplicaMas,
                 provider = settings.Provider.ToString(),
+                model = settings.Model,
                 docs_json = Json(detailDocs),
                 team_json = Json(detailTeam),
                 gaps_json = Json(new List<GapQuestionRow>

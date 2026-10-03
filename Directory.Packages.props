@@ -1,25 +1,23 @@
 <Project>
-
-    <PropertyGroup>
-        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
-        <PackageVersion Include="Asp.Versioning.Http" Version="10.2.3" />
-        <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
-        <PackageVersion Include="FluentMigrator" Version="8.0.1" />
-        <PackageVersion Include="FluentMigrator.Runner" Version="8.0.1" />
-        <PackageVersion Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
-        <PackageVersion Include="MediatR" Version="13.1.0" />
-        <PackageVersion Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.11" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
-        <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="10.0.0" />
-        <PackageVersion Include="NHibernate" Version="5.7.0" />
-        <PackageVersion Include="Npgsql" Version="10.0.3" />
-        <PackageVersion Include="Scrutor" Version="7.0.0" />
-        <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.2.3" />
-        <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
-    </ItemGroup>
-
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Anthropic" Version="12.53.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+    <PackageVersion Include="Asp.Versioning.Http" Version="10.2.3" />
+    <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
+    <PackageVersion Include="FluentMigrator" Version="8.0.1" />
+    <PackageVersion Include="FluentMigrator.Runner" Version="8.0.1" />
+    <PackageVersion Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
+    <PackageVersion Include="MediatR" Version="13.1.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="10.0.0" />
+    <PackageVersion Include="NHibernate" Version="5.7.0" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
+    <PackageVersion Include="Scrutor" Version="7.0.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.2.3" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
+  </ItemGroup>
 </Project>

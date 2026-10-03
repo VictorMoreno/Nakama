@@ -18,7 +18,8 @@ public sealed class ChatbotDetailUpdatedOnChatbotSettingsUpdated(IChatbotDetailR
         chatbotDetail.UpdateSettings(
             chatbotSettingsUpdated.Settings.Socratic,
             chatbotSettingsUpdated.Settings.ExplicaMas,
-            chatbotSettingsUpdated.Settings.Provider.ToString());
+            chatbotSettingsUpdated.Settings.Provider.ToString(),
+            chatbotSettingsUpdated.Settings.Model);
         await chatbotDetailRepository.Update(chatbotDetail, ct);
     }
 }

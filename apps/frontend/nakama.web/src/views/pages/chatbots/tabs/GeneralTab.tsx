@@ -1,14 +1,15 @@
+import { useEffect, useState } from "react";
 import IconUploadField from "../../../components/shared/IconUploadField";
 import Select from "../../../components/shared/Select";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import type { Chatbot, LlmProvider } from "../../../../modules/chatbots/domain/Chatbot";
+import type { ILlmProvidersRepository } from "../../../../modules/llmProviders/domain/ILlmProvidersRepository";
+import type { LlmProviderConfig } from "../../../../modules/llmProviders/domain/LlmProviderConfig";
+import { Services } from "../../../../shared/infrastructure/injection/Services";
+import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
 import styles from "./GeneralTab.module.scss";
 
-const PROVIDER_OPTIONS: { value: LlmProvider; label: string }[] = [
-  { value: "anthropic", label: "Anthropic (Claude)" },
-  { value: "openai", label: "OpenAI (GPT)" },
-  { value: "local", label: "Modelo local" }
-];
+const PROVIDER_OPTIONS: { value: LlmProvider; label: string }[] = [{ value: "anthropic", label: "Anthropic (Claude)" }];
 
 interface GeneralTabProps {
   bot: Chatbot;
@@ -16,6 +17,21 @@ interface GeneralTabProps {
 
 export default function GeneralTab({ bot }: GeneralTabProps) {
   const { updateSettings, updateIcon } = useChatbots();
+  const llmProvidersRepo = useInjection<ILlmProvidersRepository>(Services.LlmProvidersRepository.id);
+  const [providers, setProviders] = useState<LlmProviderConfig[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    llmProvidersRepo.FindAll().then((rows) => {
+      if (!cancelled) setProviders(rows);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [llmProvidersRepo]);
+
+  const selectedProvider = providers.find((p) => p.provider === bot.settings.provider);
+  const modelOptions = (selectedProvider?.models ?? []).map((m) => ({ value: m.id, label: m.label }));
 
   return (
     <div className="tab-panel active">
@@ -77,10 +93,32 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
             </div>
             <Select
               value={bot.settings.provider}
-              onChange={(provider) => updateSettings(bot.id, { provider })}
+              onChange={(provider) => {
+                const firstModel = providers.find((p) => p.provider === provider)?.models[0]?.id ?? "";
+                updateSettings(bot.id, { provider, model: firstModel });
+              }}
               options={PROVIDER_OPTIONS}
               ariaLabel="Modelo de lenguaje"
             />
+          </div>
+
+          <div className={styles.configRow}>
+            <div className={styles.configRowText}>
+              <div className="title">Modelo</div>
+              <div className="desc">Modelo concreto de {PROVIDER_OPTIONS.find((p) => p.value === bot.settings.provider)?.label} que usará este chatbot.</div>
+            </div>
+            {modelOptions.length > 0 ? (
+              <Select
+                value={bot.settings.model}
+                onChange={(model) => updateSettings(bot.id, { model })}
+                options={modelOptions}
+                ariaLabel="Modelo"
+              />
+            ) : (
+              <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
+                Este proveedor todavía no tiene modelos registrados — configúralo en Proveedores de IA.
+              </span>
+            )}
           </div>
         </div>
       </div>

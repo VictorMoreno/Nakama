@@ -1,5 +1,6 @@
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Services;
+using Nakama.LlmProviders.Domain;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
@@ -8,7 +9,7 @@ namespace Nakama.Chatbots.Application.SettingsUpdater;
 
 public static class ChatbotSettingsUpdater
 {
-    public sealed record Command(Guid Id, bool Socratic, bool ExplicaMas, int Provider) : ICommand;
+    public sealed record Command(Guid Id, bool Socratic, bool ExplicaMas, int Provider, string Model) : ICommand;
 
     public sealed class Handler(Updater updater) : ICommandHandler<Command>
     {
@@ -16,7 +17,7 @@ public static class ChatbotSettingsUpdater
         {
             await updater.Execute(
                 ChatbotId.From(cmd.Id),
-                new ChatbotSettings(cmd.Socratic, cmd.ExplicaMas, (LlmProvider)cmd.Provider),
+                new ChatbotSettings(cmd.Socratic, cmd.ExplicaMas, (LlmProvider)cmd.Provider, cmd.Model),
                 ct);
         }
     }

@@ -18,6 +18,7 @@ public partial class ChatbotDetail : IEntity
     public virtual bool Socratic { get; protected set; }
     public virtual bool ExplicaMas { get; protected set; }
     public virtual string Provider { get; protected set; } = string.Empty;
+    public virtual string Model { get; protected set; } = string.Empty;
 
     public virtual List<ChatbotDocumentRow> Docs { get; protected set; } = [];
     public virtual List<TeamMemberRow> Team { get; protected set; } = [];

@@ -1,4 +1,4 @@
-namespace Nakama.Chatbots.Domain;
+namespace Nakama.LlmProviders.Domain;
 
 public enum LlmProvider
 {

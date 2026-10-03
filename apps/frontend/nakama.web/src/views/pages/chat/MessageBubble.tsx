@@ -42,6 +42,17 @@ export function WelcomeBubble() {
   );
 }
 
+export function PendingBubble() {
+  return (
+    <div className={`${styles.msg} ${styles.bot}`}>
+      <div className={styles.msgAvatar}>🤖</div>
+      <div className={styles.bubble}>
+        <span>Escribiendo…</span>
+      </div>
+    </div>
+  );
+}
+
 interface BotBubbleProps {
   state: BotMessageState;
   settings: ChatbotSettings;
@@ -63,7 +74,7 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
     showToast(choice === "up" ? "Gracias por tu valoración" : "Gracias, lo tendremos en cuenta");
   }
 
-  const showSocratic = state.useSocratic && !state.revealed;
+  const showSocratic = state.useSocratic && !state.revealed && state.example.socratic !== "";
 
   return (
     <div className={`${styles.msg} ${styles.bot}`}>
@@ -81,11 +92,13 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
         ) : (
           <div>
             <span dangerouslySetInnerHTML={{ __html: state.example.a }} />
-            <button className={styles.citationChip} type="button">
-              ◆ {state.example.cite}
-            </button>
+            {state.example.cite !== "" && (
+              <button className={styles.citationChip} type="button">
+                ◆ {state.example.cite}
+              </button>
+            )}
 
-            {settings.explicaMas && (
+            {settings.explicaMas && state.example.more !== "" && (
               <div className={styles.msgActions}>
                 <button className={styles.msgAction} type="button" onClick={() => setMoreOpen((o) => !o)}>
                   {moreOpen ? "Ocultar detalle" : "Explícame más"}
@@ -93,7 +106,7 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
               </div>
             )}
 
-            {settings.explicaMas && (
+            {settings.explicaMas && state.example.more !== "" && (
               <div className={`${styles.layer}${moreOpen ? ` ${styles.open}` : ""}`} dangerouslySetInnerHTML={{ __html: state.example.more }} />
             )}
 

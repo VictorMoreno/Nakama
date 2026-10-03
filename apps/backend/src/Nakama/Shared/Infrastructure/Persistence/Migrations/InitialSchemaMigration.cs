@@ -52,6 +52,19 @@ public sealed class InitialSchemaMigration : Migration
             .OnColumn("user_id").Ascending()
             .WithOptions().Unique();
 
+        Create.Table("llm_provider_configs")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("provider").AsInt32().NotNullable()
+            .WithColumn("api_key").AsCustom("text").NotNullable()
+            .WithColumn("enabled").AsBoolean().NotNullable()
+            .WithColumn("models_json").AsCustom("text").Nullable()
+            .WithColumn("updated_at").AsDateTime().NotNullable();
+
+        Create.Index("ix_llm_provider_configs_provider")
+            .OnTable("llm_provider_configs")
+            .OnColumn("provider").Ascending()
+            .WithOptions().Unique();
+
         Create.Table("read_chatbot_summaries")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("label").AsString(255).Nullable()
@@ -76,6 +89,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("socratic").AsBoolean().Nullable()
             .WithColumn("explicamas").AsBoolean().Nullable()
             .WithColumn("provider").AsString(255).Nullable()
+            .WithColumn("model").AsString(255).Nullable()
             .WithColumn("docs_json").AsCustom("text").Nullable()
             .WithColumn("team_json").AsCustom("text").Nullable()
             .WithColumn("gaps_json").AsCustom("text").Nullable()

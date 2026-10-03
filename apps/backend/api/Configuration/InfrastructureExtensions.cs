@@ -1,4 +1,7 @@
 using Api.Configuration.Swagger;
+using Nakama.Chatbots.Domain;
+using Nakama.LlmProviders.Domain;
+using Nakama.LlmProviders.Infrastructure;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure;
@@ -62,6 +65,9 @@ public static class InfrastructureExtensions
 
         services.AddIdentityCore<User>()
             .AddUserStore<NhUserStore>();
+
+        services.AddKeyedScoped<ILlmClient, AnthropicLlmClient>(LlmProvider.Anthropic.ToString());
+        services.AddScoped<IChatbotDocumentContentReader, ChatbotDocumentContentReader>();
 
         return services;
     }

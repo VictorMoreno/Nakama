@@ -1,5 +1,6 @@
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Errors;
+using Nakama.LlmProviders.Domain;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
@@ -16,7 +17,8 @@ public static class ChatbotCreator
         bool General,
         bool Socratic,
         bool ExplicaMas,
-        int Provider) : ICommand;
+        int Provider,
+        string Model) : ICommand;
 
     public sealed class Handler(Creator creator) : ICommandHandler<Command>
     {
@@ -28,7 +30,7 @@ public static class ChatbotCreator
                 cmd.Description,
                 (ChatbotStatus)cmd.Status,
                 cmd.General,
-                new ChatbotSettings(cmd.Socratic, cmd.ExplicaMas, (LlmProvider)cmd.Provider),
+                new ChatbotSettings(cmd.Socratic, cmd.ExplicaMas, (LlmProvider)cmd.Provider, cmd.Model),
                 ct);
         }
     }

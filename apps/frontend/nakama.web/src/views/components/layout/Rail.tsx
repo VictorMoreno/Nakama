@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useLocalStorageState } from "../../shared/hooks/useLocalStorageState";
 import { useUser } from "../../shared/contexts/UserContext";
-import { AnalyticsIcon, BrandMarkIcon, ChatIcon, ChevronLeftIcon, GridIcon, LearningIcon } from "../shared/icons";
+import { AnalyticsIcon, BrandMarkIcon, ChatIcon, ChevronLeftIcon, GridIcon, LearningIcon, LockIcon } from "../shared/icons";
 import styles from "./Rail.module.scss";
 import UserMenu from "./UserMenu";
 
@@ -56,6 +56,12 @@ export default function Rail() {
           <NavLink to="/analytics" className={styles.navItem} data-tooltip="Analítica">
             <AnalyticsIcon />
             <span>Analítica</span>
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink to="/proveedores" className={styles.navItem} data-tooltip="Proveedores de IA">
+            <LockIcon />
+            <span>Proveedores de IA</span>
           </NavLink>
         )}
       </nav>

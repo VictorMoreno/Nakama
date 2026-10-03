@@ -10,7 +10,10 @@ import { useToast } from "../../../shared/contexts/ToastContext";
 import { useUser } from "../../../shared/contexts/UserContext";
 import type { BotMessageState } from "../MessageBubble";
 
-type ThreadItem = { kind: "user"; id: string; text: string } | { kind: "bot"; id: string; bot: BotMessageState };
+type ThreadItem =
+  | { kind: "user"; id: string; text: string }
+  | { kind: "bot"; id: string; bot: BotMessageState }
+  | { kind: "pending"; id: string };
 
 let uidCounter = 0;
 function nextId() {
@@ -29,14 +32,6 @@ function exchangesToThread(exchanges: ChatExample[], useSocratic: boolean): Thre
 // (about 6 lines at the composer's font size) — otherwise a long pasted question could
 // push the send row off-screen.
 const MAX_COMPOSER_HEIGHT = 160;
-
-const DEMO_FALLBACK: ChatExample = {
-  q: "",
-  a: "Este es un prototipo de demostración — solo la pregunta de ejemplo que ves al abrir cada chatbot tiene una respuesta guionizada, para mostrar con precisión cómo se comportan las funcionalidades diferenciadoras (citas, profundidad y modo socrático).",
-  cite: "Modo demo",
-  more: "En la versión real, esta respuesta vendría del contenido indexado del chatbot seleccionado, para cualquier pregunta.",
-  socratic: "¿Tu pregunta se parece a la conversación de ejemplo que ya ves arriba?"
-};
 
 export function useChat() {
   const { chatbots, currentBotKey } = useChatbots();
@@ -101,62 +96,49 @@ export function useChat() {
     resetThread();
   }
 
-  function appendExchange(question: string, example: ChatExample) {
-    setThread((prev) => [
-      ...prev,
-      { kind: "user", id: nextId(), text: question },
-      { kind: "bot", id: nextId(), bot: { id: nextId(), example, useSocratic: bot!.settings.socratic, revealed: false } }
-    ]);
-  }
-
   function handleReveal(botMsgId: string) {
     setThread((prev) =>
       prev.map((item) => (item.kind === "bot" && item.bot.id === botMsgId ? { ...item, bot: { ...item.bot, revealed: true } } : item))
     );
   }
 
-  function handleSend() {
+  async function handleSend() {
     const val = input.trim();
-    if (!val || !bot) return;
+    if (!val || !bot || !currentUser) return;
 
-    const match = bot.opening && bot.opening.q === val ? bot.opening : null;
-    const example = match ?? DEMO_FALLBACK;
-
-    appendExchange(val, example);
+    const pendingId = nextId();
+    setThread((prev) => [...prev, { kind: "user", id: nextId(), text: val }, { kind: "pending", id: pendingId }]);
     setInput("");
     setAttachedFiles([]);
 
-    // The bot's answer stays scripted/demo (chips + DEMO_FALLBACK) - connecting a real LLM is a
-    // separate concern. What's real from here on is persistence: every exchange is saved for the
-    // logged-in user so it can be resumed later, same backend AppendConversationExchange/
-    // ConversationExchangeAppender that already existed but was never called from the chat UI.
-    if (!currentUser) return;
     const isNewConversation = !activeConversationId;
     const conversationId = activeConversationId ?? crypto.randomUUID();
     if (isNewConversation) setActiveConversationId(conversationId);
     const title = val.length > 60 ? `${val.slice(0, 60)}…` : val;
-    const persistedExchange: ChatExample = { q: val, a: example.a, cite: example.cite, more: example.more, socratic: example.socratic };
 
-    // Optimistic local update: `conversations` is only ever fetched once on mount, so without
-    // this the new/updated conversation wouldn't show up in the sidebar until the component
-    // remounts (e.g. leaving the page and coming back) and refetches for real.
-    setConversations((prev) =>
-      isNewConversation
-        ? [{ id: conversationId, botKey: bot.id, title, dateLabel: new Date().toLocaleDateString("es-ES"), exchanges: [persistedExchange] }, ...prev]
-        : prev.map((c) => (c.id === conversationId ? { ...c, exchanges: [...c.exchanges, persistedExchange] } : c))
-    );
+    try {
+      const answer = await conversationsRepo.Ask(conversationId, bot.id, currentUser.id, title, val);
+      const example: ChatExample = { q: val, a: answer, cite: "", more: "", socratic: "" };
 
-    void conversationsRepo.AppendExchange(
-      conversationId,
-      bot.id,
-      currentUser.id,
-      title,
-      val,
-      example.a,
-      example.cite,
-      example.more,
-      example.socratic
-    );
+      if (isNewConversation) setActiveConversationId(conversationId);
+      setThread((prev) => [
+        ...prev.filter((item) => item.id !== pendingId),
+        { kind: "bot", id: nextId(), bot: { id: nextId(), example, useSocratic: bot.settings.socratic, revealed: false } }
+      ]);
+
+      // Optimistic local update: `conversations` is only ever fetched once on mount, so without
+      // this the new/updated conversation wouldn't show up in the sidebar until the component
+      // remounts (e.g. leaving the page and coming back) and refetches for real.
+      setConversations((prev) =>
+        isNewConversation
+          ? [{ id: conversationId, botKey: bot.id, title, dateLabel: new Date().toLocaleDateString("es-ES"), exchanges: [example] }, ...prev]
+          : prev.map((c) => (c.id === conversationId ? { ...c, exchanges: [...c.exchanges, example] } : c))
+      );
+    } catch (error) {
+      setThread((prev) => prev.filter((item) => item.id !== pendingId));
+      const detail = error && typeof error === "object" && "detail" in error ? String((error as { detail?: unknown }).detail) : null;
+      showToast(detail ?? "No se pudo obtener una respuesta del chatbot.");
+    }
   }
 
   // Attaching only stages files locally for this prototype — there's no upload

@@ -6,6 +6,7 @@ export interface ChatbotSettings {
   socratic: boolean;
   explicaMas: boolean;
   provider: LlmProvider;
+  model: string;
 }
 
 export type DocStatus = "ok" | "pending";

@@ -46,7 +46,12 @@ const ROLE_TO_ORDINAL: Record<TeamRole, number> = { Propietario: 0, Propietaria:
 const ROLE_FROM_API: Record<string, TeamRole> = { Owner: "Propietario", Editor: "Editor", Reader: "Lector" };
 
 function toApiSettings(settings: ChatbotSettings): UpdateChatbotSettingsRequest {
-  return { socratic: settings.socratic, explicaMas: settings.explicaMas, provider: PROVIDER_TO_ORDINAL[settings.provider] };
+  return {
+    socratic: settings.socratic,
+    explicaMas: settings.explicaMas,
+    provider: PROVIDER_TO_ORDINAL[settings.provider],
+    model: settings.model
+  };
 }
 
 // Backend sends a raw Date for "updated" (no relative-time label like the old mock's
@@ -134,7 +139,8 @@ function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailRespons
     settings: {
       socratic: detail.socratic ?? false,
       explicaMas: detail.explicaMas ?? false,
-      provider: PROVIDER_FROM_API[detail.provider ?? "Anthropic"] ?? "anthropic"
+      provider: PROVIDER_FROM_API[detail.provider ?? "Anthropic"] ?? "anthropic",
+      model: detail.model ?? ""
     },
     docs: (detail.docs ?? []).map(toDocument),
     gaps: (detail.gaps ?? []).map(toGapQuestion),
@@ -229,7 +235,8 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     const merged: ChatbotSettings = {
       socratic: patch.socratic ?? current.socratic ?? false,
       explicaMas: patch.explicaMas ?? current.explicaMas ?? false,
-      provider: patch.provider ?? (PROVIDER_FROM_API[current.provider ?? "Anthropic"] ?? "anthropic")
+      provider: patch.provider ?? (PROVIDER_FROM_API[current.provider ?? "Anthropic"] ?? "anthropic"),
+      model: patch.model ?? current.model ?? ""
     };
     await this.client.settings(id, toApiSettings(merged));
   }

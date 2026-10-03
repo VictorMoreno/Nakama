@@ -109,10 +109,10 @@ export interface IGeneratedNakamaClient {
     iconDELETE(id: string): Promise<void>;
 
     /**
-     * Appends a question/answer exchange to a conversation.
-     * @return No Content
+     * Asks the chatbot a real question and gets a model-generated answer back.
+     * @return OK
      */
-    exchanges(botKey: string, conversationId: string, body: AppendConversationExchangeRequest): Promise<void>;
+    ask(botKey: string, conversationId: string, body: AskChatbotRequest): Promise<AskChatbotResponse>;
 
     /**
      * Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.
@@ -229,6 +229,18 @@ export interface IGeneratedNakamaClient {
      * @return OK
      */
     enrollment(id: string, userId: string): Promise<FormationEnrollmentResponse>;
+
+    /**
+     * Lists every known LLM provider with its configuration status and model catalog.
+     * @return OK
+     */
+    llmProvidersAll(): Promise<LlmProviderConfigResponse[]>;
+
+    /**
+     * Registers or replaces a provider's API key, enabled flag, and model catalog.
+     * @return No Content
+     */
+    llmProviders(provider: number, body: RegisterLlmProviderRequest): Promise<void>;
 
     /**
      * Admin-provisions a new user with an initial password.
@@ -956,11 +968,11 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Appends a question/answer exchange to a conversation.
-     * @return No Content
+     * Asks the chatbot a real question and gets a model-generated answer back.
+     * @return OK
      */
-    exchanges(botKey: string, conversationId: string, body: AppendConversationExchangeRequest): Promise<void> {
-        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversations/{conversationId}/exchanges";
+    ask(botKey: string, conversationId: string, body: AskChatbotRequest): Promise<AskChatbotResponse> {
+        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversations/{conversationId}/ask";
         if (botKey === undefined || botKey === null)
             throw new globalThis.Error("The parameter 'botKey' must be defined.");
         url_ = url_.replace("{botKey}", encodeURIComponent("" + botKey));
@@ -976,29 +988,44 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "application/json"
             }
         };
 
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processExchanges(_response));
+            return this.transformResult(url_, _response, (_response: Response) => this.processAsk(_response));
         });
     }
 
-    protected processExchanges(response: Response): Promise<void> {
+    protected processAsk(response: Response): Promise<AskChatbotResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 204) {
+        if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as AskChatbotResponse;
+            return result200;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            result422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Unprocessable Content", status, _responseText, _headers, result422);
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<AskChatbotResponse>(null as any);
     }
 
     /**
@@ -1949,6 +1976,88 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Lists every known LLM provider with its configuration status and model catalog.
+     * @return OK
+     */
+    llmProvidersAll(): Promise<LlmProviderConfigResponse[]> {
+        let url_ = this.baseUrl + "/api/llm-providers";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processLlmProvidersAll(_response));
+        });
+    }
+
+    protected processLlmProvidersAll(response: Response): Promise<LlmProviderConfigResponse[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as LlmProviderConfigResponse[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<LlmProviderConfigResponse[]>(null as any);
+    }
+
+    /**
+     * Registers or replaces a provider's API key, enabled flag, and model catalog.
+     * @return No Content
+     */
+    llmProviders(provider: number, body: RegisterLlmProviderRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/llm-providers/{provider}";
+        if (provider === undefined || provider === null)
+            throw new globalThis.Error("The parameter 'provider' must be defined.");
+        url_ = url_.replace("{provider}", encodeURIComponent("" + provider));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processLlmProviders(_response));
+        });
+    }
+
+    protected processLlmProviders(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
      * Admin-provisions a new user with an initial password.
      * @return Created
      */
@@ -2066,14 +2175,14 @@ export interface AnalyticsResponse {
     totalFeedbackCount?: number;
 }
 
-export interface AppendConversationExchangeRequest {
+export interface AskChatbotRequest {
     userId?: string;
     title?: string | undefined;
     question?: string | undefined;
+}
+
+export interface AskChatbotResponse {
     answer?: string | undefined;
-    citation?: string | undefined;
-    moreExplanation?: string | undefined;
-    socraticVariant?: string | undefined;
 }
 
 export interface ChatExampleRow {
@@ -2107,6 +2216,7 @@ export interface ChatbotDetailResponse {
     socratic?: boolean;
     explicaMas?: boolean;
     provider?: string | undefined;
+    model?: string | undefined;
     docs?: ChatbotDocumentResponse[] | undefined;
     team?: TeamMemberRow[] | undefined;
     gaps?: GapQuestionRow[] | undefined;
@@ -2163,6 +2273,7 @@ export interface CreateChatbotRequest {
     socratic?: boolean;
     explicaMas?: boolean;
     provider?: number;
+    model?: string | undefined;
 }
 
 export interface CreateFormationRequest {
@@ -2246,9 +2357,27 @@ export interface HistoryExampleRow {
     socraticVariant?: string | undefined;
 }
 
+export interface LlmModelOptionResponse {
+    id?: string | undefined;
+    label?: string | undefined;
+}
+
+export interface LlmProviderConfigResponse {
+    provider?: number;
+    configured?: boolean;
+    enabled?: boolean;
+    models?: LlmModelOptionResponse[] | undefined;
+    updatedAt?: Date;
+}
+
 export interface LoginRequest {
     email?: string | undefined;
     password?: string | undefined;
+}
+
+export interface ModelInput {
+    id?: string | undefined;
+    label?: string | undefined;
 }
 
 export interface ProblemDetails {
@@ -2273,6 +2402,12 @@ export interface QuizQuestionRow {
     correctIndex?: number;
 }
 
+export interface RegisterLlmProviderRequest {
+    apiKey?: string | undefined;
+    enabled?: boolean;
+    models?: ModelInput[] | undefined;
+}
+
 export interface StatTileRow {
     label?: string | undefined;
     value?: string | undefined;
@@ -2293,6 +2428,7 @@ export interface UpdateChatbotSettingsRequest {
     socratic?: boolean;
     explicaMas?: boolean;
     provider?: number;
+    model?: string | undefined;
 }
 
 export interface UpdateChatbotStatusRequest {

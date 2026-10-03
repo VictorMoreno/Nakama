@@ -11,6 +11,9 @@ public sealed class ChatbotNotFoundError(string key)
 public sealed class ChatbotAlreadyExistsError(string id)
     : DomainError("nakama.chatbots.already_exists", $"Chatbot '{id}' already exists.");
 
+public sealed class ChatbotProviderNotConnectedError(string provider)
+    : DomainError("nakama.chatbots.provider_not_connected", $"El proveedor '{provider}' todavía no tiene un adaptador conectado.");
+
 public static class ChatbotErrors
 {
     public static DomainError OwnerCannotBeRemoved { get; } = new ChatbotOwnerCannotBeRemovedError();
@@ -18,4 +21,6 @@ public static class ChatbotErrors
     public static DomainError NotFound(ChatbotId id) => new ChatbotNotFoundError(id.ToString());
 
     public static DomainError AlreadyExists(string id) => new ChatbotAlreadyExistsError(id);
+
+    public static DomainError ProviderNotConnected(string provider) => new ChatbotProviderNotConnectedError(provider);
 }

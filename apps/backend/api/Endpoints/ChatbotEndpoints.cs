@@ -6,8 +6,8 @@ using Nakama.Chatbots.Application.Archiver;
 using Nakama.Chatbots.Application.Creator;
 using Nakama.Chatbots.Application.DocumentAdder;
 using Nakama.Chatbots.Application.DocumentRemover;
-using Nakama.Chatbots.Application.ExchangeAppender;
 using Nakama.Chatbots.Application.IconUpdater;
+using Nakama.Chatbots.Application.QuestionAsker;
 using Nakama.Chatbots.Application.Remover;
 using Nakama.Chatbots.Application.SettingsUpdater;
 using Nakama.Chatbots.Application.StatusUpdater;
@@ -86,11 +86,14 @@ public sealed class ChatbotEndpoints : IEndpoint
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapPost("/{botKey:guid}/conversations/{conversationId:guid}/exchanges", AppendConversationExchange)
-            .WithSummary("Appends a question/answer exchange to a conversation.")
+        group.MapPost("/{botKey:guid}/conversations/{conversationId:guid}/ask", AskChatbot)
+            .WithSummary("Asks the chatbot a real question and gets a model-generated answer back.")
             .WithDescription(
-                "If no conversation exists yet with the given conversationId, one is started implicitly using that exact id - this endpoint covers both 'first message in a new chat' and 'reply within an existing conversation'.")
-            .Produces(StatusCodes.Status204NoContent);
+                "Generates the answer with the chatbot's configured LLM provider/model and persists the exchange. " +
+                "If no conversation exists yet with the given conversationId, one is started implicitly using that exact id.")
+            .Produces<AskChatbotResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         group.MapDelete("/{botKey:guid}/conversations/{conversationId:guid}", DeleteConversation)
             .WithSummary("Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.")
@@ -131,7 +134,8 @@ public sealed class ChatbotEndpoints : IEndpoint
                 body.General,
                 body.Socratic,
                 body.ExplicaMas,
-                body.Provider), ct);
+                body.Provider,
+                body.Model), ct);
         return Results.Created();
     }
 
@@ -157,7 +161,7 @@ public sealed class ChatbotEndpoints : IEndpoint
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await commandBus.Send(new ChatbotSettingsUpdater.Command(id, body.Socratic, body.ExplicaMas, body.Provider),
+        await commandBus.Send(new ChatbotSettingsUpdater.Command(id, body.Socratic, body.ExplicaMas, body.Provider, body.Model),
             ct);
         return Results.NoContent();
     }
@@ -248,19 +252,17 @@ public sealed class ChatbotEndpoints : IEndpoint
         return Results.NoContent();
     }
 
-    private static async Task<IResult> AppendConversationExchange(
+    private static async Task<IResult> AskChatbot(
         Guid botKey,
         Guid conversationId,
-        AppendConversationExchangeRequest body,
-        ICommandBus commandBus,
+        AskChatbotRequest body,
+        ChatbotQuestionAsker.Asker asker,
         CancellationToken ct)
     {
-        await commandBus.Send(
-            new ConversationExchangeAppender.Command(
-                conversationId, botKey, body.UserId, body.Title, body.Question, body.Answer, body.Citation,
-                body.MoreExplanation, body.SocraticVariant),
+        var answer = await asker.Execute(
+            new ChatbotQuestionAsker.Command(botKey, conversationId, body.UserId, body.Title, body.Question),
             ct);
-        return Results.NoContent();
+        return Results.Ok(new AskChatbotResponse(answer));
     }
 
     private static async Task<IResult> DeleteConversation(
@@ -305,20 +307,16 @@ public sealed class ChatbotEndpoints : IEndpoint
         bool General,
         bool Socratic,
         bool ExplicaMas,
-        int Provider);
+        int Provider,
+        string Model);
 
     private sealed record UpdateChatbotStatusRequest(int Status);
 
-    private sealed record UpdateChatbotSettingsRequest(bool Socratic, bool ExplicaMas, int Provider);
+    private sealed record UpdateChatbotSettingsRequest(bool Socratic, bool ExplicaMas, int Provider, string Model);
 
     private sealed record AddChatbotTeamMemberRequest(Guid UserId, int Role);
 
-    private sealed record AppendConversationExchangeRequest(
-        Guid UserId,
-        string Title,
-        string Question,
-        string Answer,
-        string Citation,
-        string MoreExplanation,
-        string SocraticVariant);
+    private sealed record AskChatbotRequest(Guid UserId, string Title, string Question);
+
+    private sealed record AskChatbotResponse(string Answer);
 }

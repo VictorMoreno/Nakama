@@ -31,6 +31,7 @@ public sealed class ChatbotDetailMapping : ClassMapping<ChatbotDetail>
         Property(x => x.Socratic);
         Property(x => x.ExplicaMas);
         Property(x => x.Provider);
+        Property(x => x.Model);
 
         Property(x => x.Docs, m => { m.Column(c => { c.Name("docs_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ChatbotDocumentRow>>>(); });
         Property(x => x.Team, m => { m.Column(c => { c.Name("team_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<TeamMemberRow>>>(); });

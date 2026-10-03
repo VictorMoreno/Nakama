@@ -44,26 +44,9 @@ export class ApiConversationsRepository implements IConversationsRepository {
     return perBot.flat();
   }
 
-  async AppendExchange(
-    conversationId: string,
-    botKey: string,
-    userId: string,
-    title: string,
-    question: string,
-    answer: string,
-    citation: string,
-    moreExplanation: string,
-    socraticVariant: string
-  ): Promise<void> {
-    await this.client.exchanges(botKey, conversationId, {
-      userId,
-      title,
-      question,
-      answer,
-      citation,
-      moreExplanation,
-      socraticVariant
-    });
+  async Ask(conversationId: string, botKey: string, userId: string, title: string, question: string): Promise<string> {
+    const response = await this.client.ask(botKey, conversationId, { userId, title, question });
+    return response.answer ?? "";
   }
 
   async Delete(botKey: string, conversationId: string, userId: string): Promise<void> {

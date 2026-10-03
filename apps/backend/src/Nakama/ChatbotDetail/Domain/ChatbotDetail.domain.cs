@@ -9,7 +9,8 @@ public partial class ChatbotDetail
         bool general,
         bool socratic,
         bool explicaMas,
-        string provider)
+        string provider,
+        string model)
     {
         this.Id = key;
         this.Label = label;
@@ -19,6 +20,7 @@ public partial class ChatbotDetail
         this.Socratic = socratic;
         this.ExplicaMas = explicaMas;
         this.Provider = provider;
+        this.Model = model;
     }
 
     public static ChatbotDetail Create(Guid key,
@@ -28,16 +30,18 @@ public partial class ChatbotDetail
         bool general,
         bool socratic,
         bool explicaMas,
-        string provider) =>
-        new(key, label, description, status, general, socratic, explicaMas, provider);
+        string provider,
+        string model) =>
+        new(key, label, description, status, general, socratic, explicaMas, provider, model);
 
     public void UpdateStatus(string status) => this.Status = status;
 
-    public void UpdateSettings(bool socratic, bool explicaMas, string provider)
+    public void UpdateSettings(bool socratic, bool explicaMas, string provider, string model)
     {
         this.Socratic = socratic;
         this.ExplicaMas = explicaMas;
         this.Provider = provider;
+        this.Model = model;
     }
 
     public void UpdateIcon(string? iconUrl) => this.IconUrl = iconUrl;

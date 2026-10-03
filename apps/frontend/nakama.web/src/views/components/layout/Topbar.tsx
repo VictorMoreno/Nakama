@@ -12,6 +12,9 @@ function headingFor(pathname: string): { title: string; subtitle: string; showSw
   if (pathname.startsWith("/analytics")) {
     return { title: "Analítica", subtitle: "Uso de la plataforma — solo administradores", showSwitcher: false };
   }
+  if (pathname.startsWith("/proveedores")) {
+    return { title: "Proveedores de IA", subtitle: "Claves de API y catálogo de modelos por proveedor", showSwitcher: false };
+  }
   return { title: "Gestión de chatbots", subtitle: "Crea y administra los chatbots a los que tienes acceso", showSwitcher: false };
 }
 

@@ -3,6 +3,7 @@ import { ApiChatbotsRepository } from "../../../modules/chatbots/infrastructure/
 import { ApiConversationsRepository } from "../../../modules/chatbots/infrastructure/ApiConversationsRepository";
 import { ApiFormationEnrollmentRepository } from "../../../modules/formations/infrastructure/ApiFormationEnrollmentRepository";
 import { ApiFormationsRepository } from "../../../modules/formations/infrastructure/ApiFormationsRepository";
+import { ApiLlmProvidersRepository } from "../../../modules/llmProviders/infrastructure/ApiLlmProvidersRepository";
 import { ApiUsersRepository } from "../../../modules/users/infrastructure/ApiUsersRepository";
 import { GeneratedNakamaClient } from "../GeneratedNakamaClient";
 import { Services } from "./Services";
@@ -21,6 +22,7 @@ const registry = new Map<string, unknown>([
   [Services.ConversationsRepository.id, new ApiConversationsRepository(client)],
   [Services.FormationsRepository.id, new ApiFormationsRepository(client)],
   [Services.FormationEnrollmentRepository.id, new ApiFormationEnrollmentRepository(client)],
+  [Services.LlmProvidersRepository.id, new ApiLlmProvidersRepository(client)],
   [Services.UsersRepository.id, new ApiUsersRepository(client)]
 ]);
 

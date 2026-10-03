@@ -32,7 +32,7 @@ export function useCreateChatbot() {
       general,
       description,
       status,
-      settings: { socratic, explicaMas, provider },
+      settings: { socratic, explicaMas, provider, model: "" },
       iconUrl
     });
     showToast("Chatbot creado");

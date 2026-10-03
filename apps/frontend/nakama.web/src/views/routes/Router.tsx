@@ -12,6 +12,7 @@ import CreateFormationPage from "../pages/formations/CreateFormationPage";
 import FormationExecutePage from "../pages/formations/FormationExecutePage";
 import FormationManagePage from "../pages/formations/FormationManagePage";
 import FormationsListPage from "../pages/formations/FormationsListPage";
+import LlmProvidersPage from "../pages/llmProviders/LlmProvidersPage";
 
 /** Bounces non-admins back to Chat — gates the admin-only sections (Chatbots, Analítica). */
 function RequireAdmin({ children }: { children: ReactNode }) {
@@ -73,6 +74,14 @@ export default function Router() {
           element={
             <RequireAdmin>
               <AnalyticsPage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="proveedores"
+          element={
+            <RequireAdmin>
+              <LlmProvidersPage />
             </RequireAdmin>
           }
         />
