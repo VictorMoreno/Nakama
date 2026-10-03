@@ -89,36 +89,31 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
           <div className={styles.configRow}>
             <div className={styles.configRowText}>
               <div className="title">Modelo de lenguaje</div>
-              <div className="desc">Proveedor que responde las preguntas de este chatbot. Cada chatbot puede usar uno distinto.</div>
+              <div className="desc">Proveedor y modelo que responde las preguntas de este chatbot. Cada chatbot puede usar uno distinto.</div>
             </div>
-            <Select
-              value={bot.settings.provider}
-              onChange={(provider) => {
-                const firstModel = providers.find((p) => p.provider === provider)?.models[0]?.id ?? "";
-                updateSettings(bot.id, { provider, model: firstModel });
-              }}
-              options={PROVIDER_OPTIONS}
-              ariaLabel="Modelo de lenguaje"
-            />
-          </div>
-
-          <div className={styles.configRow}>
-            <div className={styles.configRowText}>
-              <div className="title">Modelo</div>
-              <div className="desc">Modelo concreto de {PROVIDER_OPTIONS.find((p) => p.value === bot.settings.provider)?.label} que usará este chatbot.</div>
-            </div>
-            {modelOptions.length > 0 ? (
+            <div className={styles.configRowControls}>
               <Select
-                value={bot.settings.model}
-                onChange={(model) => updateSettings(bot.id, { model })}
-                options={modelOptions}
-                ariaLabel="Modelo"
+                value={bot.settings.provider}
+                onChange={(provider) => {
+                  const firstModel = providers.find((p) => p.provider === provider)?.models[0]?.id ?? "";
+                  updateSettings(bot.id, { provider, model: firstModel });
+                }}
+                options={PROVIDER_OPTIONS}
+                ariaLabel="Proveedor"
               />
-            ) : (
-              <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
-                Este proveedor todavía no tiene modelos registrados — configúralo en Proveedores de IA.
-              </span>
-            )}
+              {modelOptions.length > 0 ? (
+                <Select
+                  value={bot.settings.model}
+                  onChange={(model) => updateSettings(bot.id, { model })}
+                  options={modelOptions}
+                  ariaLabel="Modelo"
+                />
+              ) : (
+                <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
+                  Sin modelos registrados — configúralo en Proveedores de IA.
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

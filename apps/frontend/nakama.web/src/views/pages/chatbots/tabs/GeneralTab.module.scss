@@ -13,3 +13,5 @@
   :global(.title) { font-size: 0.86rem; font-weight: 600; color: var(--ink); }
   :global(.desc) { font-size: 0.76rem; color: var(--ink-soft); margin-top: 3px; max-width: 48ch; line-height: 1.5; }
 }
+
+.configRowControls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
