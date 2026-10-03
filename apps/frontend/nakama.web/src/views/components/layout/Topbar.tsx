@@ -1,37 +1,31 @@
 import { useLocation } from "react-router-dom";
-import BotSwitcher from "./BotSwitcher";
 import styles from "./Topbar.module.scss";
 
-function headingFor(pathname: string): { title: string; subtitle: string; showSwitcher: boolean } {
+function headingFor(pathname: string): { title: string; subtitle: string } {
   if (pathname === "/chat" || pathname.startsWith("/chat/")) {
-    return { title: "Chat", subtitle: "", showSwitcher: true };
+    return { title: "Chat", subtitle: "" };
   }
   if (pathname === "/formacion" || pathname.startsWith("/formacion/")) {
-    return { title: "Formación", subtitle: "Formaciones independientes de los chatbots", showSwitcher: false };
+    return { title: "Formación", subtitle: "Formaciones independientes de los chatbots" };
   }
   if (pathname.startsWith("/analytics")) {
-    return { title: "Analítica", subtitle: "Uso de la plataforma — solo administradores", showSwitcher: false };
+    return { title: "Analítica", subtitle: "Uso de la plataforma — solo administradores" };
   }
   if (pathname.startsWith("/proveedores")) {
-    return { title: "Proveedores de IA", subtitle: "Claves de API y catálogo de modelos por proveedor", showSwitcher: false };
+    return { title: "Proveedores de IA", subtitle: "Claves de API y catálogo de modelos por proveedor" };
   }
-  return { title: "Gestión de chatbots", subtitle: "Crea y administra los chatbots a los que tienes acceso", showSwitcher: false };
+  return { title: "Gestión de chatbots", subtitle: "Crea y administra los chatbots a los que tienes acceso" };
 }
 
 export default function Topbar() {
   const { pathname } = useLocation();
-  const { title, subtitle, showSwitcher } = headingFor(pathname);
+  const { title, subtitle } = headingFor(pathname);
 
   return (
     <div className={styles.topbar}>
       <div className={styles.viewTitle}>
         <h1>{title}</h1>
         {subtitle && <p>{subtitle}</p>}
-        {showSwitcher && (
-          <div className={styles.viewTitleSwitcher}>
-            <BotSwitcher />
-          </div>
-        )}
       </div>
     </div>
   );

@@ -42,26 +42,26 @@ export default function Rail() {
           <ChatIcon />
           <span>Chat</span>
         </NavLink>
+        <NavLink to="/formacion" className={styles.navItem} data-tooltip="Formación">
+          <LearningIcon />
+          <span>Formación</span>
+        </NavLink>
         {isAdmin && (
           <NavLink to="/chatbots" className={styles.navItem} data-tooltip="Gestión de chatbots">
             <GridIcon />
             <span>Gestión de chatbots</span>
           </NavLink>
         )}
-        <NavLink to="/formacion" className={styles.navItem} data-tooltip="Formación">
-          <LearningIcon />
-          <span>Formación</span>
-        </NavLink>
-        {isAdmin && (
-          <NavLink to="/analytics" className={styles.navItem} data-tooltip="Analítica">
-            <AnalyticsIcon />
-            <span>Analítica</span>
-          </NavLink>
-        )}
         {isAdmin && (
           <NavLink to="/proveedores" className={styles.navItem} data-tooltip="Proveedores de IA">
             <LockIcon />
             <span>Proveedores de IA</span>
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink to="/analytics" className={styles.navItem} data-tooltip="Analítica">
+            <AnalyticsIcon />
+            <span>Analítica</span>
           </NavLink>
         )}
       </nav>

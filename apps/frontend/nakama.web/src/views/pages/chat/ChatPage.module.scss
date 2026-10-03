@@ -1,3 +1,16 @@
+.chatToolbar {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+}
+
+.chatToolbarMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .chatShell {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -214,8 +227,6 @@
   :global(.eyebrow) { margin-bottom: 0; }
 }
 
-.newConversationBtn { padding: 5px 10px; font-size: 0.7rem; }
-
 .historyPanel {
   display: flex;
   flex-direction: column;
@@ -311,6 +322,7 @@
 // ---------- Narrow viewport: stack chat + sidebar into a single column ----------
 
 @media (width <= 920px) {
+  .chatToolbar { grid-template-columns: 1fr; }
   .chatShell { grid-template-columns: 1fr; }
   .sideCol { min-height: 260px; }
 }

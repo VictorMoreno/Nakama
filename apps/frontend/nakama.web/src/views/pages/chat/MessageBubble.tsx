@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ThumbDownIcon, ThumbUpIcon } from "../../components/shared/icons";
+import { BrandMarkIcon, ThumbDownIcon, ThumbUpIcon } from "../../components/shared/icons";
 import { useToast } from "../../shared/contexts/ToastContext";
 import type { ChatExample, ChatbotSettings } from "../../../modules/chatbots/domain/Chatbot";
 import styles from "./MessageBubble.module.scss";
@@ -31,7 +31,9 @@ export function UserBubble({ text }: UserBubbleProps) {
 export function WelcomeBubble() {
   return (
     <div className={`${styles.msg} ${styles.bot}`}>
-      <div className={styles.msgAvatar}>🤖</div>
+      <div className={styles.msgAvatar}>
+        <BrandMarkIcon />
+      </div>
       <div className={styles.bubble}>
         <span>
           ¡Hola! Estoy a tu disposición para resolver cualquier duda que tengas sobre este chatbot. Preguntame lo que necesites, ¡vamos a
@@ -45,7 +47,9 @@ export function WelcomeBubble() {
 export function PendingBubble() {
   return (
     <div className={`${styles.msg} ${styles.bot}`}>
-      <div className={styles.msgAvatar}>🤖</div>
+      <div className={styles.msgAvatar}>
+        <BrandMarkIcon />
+      </div>
       <div className={styles.bubble}>
         <span>Escribiendo…</span>
       </div>
@@ -78,7 +82,9 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
 
   return (
     <div className={`${styles.msg} ${styles.bot}`}>
-      <div className={styles.msgAvatar}>🤖</div>
+      <div className={styles.msgAvatar}>
+        <BrandMarkIcon />
+      </div>
       <div className={styles.bubble}>
         {showSocratic ? (
           <div>

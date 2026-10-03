@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import BotSwitcher from "../../components/layout/BotSwitcher";
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import { AttachIcon, CloseIcon, PlusIcon, RecycleBinIcon, SendIcon } from "../../components/shared/icons";
 import { useChat } from "./hooks/useChat";
@@ -56,6 +57,15 @@ export default function ChatPage() {
     // .thread below has a real height to shrink against and scrolls internally instead of
     // growing the whole page. No other page sets this attribute.
     <section className="view active" data-fixed-panel>
+      <div className={styles.chatToolbar}>
+        <div className={styles.chatToolbarMain}>
+          <BotSwitcher />
+          <button className="btn-ghost" type="button" onClick={startNewConversation}>
+            <PlusIcon /> Nueva conversación
+          </button>
+        </div>
+      </div>
+
       <div className={styles.chatShell}>
         <div className={`${styles.chatPanel} glass`}>
           <div className={styles.chatPanelHead}>
@@ -156,9 +166,6 @@ export default function ChatPage() {
           <div className={`${styles.historyCard} glass`}>
             <div className={styles.historyCardHead}>
               <span className="eyebrow">Historial de conversaciones</span>
-              <button className={`btn-ghost ${styles.newConversationBtn}`} type="button" onClick={startNewConversation}>
-                <PlusIcon /> Nueva
-              </button>
             </div>
             <div className={styles.historyPanel}>
               {botConversations.length === 0 ? (
