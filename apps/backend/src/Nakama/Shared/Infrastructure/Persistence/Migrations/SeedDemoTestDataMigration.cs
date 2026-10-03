@@ -63,6 +63,14 @@ public sealed class SeedDemoTestDataMigration : Migration
         "Calidad y Testing", "Marketing Digital", "Atención Postventa"
     ];
 
+    private static readonly LlmModelOption[] AnthropicModels =
+    [
+        new("claude-opus-5-5", "Claude Opus 5.5"),
+        new("claude-sonnet-5-5", "Claude Sonnet 5.5"),
+        new("claude-fable-5-1", "Claude Fable 5.1"),
+        new("claude-haiku-4-5-20251001", "Claude Haiku 4.5")
+    ];
+
     private static readonly string[] FormationTopics =
     [
         "Onboarding de Ingeniería", "Certificación en Seguridad", "Fundamentos de Cloud",
@@ -114,6 +122,16 @@ public sealed class SeedDemoTestDataMigration : Migration
     {
         var rng = new Random(20260930);
         var now = DateTime.UtcNow;
+
+        Insert.IntoTable("llm_provider_configs").Row(new
+        {
+            id = Guid.NewGuid(),
+            provider = (int)LlmProvider.Anthropic,
+            api_key = "",
+            enabled = false,
+            models_json = Json(AnthropicModels.ToList()),
+            updated_at = now
+        });
 
         // ---- Users --------------------------------------------------------------------------
         var hasher = new PasswordHasher<User>();
@@ -181,8 +199,9 @@ public sealed class SeedDemoTestDataMigration : Migration
             var status = (ChatbotStatus)(rng.Next(0, 10) < 7 ? 1 : rng.Next(0, 2) == 0 ? 0 : 2); // mostly Active
             var general = rng.Next(0, 4) == 0; // ~25% company-wide
             var seedProvider = (LlmProvider)rng.Next(0, 3);
+            var seedModel = seedProvider == LlmProvider.Anthropic ? AnthropicModels[rng.Next(AnthropicModels.Length)].Id : string.Empty;
             var settings = new ChatbotSettings(Socratic: rng.Next(0, 2) == 0, ExplicaMas: rng.Next(0, 2) == 0,
-                Provider: seedProvider, Model: seedProvider == LlmProvider.Anthropic ? "claude-opus-5-5" : string.Empty);
+                Provider: seedProvider, Model: seedModel);
             var context =
                 $"Chatbot entrenado con la documentación interna de {topic}. Datos de prueba generados por SeedDemoTestDataMigration.";
             var description = $"Resuelve dudas frecuentes sobre {topic}.";
