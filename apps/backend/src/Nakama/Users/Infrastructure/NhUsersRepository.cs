@@ -28,7 +28,7 @@ public sealed class NhUsersRepository(IWriteSessionFactory writeSessions, UserMa
     public async Task<IReadOnlyList<User>> FindAll(CancellationToken ct)
     {
         using var session = this.Sessions.OpenSession();
-        return await session.Query<User>().ToListAsync(ct);
+        return await session.Query<User>().OrderBy(u => u.Name).ToListAsync(ct);
     }
 
     public async Task<int> CountAll(CancellationToken ct)

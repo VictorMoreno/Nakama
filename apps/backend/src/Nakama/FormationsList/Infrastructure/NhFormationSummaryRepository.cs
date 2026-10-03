@@ -8,7 +8,11 @@ namespace Nakama.FormationsList.Infrastructure;
 public sealed class NhFormationSummaryRepository(IReadSessionFactory readSessions)
     : NhRepositoryBase<FormationSummary, Guid>(readSessions), IFormationSummaryRepository
 {
-    public Task<IReadOnlyCollection<FormationSummary>> FindAll(CancellationToken ct) => this.FindAllEntities(ct);
+    public async Task<IReadOnlyCollection<FormationSummary>> FindAll(CancellationToken ct)
+    {
+        using var session = this.Sessions.OpenSession();
+        return await session.Query<FormationSummary>().OrderBy(f => f.Title).ToListAsync(ct);
+    }
 
     public async Task<IReadOnlyCollection<FormationSummary>> FindByIds(IReadOnlyCollection<Guid> ids, CancellationToken ct)
     {
@@ -18,6 +22,6 @@ public sealed class NhFormationSummaryRepository(IReadSessionFactory readSession
         }
 
         using var session = this.Sessions.OpenSession();
-        return await session.Query<FormationSummary>().Where(f => ids.Contains(f.Id)).ToListAsync(ct);
+        return await session.Query<FormationSummary>().Where(f => ids.Contains(f.Id)).OrderBy(f => f.Title).ToListAsync(ct);
     }
 }

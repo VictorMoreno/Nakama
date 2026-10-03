@@ -59,7 +59,10 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     };
   }, [repo, currentUser, isAdmin]);
 
-  const activeFormations = useMemo(() => Object.values(formations).filter((c) => !c.archived), [formations]);
+  const activeFormations = useMemo(
+    () => Object.values(formations).filter((c) => !c.archived).sort((a, b) => a.title.localeCompare(b.title)),
+    [formations]
+  );
 
   // Mutations that touch nested/derived state (modules, gating, progress) re-fetch from the
   // repository afterward instead of hand-rolling the same update logic twice — the

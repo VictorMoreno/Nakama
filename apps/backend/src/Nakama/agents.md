@@ -263,12 +263,20 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   nombre de dominio (`Conversation.BotKey: ChatbotId`, FK al Chatbot dueño) — solo la propia PK
   de la entidad se unifica a `Id`. Un lookup que no es una PK lookup pura (ej. el singleton de
   `NhAnalyticsRepository.Find()`, sin id de por medio) sigue necesitando su propio one-liner,
-  porque ahí sí hay una forma real (no solo un nombre) que no calza con `FindById`:
+  porque ahí sí hay una forma real (no solo un nombre) que no calza con `FindById`. El
+  one-liner `FindAllEntities(ct)` del base sirve cuando el listado no necesita más que "todas
+  las filas" — en cuanto hace falta un orden explícito (listados de cara al usuario:
+  chatbots/formaciones por título, usuarios por nombre, todos ascendente), se abre sesión
+  propia y se usa `OrderBy` en vez del helper, igual que cualquier otro query a medida:
   ```csharp
-  public sealed class NhChatbotSummaryRepository(ISessionFactory readSessions)
-      : NhRepositoryBase<ChatbotSummary, string>(readSessions), IChatbotSummaryRepository
+  public sealed class NhChatbotSummaryRepository(IReadSessionFactory readSessions)
+      : NhRepositoryBase<ChatbotSummary, Guid>(readSessions), IChatbotSummaryRepository
   {
-      public Task<IReadOnlyCollection<ChatbotSummary>> FindAll(CancellationToken ct) => this.FindAllEntities(ct);
+      public async Task<IReadOnlyCollection<ChatbotSummary>> FindAll(CancellationToken ct)
+      {
+          using var session = this.Sessions.OpenSession();
+          return await session.Query<ChatbotSummary>().OrderBy(c => c.Label).ToListAsync(ct);
+      }
       // FindById, Save se heredan directo del base, sin redeclarar
   }
   ```
