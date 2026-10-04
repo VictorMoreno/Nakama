@@ -44,10 +44,10 @@ public static class WebApplicationConfigurationExtensions
 
             if (app.DescribeApiVersions().Reverse().Any())
             {
-                foreach (var description in app.DescribeApiVersions().Reverse())
+                foreach (var groupName in app.DescribeApiVersions().Reverse().Select(description => description.GroupName))
                 {
-                    options.SwaggerEndpoint($"/openapi/{description.GroupName}.json",
-                        description.GroupName.ToUpperInvariant());
+                    options.SwaggerEndpoint($"/openapi/{groupName}.json",
+                        groupName.ToUpperInvariant());
                 }
             }
         });

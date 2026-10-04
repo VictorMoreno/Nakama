@@ -33,6 +33,8 @@ function exchangesToThread(exchanges: ChatExample[], useSocratic: boolean): Thre
 // push the send row off-screen.
 const MAX_COMPOSER_HEIGHT = 160;
 
+const MAX_TITLE_LENGTH = 60;
+
 export function useChat() {
   const { chatbots, currentBotKey } = useChatbots();
   const { isAdmin, currentUser } = useUser();
@@ -114,7 +116,7 @@ export function useChat() {
     const isNewConversation = !activeConversationId;
     const conversationId = activeConversationId ?? crypto.randomUUID();
     if (isNewConversation) setActiveConversationId(conversationId);
-    const title = val.length > 60 ? `${val.slice(0, 60)}…` : val;
+    const title = val.length > MAX_TITLE_LENGTH ? `${val.slice(0, MAX_TITLE_LENGTH)}…` : val;
 
     try {
       const answer = await conversationsRepo.Ask(conversationId, bot.id, currentUser.id, title, val);

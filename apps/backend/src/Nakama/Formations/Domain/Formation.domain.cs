@@ -42,19 +42,19 @@ public partial class Formation
         }
 
         this.Status = status;
-        Record(new FormationStatusChanged(this.Id, status));
+        this.Record(new FormationStatusChanged(this.Id, status));
     }
 
     public void UpdateIcon(string? iconUrl)
     {
         this.IconUrl = iconUrl;
-        Record(new FormationIconUpdated(this.Id, iconUrl));
+        this.Record(new FormationIconUpdated(this.Id, iconUrl));
     }
 
     public void AddModule(FormationModule module)
     {
         this._modules.Add(module);
-        Record(new FormationModuleAdded(this.Id, module));
+        this.Record(new FormationModuleAdded(this.Id, module));
     }
 
     public void UpdateModule(
@@ -89,7 +89,7 @@ public partial class Formation
         };
         this._modules[index] = updated;
 
-        Record(new FormationModuleUpdated(this.Id, updated));
+        this.Record(new FormationModuleUpdated(this.Id, updated));
     }
 
     public void RemoveModule(ModuleId moduleId)
@@ -102,7 +102,7 @@ public partial class Formation
 
         this._modules.RemoveAt(index);
 
-        Record(new FormationModuleRemoved(this.Id, moduleId));
+        this.Record(new FormationModuleRemoved(this.Id, moduleId));
     }
 
     public void ToggleModuleGating(ModuleId moduleId)
@@ -116,7 +116,7 @@ public partial class Formation
         var toggled = this._modules[index] with { Gated = !this._modules[index].Gated };
         this._modules[index] = toggled;
 
-        Record(new FormationModuleGatingToggled(this.Id, moduleId, toggled.Gated));
+        this.Record(new FormationModuleGatingToggled(this.Id, moduleId, toggled.Gated));
     }
 
     public void Archive()
@@ -127,6 +127,6 @@ public partial class Formation
         }
 
         this.Archived = true;
-        Record(new FormationArchived(this.Id));
+        this.Record(new FormationArchived(this.Id));
     }
 }

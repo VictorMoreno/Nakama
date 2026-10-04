@@ -7,15 +7,15 @@ namespace Nakama.FormationsList.Application.Handlers;
 public sealed class FormationSummaryUpdatedOnFormationModuleRemoved(IFormationSummaryRepository formationSummaryRepository)
     : DomainEventHandler<FormationModuleRemoved>
 {
-    protected override async Task Handle(FormationModuleRemoved formationModuleRemoved, CancellationToken ct)
+    protected override async Task Handle(FormationModuleRemoved formationModuleRemoved, CancellationToken cancellationToken)
     {
-        var formationSummary = await formationSummaryRepository.FindById(formationModuleRemoved.Id.Value, ct);
+        var formationSummary = await formationSummaryRepository.FindById(formationModuleRemoved.Id.Value, cancellationToken);
         if (formationSummary is null)
         {
             return;
         }
 
         formationSummary.DecrementModulesCount();
-        await formationSummaryRepository.Update(formationSummary, ct);
+        await formationSummaryRepository.Update(formationSummary, cancellationToken);
     }
 }

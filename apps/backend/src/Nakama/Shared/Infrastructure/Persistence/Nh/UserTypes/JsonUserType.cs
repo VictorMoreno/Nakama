@@ -38,11 +38,11 @@ public sealed class JsonUserType<T> : IUserType
     public object? DeepCopy(object? value) =>
         value is null ? default(T) : JsonSerializer.Deserialize<T>(JsonSerializer.Serialize((T)value, SerializerOptions), SerializerOptions);
 
-    public object? Replace(object? original, object? target, object owner) => DeepCopy(original);
+    public object? Replace(object? original, object? target, object owner) => this.DeepCopy(original);
 
-    public object? Assemble(object cached, object owner) => DeepCopy(cached);
+    public object? Assemble(object cached, object owner) => this.DeepCopy(cached);
 
-    public object? Disassemble(object? value) => DeepCopy(value);
+    public object? Disassemble(object? value) => this.DeepCopy(value);
 
     public new bool Equals(object? x, object? y)
     {

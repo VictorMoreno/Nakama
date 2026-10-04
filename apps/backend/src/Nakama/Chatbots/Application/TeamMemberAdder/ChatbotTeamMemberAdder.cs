@@ -24,7 +24,7 @@ public static class ChatbotTeamMemberAdder
 
         public async Task Execute(ChatbotId id, Guid userId, TeamRole role, CancellationToken cancellationToken)
         {
-            Chatbot chatbot = await _finder.Execute(id, cancellationToken);
+            Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
 
             chatbot.AddTeamMember(new TeamMember(userId, role));
 

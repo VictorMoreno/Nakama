@@ -24,7 +24,7 @@ public static class FormationArchiver
 
         public async Task Execute(FormationId id, CancellationToken cancellationToken)
         {
-            Formation formation = await _finder.Execute(id, cancellationToken);
+            Formation formation = await this._finder.Execute(id, cancellationToken);
 
             formation.Archive();
 

@@ -11,19 +11,19 @@ public sealed class FormationEnrollmentMapping : ClassMapping<FormationEnrollmen
 {
     public FormationEnrollmentMapping()
     {
-        Table("formation_enrollments");
-        Lazy(false);
+        this.Table("formation_enrollments");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
             m.Type<GuidValueObjectUserType<FormationEnrollmentId>>();
         });
 
-        Property(x => x.FormationId, m => m.Column("formation_id"));
-        Property(x => x.UserId, m => m.Column("user_id"));
-        Property(x => x.Progress, m =>
+        this.Property(x => x.FormationId, m => m.Column("formation_id"));
+        this.Property(x => x.UserId, m => m.Column("user_id"));
+        this.Property(x => x.Progress, m =>
         {
             m.Type<JsonUserType<LearnerProgress>>();
             m.Column(c => { c.Name("progress_json"); c.SqlType("text"); });

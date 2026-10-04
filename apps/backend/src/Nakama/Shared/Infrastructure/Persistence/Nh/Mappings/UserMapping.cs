@@ -9,22 +9,22 @@ public sealed class UserMapping : ClassMapping<User>
 {
     public UserMapping()
     {
-        Table("users");
-        Lazy(false);
+        this.Table("users");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
             m.Type<GuidValueObjectUserType<UserId>>();
         });
 
-        Property(x => x.Email);
-        Property(x => x.NormalizedEmail);
-        Property(x => x.Name);
-        Property(x => x.IsAdmin);
-        Property(x => x.PasswordHash);
-        Property(x => x.LastActiveAt);
-        Property(x => x.CreatedAt);
+        this.Property(x => x.Email);
+        this.Property(x => x.NormalizedEmail);
+        this.Property(x => x.Name);
+        this.Property(x => x.IsAdmin);
+        this.Property(x => x.PasswordHash);
+        this.Property(x => x.LastActiveAt);
+        this.Property(x => x.CreatedAt);
     }
 }

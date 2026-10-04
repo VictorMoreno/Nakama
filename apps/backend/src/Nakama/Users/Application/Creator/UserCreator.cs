@@ -28,7 +28,7 @@ public static class UserCreator
 
         public async Task Execute(UserId id, Email email, string name, bool isAdmin, string initialPassword, CancellationToken ct)
         {
-            await _emailAvailabilityChecker.EnsureAvailable(email, ct);
+            await this._emailAvailabilityChecker.EnsureAvailable(email, ct);
 
             var user = User.Create(id, email, name, isAdmin, systemClock);
 

@@ -11,15 +11,15 @@ public sealed class ConversationHistoryMapping : ClassMapping<ConversationHistor
 {
     public ConversationHistoryMapping()
     {
-        Table("read_conversation_history");
-        Lazy(false);
+        this.Table("read_conversation_history");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
-        Property(x => x.Entries, m => { m.Column(c => { c.Name("entries_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ConversationSummaryRow>>>(); });
+        this.Property(x => x.Entries, m => { m.Column(c => { c.Name("entries_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ConversationSummaryRow>>>(); });
     }
 }

@@ -9,9 +9,9 @@ public sealed class ConversationAuditLogUpdatedOnConversationExchangeAppended(
     IConversationAuditRepository auditRepository,
     ISystemClock systemClock) : DomainEventHandler<ConversationExchangeAppended>
 {
-    protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken ct)
+    protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken cancellationToken)
     {
-        var log = await auditRepository.FindById(conversationExchangeAppended.Id.Value, ct);
+        var log = await auditRepository.FindById(conversationExchangeAppended.Id.Value, cancellationToken);
         if (log is null)
         {
             return;
@@ -25,6 +25,6 @@ public sealed class ConversationAuditLogUpdatedOnConversationExchangeAppended(
             conversationExchangeAppended.Exchange.SocraticVariant,
             systemClock.UtcNow);
 
-        await auditRepository.Update(log, ct);
+        await auditRepository.Update(log, cancellationToken);
     }
 }

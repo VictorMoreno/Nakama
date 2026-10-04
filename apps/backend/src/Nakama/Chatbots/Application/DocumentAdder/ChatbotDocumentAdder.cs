@@ -28,7 +28,7 @@ public static class ChatbotDocumentAdder
         public async Task Execute(ChatbotId id, Guid documentId, string name, string origin, string fileName,
             CancellationToken cancellationToken)
         {
-            Chatbot chatbot = await _finder.Execute(id, cancellationToken);
+            Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
 
             chatbot.AddDocument(new ChatbotDocument(
                 documentId, name, origin, DocStatus.Pending, "Pendiente", systemClock.UtcNow, fileName));

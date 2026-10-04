@@ -8,17 +8,17 @@ public sealed class UserActivityEntryMapping : ClassMapping<UserActivityEntry>
 {
     public UserActivityEntryMapping()
     {
-        Table("read_user_activity");
-        Lazy(false);
+        this.Table("read_user_activity");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
-        Property(x => x.UserId);
-        Property(x => x.Type);
-        Property(x => x.OccurredAt);
+        this.Property(x => x.UserId);
+        this.Property(x => x.Type);
+        this.Property(x => x.OccurredAt);
     }
 }

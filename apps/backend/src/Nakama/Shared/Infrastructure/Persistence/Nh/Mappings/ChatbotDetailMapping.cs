@@ -11,32 +11,32 @@ public sealed class ChatbotDetailMapping : ClassMapping<ChatbotDetail>
 {
     public ChatbotDetailMapping()
     {
-        Table("read_chatbot_detail");
-        Lazy(false);
+        this.Table("read_chatbot_detail");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
-        Property(x => x.Label);
-        Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
-        Property(x => x.Status);
-        Property(x => x.LastUsed);
-        Property(x => x.Context, m => m.Column(c => c.SqlType("text")));
-        Property(x => x.General);
-        Property(x => x.Archived);
-        Property(x => x.IconUrl);
-        Property(x => x.Socratic);
-        Property(x => x.ExplicaMas);
-        Property(x => x.Provider);
-        Property(x => x.Model);
+        this.Property(x => x.Label);
+        this.Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
+        this.Property(x => x.Status);
+        this.Property(x => x.LastUsed);
+        this.Property(x => x.Context, m => m.Column(c => c.SqlType("text")));
+        this.Property(x => x.General);
+        this.Property(x => x.Archived);
+        this.Property(x => x.IconUrl);
+        this.Property(x => x.Socratic);
+        this.Property(x => x.ExplicaMas);
+        this.Property(x => x.Provider);
+        this.Property(x => x.Model);
 
-        Property(x => x.Docs, m => { m.Column(c => { c.Name("docs_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ChatbotDocumentRow>>>(); });
-        Property(x => x.Team, m => { m.Column(c => { c.Name("team_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<TeamMemberRow>>>(); });
-        Property(x => x.Gaps, m => { m.Column(c => { c.Name("gaps_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<GapQuestionRow>>>(); });
-        Property(x => x.TopQuestions, m => { m.Column(c => { c.Name("top_questions_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<GapQuestionRow>>>(); });
-        Property(x => x.Stats, m => { m.Column(c => { c.Name("stats_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<StatTileRow>>>(); });
+        this.Property(x => x.Docs, m => { m.Column(c => { c.Name("docs_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ChatbotDocumentRow>>>(); });
+        this.Property(x => x.Team, m => { m.Column(c => { c.Name("team_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<TeamMemberRow>>>(); });
+        this.Property(x => x.Gaps, m => { m.Column(c => { c.Name("gaps_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<GapQuestionRow>>>(); });
+        this.Property(x => x.TopQuestions, m => { m.Column(c => { c.Name("top_questions_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<GapQuestionRow>>>(); });
+        this.Property(x => x.Stats, m => { m.Column(c => { c.Name("stats_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<StatTileRow>>>(); });
     }
 }

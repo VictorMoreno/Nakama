@@ -10,19 +10,19 @@ public sealed class AnalyticsCreatedOnConversationExchangeAppended(IAnalyticsRep
     : DomainEventHandler<ConversationExchangeAppended>
 {
     protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         var botKey = conversationExchangeAppended.BotKey.Value;
-        Analytics? analytics = await analyticsRepository.Find(ct);
+        Analytics? analytics = await analyticsRepository.Find(cancellationToken);
         if (analytics is null)
         {
             analytics = Analytics.CreateFromConversationExchangeAppended(botKey);
-            await analyticsRepository.Save(analytics, ct);
+            await analyticsRepository.Save(analytics, cancellationToken);
         }
         else
         {
             analytics.ApplyConversationExchangeAppended(botKey);
-            await analyticsRepository.Update(analytics, ct);
+            await analyticsRepository.Update(analytics, cancellationToken);
         }
     }
 }

@@ -9,6 +9,6 @@ using ConversationHistory = Nakama.ConversationHistory.Domain.ConversationHistor
 public sealed class ConversationHistoryCreatedOnChatbotCreated(IConversationHistoryRepository conversationHistoryRepository)
     : DomainEventHandler<ChatbotCreated>
 {
-    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken ct) =>
-        conversationHistoryRepository.Save(ConversationHistory.Create(chatbotCreated.Id.Value), ct);
+    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken cancellationToken) =>
+        conversationHistoryRepository.Save(ConversationHistory.Create(chatbotCreated.Id.Value), cancellationToken);
 }

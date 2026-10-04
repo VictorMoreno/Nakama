@@ -15,6 +15,7 @@
   </Folder>
   <Folder Name="/apps/test/" />
   <Folder Name="/_solutionItems/">
+    <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path="docker-compose.yaml" />
     <File Path="README.md" />

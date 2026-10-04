@@ -10,12 +10,12 @@ public sealed class FormationDetailCreatedOnFormationCreated(
     IFormationDetailRepository formationDetailRepository,
     IChatbotLabelRefRepository chatbotLabelRefRepository) : DomainEventHandler<FormationCreated>
 {
-    protected override async Task Handle(FormationCreated formationCreated, CancellationToken ct)
+    protected override async Task Handle(FormationCreated formationCreated, CancellationToken cancellationToken)
     {
         string? linkedChatbotLabel = null;
         if (formationCreated.LinkedChatbotKey is not null)
         {
-            var labelRef = await chatbotLabelRefRepository.FindById(formationCreated.LinkedChatbotKey.Value, ct);
+            var labelRef = await chatbotLabelRefRepository.FindById(formationCreated.LinkedChatbotKey.Value, cancellationToken);
             linkedChatbotLabel = labelRef?.Label;
         }
 
@@ -28,6 +28,6 @@ public sealed class FormationDetailCreatedOnFormationCreated(
                 formationCreated.Status.ToString(),
                 formationCreated.LinkedChatbotKey,
                 linkedChatbotLabel),
-            ct);
+            cancellationToken);
     }
 }

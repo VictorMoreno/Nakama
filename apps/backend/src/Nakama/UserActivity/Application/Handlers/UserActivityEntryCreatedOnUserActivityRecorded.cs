@@ -11,8 +11,8 @@ namespace Nakama.UserActivity.Application.Handlers;
 public sealed class UserActivityEntryCreatedOnUserActivityRecorded(IUserActivityRepository repository)
     : DomainEventHandler<UserActivityRecorded>
 {
-    protected override Task Handle(UserActivityRecorded userActivityRecorded, CancellationToken ct) =>
+    protected override Task Handle(UserActivityRecorded userActivityRecorded, CancellationToken cancellationToken) =>
         repository.Save(
             UserActivityEntry.Create(Guid.NewGuid(), userActivityRecorded.Id.Value, "Login", userActivityRecorded.OccurredAt),
-            ct);
+            cancellationToken);
 }

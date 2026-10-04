@@ -24,7 +24,7 @@ public static class ChatbotArchiver
 
         public async Task Execute(ChatbotId id, CancellationToken cancellationToken)
         {
-            Chatbot chatbot = await _finder.Execute(id, cancellationToken);
+            Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
 
             chatbot.Archive();
 

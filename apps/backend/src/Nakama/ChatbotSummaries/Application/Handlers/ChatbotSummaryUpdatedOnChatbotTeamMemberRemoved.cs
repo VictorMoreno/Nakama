@@ -7,9 +7,9 @@ namespace Nakama.ChatbotSummaries.Application.Handlers;
 public sealed class ChatbotSummaryUpdatedOnChatbotTeamMemberRemoved(IChatbotSummaryRepository chatbotSummaryRepository)
     : DomainEventHandler<ChatbotTeamMemberRemoved>
 {
-    protected override async Task Handle(ChatbotTeamMemberRemoved chatbotTeamMemberRemoved, CancellationToken ct)
+    protected override async Task Handle(ChatbotTeamMemberRemoved chatbotTeamMemberRemoved, CancellationToken cancellationToken)
     {
-        var chatbotSummary = await chatbotSummaryRepository.FindById(chatbotTeamMemberRemoved.Id.Value, ct);
+        var chatbotSummary = await chatbotSummaryRepository.FindById(chatbotTeamMemberRemoved.Id.Value, cancellationToken);
         // Event arrived before ChatbotCreated - shouldn't happen in single-process sync
         // dispatch, but not assumed (same rationale as the original raw-session projection).
         if (chatbotSummary is null)
@@ -18,6 +18,6 @@ public sealed class ChatbotSummaryUpdatedOnChatbotTeamMemberRemoved(IChatbotSumm
         }
 
         chatbotSummary.DecrementTeamCount();
-        await chatbotSummaryRepository.Update(chatbotSummary, ct);
+        await chatbotSummaryRepository.Update(chatbotSummary, cancellationToken);
     }
 }

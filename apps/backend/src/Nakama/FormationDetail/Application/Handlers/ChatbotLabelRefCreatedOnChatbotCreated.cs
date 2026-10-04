@@ -7,6 +7,6 @@ namespace Nakama.FormationDetail.Application.Handlers;
 public sealed class ChatbotLabelRefCreatedOnChatbotCreated(IChatbotLabelRefRepository chatbotLabelRefRepository)
     : DomainEventHandler<ChatbotCreated>
 {
-    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken ct) =>
-        chatbotLabelRefRepository.Save(ChatbotLabelRef.Create(chatbotCreated.Id.Value, chatbotCreated.Label), ct);
+    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken cancellationToken) =>
+        chatbotLabelRefRepository.Save(ChatbotLabelRef.Create(chatbotCreated.Id.Value, chatbotCreated.Label), cancellationToken);
 }

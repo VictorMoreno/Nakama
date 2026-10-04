@@ -7,9 +7,9 @@ namespace Nakama.ChatPage.Application.Handlers;
 public sealed class ChatPageUpdatedOnChatbotSettingsUpdated(IChatPageRepository chatPageRepository)
     : DomainEventHandler<ChatbotSettingsUpdated>
 {
-    protected override async Task Handle(ChatbotSettingsUpdated chatbotSettingsUpdated, CancellationToken ct)
+    protected override async Task Handle(ChatbotSettingsUpdated chatbotSettingsUpdated, CancellationToken cancellationToken)
     {
-        var chatPage = await chatPageRepository.FindById(chatbotSettingsUpdated.Id.Value, ct);
+        var chatPage = await chatPageRepository.FindById(chatbotSettingsUpdated.Id.Value, cancellationToken);
         if (chatPage is null)
         {
             return;
@@ -19,6 +19,6 @@ public sealed class ChatPageUpdatedOnChatbotSettingsUpdated(IChatPageRepository 
             chatbotSettingsUpdated.Settings.Socratic,
             chatbotSettingsUpdated.Settings.ExplicaMas,
             chatbotSettingsUpdated.Settings.Provider.ToString());
-        await chatPageRepository.Update(chatPage, ct);
+        await chatPageRepository.Update(chatPage, cancellationToken);
     }
 }

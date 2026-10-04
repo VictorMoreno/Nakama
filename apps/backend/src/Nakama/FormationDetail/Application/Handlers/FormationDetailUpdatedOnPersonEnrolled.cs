@@ -7,15 +7,15 @@ namespace Nakama.FormationDetail.Application.Handlers;
 public sealed class FormationDetailUpdatedOnPersonEnrolled(IFormationDetailRepository formationDetailRepository)
     : DomainEventHandler<PersonEnrolled>
 {
-    protected override async Task Handle(PersonEnrolled personEnrolled, CancellationToken ct)
+    protected override async Task Handle(PersonEnrolled personEnrolled, CancellationToken cancellationToken)
     {
-        var formationDetail = await formationDetailRepository.FindById(personEnrolled.FormationId, ct);
+        var formationDetail = await formationDetailRepository.FindById(personEnrolled.FormationId, cancellationToken);
         if (formationDetail is null)
         {
             return;
         }
 
         formationDetail.AddMember(personEnrolled.UserId);
-        await formationDetailRepository.Update(formationDetail, ct);
+        await formationDetailRepository.Update(formationDetail, cancellationToken);
     }
 }

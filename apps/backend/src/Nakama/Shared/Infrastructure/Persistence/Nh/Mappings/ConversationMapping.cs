@@ -9,28 +9,28 @@ public sealed class ConversationMapping : ClassMapping<Conversation>
 {
     public ConversationMapping()
     {
-        Table("conversations");
-        Lazy(false);
+        this.Table("conversations");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
             m.Type<GuidValueObjectUserType<ConversationId>>();
         });
 
-        Property(x => x.BotKey, m =>
+        this.Property(x => x.BotKey, m =>
         {
             m.Column("bot_key");
             m.Type<GuidValueObjectUserType<ChatbotId>>();
         });
 
-        Property(x => x.UserId, m => m.Column("user_id"));
+        this.Property(x => x.UserId, m => m.Column("user_id"));
 
-        Property(x => x.Title);
-        Property(x => x.StartedAt);
+        this.Property(x => x.Title);
+        this.Property(x => x.StartedAt);
 
-        Property("_exchanges", m =>
+        this.Property("_exchanges", m =>
         {
             m.Column(c => { c.Name("exchanges_json"); c.SqlType("text"); });
             m.Access(Accessor.Field);

@@ -7,15 +7,15 @@ namespace Nakama.FormationDetail.Application.Handlers;
 public sealed class FormationDetailUpdatedOnFormationModuleGatingToggled(IFormationDetailRepository formationDetailRepository)
     : DomainEventHandler<FormationModuleGatingToggled>
 {
-    protected override async Task Handle(FormationModuleGatingToggled formationModuleGatingToggled, CancellationToken ct)
+    protected override async Task Handle(FormationModuleGatingToggled formationModuleGatingToggled, CancellationToken cancellationToken)
     {
-        var formationDetail = await formationDetailRepository.FindById(formationModuleGatingToggled.Id.Value, ct);
+        var formationDetail = await formationDetailRepository.FindById(formationModuleGatingToggled.Id.Value, cancellationToken);
         if (formationDetail is null)
         {
             return;
         }
 
         formationDetail.ToggleModuleGating(formationModuleGatingToggled.ModuleId.Value, formationModuleGatingToggled.Gated);
-        await formationDetailRepository.Update(formationDetail, ct);
+        await formationDetailRepository.Update(formationDetail, cancellationToken);
     }
 }

@@ -46,37 +46,37 @@ public partial class Chatbot
         }
 
         this.Status = status;
-        Record(new ChatbotStatusChanged(this.Id, status));
+        this.Record(new ChatbotStatusChanged(this.Id, status));
     }
 
     public void UpdateSettings(ChatbotSettings settings)
     {
         this.Settings = settings;
-        Record(new ChatbotSettingsUpdated(this.Id, settings));
+        this.Record(new ChatbotSettingsUpdated(this.Id, settings));
     }
 
     public void UpdateIcon(string? iconUrl)
     {
         this.IconUrl = iconUrl;
-        Record(new ChatbotIconUpdated(this.Id, iconUrl));
+        this.Record(new ChatbotIconUpdated(this.Id, iconUrl));
     }
 
     public void AddDocument(ChatbotDocument document)
     {
         this._documents.Add(document);
-        Record(new ChatbotDocumentAdded(this.Id, document));
+        this.Record(new ChatbotDocumentAdded(this.Id, document));
     }
 
     public void RemoveDocument(int index)
     {
         this._documents.RemoveAt(index);
-        Record(new ChatbotDocumentRemoved(this.Id, index));
+        this.Record(new ChatbotDocumentRemoved(this.Id, index));
     }
 
     public void AddTeamMember(TeamMember member)
     {
         this._team.Add(member);
-        Record(new ChatbotTeamMemberAdded(this.Id, member));
+        this.Record(new ChatbotTeamMemberAdded(this.Id, member));
     }
 
     public void RemoveTeamMember(int index)
@@ -87,7 +87,7 @@ public partial class Chatbot
         }
 
         this._team.RemoveAt(index);
-        Record(new ChatbotTeamMemberRemoved(this.Id, index));
+        this.Record(new ChatbotTeamMemberRemoved(this.Id, index));
     }
 
     public void Archive()
@@ -98,6 +98,6 @@ public partial class Chatbot
         }
 
         this.Archived = true;
-        Record(new ChatbotArchived(this.Id));
+        this.Record(new ChatbotArchived(this.Id));
     }
 }

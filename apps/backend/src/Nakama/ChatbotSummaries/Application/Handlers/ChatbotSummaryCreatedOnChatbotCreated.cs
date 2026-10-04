@@ -7,7 +7,7 @@ namespace Nakama.ChatbotSummaries.Application.Handlers;
 public sealed class ChatbotSummaryCreatedOnChatbotCreated(IChatbotSummaryRepository chatbotSummaryRepository)
     : DomainEventHandler<ChatbotCreated>
 {
-    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken ct) =>
+    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken cancellationToken) =>
         chatbotSummaryRepository.Save(
             ChatbotSummary.Create(
                 chatbotCreated.Id.Value,
@@ -15,5 +15,5 @@ public sealed class ChatbotSummaryCreatedOnChatbotCreated(IChatbotSummaryReposit
                 chatbotCreated.Description,
                 chatbotCreated.Status.ToString(),
                 chatbotCreated.General),
-            ct);
+            cancellationToken);
 }

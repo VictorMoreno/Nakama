@@ -24,7 +24,7 @@ public static class FormationStatusUpdater
 
         public async Task Execute(FormationId id, FormationStatus status, CancellationToken cancellationToken)
         {
-            Formation formation = await _finder.Execute(id, cancellationToken);
+            Formation formation = await this._finder.Execute(id, cancellationToken);
 
             formation.UpdateStatus(status);
 

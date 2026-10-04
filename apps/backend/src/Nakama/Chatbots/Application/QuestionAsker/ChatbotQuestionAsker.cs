@@ -35,7 +35,7 @@ public static class ChatbotQuestionAsker
                                         ?? Conversation.Start(conversationId, botKey, cmd.UserId, cmd.Title,
                                             systemClock);
 
-            string systemPrompt = await BuildSystemPrompt(chatbot, cancellationToken);
+            string systemPrompt = await this.BuildSystemPrompt(chatbot, cancellationToken);
             List<LlmMessage> history = BuildHistory(conversation, cmd.Question);
 
             string answer = await llmClient.Ask(chatbot.Model, systemPrompt, history, cancellationToken);

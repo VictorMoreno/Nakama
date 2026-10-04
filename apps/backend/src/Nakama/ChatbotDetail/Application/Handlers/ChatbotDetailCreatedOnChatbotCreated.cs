@@ -9,7 +9,7 @@ using ChatbotDetail = Nakama.ChatbotDetail.Domain.ChatbotDetail;
 public sealed class ChatbotDetailCreatedOnChatbotCreated(IChatbotDetailRepository chatbotDetailRepository)
     : DomainEventHandler<ChatbotCreated>
 {
-    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken ct) =>
+    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken cancellationToken) =>
         chatbotDetailRepository.Save(
             ChatbotDetail.Create(
                 chatbotCreated.Id.Value,
@@ -21,5 +21,5 @@ public sealed class ChatbotDetailCreatedOnChatbotCreated(IChatbotDetailRepositor
                 chatbotCreated.Settings.ExplicaMas,
                 chatbotCreated.Settings.Provider.ToString(),
                 chatbotCreated.Settings.Model),
-            ct);
+            cancellationToken);
 }

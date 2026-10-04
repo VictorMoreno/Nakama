@@ -24,5 +24,5 @@ public sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provi
         }
     }
 
-    public void Configure(string? name, SwaggerGenOptions options) => Configure(options);
+    public void Configure(string? name, SwaggerGenOptions options) => this.Configure(options);
 }

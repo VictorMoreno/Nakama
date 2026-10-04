@@ -11,19 +11,19 @@ public sealed class AnalyticsMapping : ClassMapping<Analytics>
 {
     public AnalyticsMapping()
     {
-        Table("read_analytics");
-        Lazy(false);
+        this.Table("read_analytics");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
-        Property(x => x.ActiveBotsCount);
-        Property(x => x.AnsweredThisWeek);
-        Property(x => x.UsageByBot, m => { m.Column(c => { c.Name("usage_by_bot_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<UsageByBotRow>>>(); });
-        Property(x => x.UsefulFeedbackCount);
-        Property(x => x.TotalFeedbackCount);
+        this.Property(x => x.ActiveBotsCount);
+        this.Property(x => x.AnsweredThisWeek);
+        this.Property(x => x.UsageByBot, m => { m.Column(c => { c.Name("usage_by_bot_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<UsageByBotRow>>>(); });
+        this.Property(x => x.UsefulFeedbackCount);
+        this.Property(x => x.TotalFeedbackCount);
     }
 }

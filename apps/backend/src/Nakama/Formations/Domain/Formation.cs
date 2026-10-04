@@ -23,5 +23,5 @@ public partial class Formation : AggregateRoot<FormationId>
     public virtual string? IconUrl { get; private set; }
 
     private readonly List<FormationModule> _modules = [];
-    public virtual IReadOnlyCollection<FormationModule> Modules => _modules;
+    public virtual IReadOnlyCollection<FormationModule> Modules => this._modules;
 }

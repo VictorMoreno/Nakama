@@ -7,9 +7,9 @@ namespace Nakama.FormationDetail.Application.Handlers;
 public sealed class FormationDetailUpdatedOnFormationModuleUpdated(IFormationDetailRepository formationDetailRepository)
     : DomainEventHandler<FormationModuleUpdated>
 {
-    protected override async Task Handle(FormationModuleUpdated formationModuleUpdated, CancellationToken ct)
+    protected override async Task Handle(FormationModuleUpdated formationModuleUpdated, CancellationToken cancellationToken)
     {
-        var formationDetail = await formationDetailRepository.FindById(formationModuleUpdated.Id.Value, ct);
+        var formationDetail = await formationDetailRepository.FindById(formationModuleUpdated.Id.Value, cancellationToken);
         if (formationDetail is null)
         {
             return;
@@ -33,6 +33,6 @@ public sealed class FormationDetailUpdatedOnFormationModuleUpdated(IFormationDet
             formationModuleUpdated.Module.DurationMin,
             formationModuleUpdated.Module.PassingScore,
             quiz);
-        await formationDetailRepository.Update(formationDetail, ct);
+        await formationDetailRepository.Update(formationDetail, cancellationToken);
     }
 }

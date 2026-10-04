@@ -9,6 +9,8 @@ namespace Nakama.LlmProviders.Infrastructure;
 
 public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) : ILlmClient
 {
+    private const int DefaultMaxTokens = 16000;
+
     public async Task<string> Ask(string model, string systemPrompt, IReadOnlyList<LlmMessage> history, CancellationToken ct)
     {
         var config = await repository.FindByProvider(LlmProvider.Anthropic, ct);
@@ -24,7 +26,7 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) 
             var response = await client.Messages.Create(new MessageCreateParams
             {
                 Model = model,
-                MaxTokens = 16000,
+                MaxTokens = DefaultMaxTokens,
                 System = systemPrompt,
                 Messages = history.Select(m => new MessageParam
                 {

@@ -15,7 +15,7 @@ public partial class LlmProviderConfig : AggregateRoot<LlmProviderConfigId>
     public virtual bool Enabled { get; private set; }
 
     private readonly List<LlmModelOption> _models = [];
-    public virtual IReadOnlyList<LlmModelOption> Models => _models;
+    public virtual IReadOnlyList<LlmModelOption> Models => this._models;
 
     public virtual DateTime UpdatedAt { get; private set; }
 }

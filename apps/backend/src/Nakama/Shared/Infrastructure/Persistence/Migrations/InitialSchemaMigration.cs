@@ -7,7 +7,7 @@ public sealed class InitialSchemaMigration : Migration
 {
     public override void Up()
     {
-        Create.Table("chatbots")
+        this.Create.Table("chatbots")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("label").AsString(255).Nullable()
             .WithColumn("description").AsCustom("text").Nullable()
@@ -21,7 +21,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("documents_json").AsCustom("text").Nullable()
             .WithColumn("team_json").AsCustom("text").Nullable();
 
-        Create.Table("conversations")
+        this.Create.Table("conversations")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("bot_key").AsGuid().Nullable()
             .WithColumn("user_id").AsGuid().Nullable()
@@ -29,7 +29,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("startedat").AsDateTime().Nullable()
             .WithColumn("exchanges_json").AsCustom("text").Nullable();
 
-        Create.Table("formations")
+        this.Create.Table("formations")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("title").AsString(255).Nullable()
             .WithColumn("audience").AsString(255).Nullable()
@@ -40,19 +40,19 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("iconurl").AsString(255).Nullable()
             .WithColumn("modules_json").AsCustom("text").Nullable();
 
-        Create.Table("formation_enrollments")
+        this.Create.Table("formation_enrollments")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("formation_id").AsGuid().NotNullable()
             .WithColumn("user_id").AsGuid().NotNullable()
             .WithColumn("progress_json").AsCustom("text").Nullable();
 
-        Create.Index("ix_formation_enrollments_formation_user")
+        this.Create.Index("ix_formation_enrollments_formation_user")
             .OnTable("formation_enrollments")
             .OnColumn("formation_id").Ascending()
             .OnColumn("user_id").Ascending()
             .WithOptions().Unique();
 
-        Create.Table("llm_provider_configs")
+        this.Create.Table("llm_provider_configs")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("provider").AsInt32().NotNullable()
             .WithColumn("api_key").AsCustom("text").NotNullable()
@@ -60,12 +60,12 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("models_json").AsCustom("text").Nullable()
             .WithColumn("updated_at").AsDateTime().NotNullable();
 
-        Create.Index("ix_llm_provider_configs_provider")
+        this.Create.Index("ix_llm_provider_configs_provider")
             .OnTable("llm_provider_configs")
             .OnColumn("provider").Ascending()
             .WithOptions().Unique();
 
-        Create.Table("read_chatbot_summaries")
+        this.Create.Table("read_chatbot_summaries")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("label").AsString(255).Nullable()
             .WithColumn("description").AsCustom("text").Nullable()
@@ -76,7 +76,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("archived").AsBoolean().Nullable()
             .WithColumn("iconurl").AsString(255).Nullable();
 
-        Create.Table("read_chatbot_detail")
+        this.Create.Table("read_chatbot_detail")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("label").AsString(255).Nullable()
             .WithColumn("description").AsCustom("text").Nullable()
@@ -96,7 +96,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("top_questions_json").AsCustom("text").Nullable()
             .WithColumn("stats_json").AsCustom("text").Nullable();
 
-        Create.Table("read_chat_page")
+        this.Create.Table("read_chat_page")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("label").AsString(255).Nullable()
             .WithColumn("context").AsCustom("text").Nullable()
@@ -105,7 +105,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("provider").AsString(255).Nullable()
             .WithColumn("opening_json").AsCustom("text").Nullable();
 
-        Create.Table("read_formations_list")
+        this.Create.Table("read_formations_list")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("title").AsString(255).Nullable()
             .WithColumn("audience").AsString(255).Nullable()
@@ -115,7 +115,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("iconurl").AsString(255).Nullable()
             .WithColumn("modulescount").AsInt32().Nullable();
 
-        Create.Table("read_formation_detail")
+        this.Create.Table("read_formation_detail")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("title").AsString(255).Nullable()
             .WithColumn("audience").AsString(255).Nullable()
@@ -128,11 +128,11 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("modules_json").AsCustom("text").Nullable()
             .WithColumn("team_json").AsCustom("text").Nullable();
 
-        Create.Table("read_formation_detail_chatbot_label_ref")
+        this.Create.Table("read_formation_detail_chatbot_label_ref")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("label").AsString(255).Nullable();
 
-        Create.Table("read_analytics")
+        this.Create.Table("read_analytics")
             .WithColumn("id").AsString(255).PrimaryKey()
             .WithColumn("activebotscount").AsInt32().Nullable()
             .WithColumn("answeredthisweek").AsInt32().Nullable()
@@ -140,7 +140,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("usefulfeedbackcount").AsInt32().Nullable()
             .WithColumn("totalfeedbackcount").AsInt32().Nullable();
 
-        Create.Table("users")
+        this.Create.Table("users")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("email").AsString(255).Nullable()
             .WithColumn("normalizedemail").AsString(255).Nullable()
@@ -150,13 +150,13 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("lastactiveat").AsDateTime().Nullable()
             .WithColumn("createdat").AsDateTime().Nullable();
 
-        Create.Table("read_user_activity")
+        this.Create.Table("read_user_activity")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("userid").AsGuid().Nullable()
             .WithColumn("type").AsString(255).Nullable()
             .WithColumn("occurredat").AsDateTime().Nullable();
 
-        Create.Table("read_conversation_audit")
+        this.Create.Table("read_conversation_audit")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("user_id").AsGuid().Nullable()
             .WithColumn("bot_key").AsGuid().Nullable()
@@ -164,7 +164,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("startedat").AsDateTime().Nullable()
             .WithColumn("messages_json").AsCustom("text").Nullable();
 
-        Create.Table("read_conversation_history")
+        this.Create.Table("read_conversation_history")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("entries_json").AsCustom("text").Nullable();
     }

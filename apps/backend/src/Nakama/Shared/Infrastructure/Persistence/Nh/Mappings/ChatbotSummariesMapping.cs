@@ -8,22 +8,22 @@ public sealed class ChatbotSummariesMapping : ClassMapping<ChatbotSummary>
 {
     public ChatbotSummariesMapping()
     {
-        Table("read_chatbot_summaries");
-        Lazy(false);
+        this.Table("read_chatbot_summaries");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
-        Property(x => x.Label);
-        Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
-        Property(x => x.Status);
-        Property(x => x.DocsCount);
-        Property(x => x.TeamCount);
-        Property(x => x.General);
-        Property(x => x.Archived);
-        Property(x => x.IconUrl);
+        this.Property(x => x.Label);
+        this.Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
+        this.Property(x => x.Status);
+        this.Property(x => x.DocsCount);
+        this.Property(x => x.TeamCount);
+        this.Property(x => x.General);
+        this.Property(x => x.Archived);
+        this.Property(x => x.IconUrl);
     }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using FluentMigrator;
 using Microsoft.AspNetCore.Identity;
@@ -39,6 +40,7 @@ using Analytics = Nakama.Analytics.Domain.Analytics;
 // have produced through its normal command/event pipeline - so the JSON shape can't drift from
 // what NHibernate actually expects to read back.
 [Migration(3)]
+[SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded")]
 public sealed class SeedDemoTestDataMigration : Migration
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -123,7 +125,7 @@ public sealed class SeedDemoTestDataMigration : Migration
         var rng = new Random(20260930);
         var now = DateTime.UtcNow;
 
-        Insert.IntoTable("llm_provider_configs").Row(new
+        this.Insert.IntoTable("llm_provider_configs").Row(new
         {
             id = Guid.NewGuid(),
             provider = (int)LlmProvider.Anthropic,
@@ -160,7 +162,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 userActivityRows.Add((Guid.NewGuid(), user.Id.Value, "Login", occurredAt));
             }
 
-            Insert.IntoTable("users").Row(new
+            this.Insert.IntoTable("users").Row(new
             {
                 id = user.Id.Value,
                 email = user.Email,
@@ -175,7 +177,7 @@ public sealed class SeedDemoTestDataMigration : Migration
 
         foreach (var (id, userId, type, occurredAt) in userActivityRows)
         {
-            Insert.IntoTable("read_user_activity").Row(new { id, userid = userId, type, occurredat = occurredAt });
+            this.Insert.IntoTable("read_user_activity").Row(new { id, userid = userId, type, occurredat = occurredAt });
         }
 
         var conversationAuthorIds = new List<Guid>(userIds)
@@ -241,7 +243,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 SocraticVariant = $"¿Qué parte de {topic} te genera más dudas hoy?"
             };
 
-            Insert.IntoTable("chatbots").Row(new
+            this.Insert.IntoTable("chatbots").Row(new
             {
                 id = botId,
                 label,
@@ -257,7 +259,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 team_json = Json(writeTeam)
             });
 
-            Insert.IntoTable("read_chatbot_summaries").Row(new
+            this.Insert.IntoTable("read_chatbot_summaries").Row(new
             {
                 id = botId,
                 label,
@@ -270,7 +272,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 iconurl = (string?)null
             });
 
-            Insert.IntoTable("read_chatbot_detail").Row(new
+            this.Insert.IntoTable("read_chatbot_detail").Row(new
             {
                 id = botId,
                 label,
@@ -322,7 +324,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 })
             });
 
-            Insert.IntoTable("read_chat_page").Row(new
+            this.Insert.IntoTable("read_chat_page").Row(new
             {
                 id = botId,
                 label,
@@ -377,7 +379,7 @@ public sealed class SeedDemoTestDataMigration : Migration
 
                 totalExchanges += exchangeCount;
 
-                Insert.IntoTable("conversations").Row(new
+                this.Insert.IntoTable("conversations").Row(new
                 {
                     id = convId,
                     bot_key = botId,
@@ -387,7 +389,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                     exchanges_json = Json(exchanges)
                 });
 
-                Insert.IntoTable("read_conversation_audit").Row(new
+                this.Insert.IntoTable("read_conversation_audit").Row(new
                 {
                     id = convId,
                     user_id = author,
@@ -404,7 +406,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 });
             }
 
-            Insert.IntoTable("read_conversation_history").Row(new { id = botId, entries_json = Json(historyEntries) });
+            this.Insert.IntoTable("read_conversation_history").Row(new { id = botId, entries_json = Json(historyEntries) });
 
             usageByBot.Add(new UsageByBotRow { BotKey = botId, Value = historyEntries.Sum(h => h.Exchanges.Count) });
         }
@@ -474,7 +476,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                     { UserId = e.UserId, Progress = e.Progress.CompletedModuleIds.Count * 100 / modules.Count })
                 .ToList();
 
-            Insert.IntoTable("formations").Row(new
+            this.Insert.IntoTable("formations").Row(new
             {
                 id = formId,
                 title = topic,
@@ -489,7 +491,7 @@ public sealed class SeedDemoTestDataMigration : Migration
 
             foreach (var enrollment in enrollments)
             {
-                Insert.IntoTable("formation_enrollments").Row(new
+                this.Insert.IntoTable("formation_enrollments").Row(new
                 {
                     id = Guid.NewGuid(),
                     formation_id = formId,
@@ -498,7 +500,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 });
             }
 
-            Insert.IntoTable("read_formations_list").Row(new
+            this.Insert.IntoTable("read_formations_list").Row(new
             {
                 id = formId,
                 title = topic,
@@ -510,7 +512,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 modulescount = modules.Count
             });
 
-            Insert.IntoTable("read_formation_detail").Row(new
+            this.Insert.IntoTable("read_formation_detail").Row(new
             {
                 id = formId,
                 title = topic,
@@ -527,7 +529,7 @@ public sealed class SeedDemoTestDataMigration : Migration
 
             if (linkedChatbotKey is not null)
             {
-                Insert.IntoTable("read_formation_detail_chatbot_label_ref")
+                this.Insert.IntoTable("read_formation_detail_chatbot_label_ref")
                     .Row(new { id = linkedChatbotKey.Value, label = linkedChatbotLabel });
             }
         }
@@ -542,7 +544,7 @@ public sealed class SeedDemoTestDataMigration : Migration
         var usefulFeedback = (int)(totalFeedback * 0.75);
         var usageByBotJson = Json(usageByBot);
 
-        Execute.WithConnection((connection, transaction) =>
+        this.Execute.WithConnection((connection, transaction) =>
         {
             using var cmd = connection.CreateCommand();
             cmd.Transaction = transaction;

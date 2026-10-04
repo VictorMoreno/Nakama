@@ -7,7 +7,7 @@ namespace Nakama.FormationsList.Application.Handlers;
 public sealed class FormationSummaryCreatedOnFormationCreated(IFormationSummaryRepository formationSummaryRepository)
     : DomainEventHandler<FormationCreated>
 {
-    protected override Task Handle(FormationCreated formationCreated, CancellationToken ct) =>
+    protected override Task Handle(FormationCreated formationCreated, CancellationToken cancellationToken) =>
         formationSummaryRepository.Save(
             FormationSummary.Create(
                 formationCreated.Id.Value,
@@ -15,5 +15,5 @@ public sealed class FormationSummaryCreatedOnFormationCreated(IFormationSummaryR
                 formationCreated.Audience,
                 formationCreated.Description,
                 formationCreated.Status.ToString()),
-            ct);
+            cancellationToken);
 }

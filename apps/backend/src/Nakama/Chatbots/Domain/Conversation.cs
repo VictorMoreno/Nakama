@@ -19,5 +19,5 @@ public partial class Conversation : AggregateRoot<ConversationId>
     public virtual DateTime StartedAt { get; private set; }
 
     private readonly List<ConversationExchange> _exchanges = [];
-    public virtual IReadOnlyCollection<ConversationExchange> Exchanges => _exchanges;
+    public virtual IReadOnlyCollection<ConversationExchange> Exchanges => this._exchanges;
 }

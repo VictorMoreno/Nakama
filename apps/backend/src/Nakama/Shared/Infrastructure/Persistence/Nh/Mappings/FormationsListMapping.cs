@@ -8,21 +8,21 @@ public sealed class FormationsListMapping : ClassMapping<FormationSummary>
 {
     public FormationsListMapping()
     {
-        Table("read_formations_list");
-        Lazy(false);
+        this.Table("read_formations_list");
+        this.Lazy(false);
 
-        Id(x => x.Id, m =>
+        this.Id(x => x.Id, m =>
         {
             m.Column("id");
             m.Generator(Generators.Assigned);
         });
 
-        Property(x => x.Title);
-        Property(x => x.Audience);
-        Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
-        Property(x => x.Status);
-        Property(x => x.Archived);
-        Property(x => x.IconUrl);
-        Property(x => x.ModulesCount);
+        this.Property(x => x.Title);
+        this.Property(x => x.Audience);
+        this.Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
+        this.Property(x => x.Status);
+        this.Property(x => x.Archived);
+        this.Property(x => x.IconUrl);
+        this.Property(x => x.ModulesCount);
     }
 }

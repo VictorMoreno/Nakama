@@ -14,6 +14,6 @@ public sealed class NakamaPostgreSqlDialect : PostgreSQLDialect
 {
     public NakamaPostgreSqlDialect()
     {
-        RegisterColumnType(DbType.Guid, "uuid");
+        this.RegisterColumnType(DbType.Guid, "uuid");
     }
 }

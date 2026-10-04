@@ -266,7 +266,6 @@ public sealed class ChatbotEndpoints : IEndpoint
     }
 
     private static async Task<IResult> DeleteConversation(
-        Guid botKey,
         Guid conversationId,
         Guid userId,
         ICommandBus commandBus,

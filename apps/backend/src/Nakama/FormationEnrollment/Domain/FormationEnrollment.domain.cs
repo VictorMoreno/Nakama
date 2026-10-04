@@ -21,8 +21,8 @@ public partial class FormationEnrollment
     public void CompleteModule(Guid moduleId, int? score)
     {
         this.Progress = this.Progress.WithModuleCompleted(moduleId, score);
-        Record(new EnrollmentModuleCompleted(this.FormationId, this.UserId, moduleId, score, this.Progress.CompletedModuleIds.Count));
+        this.Record(new EnrollmentModuleCompleted(this.FormationId, this.UserId, moduleId, score, this.Progress.CompletedModuleIds.Count));
     }
 
-    public void Unenroll() => Record(new PersonUnenrolled(this.FormationId, this.UserId));
+    public void Unenroll() => this.Record(new PersonUnenrolled(this.FormationId, this.UserId));
 }

@@ -24,7 +24,7 @@ public static class ChatbotDocumentRemover
 
         public async Task Execute(ChatbotId id, int index, CancellationToken cancellationToken)
         {
-            Chatbot chatbot = await _finder.Execute(id, cancellationToken);
+            Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
 
             chatbot.RemoveDocument(index);
 

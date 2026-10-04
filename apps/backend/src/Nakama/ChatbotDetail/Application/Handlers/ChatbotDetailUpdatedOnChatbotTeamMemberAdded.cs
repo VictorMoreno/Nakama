@@ -7,15 +7,15 @@ namespace Nakama.ChatbotDetail.Application.Handlers;
 public sealed class ChatbotDetailUpdatedOnChatbotTeamMemberAdded(IChatbotDetailRepository chatbotDetailRepository)
     : DomainEventHandler<ChatbotTeamMemberAdded>
 {
-    protected override async Task Handle(ChatbotTeamMemberAdded chatbotTeamMemberAdded, CancellationToken ct)
+    protected override async Task Handle(ChatbotTeamMemberAdded chatbotTeamMemberAdded, CancellationToken cancellationToken)
     {
-        var chatbotDetail = await chatbotDetailRepository.FindById(chatbotTeamMemberAdded.Id.Value, ct);
+        var chatbotDetail = await chatbotDetailRepository.FindById(chatbotTeamMemberAdded.Id.Value, cancellationToken);
         if (chatbotDetail is null)
         {
             return;
         }
 
         chatbotDetail.AddTeamMember(chatbotTeamMemberAdded.Member.UserId, chatbotTeamMemberAdded.Member.Role.ToString());
-        await chatbotDetailRepository.Update(chatbotDetail, ct);
+        await chatbotDetailRepository.Update(chatbotDetail, cancellationToken);
     }
 }

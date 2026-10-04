@@ -15,7 +15,7 @@ public sealed class SeedUsersMigration : Migration
 
         var admin = User.Create(UserId.From(Guid.Parse("48D7EAD2-BAB5-468C-B7C5-CEF4D4A3842F")),
             new Email("admin@nakama.com"), "Admin", isAdmin: true, clock);
-        Insert.IntoTable("users").Row(new
+        this.Insert.IntoTable("users").Row(new
         {
             id = admin.Id.Value,
             email = admin.Email,
@@ -28,7 +28,7 @@ public sealed class SeedUsersMigration : Migration
 
         var user = User.Create(UserId.From(Guid.Parse("EFB5209F-13C5-40B4-8E72-35AFA54CBEF8")),
             new Email("user@nakama.com"), "User", isAdmin: false, clock);
-        Insert.IntoTable("users").Row(new
+        this.Insert.IntoTable("users").Row(new
         {
             id = user.Id.Value,
             email = user.Email,

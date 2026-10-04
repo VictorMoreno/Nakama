@@ -9,7 +9,7 @@ using ChatPage = Nakama.ChatPage.Domain.ChatPage;
 public sealed class ChatPageCreatedOnChatbotCreated(IChatPageRepository chatPageRepository)
     : DomainEventHandler<ChatbotCreated>
 {
-    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken ct) =>
+    protected override Task Handle(ChatbotCreated chatbotCreated, CancellationToken cancellationToken) =>
         chatPageRepository.Save(
             ChatPage.Create(
                 chatbotCreated.Id.Value,
@@ -17,5 +17,5 @@ public sealed class ChatPageCreatedOnChatbotCreated(IChatPageRepository chatPage
                 chatbotCreated.Settings.Socratic,
                 chatbotCreated.Settings.ExplicaMas,
                 chatbotCreated.Settings.Provider.ToString()),
-            ct);
+            cancellationToken);
 }

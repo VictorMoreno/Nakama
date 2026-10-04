@@ -24,7 +24,7 @@ public static class FormationModuleGatingToggler
 
         public async Task Execute(FormationId id, Guid moduleId, CancellationToken cancellationToken)
         {
-            Formation formation = await _finder.Execute(id, cancellationToken);
+            Formation formation = await this._finder.Execute(id, cancellationToken);
 
             formation.ToggleModuleGating(Domain.ModuleId.From(moduleId));
 

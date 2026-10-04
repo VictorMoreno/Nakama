@@ -24,7 +24,7 @@ public static class FormationIconUpdater
 
         public async Task Execute(FormationId id, string? iconFileName, CancellationToken cancellationToken)
         {
-            Formation formation = await _finder.Execute(id, cancellationToken);
+            Formation formation = await this._finder.Execute(id, cancellationToken);
 
             formation.UpdateIcon(iconFileName);
 

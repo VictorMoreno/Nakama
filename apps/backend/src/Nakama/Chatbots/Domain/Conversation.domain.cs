@@ -24,8 +24,8 @@ public partial class Conversation
     public void AppendExchange(ConversationExchange exchange)
     {
         this._exchanges.Add(exchange);
-        Record(new ConversationExchangeAppended(this.Id, this.BotKey, this.UserId, exchange));
+        this.Record(new ConversationExchangeAppended(this.Id, this.BotKey, this.UserId, exchange));
     }
 
-    public void Delete() => Record(new ConversationDeleted(this.Id, this.BotKey));
+    public void Delete() => this.Record(new ConversationDeleted(this.Id, this.BotKey));
 }

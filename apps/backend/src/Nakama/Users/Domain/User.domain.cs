@@ -31,6 +31,6 @@ public partial class User
     public void MarkActive(DateTime now)
     {
         this.LastActiveAt = now;
-        Record(new UserActivityRecorded(this.Id, now));
+        this.Record(new UserActivityRecorded(this.Id, now));
     }
 }

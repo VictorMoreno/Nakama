@@ -7,9 +7,9 @@ namespace Nakama.ConversationHistory.Application.Handlers;
 public sealed class ConversationHistoryUpdatedOnConversationExchangeAppended(IConversationHistoryRepository conversationHistoryRepository)
     : DomainEventHandler<ConversationExchangeAppended>
 {
-    protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken ct)
+    protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken cancellationToken)
     {
-        var history = await conversationHistoryRepository.FindById(conversationExchangeAppended.BotKey.Value, ct);
+        var history = await conversationHistoryRepository.FindById(conversationExchangeAppended.BotKey.Value, cancellationToken);
         if (history is null)
         {
             return;
@@ -22,6 +22,6 @@ public sealed class ConversationHistoryUpdatedOnConversationExchangeAppended(ICo
             conversationExchangeAppended.Exchange.Citation,
             conversationExchangeAppended.Exchange.MoreExplanation,
             conversationExchangeAppended.Exchange.SocraticVariant);
-        await conversationHistoryRepository.Update(history, ct);
+        await conversationHistoryRepository.Update(history, cancellationToken);
     }
 }
