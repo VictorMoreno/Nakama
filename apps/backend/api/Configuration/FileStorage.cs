@@ -2,12 +2,9 @@ namespace Api.Configuration;
 
 public static class FileStorage
 {
-    public static string ResolvePath(IConfiguration configuration, IWebHostEnvironment env, string configKey)
+    public static string ResolvePath(string relativePath, IWebHostEnvironment env)
     {
-        var relative = configuration[$"Storage:{configKey}"]
-            ?? throw new InvalidOperationException($"Missing configuration 'Storage:{configKey}'.");
-
-        var path = Path.Combine(env.ContentRootPath, relative);
+        var path = Path.Combine(env.ContentRootPath, relativePath);
         Directory.CreateDirectory(path);
         return path;
     }

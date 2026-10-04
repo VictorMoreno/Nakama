@@ -1,8 +1,10 @@
+using Microsoft.Extensions.Options;
 using Nakama.Chatbots.Domain;
+using Nakama.Shared.Infrastructure.Storage;
 
 namespace Api.Configuration;
 
-public sealed class ChatbotDocumentContentReader(IConfiguration configuration, IWebHostEnvironment env) : IChatbotDocumentContentReader
+public sealed class ChatbotDocumentContentReader(IOptions<StorageOptions> storage, IWebHostEnvironment env) : IChatbotDocumentContentReader
 {
     private static readonly HashSet<string> ReadableExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -17,7 +19,7 @@ public sealed class ChatbotDocumentContentReader(IConfiguration configuration, I
             return null;
         }
 
-        var basePath = DocumentStorage.ResolvePath(configuration, env, "ChatbotDocumentsPath");
+        var basePath = FileStorage.ResolvePath(storage.Value.ChatbotDocumentsPath, env);
         var path = Path.Combine(basePath, fileName);
         return File.Exists(path) ? await File.ReadAllTextAsync(path, ct) : null;
     }

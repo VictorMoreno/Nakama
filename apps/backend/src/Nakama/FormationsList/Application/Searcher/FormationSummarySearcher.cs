@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Options;
 using Nakama.FormationEnrollment.Domain;
 using Nakama.FormationsList.Domain;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
+using Nakama.Shared.Infrastructure.Storage;
 
 namespace Nakama.FormationsList.Application.Searcher;
 
@@ -16,10 +18,10 @@ public static class FormationSummarySearcher
             await searcher.Execute(query.UserId, query.IsAdmin, ct);
     }
 
-    // An admin sees every formation (they manage all of them); anyone else only sees the ones
-    // they're assigned to - "solo las personas asignadas pueden realizar una formación" starts
-    // right here, at the listing, not just at the execute page.
-    public sealed class Searcher(IFormationSummaryRepository summaryRepository, IFormationEnrollmentRepository enrollmentRepository) : IService
+    public sealed class Searcher(
+        IFormationSummaryRepository summaryRepository,
+        IFormationEnrollmentRepository enrollmentRepository,
+        IOptions<StorageOptions> storage) : IService
     {
         public async Task<IReadOnlyCollection<FormationSummaryResponse>> Execute(Guid userId, bool isAdmin, CancellationToken cancellationToken)
         {
@@ -43,7 +45,7 @@ public static class FormationSummarySearcher
                     f.Description,
                     f.Status,
                     f.Archived,
-                    f.IconUrl is null ? null : $"/api/formations/icons/{f.IconUrl}",
+                    f.IconUrl is null ? null : $"{storage.Value.FormationIconsRoute}/{f.IconUrl}",
                     progressPct,
                     f.ModulesCount,
                     completedCount,

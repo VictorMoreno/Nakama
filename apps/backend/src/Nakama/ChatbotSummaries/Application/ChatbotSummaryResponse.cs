@@ -13,7 +13,7 @@ public sealed record ChatbotSummaryResponse(
     bool Archived,
     string? IconUrl)
 {
-    public static explicit operator ChatbotSummaryResponse(ChatbotSummary entity) => new(
+    public static ChatbotSummaryResponse From(ChatbotSummary entity, string iconsRoute) => new(
         entity.Id,
         entity.Label,
         entity.Description,
@@ -22,5 +22,5 @@ public sealed record ChatbotSummaryResponse(
         entity.TeamCount,
         entity.General,
         entity.Archived,
-        entity.IconUrl is null ? null : $"/api/chatbots/icons/{entity.IconUrl}");
+        entity.IconUrl is null ? null : $"{iconsRoute}/{entity.IconUrl}");
 }

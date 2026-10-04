@@ -1,4 +1,5 @@
 using Api.Configuration.Swagger;
+using Microsoft.Extensions.Options;
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Infrastructure;
 using Nakama.Formations.Domain;
@@ -13,6 +14,7 @@ using Nakama.Shared.Infrastructure.Events;
 using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
 using Nakama.Shared.Infrastructure.Queries;
+using Nakama.Shared.Infrastructure.Storage;
 using Nakama.Users.Domain;
 using Nakama.Users.Infrastructure;
 
@@ -33,6 +35,10 @@ public static class InfrastructureExtensions
         services.AddExceptionHandler<DomainErrorExceptionHandler>();
         services.AddProblemDetails();
 
+        services.AddOptions<StorageOptions>()
+            .BindConfiguration(StorageOptions.SectionName)
+            .ValidateOnStart();
+
         services.Scan(scan => scan
             .FromAssemblies(AssemblyHelper.Domain)
             .AddClasses(classes => classes.AssignableTo(typeof(NhRepositoryBase<,>)))
@@ -41,25 +47,25 @@ public static class InfrastructureExtensions
 
         services.AddSingleton<IChatbotDocumentStorage>(sp =>
         {
-            var configuration = sp.GetRequiredService<IConfiguration>();
+            var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
             var env = sp.GetRequiredService<IWebHostEnvironment>();
-            var basePath = DocumentStorage.ResolvePath(configuration, env, "ChatbotDocumentsPath");
+            var basePath = FileStorage.ResolvePath(options.ChatbotDocumentsPath, env);
             return new DiskChatbotDocumentStorage(basePath);
         });
 
         services.AddSingleton<IChatbotIconStorage>(sp =>
         {
-            var configuration = sp.GetRequiredService<IConfiguration>();
+            var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
             var env = sp.GetRequiredService<IWebHostEnvironment>();
-            var basePath = IconStorage.ResolvePath(configuration, env, "ChatbotIconsPath");
+            var basePath = FileStorage.ResolvePath(options.ChatbotIconsPath, env);
             return new DiskChatbotIconStorage(basePath);
         });
 
         services.AddSingleton<IFormationIconStorage>(sp =>
         {
-            var configuration = sp.GetRequiredService<IConfiguration>();
+            var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
             var env = sp.GetRequiredService<IWebHostEnvironment>();
-            var basePath = IconStorage.ResolvePath(configuration, env, "FormationIconsPath");
+            var basePath = FileStorage.ResolvePath(options.FormationIconsPath, env);
             return new DiskFormationIconStorage(basePath);
         });
 

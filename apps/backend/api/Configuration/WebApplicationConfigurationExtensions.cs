@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Nakama.Shared.Infrastructure.Persistence;
+using Nakama.Shared.Infrastructure.Storage;
 
 namespace Api.Configuration;
 
@@ -19,20 +21,22 @@ public static class WebApplicationConfigurationExtensions
 
         app.UseExceptionHandler();
 
+        var storage = app.Services.GetRequiredService<IOptions<StorageOptions>>().Value;
+
         app.UseStaticFiles(new StaticFileOptions
         {
-            FileProvider = new PhysicalFileProvider(IconStorage.ResolvePath(app.Configuration, app.Environment, "ChatbotIconsPath")),
-            RequestPath = "/api/chatbots/icons"
+            FileProvider = new PhysicalFileProvider(FileStorage.ResolvePath(storage.ChatbotIconsPath, app.Environment)),
+            RequestPath = storage.ChatbotIconsRoute
         });
         app.UseStaticFiles(new StaticFileOptions
         {
-            FileProvider = new PhysicalFileProvider(IconStorage.ResolvePath(app.Configuration, app.Environment, "FormationIconsPath")),
-            RequestPath = "/api/formations/icons"
+            FileProvider = new PhysicalFileProvider(FileStorage.ResolvePath(storage.FormationIconsPath, app.Environment)),
+            RequestPath = storage.FormationIconsRoute
         });
         app.UseStaticFiles(new StaticFileOptions
         {
-            FileProvider = new PhysicalFileProvider(DocumentStorage.ResolvePath(app.Configuration, app.Environment, "ChatbotDocumentsPath")),
-            RequestPath = "/api/chatbots/documents"
+            FileProvider = new PhysicalFileProvider(FileStorage.ResolvePath(storage.ChatbotDocumentsPath, app.Environment)),
+            RequestPath = storage.ChatbotDocumentsRoute
         });
 
         app.MapEndpoints();

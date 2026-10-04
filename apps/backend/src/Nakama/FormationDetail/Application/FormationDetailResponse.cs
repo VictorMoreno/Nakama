@@ -17,14 +17,14 @@ public sealed record FormationDetailResponse(
     List<FormationModuleRow> Modules,
     List<FormationMemberRow> Team)
 {
-    public static explicit operator FormationDetailResponse(FormationDetail entity) => new(
+    public static FormationDetailResponse From(FormationDetail entity, string iconsRoute) => new(
         entity.Id,
         entity.Title,
         entity.Audience,
         entity.Description,
         entity.Status,
         entity.Archived,
-        entity.IconUrl is null ? null : $"/api/formations/icons/{entity.IconUrl}",
+        entity.IconUrl is null ? null : $"{iconsRoute}/{entity.IconUrl}",
         entity.LinkedChatbotKey,
         entity.LinkedChatbotLabel,
         entity.Modules,

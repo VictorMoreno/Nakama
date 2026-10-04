@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Options;
 using Nakama.ChatbotDetail.Domain;
 using Nakama.ChatbotDetail.Domain.Errors;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
+using Nakama.Shared.Infrastructure.Storage;
 
 namespace Nakama.ChatbotDetail.Application.Finder;
 
@@ -11,12 +13,12 @@ public static class ChatbotDetailFinder
 {
     public sealed record Query(Guid Id) : IQuery<ChatbotDetailResponse>;
 
-    public sealed class Handler(Finder finder) : IQueryHandler<Query, ChatbotDetailResponse>
+    public sealed class Handler(Finder finder, IOptions<StorageOptions> storage) : IQueryHandler<Query, ChatbotDetailResponse>
     {
         public async Task<ChatbotDetailResponse> Handle(Query query, CancellationToken ct)
         {
             var chatbot = await finder.Execute(query.Id, ct);
-            return (ChatbotDetailResponse)chatbot;
+            return ChatbotDetailResponse.From(chatbot, storage.Value.ChatbotIconsRoute, storage.Value.ChatbotDocumentsRoute);
         }
     }
 

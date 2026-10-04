@@ -24,7 +24,7 @@ public sealed record ChatbotDetailResponse(
     List<GapQuestionRow> TopQuestions,
     List<StatTileRow> Stats)
 {
-    public static explicit operator ChatbotDetailResponse(ChatbotDetail entity) => new(
+    public static ChatbotDetailResponse From(ChatbotDetail entity, string iconsRoute, string documentsRoute) => new(
         entity.Id,
         entity.Label,
         entity.Description,
@@ -33,12 +33,12 @@ public sealed record ChatbotDetailResponse(
         entity.Context,
         entity.General,
         entity.Archived,
-        entity.IconUrl is null ? null : $"/api/chatbots/icons/{entity.IconUrl}",
+        entity.IconUrl is null ? null : $"{iconsRoute}/{entity.IconUrl}",
         entity.Socratic,
         entity.ExplicaMas,
         entity.Provider,
         entity.Model,
-        entity.Docs.Select(d => (ChatbotDocumentResponse)d).ToList(),
+        entity.Docs.Select(d => ChatbotDocumentResponse.From(d, documentsRoute)).ToList(),
         entity.Team,
         entity.Gaps,
         entity.TopQuestions,
@@ -54,12 +54,12 @@ public sealed record ChatbotDocumentResponse(
     DateTime Updated,
     string Url)
 {
-    public static explicit operator ChatbotDocumentResponse(ChatbotDocumentRow row) => new(
+    public static ChatbotDocumentResponse From(ChatbotDocumentRow row, string documentsRoute) => new(
         row.Id,
         row.Name,
         row.Origin,
         row.Status,
         row.StatusLabel,
         row.Updated,
-        $"/api/chatbots/documents/{row.FileName}");
+        $"{documentsRoute}/{row.FileName}");
 }
