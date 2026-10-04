@@ -18,7 +18,10 @@ public static class ChatbotDocumentRemover
         }
     }
 
-    public sealed class Remover(IChatbotsRepository repository, IEventBus eventBus) : IService
+    public sealed class Remover(
+        IChatbotsRepository repository,
+        IChatbotDocumentStorage documentStorage,
+        IEventBus eventBus) : IService
     {
         private readonly ChatbotFinderById _finder = new(repository);
 
@@ -26,7 +29,14 @@ public static class ChatbotDocumentRemover
         {
             Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
 
+            var fileName = chatbot.Documents.ElementAtOrDefault(index)?.FileName;
+
             chatbot.RemoveDocument(index);
+
+            if (fileName is not null)
+            {
+                documentStorage.Delete(fileName);
+            }
 
             await repository.Save(chatbot, cancellationToken);
             await eventBus.Publish(chatbot, cancellationToken);

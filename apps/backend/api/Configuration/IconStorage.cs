@@ -24,7 +24,8 @@ public static class IconStorage
         // An icon replaces whatever was there before (1 icon per chatbot/formation) - unlike
         // documents, which are always distinct new entries, so no delete-before-save there.
         DeleteExisting(basePath, id);
-        return await FileStorage.SaveAsync(basePath, id.ToString(), extension, file, MaxBytes, ct);
+        await using var stream = file.OpenReadStream();
+        return await FileStorage.SaveAsync(basePath, id.ToString(), extension, stream, file.Length, MaxBytes, ct);
     }
 
     public static void DeleteExisting(string basePath, Guid id) => FileStorage.DeleteExisting(basePath, id.ToString());

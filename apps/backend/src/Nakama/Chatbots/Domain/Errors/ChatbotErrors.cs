@@ -14,13 +14,23 @@ public sealed class ChatbotAlreadyExistsError(string id)
 public sealed class ChatbotProviderNotConnectedError(string provider)
     : DomainError("nakama.chatbots.provider_not_connected", $"El proveedor '{provider}' todavía no tiene un adaptador conectado.");
 
+public sealed class ChatbotDocumentUnsupportedTypeError()
+    : DomainError("nakama.chatbots.document_unsupported_type", "Unsupported document type. Only PDF, Markdown, and plain text files are allowed.");
+
+public sealed class ChatbotDocumentTooLargeError(long maxBytes)
+    : DomainError("nakama.chatbots.document_too_large", $"File exceeds the {maxBytes / (1024 * 1024)} MB limit.");
+
 public static class ChatbotErrors
 {
     public static DomainError OwnerCannotBeRemoved { get; } = new ChatbotOwnerCannotBeRemovedError();
+
+    public static DomainError DocumentUnsupportedType { get; } = new ChatbotDocumentUnsupportedTypeError();
 
     public static DomainError NotFound(ChatbotId id) => new ChatbotNotFoundError(id.ToString());
 
     public static DomainError AlreadyExists(string id) => new ChatbotAlreadyExistsError(id);
 
     public static DomainError ProviderNotConnected(string provider) => new ChatbotProviderNotConnectedError(provider);
+
+    public static DomainError DocumentTooLarge(long maxBytes) => new ChatbotDocumentTooLargeError(maxBytes);
 }

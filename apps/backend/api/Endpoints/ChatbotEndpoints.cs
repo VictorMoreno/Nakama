@@ -173,13 +173,10 @@ public sealed class ChatbotEndpoints : IEndpoint
         [FromForm] string name,
         [FromForm] string origin,
         ICommandBus commandBus,
-        IConfiguration configuration,
-        IWebHostEnvironment env,
         CancellationToken ct)
     {
-        var basePath = DocumentStorage.ResolvePath(configuration, env, "ChatbotDocumentsPath");
-        var fileName = await DocumentStorage.SaveAsync(basePath, documentId, file, ct);
-        await commandBus.Send(new ChatbotDocumentAdder.Command(id, documentId, name, origin, fileName), ct);
+        await using var stream = file.OpenReadStream();
+        await commandBus.Send(new ChatbotDocumentAdder.Command(id, documentId, name, origin, file.FileName, stream, file.Length), ct);
         return Results.Created();
     }
 
@@ -187,22 +184,9 @@ public sealed class ChatbotEndpoints : IEndpoint
         Guid id,
         int index,
         ICommandBus commandBus,
-        IQueryBus queryBus,
-        IConfiguration configuration,
-        IWebHostEnvironment env,
         CancellationToken ct)
     {
-        var detail = await queryBus.Ask(new ChatbotDetailFinder.Query(id), ct);
-        var fileName = index >= 0 && index < detail.Docs.Count ? Path.GetFileName(detail.Docs[index].Url) : null;
-
         await commandBus.Send(new ChatbotDocumentRemover.Command(id, index), ct);
-
-        if (fileName is not null)
-        {
-            var basePath = DocumentStorage.ResolvePath(configuration, env, "ChatbotDocumentsPath");
-            DocumentStorage.Delete(basePath, fileName);
-        }
-
         return Results.NoContent();
     }
 

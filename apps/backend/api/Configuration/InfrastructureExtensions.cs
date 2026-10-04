@@ -1,5 +1,6 @@
 using Api.Configuration.Swagger;
 using Nakama.Chatbots.Domain;
+using Nakama.Chatbots.Infrastructure;
 using Nakama.LlmProviders.Domain;
 using Nakama.LlmProviders.Infrastructure;
 using Nakama.Shared.Application;
@@ -33,8 +34,26 @@ public static class InfrastructureExtensions
         services.Scan(scan => scan
             .FromAssemblies(AssemblyHelper.Domain)
             .AddClasses(classes => classes.AssignableTo(typeof(NhRepositoryBase<,>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime());
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
+
+        services.AddSingleton<IChatbotDocumentStorage>(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var env = sp.GetRequiredService<IWebHostEnvironment>();
+            var basePath = DocumentStorage.ResolvePath(configuration, env, "ChatbotDocumentsPath");
+            return new DiskChatbotDocumentStorage(basePath);
+        });
+
+        services.AddSingleton<IWriteSessionFactory, NhWriteSessionFactory>();
+        services.AddSingleton<IReadSessionFactory, NhReadSessionFactory>();
+
+        services.AddIdentityCore<User>()
+            .AddUserStore<NhUserStore>();
+
+        services.AddKeyedScoped<ILlmClient, AnthropicLlmClient>(LlmProvider.Anthropic.ToString());
+        services.AddScoped<IChatbotDocumentContentReader, ChatbotDocumentContentReader>();
+        services.AddSingleton<ISystemClock, SystemClock>();
 
         return services;
     }
@@ -46,28 +65,18 @@ public static class InfrastructureExtensions
         services.Scan(scan => scan
             .FromAssemblies(AssemblyHelper.Domain)
             .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime()
+            .AsImplementedInterfaces()
+            .WithScopedLifetime()
             .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime()
+            .AsImplementedInterfaces()
+            .WithScopedLifetime()
             .AddClasses(classes => classes.AssignableTo<IService>())
-                .AsSelf()
-                .WithScopedLifetime());
+            .AsSelf()
+            .WithScopedLifetime());
 
-        services.AddSingleton<IWriteSessionFactory, NhWriteSessionFactory>();
-        services.AddSingleton<IReadSessionFactory, NhReadSessionFactory>();
-
-        services.AddSingleton<ISystemClock, SystemClock>();
         services.AddScoped<IEventBus, EventBus>();
         services.AddScoped<ICommandBus, CommandBus>();
         services.AddScoped<IQueryBus, QueryBus>();
-
-        services.AddIdentityCore<User>()
-            .AddUserStore<NhUserStore>();
-
-        services.AddKeyedScoped<ILlmClient, AnthropicLlmClient>(LlmProvider.Anthropic.ToString());
-        services.AddScoped<IChatbotDocumentContentReader, ChatbotDocumentContentReader>();
 
         return services;
     }

@@ -18,9 +18,9 @@ public static class FileStorage
         return path;
     }
 
-    public static async Task<string> SaveAsync(string basePath, string id, string extension, IFormFile file, long maxBytes, CancellationToken ct)
+    public static async Task<string> SaveAsync(string basePath, string id, string extension, Stream content, long length, long maxBytes, CancellationToken ct)
     {
-        if (file.Length > maxBytes)
+        if (length > maxBytes)
         {
             throw new BadHttpRequestException($"File exceeds the {maxBytes / (1024 * 1024)} MB limit.");
         }
@@ -28,7 +28,7 @@ public static class FileStorage
         var fileName = $"{id}{extension}";
         await using (var stream = File.Create(Path.Combine(basePath, fileName)))
         {
-            await file.CopyToAsync(stream, ct);
+            await content.CopyToAsync(stream, ct);
         }
 
         return fileName;

@@ -8,27 +8,30 @@ namespace Nakama.Chatbots.Application.DocumentAdder;
 
 public static class ChatbotDocumentAdder
 {
-    public sealed record Command(Guid Id, Guid DocumentId, string Name, string Origin, string FileName) : ICommand;
+    public sealed record Command(Guid Id, Guid DocumentId, string Name, string Origin, string OriginalFileName, Stream Content, long Length) : ICommand;
 
     public sealed class Handler(Adder adder) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            await adder.Execute(ChatbotId.From(cmd.Id), cmd.DocumentId, cmd.Name, cmd.Origin, cmd.FileName, ct);
+            await adder.Execute(ChatbotId.From(cmd.Id), cmd.DocumentId, cmd.Name, cmd.Origin, cmd.OriginalFileName, cmd.Content, cmd.Length, ct);
         }
     }
 
     public sealed class Adder(
         IChatbotsRepository repository,
+        IChatbotDocumentStorage documentStorage,
         IEventBus eventBus,
         ISystemClock systemClock) : IService
     {
         private readonly ChatbotFinderById _finder = new(repository);
 
-        public async Task Execute(ChatbotId id, Guid documentId, string name, string origin, string fileName,
-            CancellationToken cancellationToken)
+        public async Task Execute(ChatbotId id, Guid documentId, string name, string origin, string originalFileName,
+            Stream content, long length, CancellationToken cancellationToken)
         {
             Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
+
+            var fileName = await documentStorage.Save(documentId, originalFileName, content, length, cancellationToken);
 
             chatbot.AddDocument(new ChatbotDocument(
                 documentId, name, origin, DocStatus.Pending, "Pendiente", systemClock.UtcNow, fileName));
