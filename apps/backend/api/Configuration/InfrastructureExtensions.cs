@@ -1,6 +1,8 @@
 using Api.Configuration.Swagger;
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Infrastructure;
+using Nakama.Formations.Domain;
+using Nakama.Formations.Infrastructure;
 using Nakama.LlmProviders.Domain;
 using Nakama.LlmProviders.Infrastructure;
 using Nakama.Shared.Application;
@@ -43,6 +45,22 @@ public static class InfrastructureExtensions
             var env = sp.GetRequiredService<IWebHostEnvironment>();
             var basePath = DocumentStorage.ResolvePath(configuration, env, "ChatbotDocumentsPath");
             return new DiskChatbotDocumentStorage(basePath);
+        });
+
+        services.AddSingleton<IChatbotIconStorage>(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var env = sp.GetRequiredService<IWebHostEnvironment>();
+            var basePath = IconStorage.ResolvePath(configuration, env, "ChatbotIconsPath");
+            return new DiskChatbotIconStorage(basePath);
+        });
+
+        services.AddSingleton<IFormationIconStorage>(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var env = sp.GetRequiredService<IWebHostEnvironment>();
+            var basePath = IconStorage.ResolvePath(configuration, env, "FormationIconsPath");
+            return new DiskFormationIconStorage(basePath);
         });
 
         services.AddSingleton<IWriteSessionFactory, NhWriteSessionFactory>();

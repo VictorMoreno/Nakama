@@ -213,25 +213,19 @@ public sealed class ChatbotEndpoints : IEndpoint
         Guid id,
         IFormFile file,
         ICommandBus commandBus,
-        IConfiguration configuration,
-        IWebHostEnvironment env,
         CancellationToken ct)
     {
-        var basePath = IconStorage.ResolvePath(configuration, env, "ChatbotIconsPath");
-        var fileName = await IconStorage.SaveAsync(basePath, id, file, ct);
-        await commandBus.Send(new ChatbotIconUpdater.Command(id, fileName), ct);
+        await using var stream = file.OpenReadStream();
+        var upload = new ChatbotIconUpdater.Upload(file.ContentType, stream, file.Length);
+        await commandBus.Send(new ChatbotIconUpdater.Command(id, upload), ct);
         return Results.NoContent();
     }
 
     private static async Task<IResult> RemoveChatbotIcon(
         Guid id,
         ICommandBus commandBus,
-        IConfiguration configuration,
-        IWebHostEnvironment env,
         CancellationToken ct)
     {
-        var basePath = IconStorage.ResolvePath(configuration, env, "ChatbotIconsPath");
-        IconStorage.DeleteExisting(basePath, id);
         await commandBus.Send(new ChatbotIconUpdater.Command(id, null), ct);
         return Results.NoContent();
     }

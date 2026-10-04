@@ -17,9 +17,17 @@ public sealed class FormationAlreadyExistsError(string key)
 public sealed class FormationModuleAlreadyExistsError(string moduleId, string formationKey)
     : DomainError("nakama.formations.module_already_exists", $"Module '{moduleId}' already exists in formation '{formationKey}'.");
 
+public sealed class FormationIconUnsupportedTypeError()
+    : DomainError("nakama.formations.icon_unsupported_type", "Unsupported image type. Only PNG and JPEG are allowed.");
+
+public sealed class FormationIconTooLargeError(long maxBytes)
+    : DomainError("nakama.formations.icon_too_large", $"File exceeds the {maxBytes / (1024 * 1024)} MB limit.");
+
 public static class FormationErrors
 {
     public static DomainError ModuleLockedByGating { get; } = new FormationModuleLockedByGatingError();
+
+    public static DomainError IconUnsupportedType { get; } = new FormationIconUnsupportedTypeError();
 
     public static DomainError NotFound(FormationId id) => new FormationNotFoundError(id.ToString());
 
@@ -28,4 +36,6 @@ public static class FormationErrors
     public static DomainError AlreadyExists(string key) => new FormationAlreadyExistsError(key);
 
     public static DomainError ModuleAlreadyExists(string moduleId, string formationKey) => new FormationModuleAlreadyExistsError(moduleId, formationKey);
+
+    public static DomainError IconTooLarge(long maxBytes) => new FormationIconTooLargeError(maxBytes);
 }

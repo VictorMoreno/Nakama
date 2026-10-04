@@ -20,11 +20,19 @@ public sealed class ChatbotDocumentUnsupportedTypeError()
 public sealed class ChatbotDocumentTooLargeError(long maxBytes)
     : DomainError("nakama.chatbots.document_too_large", $"File exceeds the {maxBytes / (1024 * 1024)} MB limit.");
 
+public sealed class ChatbotIconUnsupportedTypeError()
+    : DomainError("nakama.chatbots.icon_unsupported_type", "Unsupported image type. Only PNG and JPEG are allowed.");
+
+public sealed class ChatbotIconTooLargeError(long maxBytes)
+    : DomainError("nakama.chatbots.icon_too_large", $"File exceeds the {maxBytes / (1024 * 1024)} MB limit.");
+
 public static class ChatbotErrors
 {
     public static DomainError OwnerCannotBeRemoved { get; } = new ChatbotOwnerCannotBeRemovedError();
 
     public static DomainError DocumentUnsupportedType { get; } = new ChatbotDocumentUnsupportedTypeError();
+
+    public static DomainError IconUnsupportedType { get; } = new ChatbotIconUnsupportedTypeError();
 
     public static DomainError NotFound(ChatbotId id) => new ChatbotNotFoundError(id.ToString());
 
@@ -33,4 +41,6 @@ public static class ChatbotErrors
     public static DomainError ProviderNotConnected(string provider) => new ChatbotProviderNotConnectedError(provider);
 
     public static DomainError DocumentTooLarge(long maxBytes) => new ChatbotDocumentTooLargeError(maxBytes);
+
+    public static DomainError IconTooLarge(long maxBytes) => new ChatbotIconTooLargeError(maxBytes);
 }
