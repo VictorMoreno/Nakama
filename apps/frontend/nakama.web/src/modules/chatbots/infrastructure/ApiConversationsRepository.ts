@@ -44,9 +44,61 @@ export class ApiConversationsRepository implements IConversationsRepository {
     return perBot.flat();
   }
 
-  async Ask(conversationId: string, botKey: string, userId: string, title: string, question: string): Promise<string> {
-    const response = await this.client.ask(botKey, conversationId, { userId, title, question });
-    return response.answer ?? "";
+  async Ask(
+    conversationId: string,
+    botKey: string,
+    userId: string,
+    title: string,
+    question: string,
+    onChunk: (textSoFar: string) => void
+  ): Promise<string> {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
+    const response = await fetch(`${baseUrl}/api/chatbots/${botKey}/conversations/${conversationId}/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, title, question })
+    });
+
+    if (!response.ok || !response.body) {
+      const problem = await response.json().catch(() => null);
+      throw problem ?? new Error("No se pudo obtener una respuesta del chatbot.");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let answer = "";
+    let sawDone = false;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      let separatorIndex;
+      while ((separatorIndex = buffer.indexOf("\n\n")) !== -1) {
+        const frame = buffer.slice(0, separatorIndex);
+        buffer = buffer.slice(separatorIndex + 2);
+        const lines = frame.split("\n");
+        const eventName = lines.find((l) => l.startsWith("event:"))?.slice(6).trim() ?? "chunk";
+        const data = lines.find((l) => l.startsWith("data:"))?.slice(5).trim() ?? "";
+
+        if (eventName === "chunk") {
+          answer += JSON.parse(data) as string;
+          onChunk(answer);
+        } else if (eventName === "done") {
+          sawDone = true;
+        } else if (eventName === "error") {
+          throw JSON.parse(data);
+        }
+      }
+    }
+
+    if (!sawDone) {
+      throw new Error("La respuesta se interrumpió antes de completarse.");
+    }
+
+    return answer;
   }
 
   async Delete(botKey: string, conversationId: string, userId: string): Promise<void> {

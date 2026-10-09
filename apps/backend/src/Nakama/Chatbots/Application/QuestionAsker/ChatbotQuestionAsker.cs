@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Nakama.ChatbotDetail.Application;
 using Nakama.ChatbotDetail.Application.Finder;
@@ -21,7 +23,7 @@ public static class ChatbotQuestionAsker
         IEventBus eventBus,
         ISystemClock systemClock) : IService
     {
-        public async Task<string> Execute(Command cmd, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<string> Execute(Command cmd, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             ChatbotDetailResponse chatbot =
                 await queryBus.Ask(new ChatbotDetailFinder.Query(cmd.BotKey), cancellationToken);
@@ -38,15 +40,19 @@ public static class ChatbotQuestionAsker
             string systemPrompt = await this.BuildSystemPrompt(chatbot, cancellationToken);
             List<LlmMessage> history = BuildHistory(conversation, cmd.Question);
 
-            string answer = await llmClient.Ask(chatbot.Model, systemPrompt, history, cancellationToken);
+            StringBuilder answerBuilder = new();
+            await foreach (string chunk in llmClient.AskStream(chatbot.Model, systemPrompt, history, cancellationToken))
+            {
+                answerBuilder.Append(chunk);
+                yield return chunk;
+            }
 
+            string answer = answerBuilder.ToString();
             conversation.AppendExchange(new ConversationExchange(cmd.Question, answer, string.Empty, string.Empty,
                 string.Empty));
 
             await conversationsRepository.Save(conversation, cancellationToken);
             await eventBus.Publish(conversation, cancellationToken);
-
-            return answer;
         }
 
         private static List<LlmMessage> BuildHistory(Conversation conversation, string question)

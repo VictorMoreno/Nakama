@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Api.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Nakama.ChatbotDetail.Application;
@@ -87,13 +88,14 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{botKey:guid}/conversations/{conversationId:guid}/ask", AskChatbot)
-            .WithSummary("Asks the chatbot a real question and gets a model-generated answer back.")
+            .WithSummary("Streams a chatbot answer token-by-token via Server-Sent Events.")
             .WithDescription(
-                "Generates the answer with the chatbot's configured LLM provider/model and persists the exchange. " +
-                "If no conversation exists yet with the given conversationId, one is started implicitly using that exact id.")
-            .Produces<AskChatbotResponse>()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+                "Generates the answer with the chatbot's configured LLM provider/model and persists the exchange once " +
+                "the stream completes. If no conversation exists yet with the given conversationId, one is started " +
+                "implicitly using that exact id. Preflight failures (chatbot not found, provider not connected) still " +
+                "surface as a normal 404/422 JSON response; failures once streaming has started surface as an " +
+                "`event: error` SSE frame instead, since the HTTP status is already committed by then.")
+            .ExcludeFromDescription();
 
         group.MapDelete("/{botKey:guid}/conversations/{conversationId:guid}", DeleteConversation)
             .WithSummary("Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.")
@@ -230,17 +232,49 @@ public sealed class ChatbotEndpoints : IEndpoint
         return Results.NoContent();
     }
 
-    private static async Task<IResult> AskChatbot(
+    private static async Task AskChatbot(
         Guid botKey,
         Guid conversationId,
         AskChatbotRequest body,
         ChatbotQuestionAsker.Asker asker,
+        HttpContext httpContext,
         CancellationToken ct)
     {
-        var answer = await asker.Execute(
-            new ChatbotQuestionAsker.Command(botKey, conversationId, body.UserId, body.Title, body.Question),
-            ct);
-        return Results.Ok(new AskChatbotResponse(answer));
+        var cmd = new ChatbotQuestionAsker.Command(botKey, conversationId, body.UserId, body.Title, body.Question);
+        IAsyncEnumerator<string> stream = asker.Execute(cmd, ct).GetAsyncEnumerator(ct);
+        bool hasChunk = await stream.MoveNextAsync();
+
+        httpContext.Response.ContentType = "text/event-stream";
+        httpContext.Response.Headers.CacheControl = "no-cache";
+        httpContext.Response.Headers["X-Accel-Buffering"] = "no";
+
+        try
+        {
+            while (hasChunk)
+            {
+                await WriteSseEvent(httpContext.Response, "chunk", JsonSerializer.Serialize(stream.Current), ct);
+                hasChunk = await stream.MoveNextAsync();
+            }
+
+            await WriteSseEvent(httpContext.Response, "done", "{}", ct);
+        }
+        catch (Exception ex)
+        {
+            var (code, detail) = ex is DomainError domainError
+                ? (domainError.Code, domainError.Message)
+                : ("nakama.unexpected", "No se pudo completar la respuesta.");
+            await WriteSseEvent(httpContext.Response, "error", JsonSerializer.Serialize(new { code, detail }), ct);
+        }
+        finally
+        {
+            await stream.DisposeAsync();
+        }
+    }
+
+    private static async Task WriteSseEvent(HttpResponse response, string eventName, string jsonData, CancellationToken ct)
+    {
+        await response.WriteAsync($"event: {eventName}\ndata: {jsonData}\n\n", ct);
+        await response.Body.FlushAsync(ct);
     }
 
     private static async Task<IResult> DeleteConversation(
@@ -294,6 +328,4 @@ public sealed class ChatbotEndpoints : IEndpoint
     private sealed record AddChatbotTeamMemberRequest(Guid UserId, int Role);
 
     private sealed record AskChatbotRequest(Guid UserId, string Title, string Question);
-
-    private sealed record AskChatbotResponse(string Answer);
 }

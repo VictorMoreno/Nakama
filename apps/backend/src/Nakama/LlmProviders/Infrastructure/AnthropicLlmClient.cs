@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Anthropic;
 using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
@@ -11,7 +12,8 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) 
 {
     private const int DefaultMaxTokens = 16000;
 
-    public async Task<string> Ask(string model, string systemPrompt, IReadOnlyList<LlmMessage> history, CancellationToken ct)
+    public async IAsyncEnumerable<string> AskStream(string model, string systemPrompt, IReadOnlyList<LlmMessage> history,
+        [EnumeratorCancellation] CancellationToken ct)
     {
         var config = await repository.FindByProvider(LlmProvider.Anthropic, ct);
         if (config is null || !config.Enabled || string.IsNullOrEmpty(config.ApiKey))
@@ -21,25 +23,41 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) 
 
         AnthropicClient client = new() { ApiKey = config.ApiKey };
 
-        try
+        var parameters = new MessageCreateParams
         {
-            var response = await client.Messages.Create(new MessageCreateParams
+            Model = model,
+            MaxTokens = DefaultMaxTokens,
+            System = systemPrompt,
+            Messages = history.Select(m => new MessageParam
             {
-                Model = model,
-                MaxTokens = DefaultMaxTokens,
-                System = systemPrompt,
-                Messages = history.Select(m => new MessageParam
-                {
-                    Role = m.Role == "assistant" ? Role.Assistant : Role.User,
-                    Content = m.Content,
-                }).ToList(),
-            }, ct);
+                Role = m.Role == "assistant" ? Role.Assistant : Role.User,
+                Content = m.Content,
+            }).ToList()
+        };
 
-            return string.Join("\n", response.Content.Select(b => b.Value).OfType<TextBlock>().Select(t => t.Text));
-        }
-        catch (AnthropicApiException ex)
+        await using IAsyncEnumerator<RawMessageStreamEvent> events = client.Messages.CreateStreaming(parameters, cancellationToken: ct)
+            .GetAsyncEnumerator(ct);
+        while (true)
         {
-            throw LlmProviderErrors.RequestFailed(LlmProvider.Anthropic, ex.Message);
+            bool hasNext;
+            try
+            {
+                hasNext = await events.MoveNextAsync();
+            }
+            catch (AnthropicApiException ex)
+            {
+                throw LlmProviderErrors.RequestFailed(LlmProvider.Anthropic, ex.Message);
+            }
+
+            if (!hasNext)
+            {
+                yield break;
+            }
+
+            if (events.Current.TryPickContentBlockDelta(out var delta) && delta.Delta.TryPickText(out var text))
+            {
+                yield return text.Text;
+            }
         }
     }
 }

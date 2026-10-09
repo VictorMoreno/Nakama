@@ -118,34 +118,42 @@ export function useChat() {
     if (isNewConversation) setActiveConversationId(conversationId);
     const title = val.length > MAX_TITLE_LENGTH ? `${val.slice(0, MAX_TITLE_LENGTH)}…` : val;
 
+    const botMsgId = nextId();
+
     try {
-      const answer = await conversationsRepo.Ask(conversationId, bot.id, currentUser.id, title, val);
+      const answer = await conversationsRepo.Ask(conversationId, bot.id, currentUser.id, title, val, (textSoFar) => {
+        setThread((prev) => {
+          const alreadyStarted = prev.some((item) => item.id === botMsgId);
+          const example: ChatExample = { q: val, a: textSoFar, cite: "", more: "", socratic: "" };
+          if (!alreadyStarted) {
+            return [
+              ...prev.filter((item) => item.id !== pendingId),
+              { kind: "bot", id: botMsgId, bot: { id: botMsgId, example, useSocratic: bot.settings.socratic, revealed: false } }
+            ];
+          }
+          return prev.map((item) =>
+            item.kind === "bot" && item.id === botMsgId
+              ? { ...item, bot: { ...item.bot, example: { ...item.bot.example, a: textSoFar } } }
+              : item
+          );
+        });
+      });
       const example: ChatExample = { q: val, a: answer, cite: "", more: "", socratic: "" };
 
       if (isNewConversation) setActiveConversationId(conversationId);
-      setThread((prev) => [
-        ...prev.filter((item) => item.id !== pendingId),
-        { kind: "bot", id: nextId(), bot: { id: nextId(), example, useSocratic: bot.settings.socratic, revealed: false } }
-      ]);
 
-      // Optimistic local update: `conversations` is only ever fetched once on mount, so without
-      // this the new/updated conversation wouldn't show up in the sidebar until the component
-      // remounts (e.g. leaving the page and coming back) and refetches for real.
       setConversations((prev) =>
         isNewConversation
           ? [{ id: conversationId, botKey: bot.id, title, dateLabel: new Date().toLocaleDateString("es-ES"), exchanges: [example] }, ...prev]
           : prev.map((c) => (c.id === conversationId ? { ...c, exchanges: [...c.exchanges, example] } : c))
       );
     } catch (error) {
-      setThread((prev) => prev.filter((item) => item.id !== pendingId));
+      setThread((prev) => prev.filter((item) => item.id !== pendingId && item.id !== botMsgId));
       const detail = error && typeof error === "object" && "detail" in error ? String((error as { detail?: unknown }).detail) : null;
       showToast(detail ?? "No se pudo obtener una respuesta del chatbot.");
     }
   }
 
-  // Attaching only stages files locally for this prototype — there's no upload
-  // repository to send them to yet (no IChatbotsRepository method for it), so this is
-  // a demo-only affordance, same spirit as the app's other "(demo)" actions.
   function handleAttachFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     setAttachedFiles((prev) => [...prev, ...Array.from(files)]);
@@ -156,10 +164,6 @@ export function useChat() {
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
-  // Global feedback (👍/👎), decoupled from any specific exchange - see AnalyticsFeedbackSubmitter:
-  // ConversationExchange still has no id of its own (a plain item in an embedded list, not a row
-  // with identity), so per-message rating isn't viable - this stays the same "global useful-answer
-  // rate" the Analytics dashboard already shows, not a per-message rating.
   function submitFeedback(useful: boolean) {
     void analyticsRepo.SubmitFeedback(useful);
   }
