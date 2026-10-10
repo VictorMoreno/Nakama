@@ -10,17 +10,12 @@ import {
   LoginIcon,
   MailIcon
 } from "../../components/shared/icons";
+import type { AuthenticatedUser } from "../../../modules/auth/domain/AuthenticatedUser";
+import type { IAuthRepository } from "../../../modules/auth/domain/IAuthRepository";
+import { Services } from "../../../shared/infrastructure/injection/Services";
+import { useInjection } from "../../../shared/infrastructure/injection/useInjection";
 import { useUser } from "../../shared/contexts/UserContext";
 import styles from "./LoginPage.module.scss";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
-
-interface LoginResponse {
-  id: string;
-  email: string;
-  name: string;
-  isAdmin: boolean;
-}
 
 const FEATURES = [
   { icon: ChatIcon, text: "Chat entrenado con la documentación de tu equipo" },
@@ -31,6 +26,7 @@ const FEATURES = [
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setCurrentUser } = useUser();
+  const authRepo = useInjection<IAuthRepository>(Services.AuthRepository.id);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -41,16 +37,11 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      if (!response.ok) {
+      const user: AuthenticatedUser | null = await authRepo.Login(email, password);
+      if (!user) {
         setError("Correo o contraseña incorrectos.");
         return;
       }
-      const user: LoginResponse = await response.json();
       setCurrentUser(user);
       navigate("/chat");
     } finally {

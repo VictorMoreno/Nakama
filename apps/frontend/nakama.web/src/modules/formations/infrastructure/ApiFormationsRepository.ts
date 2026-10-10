@@ -12,6 +12,7 @@ import type {
   UpdateFormationModuleRequest,
   UpdateFormationStatusRequest
 } from "../../../shared/infrastructure/GeneratedNakamaClient";
+import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlToFileParameter";
 import type { Formation, FormationLifecycleStatus, FormationMap, FormationMember, FormationModule, ModuleType, QuizQuestion } from "../domain/Formation";
 import type { CreateFormationInput, IFormationsRepository } from "../domain/IFormationsRepository";
 
@@ -45,31 +46,6 @@ function toFormationModule(row: FormationModuleRow): FormationModule {
 
 function toFormationMember(row: FormationMemberRow): FormationMember {
   return { userId: row.userId ?? "", progress: row.progress ?? 0 };
-}
-
-// No generated client method exists for these - see the identical helpers in
-// ApiChatbotsRepository.ts for the full rationale (multipart endpoints, same base URL
-// convention as Container.ts). Kept duplicated rather than shared - two call sites, matches
-// this codebase's existing preference for independent repository files over a premature
-// shared module.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
-
-async function uploadIcon(id: string, dataUrl: string): Promise<void> {
-  const blob = await (await fetch(dataUrl)).blob();
-  const form = new FormData();
-  form.append("file", blob, "icon");
-  const response = await fetch(`${API_BASE_URL}/api/formations/${id}/icon`, { method: "POST", body: form });
-  if (!response.ok) throw new Error(`No se pudo subir el icono (HTTP ${response.status}).`);
-}
-
-async function deleteIcon(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/formations/${id}/icon`, { method: "DELETE" });
-  if (!response.ok) throw new Error(`No se pudo quitar el icono (HTTP ${response.status}).`);
-}
-
-async function archiveFormation(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/formations/${id}/archive`, { method: "POST" });
-  if (!response.ok) throw new Error(`No se pudo eliminar la formación (HTTP ${response.status}).`);
 }
 
 /**
@@ -129,7 +105,7 @@ export class ApiFormationsRepository implements IFormationsRepository {
     } satisfies CreateFormationRequest);
 
     if (iconUrl) {
-      await uploadIcon(id, iconUrl);
+      await this.client.iconPOST2(id, await dataUrlToFileParameter(iconUrl, "icon"));
     }
 
     // Built locally instead of a follow-up GET, same reasoning as ApiChatbotsRepository.Create.
@@ -150,7 +126,7 @@ export class ApiFormationsRepository implements IFormationsRepository {
   }
 
   async Archive(id: string): Promise<void> {
-    await archiveFormation(id);
+    await this.client.archive2(id);
   }
 
   async UpdateStatus(id: string, status: FormationLifecycleStatus): Promise<void> {
@@ -159,9 +135,9 @@ export class ApiFormationsRepository implements IFormationsRepository {
 
   async UpdateIcon(id: string, iconUrl: string | undefined): Promise<void> {
     if (iconUrl) {
-      await uploadIcon(id, iconUrl);
+      await this.client.iconPOST2(id, await dataUrlToFileParameter(iconUrl, "icon"));
     } else {
-      await deleteIcon(id);
+      await this.client.iconDELETE2(id);
     }
   }
 

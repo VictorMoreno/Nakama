@@ -26,6 +26,7 @@ import type {
   TeamRole
 } from "../domain/Chatbot";
 import type { CreateChatbotInput, IChatbotsRepository } from "../domain/IChatbotsRepository";
+import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlToFileParameter";
 
 // Write side: backend enums serialize as their ordinal (0-indexed, declaration order).
 // Read side: response DTOs already stringify enums via `.ToString()` (PascalCase member
@@ -89,38 +90,6 @@ function toGapQuestion(row: GapQuestionRow): GapQuestion {
 
 function toStatTile(row: StatTileRow): StatTile {
   return { label: row.label ?? "", value: row.value ?? "", unit: row.unit ?? "", bar: row.bar ?? 0 };
-}
-
-// No generated client method exists for these - the icon upload/delete endpoints accept
-// multipart/form-data and didn't exist yet when GeneratedNakamaClient.ts was generated from
-// the OpenAPI spec. Same base URL convention as Container.ts's client construction (empty in
-// dev, proxied by vite.config.ts; VITE_API_BASE_URL for a real deployment target).
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
-
-async function uploadIcon(resource: "chatbots" | "formations", id: string, dataUrl: string): Promise<void> {
-  const blob = await (await fetch(dataUrl)).blob();
-  const form = new FormData();
-  form.append("file", blob, "icon");
-  const response = await fetch(`${API_BASE_URL}/api/${resource}/${id}/icon`, { method: "POST", body: form });
-  if (!response.ok) throw new Error(`No se pudo subir el icono (HTTP ${response.status}).`);
-}
-
-async function deleteIcon(resource: "chatbots" | "formations", id: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/${resource}/${id}/icon`, { method: "DELETE" });
-  if (!response.ok) throw new Error(`No se pudo quitar el icono (HTTP ${response.status}).`);
-}
-
-async function uploadDocument(chatbotId: string, file: File, name: string, origin: string): Promise<void> {
-  const documentId = crypto.randomUUID();
-  const form = new FormData();
-  form.append("file", file, file.name);
-  form.append("name", name);
-  form.append("origin", origin);
-  const response = await fetch(`${API_BASE_URL}/api/chatbots/${chatbotId}/documents/${documentId}`, {
-    method: "PUT",
-    body: form
-  });
-  if (!response.ok) throw new Error(`No se pudo subir el documento (HTTP ${response.status}).`);
 }
 
 /**
@@ -188,7 +157,7 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     } satisfies CreateChatbotRequest);
 
     if (iconUrl) {
-      await uploadIcon("chatbots", id, iconUrl);
+      await this.client.iconPOST(id, await dataUrlToFileParameter(iconUrl, "icon"));
     }
 
     // Built locally instead of a follow-up GET - same pattern the mock used, and the
@@ -242,14 +211,14 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
 
   async UpdateIcon(id: string, iconUrl: string | undefined): Promise<void> {
     if (iconUrl) {
-      await uploadIcon("chatbots", id, iconUrl);
+      await this.client.iconPOST(id, await dataUrlToFileParameter(iconUrl, "icon"));
     } else {
-      await deleteIcon("chatbots", id);
+      await this.client.iconDELETE(id);
     }
   }
 
   async AddDocument(id: string, file: File, name: string, origin: string): Promise<void> {
-    await uploadDocument(id, file, name, origin);
+    await this.client.documentsPUT(id, crypto.randomUUID(), { data: file, fileName: file.name }, name, origin);
   }
 
   async RemoveDocument(id: string, index: number): Promise<void> {

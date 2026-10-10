@@ -1,4 +1,5 @@
 import { ApiAnalyticsRepository } from "../../../modules/analytics/infrastructure/ApiAnalyticsRepository";
+import { ApiAuthRepository } from "../../../modules/auth/infrastructure/ApiAuthRepository";
 import { ApiChatbotsRepository } from "../../../modules/chatbots/infrastructure/ApiChatbotsRepository";
 import { ApiConversationsRepository } from "../../../modules/chatbots/infrastructure/ApiConversationsRepository";
 import { ApiFormationEnrollmentRepository } from "../../../modules/formations/infrastructure/ApiFormationEnrollmentRepository";
@@ -18,6 +19,7 @@ const client = new GeneratedNakamaClient(import.meta.env.VITE_API_BASE_URL ?? ""
 
 const registry = new Map<string, unknown>([
   [Services.AnalyticsRepository.id, new ApiAnalyticsRepository(client)],
+  [Services.AuthRepository.id, new ApiAuthRepository(client)],
   [Services.ChatbotsRepository.id, new ApiChatbotsRepository(client)],
   [Services.ConversationsRepository.id, new ApiConversationsRepository(client)],
   [Services.FormationsRepository.id, new ApiFormationsRepository(client)],
