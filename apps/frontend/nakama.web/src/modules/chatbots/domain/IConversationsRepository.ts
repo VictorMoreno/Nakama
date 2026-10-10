@@ -9,8 +9,9 @@ export interface IConversationsRepository {
     userId: string,
     title: string,
     question: string,
+    files: File[],
     onChunk: (textSoFar: string) => void
   ): Promise<string>;
 
-  Delete(botKey: string, conversationId: string, userId: string): Promise<void>;
+  Delete(conversationId: string, userId: string): Promise<void>;
 }

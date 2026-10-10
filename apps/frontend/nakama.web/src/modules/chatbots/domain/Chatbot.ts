@@ -52,6 +52,7 @@ export interface ChatExample {
   cite: string;
   more: string;
   socratic: string;
+  attachments?: string[];
 }
 
 export interface ConversationSummary {

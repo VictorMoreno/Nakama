@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BrandMarkIcon, ThumbDownIcon, ThumbUpIcon } from "../../components/shared/icons";
+import { AttachIcon, BrandMarkIcon, ThumbDownIcon, ThumbUpIcon } from "../../components/shared/icons";
 import { useToast } from "../../shared/contexts/ToastContext";
 import type { ChatExample, ChatbotSettings } from "../../../modules/chatbots/domain/Chatbot";
 import styles from "./MessageBubble.module.scss";
@@ -13,13 +13,26 @@ export interface BotMessageState {
 
 interface UserBubbleProps {
   text: string;
+  attachments?: string[];
 }
 
-export function UserBubble({ text }: UserBubbleProps) {
+export function UserBubble({ text, attachments = [] }: UserBubbleProps) {
   return (
     <div className={`${styles.msg} ${styles.user}`}>
       <div className={styles.msgAvatar}>TÚ</div>
-      <div className={styles.bubble} dangerouslySetInnerHTML={{ __html: text }} />
+      <div className={styles.bubble}>
+        <span dangerouslySetInnerHTML={{ __html: text }} />
+        {attachments.length > 0 && (
+          <div className={styles.bubbleAttachments}>
+            {attachments.map((name, i) => (
+              <span className={styles.bubbleAttachment} key={`${name}-${i}`} title={name}>
+                <AttachIcon />
+                <span className={styles.bubbleAttachmentName}>{name}</span>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

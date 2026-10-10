@@ -1,36 +1,32 @@
 using Nakama.Formations.Domain;
 using Nakama.Formations.Domain.Errors;
+using Nakama.Shared.Infrastructure.Icons;
 
 namespace Nakama.Formations.Infrastructure;
 
-public sealed class DiskFormationIconStorage(string basePath) : IFormationIconStorage
+public sealed class DiskFormationIconStorage(string basePath, IconsOptions options) : IFormationIconStorage
 {
-    private const long MaxBytes = 2 * 1024 * 1024;
+    private readonly long _maxBytes = options.MaxSizeMb * 1024L * 1024L;
 
-    private static readonly Dictionary<string, string> ExtensionsByContentType = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["image/png"] = ".png",
-        ["image/jpeg"] = ".jpg",
-        ["image/jpg"] = ".jpg",
-    };
+    private readonly Dictionary<string, string> _extensionsByContentType = new(options.ContentTypeExtensions, StringComparer.OrdinalIgnoreCase);
 
     public async Task<string> Save(Guid id, string contentType, Stream content, long length, CancellationToken ct)
     {
-        if (!ExtensionsByContentType.TryGetValue(contentType, out var extension))
+        if (!this._extensionsByContentType.TryGetValue(contentType, out string? extension))
         {
             throw FormationErrors.IconUnsupportedType;
         }
 
-        if (length > MaxBytes)
+        if (length > this._maxBytes)
         {
-            throw FormationErrors.IconTooLarge(MaxBytes);
+            throw FormationErrors.IconTooLarge(this._maxBytes);
         }
 
         this.DeleteExisting(id);
 
         Directory.CreateDirectory(basePath);
-        var fileName = $"{id}{extension}";
-        await using (var stream = File.Create(Path.Combine(basePath, fileName)))
+        string fileName = $"{id}{extension}";
+        await using (FileStream stream = File.Create(Path.Combine(basePath, fileName)))
         {
             await content.CopyToAsync(stream, ct);
         }
@@ -40,7 +36,7 @@ public sealed class DiskFormationIconStorage(string basePath) : IFormationIconSt
 
     public void DeleteExisting(Guid id)
     {
-        foreach (var existing in Directory.EnumerateFiles(basePath, $"{id}.*"))
+        foreach (string existing in Directory.EnumerateFiles(basePath, $"{id}.*"))
         {
             File.Delete(existing);
         }

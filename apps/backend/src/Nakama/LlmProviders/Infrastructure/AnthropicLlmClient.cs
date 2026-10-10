@@ -3,16 +3,16 @@ using System.Text;
 using Anthropic;
 using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
+using Microsoft.Extensions.Options;
 using Nakama.LlmProviders.Domain;
 using Nakama.LlmProviders.Domain.Errors;
 using Nakama.Shared.Domain;
+using Nakama.Shared.Infrastructure.Llm;
 
 namespace Nakama.LlmProviders.Infrastructure;
 
-public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) : ILlmClient
+public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository, IOptions<LlmOptions> options) : ILlmClient
 {
-    private const int DefaultMaxTokens = 16000;
-
     public async IAsyncEnumerable<string> AskStream(
         string model,
         string systemPrompt,
@@ -20,7 +20,7 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) 
         IReadOnlyList<LlmDocument> documents,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        var config = await repository.FindByProvider(LlmProvider.Anthropic, ct);
+        LlmProviderConfig? config = await repository.FindByProvider(LlmProvider.Anthropic, ct);
         if (config is null || !config.Enabled || string.IsNullOrEmpty(config.ApiKey))
         {
             throw LlmProviderErrors.NotConfigured(LlmProvider.Anthropic);
@@ -28,10 +28,10 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) 
 
         AnthropicClient client = new() { ApiKey = config.ApiKey };
 
-        var parameters = new MessageCreateParams
+        MessageCreateParams parameters = new()
         {
             Model = model,
-            MaxTokens = DefaultMaxTokens,
+            MaxTokens = options.Value.MaxTokens,
             System = systemPrompt,
             Messages = BuildMessages(history, documents),
             CacheControl = new CacheControlEphemeral()
@@ -56,7 +56,7 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) 
                 yield break;
             }
 
-            if (events.Current.TryPickContentBlockDelta(out var delta) && delta.Delta.TryPickText(out var text))
+            if (events.Current.TryPickContentBlockDelta(out RawContentBlockDeltaEvent? delta) && delta.Delta.TryPickText(out TextDelta? text))
             {
                 yield return text.Text;
             }
@@ -65,15 +65,18 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository) 
 
     private static List<MessageParam> BuildMessages(IReadOnlyList<LlmMessage> history, IReadOnlyList<LlmDocument> documents)
     {
-        var messages = new List<MessageParam>(history.Count);
-        for (var i = 0; i < history.Count; i++)
+        List<MessageParam> messages = new(history.Count);
+        for (int i = 0; i < history.Count; i++)
         {
-            var message = history[i];
-            var role = message.Role == "assistant" ? Role.Assistant : Role.User;
+            LlmMessage message = history[i];
+            Role role = message.Role == "assistant" ? Role.Assistant : Role.User;
 
-            if (i == 0 && documents.Count > 0)
+            IReadOnlyList<LlmDocument> messageDocuments = message.Documents ?? [];
+            List<LlmDocument> leadingDocuments = i == 0 ? documents.Concat(messageDocuments).ToList() : messageDocuments.ToList();
+
+            if (leadingDocuments.Count > 0)
             {
-                var blocks = documents.Select(ToDocumentBlock).ToList();
+                List<ContentBlockParam> blocks = leadingDocuments.Select(ToDocumentBlock).ToList();
                 blocks.Add(new TextBlockParam { Text = message.Content });
                 messages.Add(new MessageParam { Role = role, Content = blocks });
                 continue;

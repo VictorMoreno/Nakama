@@ -1,9 +1,10 @@
 import { useId, type ChangeEvent } from "react";
 import { useToast } from "../../shared/contexts/ToastContext";
+import { iconsConfig } from "../../../shared/infrastructure/config/IconsConfig";
 import { RecycleBinIcon, UploadIcon } from "./icons";
 import styles from "./IconUploadField.module.scss";
 
-const MAX_BYTES = 2 * 1024 * 1024;
+const FORMATS_LABEL = iconsConfig.allowedContentTypes.map((type) => type.split("/")[1].toUpperCase()).join(", ");
 
 interface IconUploadFieldProps {
   value?: string;
@@ -20,12 +21,12 @@ export default function IconUploadField({ value, onChange, placeholderLabel }: I
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      showToast("Selecciona un archivo de imagen");
+    if (!iconsConfig.allowedContentTypes.includes(file.type)) {
+      showToast(`Selecciona una imagen (${FORMATS_LABEL})`);
       return;
     }
-    if (file.size > MAX_BYTES) {
-      showToast("La imagen no puede superar 2 MB");
+    if (file.size > iconsConfig.maxSizeMb * 1024 * 1024) {
+      showToast(`La imagen no puede superar ${iconsConfig.maxSizeMb} MB`);
       return;
     }
     const reader = new FileReader();
@@ -48,14 +49,14 @@ export default function IconUploadField({ value, onChange, placeholderLabel }: I
           <label className={`btn-ghost ${styles.iconUploadBtn}`} htmlFor={inputId}>
             <UploadIcon /> {value ? "Cambiar imagen" : "Subir imagen"}
           </label>
-          <input id={inputId} type="file" accept="image/*" onChange={handleFile} hidden />
+          <input id={inputId} type="file" accept={iconsConfig.allowedContentTypes.join(",")} onChange={handleFile} hidden />
           {value && (
             <button type="button" className="btn-ghost" onClick={() => onChange(undefined)}>
               <RecycleBinIcon /> Quitar
             </button>
           )}
         </div>
-        <span className={styles.iconUploadHint}>PNG o JPG, máx. 2 MB. Se usará como miniatura en la card del listado.</span>
+        <span className={styles.iconUploadHint}>{FORMATS_LABEL}, máx. {iconsConfig.maxSizeMb} MB. Se usará como miniatura en la card del listado.</span>
       </div>
     </div>
   );

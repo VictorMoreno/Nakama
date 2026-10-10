@@ -109,16 +109,10 @@ export interface IGeneratedNakamaClient {
     iconDELETE(id: string): Promise<void>;
 
     /**
-     * Asks the chatbot a real question and gets a model-generated answer back.
-     * @return OK
-     */
-    ask(botKey: string, conversationId: string, body: AskChatbotRequest): Promise<AskChatbotResponse>;
-
-    /**
      * Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.
      * @return No Content
      */
-    conversations(botKey: string, conversationId: string, userId: string): Promise<void>;
+    conversations(conversationId: string, userId: string): Promise<void>;
 
     /**
      * Lists all chatbots (summary view).
@@ -968,75 +962,11 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Asks the chatbot a real question and gets a model-generated answer back.
-     * @return OK
-     */
-    ask(botKey: string, conversationId: string, body: AskChatbotRequest): Promise<AskChatbotResponse> {
-        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversations/{conversationId}/ask";
-        if (botKey === undefined || botKey === null)
-            throw new globalThis.Error("The parameter 'botKey' must be defined.");
-        url_ = url_.replace("{botKey}", encodeURIComponent("" + botKey));
-        if (conversationId === undefined || conversationId === null)
-            throw new globalThis.Error("The parameter 'conversationId' must be defined.");
-        url_ = url_.replace("{conversationId}", encodeURIComponent("" + conversationId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processAsk(_response));
-        });
-    }
-
-    protected processAsk(response: Response): Promise<AskChatbotResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as AskChatbotResponse;
-            return result200;
-            });
-        } else if (status === 404) {
-            return response.text().then((_responseText) => {
-            let result404: any = null;
-            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
-            return throwException("Not Found", status, _responseText, _headers, result404);
-            });
-        } else if (status === 422) {
-            return response.text().then((_responseText) => {
-            let result422: any = null;
-            result422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
-            return throwException("Unprocessable Content", status, _responseText, _headers, result422);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AskChatbotResponse>(null as any);
-    }
-
-    /**
      * Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.
      * @return No Content
      */
-    conversations(botKey: string, conversationId: string, userId: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversations/{conversationId}?";
-        if (botKey === undefined || botKey === null)
-            throw new globalThis.Error("The parameter 'botKey' must be defined.");
-        url_ = url_.replace("{botKey}", encodeURIComponent("" + botKey));
+    conversations(conversationId: string, userId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/conversations/{conversationId}?";
         if (conversationId === undefined || conversationId === null)
             throw new globalThis.Error("The parameter 'conversationId' must be defined.");
         url_ = url_.replace("{conversationId}", encodeURIComponent("" + conversationId));
@@ -2175,16 +2105,6 @@ export interface AnalyticsResponse {
     totalFeedbackCount?: number;
 }
 
-export interface AskChatbotRequest {
-    userId?: string;
-    title?: string | undefined;
-    question?: string | undefined;
-}
-
-export interface AskChatbotResponse {
-    answer?: string | undefined;
-}
-
 export interface ChatExampleRow {
     question?: string | undefined;
     answer?: string | undefined;
@@ -2355,6 +2275,7 @@ export interface HistoryExampleRow {
     citation?: string | undefined;
     moreExplanation?: string | undefined;
     socraticVariant?: string | undefined;
+    attachments?: string[] | undefined;
 }
 
 export interface LlmModelOptionResponse {

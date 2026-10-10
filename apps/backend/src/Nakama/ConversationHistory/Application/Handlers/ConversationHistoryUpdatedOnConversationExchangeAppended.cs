@@ -4,12 +4,14 @@ using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.ConversationHistory.Application.Handlers;
 
+using ConversationHistory = Nakama.ConversationHistory.Domain.ConversationHistory;
+
 public sealed class ConversationHistoryUpdatedOnConversationExchangeAppended(IConversationHistoryRepository conversationHistoryRepository)
     : DomainEventHandler<ConversationExchangeAppended>
 {
     protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken cancellationToken)
     {
-        var history = await conversationHistoryRepository.FindById(conversationExchangeAppended.BotKey.Value, cancellationToken);
+        ConversationHistory? history = await conversationHistoryRepository.FindById(conversationExchangeAppended.BotKey.Value, cancellationToken);
         if (history is null)
         {
             return;
@@ -21,7 +23,8 @@ public sealed class ConversationHistoryUpdatedOnConversationExchangeAppended(ICo
             conversationExchangeAppended.Exchange.Answer,
             conversationExchangeAppended.Exchange.Citation,
             conversationExchangeAppended.Exchange.MoreExplanation,
-            conversationExchangeAppended.Exchange.SocraticVariant);
+            conversationExchangeAppended.Exchange.SocraticVariant,
+            (conversationExchangeAppended.Exchange.Attachments ?? []).Select(a => a.Name));
         await conversationHistoryRepository.Update(history, cancellationToken);
     }
 }

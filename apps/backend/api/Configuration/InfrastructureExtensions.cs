@@ -9,8 +9,12 @@ using Nakama.LlmProviders.Infrastructure;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure;
+using Nakama.Shared.Infrastructure.Chat;
 using Nakama.Shared.Infrastructure.Commands;
+using Nakama.Shared.Infrastructure.Documents;
 using Nakama.Shared.Infrastructure.Events;
+using Nakama.Shared.Infrastructure.Icons;
+using Nakama.Shared.Infrastructure.Llm;
 using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
 using Nakama.Shared.Infrastructure.Queries;
@@ -39,6 +43,30 @@ public static class InfrastructureExtensions
             .BindConfiguration(StorageOptions.SectionName)
             .ValidateOnStart();
 
+        services.AddOptions<LlmOptions>()
+            .BindConfiguration(LlmOptions.SectionName)
+            .Validate(options => options.MaxTokens > 0, "Llm:MaxTokens must be greater than zero.")
+            .ValidateOnStart();
+
+        services.AddOptions<ChatOptions>()
+            .BindConfiguration(ChatOptions.SectionName)
+            .Validate(options => options.MaxAttachmentsPerMessage > 0, "Chat:MaxAttachmentsPerMessage must be greater than zero.")
+            .Validate(options => options.MaxAttachmentSizeMb > 0, "Chat:MaxAttachmentSizeMb must be greater than zero.")
+            .Validate(options => options.AllowedAttachmentExtensions.Length > 0, "Chat:AllowedAttachmentExtensions must not be empty.")
+            .ValidateOnStart();
+
+        services.AddOptions<DocumentsOptions>()
+            .BindConfiguration(DocumentsOptions.SectionName)
+            .Validate(options => options.MaxSizeMb > 0, "Documents:MaxSizeMb must be greater than zero.")
+            .Validate(options => options.AllowedExtensions.Length > 0, "Documents:AllowedExtensions must not be empty.")
+            .ValidateOnStart();
+
+        services.AddOptions<IconsOptions>()
+            .BindConfiguration(IconsOptions.SectionName)
+            .Validate(options => options.MaxSizeMb > 0, "Icons:MaxSizeMb must be greater than zero.")
+            .Validate(options => options.ContentTypeExtensions.Count > 0, "Icons:ContentTypeExtensions must not be empty.")
+            .ValidateOnStart();
+
         services.Scan(scan => scan
             .FromAssemblies(AssemblyHelper.Domain)
             .AddClasses(classes => classes.AssignableTo(typeof(NhRepositoryBase<,>)))
@@ -47,34 +75,46 @@ public static class InfrastructureExtensions
 
         services.AddSingleton<IChatbotDocumentStorage>(sp =>
         {
-            var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
-            var env = sp.GetRequiredService<IWebHostEnvironment>();
-            var basePath = FileStorage.ResolvePath(options.ChatbotDocumentsPath, env);
-            return new DiskChatbotDocumentStorage(basePath);
+            StorageOptions options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
+            IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
+            string basePath = FileStorage.ResolvePath(options.ChatbotDocumentsPath, env);
+            DocumentsOptions documentsOptions = sp.GetRequiredService<IOptions<DocumentsOptions>>().Value;
+            return new DiskChatbotDocumentStorage(basePath, documentsOptions);
+        });
+
+        services.AddSingleton<IConversationAttachmentStorage>(sp =>
+        {
+            StorageOptions options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
+            IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
+            string basePath = FileStorage.ResolvePath(options.ConversationAttachmentsPath, env);
+            ChatOptions chatOptions = sp.GetRequiredService<IOptions<ChatOptions>>().Value;
+            return new DiskConversationAttachmentStorage(basePath, chatOptions);
         });
 
         services.AddSingleton<IChatbotDocumentFileReader>(sp =>
         {
-            var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
-            var env = sp.GetRequiredService<IWebHostEnvironment>();
-            var basePath = FileStorage.ResolvePath(options.ChatbotDocumentsPath, env);
+            StorageOptions options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
+            IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
+            string basePath = FileStorage.ResolvePath(options.ChatbotDocumentsPath, env);
             return new DiskChatbotDocumentFileReader(basePath);
         });
 
         services.AddSingleton<IChatbotIconStorage>(sp =>
         {
-            var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
-            var env = sp.GetRequiredService<IWebHostEnvironment>();
-            var basePath = FileStorage.ResolvePath(options.ChatbotIconsPath, env);
-            return new DiskChatbotIconStorage(basePath);
+            StorageOptions options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
+            IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
+            string basePath = FileStorage.ResolvePath(options.ChatbotIconsPath, env);
+            IconsOptions iconsOptions = sp.GetRequiredService<IOptions<IconsOptions>>().Value;
+            return new DiskChatbotIconStorage(basePath, iconsOptions);
         });
 
         services.AddSingleton<IFormationIconStorage>(sp =>
         {
-            var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
-            var env = sp.GetRequiredService<IWebHostEnvironment>();
-            var basePath = FileStorage.ResolvePath(options.FormationIconsPath, env);
-            return new DiskFormationIconStorage(basePath);
+            StorageOptions options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
+            IWebHostEnvironment env = sp.GetRequiredService<IWebHostEnvironment>();
+            string basePath = FileStorage.ResolvePath(options.FormationIconsPath, env);
+            IconsOptions iconsOptions = sp.GetRequiredService<IOptions<IconsOptions>>().Value;
+            return new DiskFormationIconStorage(basePath, iconsOptions);
         });
 
         services.AddSingleton<IWriteSessionFactory, NhWriteSessionFactory>();

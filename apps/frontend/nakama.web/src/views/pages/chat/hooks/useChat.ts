@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { IAnalyticsRepository } from "../../../../modules/analytics/domain/IAnalyticsRepository";
 import type { ChatExample, ConversationSummary } from "../../../../modules/chatbots/domain/Chatbot";
 import type { IConversationsRepository } from "../../../../modules/chatbots/domain/IConversationsRepository";
+import { chatConfig } from "../../../../shared/infrastructure/config/ChatConfig";
 import { Services } from "../../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
@@ -11,7 +12,7 @@ import { useUser } from "../../../shared/contexts/UserContext";
 import type { BotMessageState } from "../MessageBubble";
 
 type ThreadItem =
-  | { kind: "user"; id: string; text: string }
+  | { kind: "user"; id: string; text: string; attachments: string[] }
   | { kind: "bot"; id: string; bot: BotMessageState }
   | { kind: "pending"; id: string };
 
@@ -23,7 +24,7 @@ function nextId() {
 
 function exchangesToThread(exchanges: ChatExample[], useSocratic: boolean): ThreadItem[] {
   return exchanges.flatMap((example) => [
-    { kind: "user" as const, id: nextId(), text: example.q },
+    { kind: "user" as const, id: nextId(), text: example.q, attachments: example.attachments ?? [] },
     { kind: "bot" as const, id: nextId(), bot: { id: nextId(), example, useSocratic, revealed: false } }
   ]);
 }
@@ -109,7 +110,13 @@ export function useChat() {
     if (!val || !bot || !currentUser) return;
 
     const pendingId = nextId();
-    setThread((prev) => [...prev, { kind: "user", id: nextId(), text: val }, { kind: "pending", id: pendingId }]);
+    const files = attachedFiles;
+    const attachmentNames = files.map((file) => file.name);
+    setThread((prev) => [
+      ...prev,
+      { kind: "user", id: nextId(), text: val, attachments: attachmentNames },
+      { kind: "pending", id: pendingId }
+    ]);
     setInput("");
     setAttachedFiles([]);
 
@@ -121,10 +128,10 @@ export function useChat() {
     const botMsgId = nextId();
 
     try {
-      const answer = await conversationsRepo.Ask(conversationId, bot.id, currentUser.id, title, val, (textSoFar) => {
+      const answer = await conversationsRepo.Ask(conversationId, bot.id, currentUser.id, title, val, files, (textSoFar) => {
         setThread((prev) => {
           const alreadyStarted = prev.some((item) => item.id === botMsgId);
-          const example: ChatExample = { q: val, a: textSoFar, cite: "", more: "", socratic: "" };
+          const example: ChatExample = { q: val, a: textSoFar, cite: "", more: "", socratic: "", attachments: attachmentNames };
           if (!alreadyStarted) {
             return [
               ...prev.filter((item) => item.id !== pendingId),
@@ -138,7 +145,7 @@ export function useChat() {
           );
         });
       });
-      const example: ChatExample = { q: val, a: answer, cite: "", more: "", socratic: "" };
+      const example: ChatExample = { q: val, a: answer, cite: "", more: "", socratic: "", attachments: attachmentNames };
 
       if (isNewConversation) setActiveConversationId(conversationId);
 
@@ -156,8 +163,25 @@ export function useChat() {
 
   function handleAttachFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
-    setAttachedFiles((prev) => [...prev, ...Array.from(files)]);
-    showToast(`${files.length} archivo${files.length === 1 ? "" : "s"} adjuntado${files.length === 1 ? "" : "s"} (demo)`);
+
+    const incoming = Array.from(files);
+    const maxAttachmentBytes = chatConfig.maxAttachmentSizeMb * 1024 * 1024;
+    const valid = incoming.filter((file) => {
+      const lowerName = file.name.toLowerCase();
+      return chatConfig.allowedAttachmentExtensions.some((ext) => lowerName.endsWith(ext)) && file.size <= maxAttachmentBytes;
+    });
+    const room = chatConfig.maxAttachments - attachedFiles.length;
+    const accepted = valid.slice(0, Math.max(room, 0));
+
+    if (accepted.length > 0) {
+      setAttachedFiles((prev) => [...prev, ...accepted]);
+    }
+
+    if (accepted.length < incoming.length) {
+      showToast(
+        `Solo se admiten hasta ${chatConfig.maxAttachments} archivos (${chatConfig.allowedAttachmentExtensions.join(", ")}) de hasta ${chatConfig.maxAttachmentSizeMb} MB.`
+      );
+    }
   }
 
   function removeAttachedFile(index: number) {
@@ -171,7 +195,7 @@ export function useChat() {
   async function deleteConversation(id: string) {
     if (!bot || !currentUser) return;
 
-    await conversationsRepo.Delete(bot.id, id, currentUser.id);
+    await conversationsRepo.Delete(id, currentUser.id);
     setConversations((prev) => prev.filter((c) => c.id !== id));
 
     if (activeConversationId === id) {

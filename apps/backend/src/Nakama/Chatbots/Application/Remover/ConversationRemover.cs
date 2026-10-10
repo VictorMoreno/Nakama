@@ -20,11 +20,9 @@ public static class ConversationRemover
 
     public sealed class Remover(IConversationsRepository repository, IEventBus eventBus) : IService
     {
-        // 404 for both "doesn't exist" and "exists but belongs to someone else" - same message
-        // either way, so a caller can't use this to probe which conversation ids are real.
         public async Task Execute(ConversationId id, Guid userId, CancellationToken cancellationToken)
         {
-            var conversation = await repository.FindById(id, cancellationToken);
+            Conversation? conversation = await repository.FindById(id, cancellationToken);
             if (conversation is null || conversation.UserId != userId)
             {
                 throw ConversationErrors.NotFound(id);

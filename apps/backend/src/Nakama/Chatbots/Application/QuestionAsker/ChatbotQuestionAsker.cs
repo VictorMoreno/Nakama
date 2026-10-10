@@ -1,24 +1,36 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Nakama.ChatbotDetail.Application;
 using Nakama.ChatbotDetail.Application.Finder;
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Errors;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
+using Nakama.Shared.Infrastructure.Chat;
 using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.Chatbots.Application.QuestionAsker;
 
 public static class ChatbotQuestionAsker
 {
-    public sealed record Command(Guid BotKey, Guid ConversationId, Guid UserId, string Title, string Question);
+    public sealed record AttachmentUpload(string FileName, byte[] Content);
+
+    public sealed record Command(
+        Guid BotKey,
+        Guid ConversationId,
+        Guid UserId,
+        string Title,
+        string Question,
+        IReadOnlyList<AttachmentUpload> Attachments);
 
     public sealed class Asker(
         IQueryBus queryBus,
         IConversationsRepository conversationsRepository,
         IChatbotDocumentFileReader documentReader,
+        IConversationAttachmentStorage attachmentStorage,
+        IOptions<ChatOptions> chatOptions,
         IServiceProvider serviceProvider,
         IEventBus eventBus,
         ISystemClock systemClock) : IService
@@ -30,38 +42,103 @@ public static class ChatbotQuestionAsker
             ILlmClient llmClient = serviceProvider.GetKeyedService<ILlmClient>(chatbot.Provider)
                                    ?? throw ChatbotErrors.ProviderNotConnected(chatbot.Provider);
 
+            if (cmd.Attachments.Count > chatOptions.Value.MaxAttachmentsPerMessage)
+            {
+                throw ChatbotErrors.AttachmentLimitExceeded(chatOptions.Value.MaxAttachmentsPerMessage);
+            }
+
             ChatbotId botKey = ChatbotId.From(cmd.BotKey);
             ConversationId conversationId = ConversationId.From(cmd.ConversationId);
             Conversation conversation = await conversationsRepository.FindById(conversationId, cancellationToken)
                                         ?? Conversation.Start(conversationId, botKey, cmd.UserId, cmd.Title,
                                             systemClock);
 
-            List<LlmDocument> documents = await this.LoadDocuments(chatbot, cancellationToken);
-            string systemPrompt = BuildSystemPrompt(chatbot, documents.Count > 0);
-            List<LlmMessage> history = BuildHistory(conversation, cmd.Question);
-
-            StringBuilder answerBuilder = new();
-            await foreach (string chunk in llmClient.AskStream(chatbot.Model, systemPrompt, history, documents, cancellationToken))
+            List<ExchangeAttachment> savedAttachments = [];
+            bool completed = false;
+            try
             {
-                answerBuilder.Append(chunk);
-                yield return chunk;
+                await this.SaveAttachments(cmd.Attachments, savedAttachments, cancellationToken);
+
+                List<LlmDocument> documents = await this.LoadDocuments(chatbot, cancellationToken);
+                string systemPrompt = BuildSystemPrompt(chatbot, documents.Count > 0);
+                List<LlmMessage> history = await this.BuildHistory(conversation, cmd, cancellationToken);
+
+                StringBuilder answerBuilder = new();
+                await foreach (string chunk in llmClient.AskStream(chatbot.Model, systemPrompt, history, documents, cancellationToken))
+                {
+                    answerBuilder.Append(chunk);
+                    yield return chunk;
+                }
+
+                string answer = answerBuilder.ToString();
+                conversation.AppendExchange(new ConversationExchange(cmd.Question, answer, string.Empty, string.Empty,
+                    string.Empty, savedAttachments));
+
+                await conversationsRepository.Save(conversation, cancellationToken);
+                await eventBus.Publish(conversation, cancellationToken);
+                completed = true;
             }
-
-            string answer = answerBuilder.ToString();
-            conversation.AppendExchange(new ConversationExchange(cmd.Question, answer, string.Empty, string.Empty,
-                string.Empty));
-
-            await conversationsRepository.Save(conversation, cancellationToken);
-            await eventBus.Publish(conversation, cancellationToken);
+            finally
+            {
+                if (!completed)
+                {
+                    attachmentStorage.Delete(savedAttachments.Select(a => a.FileName));
+                }
+            }
         }
 
-        private static List<LlmMessage> BuildHistory(Conversation conversation, string question)
+        private async Task SaveAttachments(
+            IReadOnlyList<AttachmentUpload> uploads,
+            List<ExchangeAttachment> saved,
+            CancellationToken ct)
         {
-            List<LlmMessage> history = conversation.Exchanges
-                .SelectMany(e => new[] { new LlmMessage("user", e.Question), new LlmMessage("assistant", e.Answer) })
+            foreach (AttachmentUpload upload in uploads)
+            {
+                string fileName = await attachmentStorage.Save(Guid.NewGuid(), upload.FileName, upload.Content, ct);
+                saved.Add(new ExchangeAttachment(upload.FileName, fileName));
+            }
+        }
+
+        private async Task<List<LlmMessage>> BuildHistory(Conversation conversation, Command cmd, CancellationToken ct)
+        {
+            List<LlmMessage> history = [];
+
+            foreach (ConversationExchange exchange in conversation.Exchanges)
+            {
+                List<LlmDocument> documents = await this.LoadAttachmentDocuments(exchange.Attachments ?? [], ct);
+                history.Add(new LlmMessage("user", exchange.Question, documents));
+                history.Add(new LlmMessage("assistant", exchange.Answer));
+            }
+
+            List<LlmDocument> current = cmd.Attachments
+                .Select(a => ToDocument(a.FileName, a.FileName, a.Content))
+                .OfType<LlmDocument>()
                 .ToList();
-            history.Add(new LlmMessage("user", question));
+            history.Add(new LlmMessage("user", cmd.Question, current));
             return history;
+        }
+
+        private async Task<List<LlmDocument>> LoadAttachmentDocuments(IReadOnlyList<ExchangeAttachment> attachments, CancellationToken ct)
+        {
+            List<LlmDocument> documents = [];
+
+            foreach (ExchangeAttachment attachment in attachments)
+            {
+                byte[]? content = await attachmentStorage.Read(attachment.FileName, ct);
+                LlmDocument? document = content is null ? null : ToDocument(attachment.Name, attachment.FileName, content);
+                if (document is not null)
+                {
+                    documents.Add(document);
+                }
+            }
+
+            return documents;
+        }
+
+        private static LlmDocument? ToDocument(string name, string fileName, byte[] content)
+        {
+            LlmDocumentKind? kind = ResolveKind(fileName);
+            return kind is null ? null : new LlmDocument(name, kind.Value, content);
         }
 
         private async Task<List<LlmDocument>> LoadDocuments(ChatbotDetailResponse chatbot, CancellationToken ct)
@@ -108,6 +185,8 @@ public static class ChatbotQuestionAsker
             {
                 parts.Add("Los documentos adjuntos al inicio de la conversación son tu documentación de referencia.");
             }
+
+            parts.Add("Si el usuario adjunta archivos a un mensaje, úsalos como contexto para responder ese mensaje y los siguientes.");
 
             if (chatbot.Socratic)
             {

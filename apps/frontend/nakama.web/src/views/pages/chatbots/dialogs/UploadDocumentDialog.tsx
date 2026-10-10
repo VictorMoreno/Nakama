@@ -3,11 +3,7 @@ import Dialog from "../../../components/shared/Dialog";
 import { CloseIcon, UploadIcon } from "../../../components/shared/icons";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
-
-// Mirrors DocumentStorage's server-side limits (apps/backend/api/Configuration/DocumentStorage.cs)
-// - checked here too so a rejected upload never even reaches the network.
-const MAX_BYTES = 20 * 1024 * 1024;
-const ALLOWED_EXTENSIONS = [".pdf", ".md", ".markdown", ".txt"];
+import { documentsConfig } from "../../../../shared/infrastructure/config/DocumentsConfig";
 
 interface UploadDocumentDialogProps {
   open: boolean;
@@ -29,12 +25,12 @@ export default function UploadDocumentDialog({ open, botId, botLabel, onClose }:
     if (!picked) return;
     const dot = picked.name.lastIndexOf(".");
     const extension = dot >= 0 ? picked.name.slice(dot).toLowerCase() : "";
-    if (!ALLOWED_EXTENSIONS.includes(extension)) {
-      showToast("Selecciona un PDF, Markdown o archivo de texto");
+    if (!documentsConfig.allowedExtensions.includes(extension)) {
+      showToast(`Selecciona un archivo permitido (${documentsConfig.allowedExtensions.join(", ")})`);
       return;
     }
-    if (picked.size > MAX_BYTES) {
-      showToast("El documento no puede superar 20 MB");
+    if (picked.size > documentsConfig.maxSizeMb * 1024 * 1024) {
+      showToast(`El documento no puede superar ${documentsConfig.maxSizeMb} MB`);
       return;
     }
     setFile(picked);
@@ -62,12 +58,12 @@ export default function UploadDocumentDialog({ open, botId, botLabel, onClose }:
   return (
     <Dialog open={open} onClose={handleClose} title="Subir documento">
       <p>
-        Sube un PDF, Markdown o archivo de texto. Se indexa en <strong>{botLabel}</strong> — solo visible para este chatbot.
+        Sube un archivo ({documentsConfig.allowedExtensions.join(", ")}), máx. {documentsConfig.maxSizeMb} MB. Se indexa en <strong>{botLabel}</strong> — solo visible para este chatbot.
       </p>
       <label className="dropzone" htmlFor={inputId} style={{ cursor: "pointer", display: "block" }}>
         {file ? file.name : "Arrastra un archivo aquí, o haz clic para seleccionar"}
       </label>
-      <input id={inputId} type="file" accept=".pdf,.md,.markdown,.txt" onChange={handleFile} hidden />
+      <input id={inputId} type="file" accept={documentsConfig.allowedExtensions.join(",")} onChange={handleFile} hidden />
       <div className="modal-actions">
         <button className="btn-ghost" type="button" onClick={handleClose}>
           <CloseIcon /> Cancelar

@@ -1,36 +1,32 @@
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Errors;
+using Nakama.Shared.Infrastructure.Icons;
 
 namespace Nakama.Chatbots.Infrastructure;
 
-public sealed class DiskChatbotIconStorage(string basePath) : IChatbotIconStorage
+public sealed class DiskChatbotIconStorage(string basePath, IconsOptions options) : IChatbotIconStorage
 {
-    private const long MaxBytes = 2 * 1024 * 1024;
+    private readonly long _maxBytes = options.MaxSizeMb * 1024L * 1024L;
 
-    private static readonly Dictionary<string, string> ExtensionsByContentType = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["image/png"] = ".png",
-        ["image/jpeg"] = ".jpg",
-        ["image/jpg"] = ".jpg",
-    };
+    private readonly Dictionary<string, string> _extensionsByContentType = new(options.ContentTypeExtensions, StringComparer.OrdinalIgnoreCase);
 
     public async Task<string> Save(Guid id, string contentType, Stream content, long length, CancellationToken ct)
     {
-        if (!ExtensionsByContentType.TryGetValue(contentType, out var extension))
+        if (!this._extensionsByContentType.TryGetValue(contentType, out string? extension))
         {
             throw ChatbotErrors.IconUnsupportedType;
         }
 
-        if (length > MaxBytes)
+        if (length > this._maxBytes)
         {
-            throw ChatbotErrors.IconTooLarge(MaxBytes);
+            throw ChatbotErrors.IconTooLarge(this._maxBytes);
         }
 
         this.DeleteExisting(id);
 
         Directory.CreateDirectory(basePath);
-        var fileName = $"{id}{extension}";
-        await using (var stream = File.Create(Path.Combine(basePath, fileName)))
+        string fileName = $"{id}{extension}";
+        await using (FileStream stream = File.Create(Path.Combine(basePath, fileName)))
         {
             await content.CopyToAsync(stream, ct);
         }
@@ -40,7 +36,7 @@ public sealed class DiskChatbotIconStorage(string basePath) : IChatbotIconStorag
 
     public void DeleteExisting(Guid id)
     {
-        foreach (var existing in Directory.EnumerateFiles(basePath, $"{id}.*"))
+        foreach (string existing in Directory.EnumerateFiles(basePath, $"{id}.*"))
         {
             File.Delete(existing);
         }

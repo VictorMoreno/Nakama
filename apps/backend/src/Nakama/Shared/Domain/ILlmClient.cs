@@ -1,6 +1,6 @@
 namespace Nakama.Shared.Domain;
 
-public sealed record LlmMessage(string Role, string Content);
+public sealed record LlmMessage(string Role, string Content, IReadOnlyList<LlmDocument>? Documents = null);
 
 public enum LlmDocumentKind
 {

@@ -1,33 +1,31 @@
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Errors;
+using Nakama.Shared.Infrastructure.Documents;
 
 namespace Nakama.Chatbots.Infrastructure;
 
-public sealed class DiskChatbotDocumentStorage(string basePath) : IChatbotDocumentStorage
+public sealed class DiskChatbotDocumentStorage(string basePath, DocumentsOptions options) : IChatbotDocumentStorage
 {
-    private const long MaxBytes = 20 * 1024 * 1024;
+    private readonly long _maxBytes = options.MaxSizeMb * 1024L * 1024L;
 
-    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".pdf", ".md", ".markdown", ".txt",
-    };
+    private readonly HashSet<string> _allowedExtensions = new(options.AllowedExtensions, StringComparer.OrdinalIgnoreCase);
 
     public async Task<string> Save(Guid documentId, string originalFileName, Stream content, long length, CancellationToken ct)
     {
-        var extension = Path.GetExtension(originalFileName);
-        if (!AllowedExtensions.Contains(extension))
+        string extension = Path.GetExtension(originalFileName);
+        if (!this._allowedExtensions.Contains(extension))
         {
             throw ChatbotErrors.DocumentUnsupportedType;
         }
 
-        if (length > MaxBytes)
+        if (length > this._maxBytes)
         {
-            throw ChatbotErrors.DocumentTooLarge(MaxBytes);
+            throw ChatbotErrors.DocumentTooLarge(this._maxBytes);
         }
 
         Directory.CreateDirectory(basePath);
-        var fileName = $"{documentId}{extension}";
-        await using (var stream = File.Create(Path.Combine(basePath, fileName)))
+        string fileName = $"{documentId}{extension}";
+        await using (FileStream stream = File.Create(Path.Combine(basePath, fileName)))
         {
             await content.CopyToAsync(stream, ct);
         }
@@ -37,7 +35,7 @@ public sealed class DiskChatbotDocumentStorage(string basePath) : IChatbotDocume
 
     public void Delete(string fileName)
     {
-        var path = Path.Combine(basePath, fileName);
+        string path = Path.Combine(basePath, fileName);
         if (File.Exists(path))
         {
             File.Delete(path);

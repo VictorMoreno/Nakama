@@ -27,5 +27,8 @@ public partial class Conversation
         this.Record(new ConversationExchangeAppended(this.Id, this.BotKey, this.UserId, exchange));
     }
 
-    public void Delete() => this.Record(new ConversationDeleted(this.Id, this.BotKey));
+    public void Delete() => this.Record(new ConversationDeleted(
+        this.Id,
+        this.BotKey,
+        this._exchanges.SelectMany(e => e.Attachments ?? []).Select(a => a.FileName).ToList()));
 }

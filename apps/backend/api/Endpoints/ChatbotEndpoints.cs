@@ -28,7 +28,7 @@ public sealed class ChatbotEndpoints : IEndpoint
 {
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("chatbots").WithTags("Chatbots");
+        RouteGroupBuilder group = app.MapGroup("chatbots").WithTags("Chatbots");
 
         group.MapPut("/{id:guid}", CreateChatbot)
             .WithSummary("Creates a new chatbot with a caller-supplied id.")
@@ -92,12 +92,14 @@ public sealed class ChatbotEndpoints : IEndpoint
             .WithDescription(
                 "Generates the answer with the chatbot's configured LLM provider/model and persists the exchange once " +
                 "the stream completes. If no conversation exists yet with the given conversationId, one is started " +
-                "implicitly using that exact id. Preflight failures (chatbot not found, provider not connected) still " +
+                "implicitly using that exact id. The request is multipart/form-data: userId, title, question and up to 5 " +
+                "optional PDF/Markdown/text attachments in `files`. Preflight failures (chatbot not found, provider not connected) still " +
                 "surface as a normal 404/422 JSON response; failures once streaming has started surface as an " +
                 "`event: error` SSE frame instead, since the HTTP status is already committed by then.")
+            .DisableAntiforgery()
             .ExcludeFromDescription();
 
-        group.MapDelete("/{botKey:guid}/conversations/{conversationId:guid}", DeleteConversation)
+        group.MapDelete("/conversations/{conversationId:guid}", DeleteConversation)
             .WithSummary("Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -177,7 +179,7 @@ public sealed class ChatbotEndpoints : IEndpoint
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await using var stream = file.OpenReadStream();
+        await using Stream stream = file.OpenReadStream();
         await commandBus.Send(new ChatbotDocumentAdder.Command(id, documentId, name, origin, file.FileName, stream, file.Length), ct);
         return Results.Created();
     }
@@ -217,8 +219,8 @@ public sealed class ChatbotEndpoints : IEndpoint
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await using var stream = file.OpenReadStream();
-        var upload = new ChatbotIconUpdater.Upload(file.ContentType, stream, file.Length);
+        await using Stream stream = file.OpenReadStream();
+        ChatbotIconUpdater.Upload upload = new(file.ContentType, stream, file.Length);
         await commandBus.Send(new ChatbotIconUpdater.Command(id, upload), ct);
         return Results.NoContent();
     }
@@ -235,12 +237,17 @@ public sealed class ChatbotEndpoints : IEndpoint
     private static async Task AskChatbot(
         Guid botKey,
         Guid conversationId,
-        AskChatbotRequest body,
+        [FromForm] Guid userId,
+        [FromForm] string title,
+        [FromForm] string question,
+        IFormFileCollection files,
         ChatbotQuestionAsker.Asker asker,
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var cmd = new ChatbotQuestionAsker.Command(botKey, conversationId, body.UserId, body.Title, body.Question);
+        List<ChatbotQuestionAsker.AttachmentUpload> attachments = await ReadAttachments(files, ct);
+
+        ChatbotQuestionAsker.Command cmd = new(botKey, conversationId, userId, title, question, attachments);
         IAsyncEnumerator<string> stream = asker.Execute(cmd, ct).GetAsyncEnumerator(ct);
         bool hasChunk = await stream.MoveNextAsync();
 
@@ -260,7 +267,7 @@ public sealed class ChatbotEndpoints : IEndpoint
         }
         catch (Exception ex)
         {
-            var (code, detail) = ex is DomainError domainError
+            (string? code, string? detail) = ex is DomainError domainError
                 ? (domainError.Code, domainError.Message)
                 : ("nakama.unexpected", "No se pudo completar la respuesta.");
             await WriteSseEvent(httpContext.Response, "error", JsonSerializer.Serialize(new { code, detail }), ct);
@@ -269,6 +276,20 @@ public sealed class ChatbotEndpoints : IEndpoint
         {
             await stream.DisposeAsync();
         }
+    }
+
+    private static async Task<List<ChatbotQuestionAsker.AttachmentUpload>> ReadAttachments(IFormFileCollection files, CancellationToken ct)
+    {
+        List<ChatbotQuestionAsker.AttachmentUpload> attachments = new(files.Count);
+        foreach (IFormFile file in files)
+        {
+            await using Stream fileStream = file.OpenReadStream();
+            using MemoryStream buffer = new();
+            await fileStream.CopyToAsync(buffer, ct);
+            attachments.Add(new ChatbotQuestionAsker.AttachmentUpload(file.FileName, buffer.ToArray()));
+        }
+
+        return attachments;
     }
 
     private static async Task WriteSseEvent(HttpResponse response, string eventName, string jsonData, CancellationToken ct)
@@ -289,25 +310,25 @@ public sealed class ChatbotEndpoints : IEndpoint
 
     private static async Task<IResult> SearchChatbotSummaries(IQueryBus queryBus, CancellationToken ct)
     {
-        var response = await queryBus.Ask(new ChatbotSummarySearcher.Query(), ct);
+        IReadOnlyCollection<ChatbotSummaryResponse> response = await queryBus.Ask(new ChatbotSummarySearcher.Query(), ct);
         return Results.Ok(response);
     }
 
     private static async Task<IResult> FindChatbotDetail(Guid id, IQueryBus queryBus, CancellationToken ct)
     {
-        var response = await queryBus.Ask(new ChatbotDetailFinder.Query(id), ct);
+        ChatbotDetailResponse response = await queryBus.Ask(new ChatbotDetailFinder.Query(id), ct);
         return Results.Ok(response);
     }
 
     private static async Task<IResult> FindChatPage(Guid id, IQueryBus queryBus, CancellationToken ct)
     {
-        var response = await queryBus.Ask(new ChatPageFinder.Query(id), ct);
+        ChatPageResponse response = await queryBus.Ask(new ChatPageFinder.Query(id), ct);
         return Results.Ok(response);
     }
 
     private static async Task<IResult> FindConversationHistory(Guid botKey, Guid? userId, IQueryBus queryBus, CancellationToken ct)
     {
-        var response = await queryBus.Ask(new ConversationHistoryFinder.Query(botKey, userId), ct);
+        ConversationHistoryResponse response = await queryBus.Ask(new ConversationHistoryFinder.Query(botKey, userId), ct);
         return Results.Ok(response);
     }
 
@@ -326,6 +347,4 @@ public sealed class ChatbotEndpoints : IEndpoint
     private sealed record UpdateChatbotSettingsRequest(bool Socratic, bool ExplicaMas, int Provider, string Model);
 
     private sealed record AddChatbotTeamMemberRequest(Guid UserId, int Role);
-
-    private sealed record AskChatbotRequest(Guid UserId, string Title, string Question);
 }

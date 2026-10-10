@@ -19,9 +19,9 @@ public partial class ConversationHistory
 
     public void RemoveConversation(Guid conversationId) => this.Entries.RemoveAll(c => c.Id == conversationId);
 
-    public void AppendExchange(Guid conversationId, string question, string answer, string citation, string moreExplanation, string socraticVariant)
+    public void AppendExchange(Guid conversationId, string question, string answer, string citation, string moreExplanation, string socraticVariant, IEnumerable<string> attachments)
     {
-        var conversation = this.Entries.FirstOrDefault(c => c.Id == conversationId);
+        ConversationSummaryRow? conversation = this.Entries.FirstOrDefault(c => c.Id == conversationId);
         conversation?.Exchanges.Add(new HistoryExampleRow
         {
             Question = question,
@@ -29,6 +29,7 @@ public partial class ConversationHistory
             Citation = citation,
             MoreExplanation = moreExplanation,
             SocraticVariant = socraticVariant,
+            Attachments = attachments.ToList(),
         });
     }
 }

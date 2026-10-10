@@ -20,6 +20,33 @@
   }
 }
 
+.bubbleAttachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.bubbleAttachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  font-size: 0.76rem;
+  font-weight: 500;
+
+  svg { flex: none; width: 12px; height: 12px; }
+}
+
+.bubbleAttachmentName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .msgAvatar {
   width: 26px;
   height: 26px;

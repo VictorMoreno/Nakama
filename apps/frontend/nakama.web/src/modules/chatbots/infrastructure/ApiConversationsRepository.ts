@@ -8,15 +8,24 @@ function formatDate(value: Date | string | undefined): string {
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("es-ES");
 }
 
-function toChatExample(row: { question?: string; answer?: string; citation?: string; moreExplanation?: string; socraticVariant?: string }): ChatExample {
-  return { q: row.question ?? "", a: row.answer ?? "", cite: row.citation ?? "", more: row.moreExplanation ?? "", socratic: row.socraticVariant ?? "" };
+function toChatExample(row: {
+  question?: string;
+  answer?: string;
+  citation?: string;
+  moreExplanation?: string;
+  socraticVariant?: string;
+  attachments?: string[];
+}): ChatExample {
+  return {
+    q: row.question ?? "",
+    a: row.answer ?? "",
+    cite: row.citation ?? "",
+    more: row.moreExplanation ?? "",
+    socratic: row.socraticVariant ?? "",
+    attachments: row.attachments ?? []
+  };
 }
 
-/**
- * No backend endpoint returns "every conversation across every chatbot" directly - history
- * lives in its own per-bot projection (conversationHistory(botKey, userId).entries), so this
- * fans out over chatbotsAll()+conversationHistory(botKey, userId) per bot and flattens the result.
- */
 export class ApiConversationsRepository implements IConversationsRepository {
   private readonly client: GeneratedNakamaClient;
 
@@ -50,13 +59,19 @@ export class ApiConversationsRepository implements IConversationsRepository {
     userId: string,
     title: string,
     question: string,
+    files: File[],
     onChunk: (textSoFar: string) => void
   ): Promise<string> {
     const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
+    const form = new FormData();
+    form.append("userId", userId);
+    form.append("title", title);
+    form.append("question", question);
+    files.forEach((file) => form.append("files", file, file.name));
+
     const response = await fetch(`${baseUrl}/api/chatbots/${botKey}/conversations/${conversationId}/ask`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, title, question })
+      body: form
     });
 
     if (!response.ok || !response.body) {
@@ -101,7 +116,7 @@ export class ApiConversationsRepository implements IConversationsRepository {
     return answer;
   }
 
-  async Delete(botKey: string, conversationId: string, userId: string): Promise<void> {
-    await this.client.conversations(botKey, conversationId, userId);
+  async Delete(conversationId: string, userId: string): Promise<void> {
+    await this.client.conversations(conversationId, userId);
   }
 }

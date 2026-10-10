@@ -26,6 +26,9 @@ public sealed class ChatbotIconUnsupportedTypeError()
 public sealed class ChatbotIconTooLargeError(long maxBytes)
     : DomainError("nakama.chatbots.icon_too_large", $"File exceeds the {maxBytes / (1024 * 1024)} MB limit.");
 
+public sealed class ChatbotAttachmentLimitExceededError(int maxAttachments)
+    : DomainError("nakama.chatbots.attachment_limit_exceeded", $"A message can include at most {maxAttachments} attachments.");
+
 public static class ChatbotErrors
 {
     public static DomainError OwnerCannotBeRemoved { get; } = new ChatbotOwnerCannotBeRemovedError();
@@ -43,4 +46,6 @@ public static class ChatbotErrors
     public static DomainError DocumentTooLarge(long maxBytes) => new ChatbotDocumentTooLargeError(maxBytes);
 
     public static DomainError IconTooLarge(long maxBytes) => new ChatbotIconTooLargeError(maxBytes);
+
+    public static DomainError AttachmentLimitExceeded(int maxAttachments) => new ChatbotAttachmentLimitExceededError(maxAttachments);
 }
