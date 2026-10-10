@@ -39,6 +39,9 @@ public static class WebApplicationConfigurationExtensions
             RequestPath = storage.ChatbotDocumentsRoute
         });
 
+        app.UseAuthentication();
+        app.UseAuthorization();
+
         app.MapEndpoints();
         app.MapHealthChecks("/health");
 

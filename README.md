@@ -59,8 +59,11 @@ Levanta PostgreSQL en `localhost:5432` (usuario/clave/BD: `nakama`/`nakama`/`nak
 
 ### 2. Backend
 
+Antes del primer arranque hay que definir la clave con la que se firman los JWT (mínimo 32 bytes). No va en `appsettings.json` ni en el repositorio: en desarrollo se guarda en los user-secrets de tu máquina, y en producción en la variable de entorno `Jwt__SigningKey`. Sin ella la aplicación **no arranca**.
+
 ```bash
 cd apps/backend/api
+dotnet user-secrets set "Jwt:SigningKey" "<cadena-aleatoria-de-al-menos-32-caracteres>"
 dotnet run
 ```
 
