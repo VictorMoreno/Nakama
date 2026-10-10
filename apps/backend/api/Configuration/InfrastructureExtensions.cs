@@ -28,7 +28,8 @@ public static class InfrastructureExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddSwagger()
+        services.AddLogger()
+            .AddSwagger()
             .AddEndpoints();
 
         services.AddHealthChecks()
@@ -36,7 +37,7 @@ public static class InfrastructureExtensions
                 sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Nakama")!,
                 name: "postgres");
 
-        services.AddExceptionHandler<DomainErrorExceptionHandler>();
+        services.AddExceptionHandler<ApiExceptionHandler>();
         services.AddProblemDetails();
 
         services.AddOptions<StorageOptions>()

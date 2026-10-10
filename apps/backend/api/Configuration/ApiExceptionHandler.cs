@@ -4,12 +4,19 @@ using Nakama.Shared.Domain;
 
 namespace Api.Configuration;
 
-public sealed class DomainErrorExceptionHandler : IExceptionHandler
+public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         if (exception is not DomainError error)
         {
+            logger.LogError(
+                exception,
+                "Unhandled exception on {Method} {Path} (trace {TraceId})",
+                httpContext.Request.Method,
+                httpContext.Request.Path,
+                httpContext.TraceIdentifier);
+
             return false;
         }
 
