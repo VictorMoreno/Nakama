@@ -5,7 +5,7 @@ using NHibernate.Linq;
 
 namespace Nakama.Users.Infrastructure;
 
-public sealed class NhUserStore(IWriteSessionFactory writeSessions) : IUserStore<User>, IUserPasswordStore<User>, IUserEmailStore<User>
+public sealed class NhUserRepository(IWriteSessionFactory writeSessions) : IUserPasswordStore<User>, IUserEmailStore<User>
 {
     public Task<string> GetUserIdAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.Id.Value.ToString());
 

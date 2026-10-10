@@ -11,7 +11,7 @@ public sealed class JsonUserType<T> : IUserType
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
-    public SqlType[] SqlTypes { get; } = [new SqlType(DbType.String)];
+    public SqlType[] SqlTypes { get; } = [new(DbType.String)];
 
     public Type ReturnedType => typeof(T);
 
@@ -31,7 +31,7 @@ public sealed class JsonUserType<T> : IUserType
 
     public void NullSafeSet(DbCommand cmd, object? value, int index, ISessionImplementor session)
     {
-        var parameter = (DbParameter)cmd.Parameters[index];
+        var parameter = cmd.Parameters[index];
         parameter.Value = value is null ? DBNull.Value : JsonSerializer.Serialize((T)value, SerializerOptions);
     }
 

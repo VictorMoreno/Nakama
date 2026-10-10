@@ -41,6 +41,8 @@ using Analytics = Nakama.Analytics.Domain.Analytics;
 // what NHibernate actually expects to read back.
 [Migration(3)]
 [SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded")]
+[SuppressMessage("Major Vulnerability", "S2068:Credentials should not be hard-coded")]
+[SuppressMessage("Major Vulnerability", "S2245:Pseudorandom number generators (PRNGs) should not be used in security contexts")]
 public sealed class SeedDemoTestDataMigration : Migration
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);

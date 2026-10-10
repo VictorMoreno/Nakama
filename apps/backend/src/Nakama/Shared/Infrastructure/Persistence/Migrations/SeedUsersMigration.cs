@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using FluentMigrator;
 using Microsoft.AspNetCore.Identity;
 using Nakama.Users.Domain;
@@ -5,6 +6,7 @@ using Nakama.Users.Domain;
 namespace Nakama.Shared.Infrastructure.Persistence.Migrations;
 
 [Migration(2)]
+[SuppressMessage("Major Vulnerability", "S2068:Credentials should not be hard-coded")]
 public sealed class SeedUsersMigration : Migration
 {
     public override void Up()

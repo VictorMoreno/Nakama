@@ -18,15 +18,14 @@ public static class ChatbotQuestionAsker
     public sealed class Asker(
         IQueryBus queryBus,
         IConversationsRepository conversationsRepository,
-        IChatbotDocumentContentReader documentReader,
+        IChatbotDocumentFileReader documentReader,
         IServiceProvider serviceProvider,
         IEventBus eventBus,
         ISystemClock systemClock) : IService
     {
         public async IAsyncEnumerable<string> Execute(Command cmd, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            ChatbotDetailResponse chatbot =
-                await queryBus.Ask(new ChatbotDetailFinder.Query(cmd.BotKey), cancellationToken);
+            ChatbotDetailResponse chatbot = await queryBus.Ask(new ChatbotDetailFinder.Query(cmd.BotKey), cancellationToken);
 
             ILlmClient llmClient = serviceProvider.GetKeyedService<ILlmClient>(chatbot.Provider)
                                    ?? throw ChatbotErrors.ProviderNotConnected(chatbot.Provider);
@@ -37,11 +36,12 @@ public static class ChatbotQuestionAsker
                                         ?? Conversation.Start(conversationId, botKey, cmd.UserId, cmd.Title,
                                             systemClock);
 
-            string systemPrompt = await this.BuildSystemPrompt(chatbot, cancellationToken);
+            List<LlmDocument> documents = await this.LoadDocuments(chatbot, cancellationToken);
+            string systemPrompt = BuildSystemPrompt(chatbot, documents.Count > 0);
             List<LlmMessage> history = BuildHistory(conversation, cmd.Question);
 
             StringBuilder answerBuilder = new();
-            await foreach (string chunk in llmClient.AskStream(chatbot.Model, systemPrompt, history, cancellationToken))
+            await foreach (string chunk in llmClient.AskStream(chatbot.Model, systemPrompt, history, documents, cancellationToken))
             {
                 answerBuilder.Append(chunk);
                 yield return chunk;
@@ -64,7 +64,38 @@ public static class ChatbotQuestionAsker
             return history;
         }
 
-        private async Task<string> BuildSystemPrompt(ChatbotDetailResponse chatbot, CancellationToken ct)
+        private async Task<List<LlmDocument>> LoadDocuments(ChatbotDetailResponse chatbot, CancellationToken ct)
+        {
+            List<LlmDocument> documents = new();
+
+            foreach (ChatbotDocumentResponse document in chatbot.Docs)
+            {
+                string fileName = Path.GetFileName(document.Url);
+                LlmDocumentKind? kind = ResolveKind(fileName);
+                if (kind is null)
+                {
+                    continue;
+                }
+
+                byte[]? content = await documentReader.Read(fileName, ct);
+                if (content is not null)
+                {
+                    documents.Add(new LlmDocument(document.Name, kind.Value, content));
+                }
+            }
+
+            return documents;
+        }
+
+        private static LlmDocumentKind? ResolveKind(string fileName) =>
+            Path.GetExtension(fileName).ToLowerInvariant() switch
+            {
+                ".pdf" => LlmDocumentKind.Pdf,
+                ".md" or ".markdown" or ".txt" => LlmDocumentKind.PlainText,
+                _ => null
+            };
+
+        private static string BuildSystemPrompt(ChatbotDetailResponse chatbot, bool hasDocuments)
         {
             List<string> parts = new List<string> { $"Eres el asistente del chatbot \"{chatbot.Label}\"." };
 
@@ -73,14 +104,9 @@ public static class ChatbotQuestionAsker
                 parts.Add(chatbot.Description);
             }
 
-            foreach (ChatbotDocumentResponse document in chatbot.Docs)
+            if (hasDocuments)
             {
-                string fileName = Path.GetFileName(document.Url);
-                string? text = await documentReader.ReadText(fileName, ct);
-                if (!string.IsNullOrWhiteSpace(text))
-                {
-                    parts.Add($"Documentación de referencia ({document.Name}):\n{text}");
-                }
+                parts.Add("Los documentos adjuntos al inicio de la conversación son tu documentación de referencia.");
             }
 
             if (chatbot.Socratic)

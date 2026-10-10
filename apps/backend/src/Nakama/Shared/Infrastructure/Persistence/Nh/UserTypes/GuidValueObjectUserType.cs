@@ -30,7 +30,7 @@ public sealed class GuidValueObjectUserType<T> : IUserType
 
     public void NullSafeSet(DbCommand cmd, object? value, int index, ISessionImplementor session)
     {
-        var parameter = (DbParameter)cmd.Parameters[index];
+        var parameter = cmd.Parameters[index];
         parameter.Value = value is null ? DBNull.Value : ((IGuidValueObject)value).Value;
     }
 

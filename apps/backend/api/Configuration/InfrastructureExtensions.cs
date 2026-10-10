@@ -53,6 +53,14 @@ public static class InfrastructureExtensions
             return new DiskChatbotDocumentStorage(basePath);
         });
 
+        services.AddSingleton<IChatbotDocumentFileReader>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
+            var env = sp.GetRequiredService<IWebHostEnvironment>();
+            var basePath = FileStorage.ResolvePath(options.ChatbotDocumentsPath, env);
+            return new DiskChatbotDocumentFileReader(basePath);
+        });
+
         services.AddSingleton<IChatbotIconStorage>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
@@ -73,10 +81,9 @@ public static class InfrastructureExtensions
         services.AddSingleton<IReadSessionFactory, NhReadSessionFactory>();
 
         services.AddIdentityCore<User>()
-            .AddUserStore<NhUserStore>();
+            .AddUserStore<NhUserRepository>();
 
         services.AddKeyedScoped<ILlmClient, AnthropicLlmClient>(LlmProvider.Anthropic.ToString());
-        services.AddScoped<IChatbotDocumentContentReader, ChatbotDocumentContentReader>();
         services.AddSingleton<ISystemClock, SystemClock>();
 
         return services;
