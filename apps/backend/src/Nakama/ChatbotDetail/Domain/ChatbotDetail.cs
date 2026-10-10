@@ -12,7 +12,6 @@ public partial class ChatbotDetail : IEntity
     public virtual string Status { get; protected set; } = string.Empty;
     public virtual DateTime LastUsed { get; protected set; }
     public virtual string Context { get; protected set; } = string.Empty;
-    public virtual bool General { get; protected set; }
     public virtual bool Archived { get; protected set; }
     public virtual string? IconUrl { get; protected set; }
     public virtual bool Socratic { get; protected set; }

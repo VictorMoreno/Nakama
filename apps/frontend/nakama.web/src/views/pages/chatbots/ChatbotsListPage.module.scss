@@ -65,15 +65,6 @@
   white-space: nowrap;
 }
 
-.botCardDept {
-  font-size: 0.72rem;
-  color: var(--ink-faint);
-  margin-top: 1px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 // Fixed-height description block (always reserves 2 lines, clamps with an ellipsis
 // past that) so .botCardMeta/.botCardActions land in the same spot on every card in
 // the row regardless of how much text the description has.

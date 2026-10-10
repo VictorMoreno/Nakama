@@ -6,7 +6,6 @@ public partial class ChatbotDetail
         string label,
         string description,
         string status,
-        bool general,
         bool socratic,
         bool explicaMas,
         string provider,
@@ -16,7 +15,6 @@ public partial class ChatbotDetail
         this.Label = label;
         this.Description = description;
         this.Status = status;
-        this.General = general;
         this.Socratic = socratic;
         this.ExplicaMas = explicaMas;
         this.Provider = provider;
@@ -27,12 +25,11 @@ public partial class ChatbotDetail
         string label,
         string description,
         string status,
-        bool general,
         bool socratic,
         bool explicaMas,
         string provider,
         string model) =>
-        new(key, label, description, status, general, socratic, explicaMas, provider, model);
+        new(key, label, description, status, socratic, explicaMas, provider, model);
 
     public void UpdateStatus(string status) => this.Status = status;
 

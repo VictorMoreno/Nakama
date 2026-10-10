@@ -13,7 +13,6 @@ public sealed class ChatbotSummaryCreatedOnChatbotCreated(IChatbotSummaryReposit
                 chatbotCreated.Id.Value,
                 chatbotCreated.Label,
                 chatbotCreated.Description,
-                chatbotCreated.Status.ToString(),
-                chatbotCreated.General),
+                chatbotCreated.Status.ToString()),
             cancellationToken);
 }

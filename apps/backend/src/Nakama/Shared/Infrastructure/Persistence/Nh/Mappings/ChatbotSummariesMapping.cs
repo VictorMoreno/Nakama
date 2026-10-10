@@ -22,7 +22,6 @@ public sealed class ChatbotSummariesMapping : ClassMapping<ChatbotSummary>
         this.Property(x => x.Status);
         this.Property(x => x.DocsCount);
         this.Property(x => x.TeamCount);
-        this.Property(x => x.General);
         this.Property(x => x.Archived);
         this.Property(x => x.IconUrl);
     }

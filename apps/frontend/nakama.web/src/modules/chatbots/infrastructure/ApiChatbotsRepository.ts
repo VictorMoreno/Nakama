@@ -148,7 +148,6 @@ function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailRespons
     team: (detail.team ?? []).map(toTeamMember),
     stats: (detail.stats ?? []).map(toStatTile),
     archived: summary.archived ?? false,
-    general: summary.general ?? false,
     iconUrl: summary.iconUrl
   };
 }
@@ -173,21 +172,18 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
   }
 
   async Create(input: CreateChatbotInput): Promise<Chatbot> {
-    const { name, dept, general, description, status, settings, iconUrl } = input;
+    const { name, dept, description, status, settings, iconUrl } = input;
     const id = crypto.randomUUID();
     const trimmedDescription = description.trim();
-    const fallbackDescription = general
-      ? "Chatbot general de empresa. Todavía sin documentos."
-      : dept
-        ? `Chatbot de equipo para ${dept}. Todavía sin documentos.`
-        : "Chatbot recién creado. Todavía sin documentos.";
+    const fallbackDescription = dept
+      ? `Chatbot de equipo para ${dept}. Todavía sin documentos.`
+      : "Chatbot recién creado. Todavía sin documentos.";
     const finalDescription = trimmedDescription || fallbackDescription;
 
     await this.client.chatbotsPUT(id, {
       label: name,
       description: finalDescription,
       status: STATUS_TO_ORDINAL[status],
-      general,
       ...toApiSettings(settings)
     } satisfies CreateChatbotRequest);
 
@@ -204,11 +200,10 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       status,
       context:
         "Chatbot recién creado" +
-        (general ? " para toda la empresa" : dept ? ` para el equipo de <strong>${dept}</strong>` : "") +
+        (dept ? ` para el equipo de <strong>${dept}</strong>` : "") +
         ". Todavía no tiene documentos — añade contenido en la pestaña Documentos para que pueda empezar a responder.",
       opening: null,
       settings,
-      general,
       iconUrl,
       docs: [],
       gaps: [],

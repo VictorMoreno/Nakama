@@ -14,7 +14,6 @@ public static class ChatbotCreator
         string Label,
         string Description,
         int Status,
-        bool General,
         bool Socratic,
         bool ExplicaMas,
         int Provider,
@@ -29,7 +28,6 @@ public static class ChatbotCreator
                 cmd.Label,
                 cmd.Description,
                 (ChatbotStatus)cmd.Status,
-                cmd.General,
                 new ChatbotSettings(cmd.Socratic, cmd.ExplicaMas, (LlmProvider)cmd.Provider, cmd.Model),
                 ct);
         }
@@ -45,7 +43,6 @@ public static class ChatbotCreator
             string label,
             string description,
             ChatbotStatus status,
-            bool general,
             ChatbotSettings settings,
             CancellationToken cancellationToken)
         {
@@ -54,7 +51,7 @@ public static class ChatbotCreator
                 throw ChatbotErrors.AlreadyExists(id.ToString());
             }
 
-            var chatbot = Chatbot.Create(id, label, description, status, general, settings, systemClock);
+            var chatbot = Chatbot.Create(id, label, description, status, settings, systemClock);
 
             await repository.Save(chatbot, cancellationToken);
             await eventBus.Publish(chatbot, cancellationToken);

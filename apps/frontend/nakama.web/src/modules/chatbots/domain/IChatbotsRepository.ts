@@ -3,7 +3,6 @@ import type { Chatbot, ChatbotLifecycleStatus, ChatbotMap, ChatbotSettings, Team
 export interface CreateChatbotInput {
   name: string;
   dept: string;
-  general: boolean;
   description: string;
   status: ChatbotLifecycleStatus;
   settings: ChatbotSettings;

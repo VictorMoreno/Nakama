@@ -16,8 +16,6 @@ public partial class Chatbot : AggregateRoot<ChatbotId>
 
     public virtual string Context { get; private set; } = string.Empty;
 
-    public virtual bool General { get; private set; }
-
     public virtual bool Archived { get; private set; }
 
     public virtual string? IconUrl { get; private set; }

@@ -77,7 +77,6 @@ export interface Chatbot {
   team: TeamMember[];
   stats: StatTile[];
   archived?: boolean;
-  general?: boolean;
   iconUrl?: string;
 }
 

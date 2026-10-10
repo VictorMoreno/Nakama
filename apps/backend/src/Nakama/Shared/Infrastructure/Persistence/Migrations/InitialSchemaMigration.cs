@@ -13,7 +13,6 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("description").AsCustom("text").Nullable()
             .WithColumn("status").AsInt32().Nullable()
             .WithColumn("context").AsCustom("text").Nullable()
-            .WithColumn("general").AsBoolean().Nullable()
             .WithColumn("archived").AsBoolean().Nullable()
             .WithColumn("iconurl").AsString(255).Nullable()
             .WithColumn("settings").AsCustom("text").Nullable()
@@ -72,7 +71,6 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("status").AsString(255).Nullable()
             .WithColumn("docscount").AsInt32().Nullable()
             .WithColumn("teamcount").AsInt32().Nullable()
-            .WithColumn("general").AsBoolean().Nullable()
             .WithColumn("archived").AsBoolean().Nullable()
             .WithColumn("iconurl").AsString(255).Nullable();
 
@@ -83,7 +81,6 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("status").AsString(255).Nullable()
             .WithColumn("lastused").AsDateTime().Nullable()
             .WithColumn("context").AsCustom("text").Nullable()
-            .WithColumn("general").AsBoolean().Nullable()
             .WithColumn("archived").AsBoolean().Nullable()
             .WithColumn("iconurl").AsString(255).Nullable()
             .WithColumn("socratic").AsBoolean().Nullable()

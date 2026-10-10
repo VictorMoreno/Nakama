@@ -12,7 +12,6 @@ public partial class ChatbotSummary : IEntity
     public virtual string Status { get; protected set; } = string.Empty;
     public virtual int DocsCount { get; protected set; }
     public virtual int TeamCount { get; protected set; }
-    public virtual bool General { get; protected set; }
     public virtual bool Archived { get; protected set; }
     public virtual string? IconUrl { get; protected set; }
 }

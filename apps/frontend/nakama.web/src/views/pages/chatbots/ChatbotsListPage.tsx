@@ -61,7 +61,6 @@ export default function ChatbotsListPage() {
                 </div>
                 <div className={styles.botCardTitles}>
                   <div className={styles.botCardName}>{bot.label}</div>
-                  <div className={styles.botCardDept}>{bot.general ? "Chatbot general de empresa" : "Chatbot de equipo"}</div>
                 </div>
               </div>
               <p className={styles.botCardDesc}>{bot.description}</p>

@@ -194,22 +194,21 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   entidad con datos. Ejemplo en un agregado de escritura (`Chatbots/Domain/Chatbot.domain.cs`):
   ```csharp
   private Chatbot(ChatbotId key, string label, string description, ChatbotStatus status,
-      bool general, ChatbotSettings settings, DateTime lastUsed)
+      ChatbotSettings settings, DateTime lastUsed)
   {
       this.Id = key;
       this.Label = label;
       this.Description = description;
       this.Status = status;
-      this.General = general;
       this.Settings = settings;
       this.LastUsed = lastUsed;
   }
 
   public static Chatbot Create(ChatbotId key, string label, string description,
-      ChatbotStatus status, bool general, ChatbotSettings settings, ISystemClock systemClock)
+      ChatbotStatus status, ChatbotSettings settings, ISystemClock systemClock)
   {
-      var chatbot = new Chatbot(key, label, description, status, general, settings, systemClock.UtcNow);
-      chatbot.Record(new ChatbotCreated(key, label, description, status, general));
+      var chatbot = new Chatbot(key, label, description, status, settings, systemClock.UtcNow);
+      chatbot.Record(new ChatbotCreated(key, label, description, status, settings));
       return chatbot;
   }
   ```
@@ -218,17 +217,16 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   (`ChatbotDetail/Domain/ChatbotDetail.domain.cs`), sin `AggregateRoot`/`Record`, solo asignar y
   devolver:
   ```csharp
-  private ChatbotDetail(string key, string label, string description, string status, bool general)
+  private ChatbotDetail(string key, string label, string description, string status)
   {
       this.Key = key;
       this.Label = label;
       this.Description = description;
       this.Status = status;
-      this.General = general;
   }
 
-  public static ChatbotDetail Create(string key, string label, string description, string status, bool general) =>
-      new(key, label, description, status, general);
+  public static ChatbotDetail Create(string key, string label, string description, string status) =>
+      new(key, label, description, status);
   ```
 - Errores de negocio en `Domain/Errors`, heredando de `DomainError`, con código estable
   (`nakama.<módulo>...` — adaptado del `yq.spare_parts...` de la guía original). `DomainError`

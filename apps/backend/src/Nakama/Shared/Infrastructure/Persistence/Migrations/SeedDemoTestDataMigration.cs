@@ -201,7 +201,6 @@ public sealed class SeedDemoTestDataMigration : Migration
             chatbotIds.Add(botId);
 
             var status = (ChatbotStatus)(rng.Next(0, 10) < 7 ? 1 : rng.Next(0, 2) == 0 ? 0 : 2); // mostly Active
-            var general = rng.Next(0, 4) == 0; // ~25% company-wide
             var seedProvider = (LlmProvider)rng.Next(0, 3);
             var seedModel = seedProvider == LlmProvider.Anthropic ? AnthropicModels[rng.Next(AnthropicModels.Length)].Id : string.Empty;
             var settings = new ChatbotSettings(Socratic: rng.Next(0, 2) == 0, ExplicaMas: rng.Next(0, 2) == 0,
@@ -252,7 +251,6 @@ public sealed class SeedDemoTestDataMigration : Migration
                 description,
                 status = (int)status,
                 context,
-                general,
                 archived = false,
                 iconurl = (string?)null,
                 settings = Json(settings),
@@ -269,7 +267,6 @@ public sealed class SeedDemoTestDataMigration : Migration
                 status = status.ToString(),
                 docscount = docs.Count,
                 teamcount = writeTeam.Count,
-                general,
                 archived = false,
                 iconurl = (string?)null
             });
@@ -282,7 +279,6 @@ public sealed class SeedDemoTestDataMigration : Migration
                 status = status.ToString(),
                 lastused = lastUsed,
                 context,
-                general,
                 archived = false,
                 iconurl = (string?)null,
                 socratic = settings.Socratic,

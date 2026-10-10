@@ -96,7 +96,7 @@ Ninguna solución está diseñada específicamente para:
 | RF4 | Citación de fuentes | Toda respuesta muestra de dónde viene la información | Alta |
 | RF5 | Control de acceso | Usuarios solo ven chatbots de sus departamentos | Alta |
 | RF6 | Panel de administración | Gestionar usuarios, documentos, configuración de bots | Alta |
-| RF19 | Chatbot general de empresa | Un chatbot más, con la misma mecánica que los departamentales (RF1-RF9), pero nutrido con información general de la empresa (políticas, herramientas comunes, RRHH, IT) en lugar de documentación de un departamento técnico concreto. Cubre dudas que no pertenecen a ningún departamento | Media |
+| RF19 | ~~Chatbot general de empresa~~ (descartado) | Descartado en la versión 1.3: no aporta nada que un chatbot normal no cubra. Un chatbot de RRHH o de IT con su propia documentación resuelve esas dudas con la misma mecánica (RF1-RF9), sin un tipo de chatbot aparte | - |
 
 ### 5.2 Funcionalidades educativas (Diferenciador)
 
@@ -297,3 +297,4 @@ Ideas de valor identificadas en revisión posterior, relacionadas con el ámbito
 | 1.0 | 2026-07-24 | - | Documento inicial |
 | 1.1 | 2026-08-18 | - | Añadidos RF19 (chatbot general de empresa), RF20 (análisis de preguntas más repetidas), RF21 (gobernanza de coste/uso de LLM), RF22 (encuestas eNPS) y RF23 (currículo de formación). Añadida sección 13 con candidatas adicionales pendientes de evaluar. Marcados como completados los pasos 1-3 de la sección 12 |
 | 1.2 | 2026-08-18 | - | RF23 rediseñado como entidad independiente de los chatbots (sección "Formación" propia, con listado y gestión propios), en vez de una pestaña dentro de cada chatbot. Los módulos pasan a ser tipados (vídeo, documento, ejercicio, examen), cada uno con su propio proceso de realización |
+| 1.3 | 2026-10-10 | - | RF19 (chatbot general de empresa) descartado: un chatbot normal de RRHH o de IT cubre el mismo caso sin un tipo de chatbot aparte. Se elimina el flag "general" del producto |

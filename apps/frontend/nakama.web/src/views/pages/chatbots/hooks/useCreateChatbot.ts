@@ -10,7 +10,6 @@ export function useCreateChatbot() {
   const { showToast } = useToast();
 
   const [name, setName] = useState("");
-  const [general, setGeneral] = useState(false);
   const [dept, setDept] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<ChatbotLifecycleStatus>("borrador");
@@ -29,7 +28,6 @@ export function useCreateChatbot() {
     const key = await createChatbot({
       name: trimmed,
       dept: dept.trim(),
-      general,
       description,
       status,
       settings: { socratic, explicaMas, provider, model: "" },
@@ -43,8 +41,6 @@ export function useCreateChatbot() {
     navigate,
     name,
     setName,
-    general,
-    setGeneral,
     dept,
     setDept,
     description,

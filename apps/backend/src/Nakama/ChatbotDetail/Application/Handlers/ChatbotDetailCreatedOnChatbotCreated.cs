@@ -16,7 +16,6 @@ public sealed class ChatbotDetailCreatedOnChatbotCreated(IChatbotDetailRepositor
                 chatbotCreated.Label,
                 chatbotCreated.Description,
                 chatbotCreated.Status.ToString(),
-                chatbotCreated.General,
                 chatbotCreated.Settings.Socratic,
                 chatbotCreated.Settings.ExplicaMas,
                 chatbotCreated.Settings.Provider.ToString(),

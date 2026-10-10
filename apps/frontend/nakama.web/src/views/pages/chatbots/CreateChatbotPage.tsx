@@ -18,8 +18,6 @@ export default function CreateChatbotPage() {
     navigate,
     name,
     setName,
-    general,
-    setGeneral,
     dept,
     setDept,
     description,
@@ -75,19 +73,17 @@ export default function CreateChatbotPage() {
                 autoFocus
               />
             </div>
-            {!general && (
-              <div className="form-field">
-                <label htmlFor="new-bot-dept">Departamento o equipo</label>
-                <input
-                  id="new-bot-dept"
-                  type="text"
-                  className="form-input"
-                  placeholder="p. ej. Finanzas"
-                  value={dept}
-                  onChange={(e) => setDept(e.target.value)}
-                />
-              </div>
-            )}
+            <div className="form-field">
+              <label htmlFor="new-bot-dept">Departamento o equipo</label>
+              <input
+                id="new-bot-dept"
+                type="text"
+                className="form-input"
+                placeholder="p. ej. Finanzas"
+                value={dept}
+                onChange={(e) => setDept(e.target.value)}
+              />
+            </div>
             <div className="form-field" style={{ marginBottom: 0 }}>
               <label htmlFor="new-bot-desc">Descripción breve</label>
               <textarea
@@ -97,25 +93,6 @@ export default function CreateChatbotPage() {
                 placeholder="Se mostrará en la card del listado para ayudar a encontrar este chatbot."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className={styles.configRows}>
-            <div className={styles.configRow}>
-              <div className={styles.configRowText}>
-                <div className="title">Chatbot general de empresa</div>
-                <div className="desc">
-                  En vez de un equipo concreto, responde con información general de la empresa (políticas, RR. HH., IT…).
-                </div>
-              </div>
-              <button
-                className="switch"
-                role="switch"
-                aria-checked={general}
-                aria-label="Chatbot general de empresa"
-                type="button"
-                onClick={() => setGeneral((g) => !g)}
               />
             </div>
           </div>

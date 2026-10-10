@@ -7,5 +7,4 @@ public sealed record ChatbotCreated(
     string Label,
     string Description,
     ChatbotStatus Status,
-    bool General,
     ChatbotSettings Settings) : IDomainEvent;

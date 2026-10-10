@@ -2130,7 +2130,6 @@ export interface ChatbotDetailResponse {
     status?: string | undefined;
     lastUsed?: Date;
     context?: string | undefined;
-    general?: boolean;
     archived?: boolean;
     iconUrl?: string | undefined;
     socratic?: boolean;
@@ -2161,7 +2160,6 @@ export interface ChatbotSummaryResponse {
     status?: string | undefined;
     docsCount?: number;
     teamCount?: number;
-    general?: boolean;
     archived?: boolean;
     iconUrl?: string | undefined;
 }
@@ -2189,7 +2187,6 @@ export interface CreateChatbotRequest {
     label?: string | undefined;
     description?: string | undefined;
     status?: number;
-    general?: boolean;
     socratic?: boolean;
     explicaMas?: boolean;
     provider?: number;

@@ -9,7 +9,6 @@ public sealed record ChatbotSummaryResponse(
     string Status,
     int DocsCount,
     int TeamCount,
-    bool General,
     bool Archived,
     string? IconUrl)
 {
@@ -20,7 +19,6 @@ public sealed record ChatbotSummaryResponse(
         entity.Status,
         entity.DocsCount,
         entity.TeamCount,
-        entity.General,
         entity.Archived,
         entity.IconUrl is null ? null : $"{iconsRoute}/{entity.IconUrl}");
 }
