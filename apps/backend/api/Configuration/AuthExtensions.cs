@@ -20,7 +20,8 @@ public static class AuthExtensions
             .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer), "Jwt:Issuer must not be empty.")
             .Validate(options => !string.IsNullOrWhiteSpace(options.Audience), "Jwt:Audience must not be empty.")
             .Validate(
-                options => !string.IsNullOrEmpty(options.SigningKey) && Encoding.UTF8.GetByteCount(options.SigningKey) >= JwtOptions.MinSigningKeyBytes,
+                options => !string.IsNullOrEmpty(options.SigningKey) &&
+                           Encoding.UTF8.GetByteCount(options.SigningKey) >= JwtOptions.MinSigningKeyBytes,
                 $"Jwt:SigningKey is missing or shorter than {JwtOptions.MinSigningKeyBytes} bytes. Set it with 'dotnet user-secrets' or the Jwt__SigningKey environment variable.")
             .Validate(options => options.AccessTokenMinutes > 0, "Jwt:AccessTokenMinutes must be greater than zero.")
             .Validate(options => options.RefreshTokenDays > 0, "Jwt:RefreshTokenDays must be greater than zero.")

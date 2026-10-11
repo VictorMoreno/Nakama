@@ -24,10 +24,11 @@ public sealed class UsersEndpoints : IEndpoint
 
         app.MapPost("auth/login", Login)
             .WithTags("Auth")
-            .WithSummary("Verifies email/password credentials and records real activity.")
+            .WithSummary("Verifies email/password credentials, records real activity and issues an access token.")
             .WithDescription(
-                "No cookie or token is issued - this only proves the credential is real and stamps LastActiveAt. Session/OAuth is a later pass.")
-            .Produces<UserResponse>()
+                "Returns a short-lived JWT access token (to send as 'Authorization: Bearer <token>'), its expiry and the user. Anonymous: it is the only endpoint reachable without a token.")
+            .AllowAnonymous()
+            .Produces<LoginResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized);
     }
 
@@ -46,7 +47,7 @@ public sealed class UsersEndpoints : IEndpoint
 
     private static async Task<IResult> Login(LoginRequest body, IQueryBus queryBus, CancellationToken ct)
     {
-        var response = await queryBus.Ask(new UserAuthenticator.Query(body.Email, body.Password), ct);
+        LoginResponse response = await queryBus.Ask(new UserAuthenticator.Query(body.Email, body.Password), ct);
         return Results.Ok(response);
     }
 
