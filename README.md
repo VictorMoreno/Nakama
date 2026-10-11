@@ -135,7 +135,7 @@ Cada módulo relevante tiene su propio `agents.md` con las convenciones de imple
 - **Asignación y progreso por persona**: solo quien está asignado a una formación puede cursarla; el progreso (módulos completados, notas de examen) es individual por persona, no compartido entre quienes cursan la misma formación. El listado de `/formacion` se carga en función del usuario: una persona no-admin solo ve las formaciones a las que fue asignada; un admin ve todas, pero "Abrir" solo aparece en las que él mismo cursa.
 - **Vistas separadas Abrir / Gestionar**: la persona que cursa una formación usa `/formacion/:id` (progreso, módulos bloqueados, exámenes respondibles); un admin la configura en `/formacion/:id/gestionar` (alta/edición inline de módulos sin diálogo, equipo asignado) — son páginas y hooks independientes, no una sola vista condicionada por rol.
 - **Analítica global**: chatbots activos, preguntas respondidas, uso por bot, tasa de respuestas útiles.
-- **Autenticación propia**: login por email/contraseña contra la base de usuarios propia; devuelve un JWT de acceso de 15 minutos (aún no se exige en los endpoints). Sin refresh token ni SSO todavía — ver nota de stack planificado más arriba.
+- **Autenticación propia**: login por email/contraseña contra la base de usuarios propia. Devuelve un JWT de acceso de 15 minutos, que se exige en todos los endpoints salvo login, refresh y logout; los de administración requieren además el rol de administrador. La sesión sobrevive a las recargas con un refresh token de 7 días en una cookie `HttpOnly` que se rota en cada uso (reutilizar uno ya rotado cierra todas las sesiones del usuario). Sin SSO todavía — ver nota de stack planificado más arriba.
 
 ## 🔑 Usuario y contraseña de prueba
 
