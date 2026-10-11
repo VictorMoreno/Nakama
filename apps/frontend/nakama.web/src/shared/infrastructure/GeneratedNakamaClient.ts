@@ -33,10 +33,10 @@ export interface IGeneratedNakamaClient {
     feedback(body: SubmitFeedbackRequest): Promise<void>;
 
     /**
-     * Verifies email/password credentials and records real activity.
+     * Verifies email/password credentials, records real activity and issues an access token.
      * @return OK
      */
-    login(body: LoginRequest): Promise<UserResponse>;
+    login(body: LoginRequest): Promise<LoginResponse>;
 
     /**
      * Creates a new chatbot with a caller-supplied id.
@@ -346,10 +346,10 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Verifies email/password credentials and records real activity.
+     * Verifies email/password credentials, records real activity and issues an access token.
      * @return OK
      */
-    login(body: LoginRequest): Promise<UserResponse> {
+    login(body: LoginRequest): Promise<LoginResponse> {
         let url_ = this.baseUrl + "/api/auth/login";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -371,13 +371,13 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
         });
     }
 
-    protected processLogin(response: Response): Promise<UserResponse> {
+    protected processLogin(response: Response): Promise<LoginResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as UserResponse;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as LoginResponse;
             return result200;
             });
         } else if (status === 401) {
@@ -391,7 +391,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<UserResponse>(null as any);
+        return Promise.resolve<LoginResponse>(null as any);
     }
 
     /**
@@ -2291,6 +2291,12 @@ export interface LlmProviderConfigResponse {
 export interface LoginRequest {
     email?: string | undefined;
     password?: string | undefined;
+}
+
+export interface LoginResponse {
+    accessToken?: string | undefined;
+    expiresAt?: Date;
+    user?: UserResponse;
 }
 
 export interface ModelInput {

@@ -6,6 +6,7 @@ import type { Chatbot, ChatbotMap, ChatbotSettings, TeamMember } from "../../../
 import type { CreateChatbotInput, IChatbotsRepository } from "../../../modules/chatbots/domain/IChatbotsRepository";
 import { Services } from "../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../shared/infrastructure/injection/useInjection";
+import { useUser } from "./UserContext";
 
 export type { CreateChatbotInput };
 
@@ -28,26 +29,34 @@ interface ChatbotsContextValue {
 }
 
 const ChatbotsContext = createContext<ChatbotsContextValue | null>(null);
+const NO_CHATBOTS: ChatbotMap = {};
 
 export function ChatbotsProvider({ children }: { children: ReactNode }) {
   const repo = useInjection<IChatbotsRepository>(Services.ChatbotsRepository.id);
 
-  const [chatbots, setChatbots] = useState<ChatbotMap>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadedChatbots, setChatbots] = useState<ChatbotMap>(NO_CHATBOTS);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const [currentBotKey, setCurrentBotKey] = useState<string>("");
 
+  const { currentUser } = useUser();
+  const userId: string | null = currentUser?.id ?? null;
+  const chatbots: ChatbotMap = userId && loadedFor === userId ? loadedChatbots : NO_CHATBOTS;
+  const isLoading: boolean = userId !== null && loadedFor !== userId;
+
   useEffect(() => {
+    if (!userId) return;
+
     let cancelled = false;
     repo.FindAll().then((data) => {
       if (!cancelled) {
         setChatbots(data);
-        setIsLoading(false);
+        setLoadedFor(userId);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [repo]);
+  }, [repo, userId]);
 
   const activeChatbots = useMemo(
     () =>

@@ -20,12 +20,23 @@ function RequireAdmin({ children }: { children: ReactNode }) {
   return isAdmin ? <>{children}</> : <Navigate to="/chat" replace />;
 }
 
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { currentUser } = useUser();
+  return currentUser ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
 export default function Router() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="login" element={<LoginPage />} />
-      <Route element={<AppShell />}>
+      <Route
+        element={
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
+        }
+      >
         <Route path="chat" element={<ChatPage />} />
         <Route
           path="chatbots"

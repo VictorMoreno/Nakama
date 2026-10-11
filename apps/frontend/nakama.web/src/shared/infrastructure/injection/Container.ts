@@ -6,6 +6,7 @@ import { ApiFormationEnrollmentRepository } from "../../../modules/formations/in
 import { ApiFormationsRepository } from "../../../modules/formations/infrastructure/ApiFormationsRepository";
 import { ApiLlmProvidersRepository } from "../../../modules/llmProviders/infrastructure/ApiLlmProvidersRepository";
 import { ApiUsersRepository } from "../../../modules/users/infrastructure/ApiUsersRepository";
+import { authFetch } from "../auth/authFetch";
 import { GeneratedNakamaClient } from "../GeneratedNakamaClient";
 import { Services } from "./Services";
 
@@ -15,7 +16,7 @@ import { Services } from "./Services";
  * (empty base URL in dev - vite.config.ts already proxies /api/* to the local API; set
  * VITE_API_BASE_URL for a build targeting a real deployed origin).
  */
-const client = new GeneratedNakamaClient(import.meta.env.VITE_API_BASE_URL ?? "");
+const client = new GeneratedNakamaClient(import.meta.env.VITE_API_BASE_URL ?? "", { fetch: authFetch });
 
 const registry = new Map<string, unknown>([
   [Services.AnalyticsRepository.id, new ApiAnalyticsRepository(client)],

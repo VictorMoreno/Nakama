@@ -1,7 +1,8 @@
 // Provider and hook are deliberately colocated (standard React Context convention) —
 // this only costs Fast Refresh a full remount of consumers on edit, not correctness.
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { AuthSession } from "../../../shared/infrastructure/auth/AuthSession";
 
 export interface CurrentUser {
   id: string;
@@ -18,12 +19,10 @@ interface UserContextValue {
 
 const UserContext = createContext<UserContextValue | null>(null);
 
-// Not repository-backed like ChatbotsContext/FormationsContext - there is nothing to fetch.
-// currentUser is only ever written by LoginPage after a real POST /api/auth/login, and lives
-// purely in memory: no session/cookie exists yet (ADR-20), so a page reload loses it, same as
-// today's login already behaves.
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+
+  useEffect(() => AuthSession.onExpired(() => setCurrentUser(null)), []);
 
   const value: UserContextValue = {
     currentUser,

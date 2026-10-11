@@ -1,3 +1,4 @@
+import { authFetch } from "../../../shared/infrastructure/auth/authFetch";
 import type { GeneratedNakamaClient } from "../../../shared/infrastructure/GeneratedNakamaClient";
 import type { ChatExample, ConversationSummary } from "../domain/Chatbot";
 import type { IConversationsRepository } from "../domain/IConversationsRepository";
@@ -69,7 +70,7 @@ export class ApiConversationsRepository implements IConversationsRepository {
     form.append("question", question);
     files.forEach((file) => form.append("files", file, file.name));
 
-    const response = await fetch(`${baseUrl}/api/chatbots/${botKey}/conversations/${conversationId}/ask`, {
+    const response = await authFetch(`${baseUrl}/api/chatbots/${botKey}/conversations/${conversationId}/ask`, {
       method: "POST",
       body: form
     });

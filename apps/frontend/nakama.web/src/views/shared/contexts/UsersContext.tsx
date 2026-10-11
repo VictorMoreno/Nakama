@@ -6,6 +6,7 @@ import type { UserSummary } from "../../../modules/users/domain/User";
 import type { IUsersRepository } from "../../../modules/users/domain/IUsersRepository";
 import { Services } from "../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../shared/infrastructure/injection/useInjection";
+import { useUser } from "./UserContext";
 
 interface UsersContextValue {
   users: UserSummary[];
@@ -17,24 +18,31 @@ interface UsersContextValue {
 }
 
 const UsersContext = createContext<UsersContextValue | null>(null);
+const NO_USERS: UserSummary[] = [];
 
 export function UsersProvider({ children }: { children: ReactNode }) {
   const repo = useInjection<IUsersRepository>(Services.UsersRepository.id);
-  const [users, setUsers] = useState<UserSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadedUsers, setUsers] = useState<UserSummary[]>(NO_USERS);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const { currentUser, isAdmin } = useUser();
+  const adminId: string | null = currentUser && isAdmin ? currentUser.id : null;
+  const users: UserSummary[] = adminId && loadedFor === adminId ? loadedUsers : NO_USERS;
+  const isLoading: boolean = adminId !== null && loadedFor !== adminId;
 
   useEffect(() => {
+    if (!adminId) return;
+
     let cancelled = false;
     repo.FindAll().then((data) => {
       if (!cancelled) {
         setUsers(data);
-        setIsLoading(false);
+        setLoadedFor(adminId);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [repo]);
+  }, [repo, adminId]);
 
   function findUser(userId: string): UserSummary | undefined {
     return users.find((u) => u.id === userId);

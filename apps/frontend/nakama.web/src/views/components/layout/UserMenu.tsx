@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import type { IAuthRepository } from "../../../modules/auth/domain/IAuthRepository";
+import { Services } from "../../../shared/infrastructure/injection/Services";
+import { useInjection } from "../../../shared/infrastructure/injection/useInjection";
 import { useTheme, type ThemeMode } from "../../shared/contexts/ThemeContext";
 import { useToast } from "../../shared/contexts/ToastContext";
 import { useUser } from "../../shared/contexts/UserContext";
@@ -24,7 +27,8 @@ interface UserMenuProps {
 
 export default function UserMenu({ collapsed = false }: UserMenuProps) {
   const navigate = useNavigate();
-  const { currentUser, isAdmin } = useUser();
+  const { currentUser, setCurrentUser, isAdmin } = useUser();
+  const authRepo = useInjection<IAuthRepository>(Services.AuthRepository.id);
   const [open, setOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<DropdownPos | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -121,9 +125,11 @@ export default function UserMenu({ collapsed = false }: UserMenuProps) {
             <button
               className={styles.userDropdownLogout}
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 setOpen(false);
-                showToast("Sesión cerrada (demo)");
+                await authRepo.Logout();
+                setCurrentUser(null);
+                showToast("Sesión cerrada");
                 navigate("/login");
               }}
             >
