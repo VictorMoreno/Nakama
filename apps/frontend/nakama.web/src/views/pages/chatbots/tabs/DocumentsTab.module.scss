@@ -24,3 +24,15 @@
 }
 
 .docName { color: var(--ink); font-weight: 500; }
+
+.docLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}

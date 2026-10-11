@@ -18,7 +18,11 @@ export interface ChatbotDocument {
   status: DocStatus;
   statusLabel: string;
   updated: string;
-  url?: string;
+}
+
+export interface DocumentFile {
+  blob: Blob;
+  fileName: string;
 }
 
 export interface GapQuestion {

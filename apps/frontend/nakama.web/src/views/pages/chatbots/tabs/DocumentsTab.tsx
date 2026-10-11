@@ -10,7 +10,7 @@ interface DocumentsTabProps {
 }
 
 export default function DocumentsTab({ bot }: DocumentsTabProps) {
-  const { uploadOpen, setUploadOpen, setDeleteIndex, target, handleRemoveConfirm } = useDocumentsTab(bot);
+  const { uploadOpen, setUploadOpen, setDeleteIndex, target, handleRemoveConfirm, openDocument } = useDocumentsTab(bot);
 
   return (
     <div className="tab-panel active">
@@ -35,10 +35,10 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
               {bot.docs.map((doc, idx) => (
                 <tr key={doc.id ?? doc.name}>
                   <td className={`${styles.td} ${styles.docName}`}>
-                    {doc.url ? (
-                      <a href={doc.url} target="_blank" rel="noreferrer">
+                    {doc.id ? (
+                      <button className={styles.docLink} type="button" onClick={() => openDocument(doc)}>
                         {doc.name}
-                      </a>
+                      </button>
                     ) : (
                       doc.name
                     )}

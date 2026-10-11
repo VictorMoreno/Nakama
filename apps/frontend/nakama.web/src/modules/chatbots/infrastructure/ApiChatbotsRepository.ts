@@ -19,6 +19,7 @@ import type {
   ChatbotSettings,
   ChatExample,
   DocStatus,
+  DocumentFile,
   GapQuestion,
   LlmProvider,
   StatTile,
@@ -75,8 +76,7 @@ function toDocument(row: ChatbotDocumentResponse): ChatbotDocument {
     origin: row.origin ?? "",
     status: DOC_STATUS_FROM_API[row.status ?? "Ok"] ?? "ok",
     statusLabel: row.statusLabel ?? "",
-    updated: formatDate(row.updated),
-    url: row.url
+    updated: formatDate(row.updated)
   };
 }
 
@@ -223,6 +223,11 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
 
   async RemoveDocument(id: string, index: number): Promise<void> {
     await this.client.documentsDELETE(id, index);
+  }
+
+  async DownloadDocument(id: string, documentId: string): Promise<DocumentFile> {
+    const response = await this.client.file(id, documentId);
+    return { blob: response.data, fileName: response.fileName ?? "documento" };
   }
 
   async AddTeamMember(id: string, member: TeamMember): Promise<void> {
