@@ -16,6 +16,20 @@ public static class WebApplicationConfigurationExtensions
                 options.RouteTemplate = "openapi/{documentName}.json";
             });
 
+            app.UseSwaggerUI(options =>
+            {
+                options.RoutePrefix = "api/docs";
+
+                if (app.DescribeApiVersions().Reverse().Any())
+                {
+                    foreach (string groupName in app.DescribeApiVersions().Reverse().Select(description => description.GroupName))
+                    {
+                        options.SwaggerEndpoint($"/openapi/{groupName}.json",
+                            groupName.ToUpperInvariant());
+                    }
+                }
+            });
+
             MigrationRunner.Run(app.Configuration.GetConnectionString("Nakama")!);
         }
 
@@ -40,19 +54,5 @@ public static class WebApplicationConfigurationExtensions
 
         app.MapEndpoints();
         app.MapHealthChecks("/health").AllowAnonymous();
-
-        app.UseSwaggerUI(options =>
-        {
-            options.RoutePrefix = "api/docs";
-
-            if (app.DescribeApiVersions().Reverse().Any())
-            {
-                foreach (string groupName in app.DescribeApiVersions().Reverse().Select(description => description.GroupName))
-                {
-                    options.SwaggerEndpoint($"/openapi/{groupName}.json",
-                        groupName.ToUpperInvariant());
-                }
-            }
-        });
     }
 }
