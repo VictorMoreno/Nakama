@@ -102,7 +102,7 @@ public sealed class ChatbotEndpoints : IEndpoint
             .WithDescription(
                 "Generates the answer with the chatbot's configured LLM provider/model and persists the exchange once " +
                 "the stream completes. If no conversation exists yet with the given conversationId, one is started " +
-                "implicitly using that exact id. The request is multipart/form-data: userId, title, question and up to 5 " +
+                "implicitly using that exact id. The request is multipart/form-data: title, question and up to 5 " +
                 "optional PDF/Markdown/text attachments in `files`. Preflight failures (chatbot not found, provider not connected) still " +
                 "surface as a normal 404/422 JSON response; failures once streaming has started surface as an " +
                 "`event: error` SSE frame instead, since the HTTP status is already committed by then.")
@@ -110,7 +110,7 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ExcludeFromDescription();
 
         group.MapDelete("/conversations/{conversationId:guid}", DeleteConversation)
-            .WithSummary("Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.")
+            .WithSummary("Deletes the caller's own conversation (hard delete). The immutable conversation audit log is untouched.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -129,7 +129,7 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapGet("/{botKey:guid}/conversation-history", FindConversationHistory)
-            .WithSummary("Gets a user's conversation history for one chatbot.")
+            .WithSummary("Gets the caller's conversation history for one chatbot.")
             .Produces<ConversationHistoryResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
     }
@@ -246,17 +246,17 @@ public sealed class ChatbotEndpoints : IEndpoint
     private static async Task AskChatbot(
         Guid botKey,
         Guid conversationId,
-        [FromForm] Guid userId,
         [FromForm] string title,
         [FromForm] string question,
         IFormFileCollection files,
+        ICurrentUser currentUser,
         ChatbotQuestionAsker.Asker asker,
         HttpContext httpContext,
         CancellationToken ct)
     {
         List<ChatbotQuestionAsker.AttachmentUpload> attachments = await ReadAttachments(files, ct);
 
-        ChatbotQuestionAsker.Command cmd = new(botKey, conversationId, userId, title, question, attachments);
+        ChatbotQuestionAsker.Command cmd = new(botKey, conversationId, currentUser.Id, title, question, attachments);
         IAsyncEnumerator<string> stream = asker.Execute(cmd, ct).GetAsyncEnumerator(ct);
         bool hasChunk = await stream.MoveNextAsync();
 
@@ -309,11 +309,11 @@ public sealed class ChatbotEndpoints : IEndpoint
 
     private static async Task<IResult> DeleteConversation(
         Guid conversationId,
-        Guid userId,
+        ICurrentUser currentUser,
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await commandBus.Send(new ConversationRemover.Command(conversationId, userId), ct);
+        await commandBus.Send(new ConversationRemover.Command(conversationId, currentUser.Id), ct);
         return Results.NoContent();
     }
 
@@ -335,9 +335,9 @@ public sealed class ChatbotEndpoints : IEndpoint
         return Results.Ok(response);
     }
 
-    private static async Task<IResult> FindConversationHistory(Guid botKey, Guid? userId, IQueryBus queryBus, CancellationToken ct)
+    private static async Task<IResult> FindConversationHistory(Guid botKey, ICurrentUser currentUser, IQueryBus queryBus, CancellationToken ct)
     {
-        ConversationHistoryResponse response = await queryBus.Ask(new ConversationHistoryFinder.Query(botKey, userId), ct);
+        ConversationHistoryResponse response = await queryBus.Ask(new ConversationHistoryFinder.Query(botKey, currentUser.Id), ct);
         return Results.Ok(response);
     }
 

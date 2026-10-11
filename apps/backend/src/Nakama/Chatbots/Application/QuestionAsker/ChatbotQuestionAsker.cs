@@ -6,6 +6,7 @@ using Nakama.ChatbotDetail.Application;
 using Nakama.ChatbotDetail.Application.Finder;
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Errors;
+using Nakama.Chatbots.Domain.Services;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Chat;
@@ -35,6 +36,8 @@ public static class ChatbotQuestionAsker
         IEventBus eventBus,
         ISystemClock systemClock) : IService
     {
+        private readonly ConversationFinderById _finder = new(conversationsRepository);
+
         public async IAsyncEnumerable<string> Execute(Command cmd, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             ChatbotDetailResponse chatbot = await queryBus.Ask(new ChatbotDetailFinder.Query(cmd.BotKey), cancellationToken);
@@ -49,7 +52,7 @@ public static class ChatbotQuestionAsker
 
             ChatbotId botKey = ChatbotId.From(cmd.BotKey);
             ConversationId conversationId = ConversationId.From(cmd.ConversationId);
-            Conversation conversation = await conversationsRepository.FindById(conversationId, cancellationToken)
+            Conversation conversation = await this._finder.FindOwned(conversationId, cmd.UserId, cancellationToken)
                                         ?? Conversation.Start(conversationId, botKey, cmd.UserId, cmd.Title,
                                             systemClock);
 

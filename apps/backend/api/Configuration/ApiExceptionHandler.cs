@@ -20,7 +20,7 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
             return false;
         }
 
-        var statusCode = error.Code switch
+        int statusCode = error.Code switch
         {
             _ when error.Code.EndsWith(".not_found", StringComparison.Ordinal) => StatusCodes.Status404NotFound,
             _ when error.Code.EndsWith(".already_exists", StringComparison.Ordinal) => StatusCodes.Status409Conflict,

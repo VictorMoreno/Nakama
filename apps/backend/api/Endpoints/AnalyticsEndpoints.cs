@@ -10,7 +10,7 @@ public sealed class AnalyticsEndpoints : IEndpoint
 {
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("analytics").WithTags("Analytics");
+        RouteGroupBuilder group = app.MapGroup("analytics").WithTags("Analytics");
 
         group.MapGet("/", FindAnalytics)
             .RequireAuthorization(AuthPolicies.Admin)

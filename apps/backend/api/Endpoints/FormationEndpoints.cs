@@ -24,7 +24,7 @@ public sealed class FormationEndpoints : IEndpoint
 {
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("formations").WithTags("Formations");
+        RouteGroupBuilder group = app.MapGroup("formations").WithTags("Formations");
 
         group.MapPut("/{id:guid}", CreateFormation)
             .RequireAuthorization(AuthPolicies.Admin)
@@ -154,8 +154,8 @@ public sealed class FormationEndpoints : IEndpoint
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await using var stream = file.OpenReadStream();
-        var upload = new FormationIconUpdater.Upload(file.ContentType, stream, file.Length);
+        await using Stream stream = file.OpenReadStream();
+        FormationIconUpdater.Upload upload = new FormationIconUpdater.Upload(file.ContentType, stream, file.Length);
         await commandBus.Send(new FormationIconUpdater.Command(id, upload), ct);
         return Results.NoContent();
     }
@@ -206,9 +206,9 @@ public sealed class FormationEndpoints : IEndpoint
     }
 
     private static async Task<IResult> CompleteFormationModule(
-        Guid id, Guid moduleId, CompleteFormationModuleRequest body, ICommandBus commandBus, CancellationToken ct)
+        Guid id, Guid moduleId, CompleteFormationModuleRequest body, ICurrentUser currentUser, ICommandBus commandBus, CancellationToken ct)
     {
-        await commandBus.Send(new FormationModuleCompleter.Command(id, moduleId, body.UserId, body.Score), ct);
+        await commandBus.Send(new FormationModuleCompleter.Command(id, moduleId, currentUser.Id, body.Score), ct);
         return Results.NoContent();
     }
 
@@ -238,27 +238,28 @@ public sealed class FormationEndpoints : IEndpoint
         return Results.NoContent();
     }
 
-    private static async Task<IResult> SearchFormationSummaries(Guid userId,
-        bool isAdmin,
+    private static async Task<IResult> SearchFormationSummaries(
+        ICurrentUser currentUser,
         IQueryBus queryBus,
         CancellationToken ct)
     {
-        var response = await queryBus.Ask(new FormationSummarySearcher.Query(userId, isAdmin), ct);
+        IReadOnlyCollection<FormationSummaryResponse> response =
+            await queryBus.Ask(new FormationSummarySearcher.Query(currentUser.Id, currentUser.IsAdmin), ct);
         return Results.Ok(response);
     }
 
     private static async Task<IResult> FindFormationDetail(Guid id, IQueryBus queryBus, CancellationToken ct)
     {
-        var response = await queryBus.Ask(new FormationDetailFinder.Query(id), ct);
+        FormationDetailResponse response = await queryBus.Ask(new FormationDetailFinder.Query(id), ct);
         return Results.Ok(response);
     }
 
     private static async Task<IResult> FindFormationEnrollment(Guid id,
-        Guid userId, 
+        ICurrentUser currentUser,
         IQueryBus queryBus,
         CancellationToken ct)
     {
-        var response = await queryBus.Ask(new FormationEnrollmentFinder.Query(id, userId), ct);
+        FormationEnrollmentResponse response = await queryBus.Ask(new FormationEnrollmentFinder.Query(id, currentUser.Id), ct);
         return Results.Ok(response);
     }
 
@@ -295,7 +296,7 @@ public sealed class FormationEndpoints : IEndpoint
         IReadOnlyList<QuizQuestionRequest>? Quiz,
         int? PassingScore);
 
-    private sealed record CompleteFormationModuleRequest(Guid UserId, int? Score);
+    private sealed record CompleteFormationModuleRequest(int? Score);
 
     private sealed record AddFormationTeamMemberRequest(Guid UserId);
 }

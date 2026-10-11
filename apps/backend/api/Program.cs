@@ -1,11 +1,11 @@
 using Api.Configuration;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure();
 builder.Services.AddApplication();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.Configure();
 

@@ -22,7 +22,7 @@ public static class WebApplicationConfigurationExtensions
         app.UseExceptionHandler();
         app.UseStatusCodePages();
 
-        var storage = app.Services.GetRequiredService<IOptions<StorageOptions>>().Value;
+        StorageOptions storage = app.Services.GetRequiredService<IOptions<StorageOptions>>().Value;
 
         app.UseStaticFiles(new StaticFileOptions
         {
@@ -52,7 +52,7 @@ public static class WebApplicationConfigurationExtensions
 
             if (app.DescribeApiVersions().Reverse().Any())
             {
-                foreach (var groupName in app.DescribeApiVersions().Reverse().Select(description => description.GroupName))
+                foreach (string groupName in app.DescribeApiVersions().Reverse().Select(description => description.GroupName))
                 {
                     options.SwaggerEndpoint($"/openapi/{groupName}.json",
                         groupName.ToUpperInvariant());

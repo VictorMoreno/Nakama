@@ -17,10 +17,10 @@ public static class EndpointExtensions
     {
         RouteGroupBuilder apiGroup = app.MapGroup("api");
         
-        using (var scope = app.Services.CreateScope())
+        using (IServiceScope scope = app.Services.CreateScope())
         {
-            var modules = scope.ServiceProvider.GetServices<IEndpoint>();
-            foreach (var module in modules)
+            IEnumerable<IEndpoint> modules = scope.ServiceProvider.GetServices<IEndpoint>();
+            foreach (IEndpoint module in modules)
             {
                 module.MapEndpoints(apiGroup);
             }

@@ -1,5 +1,5 @@
 using Nakama.Chatbots.Domain;
-using Nakama.Chatbots.Domain.Errors;
+using Nakama.Chatbots.Domain.Services;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
@@ -20,13 +20,11 @@ public static class ConversationRemover
 
     public sealed class Remover(IConversationsRepository repository, IEventBus eventBus) : IService
     {
+        private readonly ConversationFinderById _finder = new(repository);
+
         public async Task Execute(ConversationId id, Guid userId, CancellationToken cancellationToken)
         {
-            Conversation? conversation = await repository.FindById(id, cancellationToken);
-            if (conversation is null || conversation.UserId != userId)
-            {
-                throw ConversationErrors.NotFound(id);
-            }
+            Conversation conversation = await this._finder.Execute(id, userId, cancellationToken);
 
             conversation.Delete();
 

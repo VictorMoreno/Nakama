@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Auth;
 using Nakama.Users.Domain;
 using Nakama.Users.Infrastructure;
@@ -29,6 +30,9 @@ public static class AuthExtensions
             .ValidateOnStart();
 
         services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer();

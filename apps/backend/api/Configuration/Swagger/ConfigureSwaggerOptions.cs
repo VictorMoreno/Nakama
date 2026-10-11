@@ -15,7 +15,7 @@ public sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provi
 
     public void Configure(SwaggerGenOptions options)
     {
-        foreach (var description in provider.ApiVersionDescriptions)
+        foreach (ApiVersionDescription description in provider.ApiVersionDescriptions)
         {
             options.SwaggerDoc(description.GroupName, new OpenApiInfo
             {

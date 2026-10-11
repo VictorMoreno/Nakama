@@ -36,14 +36,14 @@ public sealed class UsersEndpoints : IEndpoint
 
     private static async Task<IResult> CreateUser(CreateUserRequest body, ICommandBus commandBus, CancellationToken ct)
     {
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
         await commandBus.Send(new UserCreator.Command(id, body.Email, body.Name, body.IsAdmin, body.InitialPassword), ct);
         return Results.Created();
     }
 
     private static async Task<IResult> SearchUserSummaries(IQueryBus queryBus, CancellationToken ct)
     {
-        var response = await queryBus.Ask(new UserSummarySearcher.Query(), ct);
+        IReadOnlyCollection<UserSummaryResponse> response = await queryBus.Ask(new UserSummarySearcher.Query(), ct);
         return Results.Ok(response);
     }
 
