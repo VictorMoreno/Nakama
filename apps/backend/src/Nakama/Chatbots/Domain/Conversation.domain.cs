@@ -16,8 +16,11 @@ public partial class Conversation
 
     public static Conversation Start(ConversationId id, ChatbotId botKey, Guid userId, string title, ISystemClock systemClock)
     {
-        Conversation conversation = new(id, botKey, userId, title, systemClock.UtcNow);
-        conversation.Record(new ConversationStarted(id, botKey, userId, title));
+        DateTime startedAt = systemClock.UtcNow;
+
+        Conversation conversation = new(id, botKey, userId, title, startedAt);
+        conversation.Record(new ConversationStarted(id, botKey, userId, title, startedAt));
+
         return conversation;
     }
 

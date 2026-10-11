@@ -9,13 +9,16 @@ public sealed class ConversationHistoryUpdatedOnConversationStarted(IConversatio
 {
     protected override async Task Handle(ConversationStarted conversationStarted, CancellationToken cancellationToken)
     {
-        Domain.ConversationHistory? history = await conversationHistoryRepository.FindById(conversationStarted.BotKey.Value, cancellationToken);
+        Domain.ConversationHistory? history =
+            await conversationHistoryRepository.FindById(conversationStarted.BotKey.Value, cancellationToken);
         if (history is null)
         {
             return;
         }
 
-        history.StartConversation(conversationStarted.Id.Value, conversationStarted.BotKey.Value, conversationStarted.UserId, conversationStarted.Title);
+        history.StartConversation(conversationStarted.Id.Value, conversationStarted.BotKey.Value, conversationStarted.UserId,
+            conversationStarted.Title, conversationStarted.StartedAt);
+
         await conversationHistoryRepository.Update(history, cancellationToken);
     }
 }

@@ -1,13 +1,11 @@
 using Nakama.ConversationAudit.Domain;
 using Nakama.Chatbots.Domain.Events;
-using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
 
 namespace Nakama.ConversationAudit.Application.Handlers;
 
-public sealed class ConversationAuditLogCreatedOnConversationStarted(
-    IConversationAuditRepository auditRepository,
-    ISystemClock systemClock) : DomainEventHandler<ConversationStarted>
+public sealed class ConversationAuditLogCreatedOnConversationStarted(IConversationAuditRepository auditRepository)
+    : DomainEventHandler<ConversationStarted>
 {
     protected override async Task Handle(ConversationStarted conversationStarted, CancellationToken cancellationToken)
     {
@@ -22,7 +20,7 @@ public sealed class ConversationAuditLogCreatedOnConversationStarted(
             conversationStarted.UserId,
             conversationStarted.BotKey.Value,
             conversationStarted.Title,
-            systemClock.UtcNow);
+            conversationStarted.StartedAt);
 
         await auditRepository.Save(log, cancellationToken);
     }

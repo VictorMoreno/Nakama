@@ -9,6 +9,10 @@ using ConversationHistory = Nakama.ConversationHistory.Domain.ConversationHistor
 public sealed class NhConversationHistoryRepository(IReadSessionFactory readSessions)
     : NhRepositoryBase<ConversationHistory, Guid>(readSessions), IConversationHistoryRepository
 {
-    // FindById, Save, Update inherited directly from the base, no redeclaration needed
-    // (Update is Save under the hood, same as every other read-model repository).
+    public new async Task<ConversationHistory?> FindById(Guid botKey, CancellationToken ct)
+    {
+        ConversationHistory? history = await base.FindById(botKey, ct);
+        history?.OrderByMostRecent();
+        return history;
+    }
 }

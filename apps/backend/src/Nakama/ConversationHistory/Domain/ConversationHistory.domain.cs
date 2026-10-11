@@ -9,15 +9,24 @@ public partial class ConversationHistory
 
     public static ConversationHistory Create(Guid botKey) => new(botKey);
 
-    public void StartConversation(Guid id, Guid botKey, Guid userId, string title) => this.Entries.Add(new ConversationSummaryRow
+    public void StartConversation(Guid id, Guid botKey, Guid userId, string title, DateTime startedAt) => this.Entries.Add(new ConversationSummaryRow
     {
         Id = id,
         BotKey = botKey,
         UserId = userId,
         Title = title,
+        DateLabel = startedAt
     });
 
     public void RemoveConversation(Guid conversationId) => this.Entries.RemoveAll(c => c.Id == conversationId);
+
+    public void OrderByMostRecent()
+    {
+        List<ConversationSummaryRow> ordered = this.Entries.OrderByDescending(c => c.DateLabel).ToList();
+
+        this.Entries.Clear();
+        this.Entries.AddRange(ordered);
+    }
 
     public void AppendExchange(Guid conversationId, string question, string answer, string citation, string moreExplanation, string socraticVariant, IEnumerable<string> attachments)
     {
