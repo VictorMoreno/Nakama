@@ -13,6 +13,7 @@ public sealed class AnalyticsEndpoints : IEndpoint
         var group = app.MapGroup("analytics").WithTags("Analytics");
 
         group.MapGet("/", FindAnalytics)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Gets the global analytics snapshot.")
             .Produces<AnalyticsResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);

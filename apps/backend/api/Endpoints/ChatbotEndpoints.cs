@@ -31,26 +31,31 @@ public sealed class ChatbotEndpoints : IEndpoint
         RouteGroupBuilder group = app.MapGroup("chatbots").WithTags("Chatbots");
 
         group.MapPut("/{id:guid}", CreateChatbot)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Creates a new chatbot with a caller-supplied id.")
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         group.MapPost("/{id:guid}/archive", ArchiveChatbot)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Marks a chatbot as archived.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPatch("/{id:guid}/status", UpdateChatbotStatus)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Updates a chatbot's status.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPatch("/{id:guid}/settings", UpdateChatbotSettings)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Replaces a chatbot's settings (Socratic mode, ExplicaMas, LLM provider).")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPut("/{id:guid}/documents/{documentId:guid}", AddChatbotDocument)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a chatbot's knowledge base.")
             .WithDescription(
                 "Newly uploaded documents are always reported as Pending - this codebase has no real indexing pipeline yet.")
@@ -60,22 +65,26 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}/documents/{index:int}", RemoveChatbotDocument)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Removes a document by its list position.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/team", AddChatbotTeamMember)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Adds a team member to a chatbot.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}/team/{index:int}", RemoveChatbotTeamMember)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Removes a team member by their list position. The owner cannot be removed.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         group.MapPost("/{id:guid}/icon", UploadChatbotIcon)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Uploads or replaces a chatbot's icon image (PNG or JPEG, max 2 MB).")
             .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
             .Produces(StatusCodes.Status204NoContent)
@@ -83,6 +92,7 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}/icon", RemoveChatbotIcon)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Removes a chatbot's icon image.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);

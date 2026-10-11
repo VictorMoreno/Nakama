@@ -12,12 +12,14 @@ public sealed class UsersEndpoints : IEndpoint
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
         app.MapPost("users", CreateUser)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithTags("Users")
             .WithSummary("Admin-provisions a new user with an initial password.")
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         app.MapGet("users", SearchUserSummaries)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithTags("Users")
             .WithSummary("Lists all users in the system (id, name, email) - e.g. to populate a team-assignment picker.")
             .Produces<IReadOnlyCollection<UserSummaryResponse>>();

@@ -10,7 +10,7 @@ public sealed class LlmProviderEndpoints : IEndpoint
 {
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("llm-providers").WithTags("LlmProviders");
+        RouteGroupBuilder group = app.MapGroup("llm-providers").WithTags("LlmProviders").RequireAuthorization(AuthPolicies.Admin);
 
         group.MapGet("/", SearchLlmProviders)
             .WithSummary("Lists every known LLM provider with its configuration status and model catalog.")

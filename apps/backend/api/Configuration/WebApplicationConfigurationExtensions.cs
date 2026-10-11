@@ -20,6 +20,7 @@ public static class WebApplicationConfigurationExtensions
         }
 
         app.UseExceptionHandler();
+        app.UseStatusCodePages();
 
         var storage = app.Services.GetRequiredService<IOptions<StorageOptions>>().Value;
 
@@ -43,7 +44,7 @@ public static class WebApplicationConfigurationExtensions
         app.UseAuthorization();
 
         app.MapEndpoints();
-        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health").AllowAnonymous();
 
         app.UseSwaggerUI(options =>
         {

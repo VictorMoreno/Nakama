@@ -27,21 +27,25 @@ public sealed class FormationEndpoints : IEndpoint
         var group = app.MapGroup("formations").WithTags("Formations");
 
         group.MapPut("/{id:guid}", CreateFormation)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Creates a new formation with a caller-supplied id.")
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         group.MapPost("/{id:guid}/archive", ArchiveFormation)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Marks a formation as archived.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPatch("/{id:guid}/status", UpdateFormationStatus)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Updates a formation's status.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/icon", UploadFormationIcon)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Uploads or replaces a formation's icon image (PNG or JPEG, max 2 MB).")
             .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
             .Produces(StatusCodes.Status204NoContent)
@@ -49,22 +53,26 @@ public sealed class FormationEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}/icon", RemoveFormationIcon)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Removes a formation's icon image.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPut("/{id:guid}/modules/{moduleId:guid}", AddFormationModule)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Adds a module to a formation, using a caller-supplied module id.")
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         group.MapPatch("/{id:guid}/modules/{moduleId:guid}", UpdateFormationModule)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Updates an existing module's fields.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}/modules/{moduleId:guid}", RemoveFormationModule)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Removes a module from a formation's curriculum.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -78,16 +86,19 @@ public sealed class FormationEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         group.MapPost("/{id:guid}/modules/{moduleId:guid}/toggle-gating", ToggleFormationModuleGating)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Flips a module's gated flag.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/team", AddFormationTeamMember)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Assigns a person to a formation - this is also their enrollment (fused with progress).")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id:guid}/team/{userId:guid}", RemoveFormationTeamMember)
+            .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary(
                 "Unassigns a person from a formation - also deletes their progress (enrollment fused with team membership).")
             .Produces(StatusCodes.Status204NoContent)

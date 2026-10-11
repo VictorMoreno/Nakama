@@ -11,6 +11,8 @@ namespace Api.Configuration.Swagger;
 public sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
     : IConfigureNamedOptions<SwaggerGenOptions>
 {
+    private const string BearerSchemeName = "Bearer";
+
     public void Configure(SwaggerGenOptions options)
     {
         foreach (var description in provider.ApiVersionDescriptions)
@@ -22,6 +24,19 @@ public sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provi
                 Description = description.IsDeprecated ? "This API version has been deprecated." : null
             });
         }
+
+        options.AddSecurityDefinition(BearerSchemeName, new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "JWT access token returned by POST /api/auth/login."
+        });
+
+        options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference(BearerSchemeName, document)] = []
+        });
     }
 
     public void Configure(string? name, SwaggerGenOptions options) => this.Configure(options);
