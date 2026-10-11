@@ -5,7 +5,7 @@ namespace Nakama.Users.Domain;
 
 public partial class User
 {
-    private User(UserId key, string email, string normalizedEmail, string name, bool isAdmin, DateTime createdAt)
+    public User(UserId key, string email, string normalizedEmail, string name, bool isAdmin, DateTime createdAt)
     {
         this.Id = key;
         this.Email = email;

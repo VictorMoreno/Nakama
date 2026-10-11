@@ -13,7 +13,9 @@
       <Build />
     </Project>
   </Folder>
-  <Folder Name="/apps/test/" />
+  <Folder Name="/apps/tests/">
+    <Project Path="apps/tests/Test/Test.csproj" />
+  </Folder>
   <Folder Name="/_solutionItems/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
