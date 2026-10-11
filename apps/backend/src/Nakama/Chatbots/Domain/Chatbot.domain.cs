@@ -30,7 +30,7 @@ public partial class Chatbot
         ChatbotSettings settings,
         ISystemClock systemClock)
     {
-        var chatbot = new Chatbot(key, label, description, status, settings, systemClock.UtcNow);
+        Chatbot chatbot = new(key, label, description, status, settings, systemClock.UtcNow);
         chatbot.Record(new ChatbotCreated(key, label, description, status, settings));
         return chatbot;
     }

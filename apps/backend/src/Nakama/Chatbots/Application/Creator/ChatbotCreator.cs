@@ -51,7 +51,7 @@ public static class ChatbotCreator
                 throw ChatbotErrors.AlreadyExists(id.ToString());
             }
 
-            var chatbot = Chatbot.Create(id, label, description, status, settings, systemClock);
+            Chatbot chatbot = Chatbot.Create(id, label, description, status, settings, systemClock);
 
             await repository.Save(chatbot, cancellationToken);
             await eventBus.Publish(chatbot, cancellationToken);

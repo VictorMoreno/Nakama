@@ -11,8 +11,8 @@ public sealed class AnalyticsCreatedOnChatbotCreated(IAnalyticsRepository analyt
 {
     protected override async Task Handle(ChatbotCreated chatbotCreated, CancellationToken cancellationToken)
     {
-        var botKey = chatbotCreated.Id.Value;
-        var analytics = await analyticsRepository.Find(cancellationToken);
+        Guid botKey = chatbotCreated.Id.Value;
+        Analytics? analytics = await analyticsRepository.Find(cancellationToken);
         if (analytics is null)
         {
             analytics = Analytics.CreateFromChatbotCreated(botKey);

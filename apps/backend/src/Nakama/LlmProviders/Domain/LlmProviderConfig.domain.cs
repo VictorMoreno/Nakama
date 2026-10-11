@@ -19,7 +19,7 @@ public partial class LlmProviderConfig
     public static LlmProviderConfig Register(LlmProvider provider, string apiKey, bool enabled, IReadOnlyList<LlmModelOption> models,
         ISystemClock systemClock)
     {
-        var config = new LlmProviderConfig(LlmProviderConfigId.From(Guid.NewGuid()), provider, apiKey, enabled, models, systemClock.UtcNow);
+        LlmProviderConfig config = new(LlmProviderConfigId.From(Guid.NewGuid()), provider, apiKey, enabled, models, systemClock.UtcNow);
         config.Record(new LlmProviderConfigured(config.Id, provider, enabled, models));
         return config;
     }

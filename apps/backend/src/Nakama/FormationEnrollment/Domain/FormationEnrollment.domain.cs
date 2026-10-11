@@ -13,7 +13,7 @@ public partial class FormationEnrollment
 
     public static FormationEnrollment Create(FormationEnrollmentId id, Guid formationId, Guid userId)
     {
-        var enrollment = new FormationEnrollment(id, formationId, userId);
+        FormationEnrollment enrollment = new(id, formationId, userId);
         enrollment.Record(new PersonEnrolled(formationId, userId));
         return enrollment;
     }

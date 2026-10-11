@@ -29,7 +29,7 @@ public partial class Formation
         FormationStatus status,
         Guid? linkedChatbotKey)
     {
-        var formation = new Formation(key, title, audience, description, status, linkedChatbotKey);
+        Formation formation = new(key, title, audience, description, status, linkedChatbotKey);
         formation.Record(new FormationCreated(key, title, audience, description, status, linkedChatbotKey));
         return formation;
     }
@@ -69,13 +69,13 @@ public partial class Formation
         IReadOnlyList<QuizQuestion>? quiz,
         int? passingScore)
     {
-        var index = this._modules.FindIndex(m => m.Id == moduleId);
+        int index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
             throw FormationErrors.ModuleNotFound(moduleId.Value.ToString(), this.Id.Value.ToString());
         }
 
-        var updated = this._modules[index] with
+        FormationModule updated = this._modules[index] with
         {
             Title = title,
             Type = type,
@@ -94,7 +94,7 @@ public partial class Formation
 
     public void RemoveModule(ModuleId moduleId)
     {
-        var index = this._modules.FindIndex(m => m.Id == moduleId);
+        int index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
             throw FormationErrors.ModuleNotFound(moduleId.Value.ToString(), this.Id.Value.ToString());
@@ -107,13 +107,13 @@ public partial class Formation
 
     public void ToggleModuleGating(ModuleId moduleId)
     {
-        var index = this._modules.FindIndex(m => m.Id == moduleId);
+        int index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
             throw FormationErrors.ModuleNotFound(moduleId.Value.ToString(), this.Id.Value.ToString());
         }
 
-        var toggled = this._modules[index] with { Gated = !this._modules[index].Gated };
+        FormationModule toggled = this._modules[index] with { Gated = !this._modules[index].Gated };
         this._modules[index] = toggled;
 
         this.Record(new FormationModuleGatingToggled(this.Id, moduleId, toggled.Gated));

@@ -9,7 +9,7 @@ public sealed class ConversationHistoryUpdatedOnConversationStarted(IConversatio
 {
     protected override async Task Handle(ConversationStarted conversationStarted, CancellationToken cancellationToken)
     {
-        var history = await conversationHistoryRepository.FindById(conversationStarted.BotKey.Value, cancellationToken);
+        Domain.ConversationHistory? history = await conversationHistoryRepository.FindById(conversationStarted.BotKey.Value, cancellationToken);
         if (history is null)
         {
             return;

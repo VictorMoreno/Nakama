@@ -30,13 +30,13 @@ public static class FormationTeamMemberAdder
         {
             await queryBus.Ask(new FormationDetailFinder.Query(id.Value), cancellationToken); // 404 if the formation doesn't exist
 
-            var existing = await enrollmentRepository.FindByFormationAndUser(id.Value, userId, cancellationToken);
+            FormationEnrollment? existing = await enrollmentRepository.FindByFormationAndUser(id.Value, userId, cancellationToken);
             if (existing is not null)
             {
                 return;
             }
 
-            var enrollment = FormationEnrollment.Create(FormationEnrollmentId.From(Guid.NewGuid()), id.Value, userId);
+            FormationEnrollment enrollment = FormationEnrollment.Create(FormationEnrollmentId.From(Guid.NewGuid()), id.Value, userId);
 
             await enrollmentRepository.Save(enrollment, cancellationToken);
             await eventBus.Publish(enrollment, cancellationToken);

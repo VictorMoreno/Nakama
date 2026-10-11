@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Users.Domain;
+using NHibernate;
 using NHibernate.Linq;
 
 namespace Nakama.Users.Infrastructure;
@@ -42,7 +43,7 @@ public sealed class NhUserRepository(IWriteSessionFactory writeSessions) : IUser
 
     public async Task<User?> FindByIdAsync(string userId, CancellationToken cancellationToken)
     {
-        using var session = writeSessions.OpenSession();
+        using ISession session = writeSessions.OpenSession();
         return await session.GetAsync<User>(UserId.From(Guid.Parse(userId)), cancellationToken);
     }
 
@@ -89,15 +90,15 @@ public sealed class NhUserRepository(IWriteSessionFactory writeSessions) : IUser
 
     private async Task Save(User user, CancellationToken cancellationToken)
     {
-        using var session = writeSessions.OpenSession();
-        using var tx = session.BeginTransaction();
+        using ISession session = writeSessions.OpenSession();
+        using ITransaction tx = session.BeginTransaction();
         await session.SaveOrUpdateAsync(user, cancellationToken);
         await tx.CommitAsync(cancellationToken);
     }
 
     private async Task<User?> GetByNormalizedEmail(string normalizedEmail, CancellationToken cancellationToken)
     {
-        using var session = writeSessions.OpenSession();
+        using ISession session = writeSessions.OpenSession();
         return await session.Query<User>().SingleOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
     }
 }

@@ -19,7 +19,7 @@ public static class AnalyticsFeedbackSubmitter
     {
         public async Task Execute(bool useful, CancellationToken ct)
         {
-            var analytics = await repository.Find(ct);
+            Analytics? analytics = await repository.Find(ct);
             if (analytics is null)
             {
                 analytics = Analytics.CreateFromFeedbackSubmitted(useful);

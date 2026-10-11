@@ -11,7 +11,7 @@ public sealed class ConversationAuditLogUpdatedOnConversationExchangeAppended(
 {
     protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended, CancellationToken cancellationToken)
     {
-        var log = await auditRepository.FindById(conversationExchangeAppended.Id.Value, cancellationToken);
+        ConversationAuditLog? log = await auditRepository.FindById(conversationExchangeAppended.Id.Value, cancellationToken);
         if (log is null)
         {
             return;

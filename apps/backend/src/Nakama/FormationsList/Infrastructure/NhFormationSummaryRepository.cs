@@ -1,6 +1,7 @@
 using Nakama.FormationsList.Domain;
 using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
+using NHibernate;
 using NHibernate.Linq;
 
 namespace Nakama.FormationsList.Infrastructure;
@@ -10,7 +11,7 @@ public sealed class NhFormationSummaryRepository(IReadSessionFactory readSession
 {
     public async Task<IReadOnlyCollection<FormationSummary>> FindAll(CancellationToken ct)
     {
-        using var session = this.Sessions.OpenSession();
+        using ISession session = this.Sessions.OpenSession();
         return await session.Query<FormationSummary>().OrderBy(f => f.Title).ToListAsync(ct);
     }
 
@@ -21,7 +22,7 @@ public sealed class NhFormationSummaryRepository(IReadSessionFactory readSession
             return [];
         }
 
-        using var session = this.Sessions.OpenSession();
+        using ISession session = this.Sessions.OpenSession();
         return await session.Query<FormationSummary>().Where(f => ids.Contains(f.Id)).OrderBy(f => f.Title).ToListAsync(ct);
     }
 }

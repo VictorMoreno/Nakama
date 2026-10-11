@@ -27,16 +27,16 @@ public static class LlmProviderRegisterer
     {
         public async Task Execute(LlmProvider provider, string apiKey, bool enabled, IReadOnlyList<LlmModelOption> models, CancellationToken cancellationToken)
         {
-            var existing = await repository.FindByProvider(provider, cancellationToken);
+            LlmProviderConfig? existing = await repository.FindByProvider(provider, cancellationToken);
 
             if (existing is null)
             {
-                var config = LlmProviderConfig.Register(provider, apiKey, enabled, models, systemClock);
+                LlmProviderConfig config = LlmProviderConfig.Register(provider, apiKey, enabled, models, systemClock);
                 await repository.Save(config, cancellationToken);
                 return;
             }
 
-            var nextApiKey = string.IsNullOrEmpty(apiKey) ? existing.ApiKey : apiKey;
+            string nextApiKey = string.IsNullOrEmpty(apiKey) ? existing.ApiKey : apiKey;
             existing.Update(nextApiKey, enabled, models, systemClock);
             await repository.Save(existing, cancellationToken);
         }

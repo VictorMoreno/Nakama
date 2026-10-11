@@ -31,7 +31,7 @@ public static class ChatbotDocumentAdder
         {
             Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
 
-            var fileName = await documentStorage.Save(documentId, originalFileName, content, length, cancellationToken);
+            string fileName = await documentStorage.Save(documentId, originalFileName, content, length, cancellationToken);
 
             chatbot.AddDocument(new ChatbotDocument(
                 documentId, name, origin, DocStatus.Pending, "Pendiente", systemClock.UtcNow, fileName));

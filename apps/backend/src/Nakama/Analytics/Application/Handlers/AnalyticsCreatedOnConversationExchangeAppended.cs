@@ -12,7 +12,7 @@ public sealed class AnalyticsCreatedOnConversationExchangeAppended(IAnalyticsRep
     protected override async Task Handle(ConversationExchangeAppended conversationExchangeAppended,
         CancellationToken cancellationToken)
     {
-        var botKey = conversationExchangeAppended.BotKey.Value;
+        Guid botKey = conversationExchangeAppended.BotKey.Value;
         Analytics? analytics = await analyticsRepository.Find(cancellationToken);
         if (analytics is null)
         {

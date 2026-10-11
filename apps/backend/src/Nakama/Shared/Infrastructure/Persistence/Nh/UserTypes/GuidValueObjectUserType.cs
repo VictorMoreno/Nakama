@@ -10,7 +10,7 @@ namespace Nakama.Shared.Infrastructure.Persistence.Nh.UserTypes;
 public sealed class GuidValueObjectUserType<T> : IUserType
     where T : IGuidValueObject
 {
-    public SqlType[] SqlTypes { get; } = [new SqlType(DbType.Guid)];
+    public SqlType[] SqlTypes { get; } = [new(DbType.Guid)];
 
     public Type ReturnedType => typeof(T);
 
@@ -18,19 +18,19 @@ public sealed class GuidValueObjectUserType<T> : IUserType
 
     public object? NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
     {
-        var index = rs.GetOrdinal(names[0]);
+        int index = rs.GetOrdinal(names[0]);
         if (rs.IsDBNull(index))
         {
             return null;
         }
 
-        var value = rs.GetGuid(index);
+        Guid value = rs.GetGuid(index);
         return (T)Activator.CreateInstance(typeof(T), value)!;
     }
 
     public void NullSafeSet(DbCommand cmd, object? value, int index, ISessionImplementor session)
     {
-        var parameter = cmd.Parameters[index];
+        DbParameter parameter = cmd.Parameters[index];
         parameter.Value = value is null ? DBNull.Value : ((IGuidValueObject)value).Value;
     }
 

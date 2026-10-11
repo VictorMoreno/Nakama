@@ -12,7 +12,7 @@ public static class LlmProviderSearcher
     {
         public async Task<IReadOnlyList<LlmProviderConfigResponse>> Handle(Query query, CancellationToken ct)
         {
-            var configs = await searcher.Execute(ct);
+            IReadOnlyList<LlmProviderConfig> configs = await searcher.Execute(ct);
             return configs.Select(c => (LlmProviderConfigResponse)c).ToList();
         }
     }

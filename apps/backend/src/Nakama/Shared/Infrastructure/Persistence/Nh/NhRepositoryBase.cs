@@ -1,3 +1,4 @@
+using NHibernate;
 using NHibernate.Linq;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh;
@@ -8,20 +9,20 @@ public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) w
 
     public async Task<TEntity?> FindById(TId id, CancellationToken ct)
     {
-        using var session = sessions.OpenSession();
+        using ISession session = sessions.OpenSession();
         return await session.GetAsync<TEntity>(id, ct);
     }
 
     protected async Task<IReadOnlyCollection<TEntity>> FindAllEntities(CancellationToken ct)
     {
-        using var session = sessions.OpenSession();
+        using ISession session = sessions.OpenSession();
         return await session.Query<TEntity>().ToListAsync(ct);
     }
 
     public async Task Save(TEntity entity, CancellationToken ct)
     {
-        using var session = sessions.OpenSession();
-        using var tx = session.BeginTransaction();
+        using ISession session = sessions.OpenSession();
+        using ITransaction tx = session.BeginTransaction();
         await session.SaveOrUpdateAsync(entity, ct);
         await tx.CommitAsync(ct);
     }
@@ -30,8 +31,8 @@ public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) w
 
     public async Task Remove(TEntity entity, CancellationToken ct)
     {
-        using var session = sessions.OpenSession();
-        using var tx = session.BeginTransaction();
+        using ISession session = sessions.OpenSession();
+        using ITransaction tx = session.BeginTransaction();
         await session.DeleteAsync(entity, ct);
         await tx.CommitAsync(ct);
     }

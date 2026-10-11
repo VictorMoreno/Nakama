@@ -15,7 +15,7 @@ public static class ChatbotSummarySearcher
     {
         public async Task<IReadOnlyCollection<ChatbotSummaryResponse>> Handle(Query query, CancellationToken ct)
         {
-            var chatbots = await searcher.Execute(ct);
+            IReadOnlyCollection<ChatbotSummary> chatbots = await searcher.Execute(ct);
             return chatbots.Select(e => ChatbotSummaryResponse.From(e, storage.Value.ChatbotIconsRoute)).ToList();
         }
     }

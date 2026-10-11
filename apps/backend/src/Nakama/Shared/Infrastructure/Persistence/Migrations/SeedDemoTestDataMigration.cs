@@ -1,3 +1,4 @@
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using FluentMigrator;
@@ -124,8 +125,8 @@ public sealed class SeedDemoTestDataMigration : Migration
 
     public override void Up()
     {
-        var rng = new Random(20260930);
-        var now = DateTime.UtcNow;
+        Random rng = new(20260930);
+        DateTime now = DateTime.UtcNow;
 
         this.Insert.IntoTable("llm_provider_configs").Row(new
         {
@@ -138,28 +139,28 @@ public sealed class SeedDemoTestDataMigration : Migration
         });
 
         // ---- Users --------------------------------------------------------------------------
-        var hasher = new PasswordHasher<User>();
+        PasswordHasher<User> hasher = new();
         const string seedPassword = "Seed1234.";
-        var userIds = new List<Guid>();
-        var userActivityRows = new List<(Guid id, Guid userId, string type, DateTime occurredAt)>();
+        List<Guid> userIds = new();
+        List<(Guid id, Guid userId, string type, DateTime occurredAt)> userActivityRows = new();
 
-        for (var i = 0; i < 20; i++)
+        for (int i = 0; i < 20; i++)
         {
-            var first = FirstNames[i];
-            var last = LastNames[rng.Next(LastNames.Length)];
-            var email = $"{Normalize(first)}.{Normalize(last)}@seed.nakama.test";
-            var isAdmin = i < 2;
-            var createdAt = now.AddDays(-rng.Next(30, 400));
+            string first = FirstNames[i];
+            string last = LastNames[rng.Next(LastNames.Length)];
+            string email = $"{Normalize(first)}.{Normalize(last)}@seed.nakama.test";
+            bool isAdmin = i < 2;
+            DateTime createdAt = now.AddDays(-rng.Next(30, 400));
 
-            var user = User.Create(UserId.From(Guid.NewGuid()), new Email(email), $"{first} {last}", isAdmin,
+            User user = User.Create(UserId.From(Guid.NewGuid()), new Email(email), $"{first} {last}", isAdmin,
                 new SystemClock());
             userIds.Add(user.Id.Value);
 
-            var loginCount = rng.Next(1, 4);
+            int loginCount = rng.Next(1, 4);
             DateTime? lastActiveAt = null;
-            for (var l = 0; l < loginCount; l++)
+            for (int l = 0; l < loginCount; l++)
             {
-                var occurredAt = now.AddDays(-rng.Next(0, 14)).AddHours(-rng.Next(0, 24));
+                DateTime occurredAt = now.AddDays(-rng.Next(0, 14)).AddHours(-rng.Next(0, 24));
                 if (lastActiveAt is null || occurredAt > lastActiveAt) lastActiveAt = occurredAt;
                 userActivityRows.Add((Guid.NewGuid(), user.Id.Value, "Login", occurredAt));
             }
@@ -177,64 +178,64 @@ public sealed class SeedDemoTestDataMigration : Migration
             });
         }
 
-        foreach (var (id, userId, type, occurredAt) in userActivityRows)
+        foreach ((Guid id, Guid userId, string type, DateTime occurredAt) in userActivityRows)
         {
             this.Insert.IntoTable("read_user_activity").Row(new { id, userid = userId, type, occurredat = occurredAt });
         }
 
-        var conversationAuthorIds = new List<Guid>(userIds)
+        List<Guid> conversationAuthorIds = new(userIds)
         {
             Guid.Parse("48D7EAD2-BAB5-468C-B7C5-CEF4D4A3842F"), // admin@nakama.com
             Guid.Parse("EFB5209F-13C5-40B4-8E72-35AFA54CBEF8"), // user@nakama.com
         };
 
         // ---- Chatbots -------------------------------------------------------------------------
-        var chatbotIds = new List<Guid>();
-        var usageByBot = new List<UsageByBotRow>();
-        var totalExchanges = 0;
+        List<Guid> chatbotIds = new();
+        List<UsageByBotRow> usageByBot = new();
+        int totalExchanges = 0;
 
-        for (var i = 0; i < ChatbotTopics.Length; i++)
+        for (int i = 0; i < ChatbotTopics.Length; i++)
         {
-            var topic = ChatbotTopics[i];
-            var label = $"{topic} Bot";
-            var botId = Guid.NewGuid();
+            string topic = ChatbotTopics[i];
+            string label = $"{topic} Bot";
+            Guid botId = Guid.NewGuid();
             chatbotIds.Add(botId);
 
-            var status = (ChatbotStatus)(rng.Next(0, 10) < 7 ? 1 : rng.Next(0, 2) == 0 ? 0 : 2); // mostly Active
-            var seedProvider = (LlmProvider)rng.Next(0, 3);
-            var seedModel = seedProvider == LlmProvider.Anthropic ? AnthropicModels[rng.Next(AnthropicModels.Length)].Id : string.Empty;
-            var settings = new ChatbotSettings(Socratic: rng.Next(0, 2) == 0, ExplicaMas: rng.Next(0, 2) == 0,
+            ChatbotStatus status = (ChatbotStatus)(rng.Next(0, 10) < 7 ? 1 : rng.Next(0, 2) == 0 ? 0 : 2); // mostly Active
+            LlmProvider seedProvider = (LlmProvider)rng.Next(0, 3);
+            string seedModel = seedProvider == LlmProvider.Anthropic ? AnthropicModels[rng.Next(AnthropicModels.Length)].Id : string.Empty;
+            ChatbotSettings settings = new(Socratic: rng.Next(0, 2) == 0, ExplicaMas: rng.Next(0, 2) == 0,
                 Provider: seedProvider, Model: seedModel);
-            var context =
+            string context =
                 $"Chatbot entrenado con la documentación interna de {topic}. Datos de prueba generados por SeedDemoTestDataMigration.";
-            var description = $"Resuelve dudas frecuentes sobre {topic}.";
-            var lastUsed = now.AddDays(-rng.Next(0, 30));
+            string description = $"Resuelve dudas frecuentes sobre {topic}.";
+            DateTime lastUsed = now.AddDays(-rng.Next(0, 30));
 
             // Team: 1-2 members from the seeded user pool
-            var teamSize = rng.Next(1, 3);
-            var teamUserIds = PickDistinct(rng, userIds, teamSize);
-            var writeTeam = teamUserIds
+            int teamSize = rng.Next(1, 3);
+            List<Guid> teamUserIds = PickDistinct(rng, userIds, teamSize);
+            List<TeamMember> writeTeam = teamUserIds
                 .Select((uid, idx) => new TeamMember(uid, idx == 0 ? TeamRole.Owner : TeamRole.Editor)).ToList();
-            var detailTeam = writeTeam.Select(m => new TeamMemberRow { UserId = m.UserId, Role = m.Role.ToString() })
+            List<TeamMemberRow> detailTeam = writeTeam.Select(m => new TeamMemberRow { UserId = m.UserId, Role = m.Role.ToString() })
                 .ToList();
 
             // Documents: 2 metadata rows per bot - no real file on disk, status always Pending
             // (matches ChatbotDocumentAdder - this app has no real indexing pipeline yet).
-            var docs = new List<ChatbotDocument>();
-            for (var d = 0; d < 2; d++)
+            List<ChatbotDocument> docs = new();
+            for (int d = 0; d < 2; d++)
             {
                 docs.Add(new ChatbotDocument(Guid.NewGuid(), $"Guía de {topic} #{d + 1}.pdf", "Seed", DocStatus.Pending,
                     "Pendiente",
                     now.AddDays(-rng.Next(1, 60)), $"seed-{botId}-{d}.pdf"));
             }
 
-            var detailDocs = docs.Select(doc => new ChatbotDocumentRow
+            List<ChatbotDocumentRow> detailDocs = docs.Select(doc => new ChatbotDocumentRow
             {
                 Id = doc.Id, Name = doc.Name, Origin = doc.Origin, Status = doc.Status.ToString(),
                 StatusLabel = doc.StatusLabel, Updated = doc.Updated, FileName = doc.FileName
             }).ToList();
 
-            var opening = new ChatExampleRow
+            ChatExampleRow opening = new()
             {
                 Question = $"¿Cómo empiezo con {topic}?",
                 Answer =
@@ -334,33 +335,33 @@ public sealed class SeedDemoTestDataMigration : Migration
             });
 
             // ---- Conversations for this bot (write + audit + history) -------------------------
-            var conversationCount = rng.Next(3, 8);
-            var historyEntries = new List<ConversationSummaryRow>();
+            int conversationCount = rng.Next(3, 8);
+            List<ConversationSummaryRow> historyEntries = new();
 
-            for (var c = 0; c < conversationCount; c++)
+            for (int c = 0; c < conversationCount; c++)
             {
-                var convId = Guid.NewGuid();
-                var author = (i < 3, c) switch
+                Guid convId = Guid.NewGuid();
+                Guid author = (i < 3, c) switch
                 {
                     (true, 0) => Guid.Parse("48D7EAD2-BAB5-468C-B7C5-CEF4D4A3842F"), // admin@nakama.com
                     (true, 1) => Guid.Parse("EFB5209F-13C5-40B4-8E72-35AFA54CBEF8"), // user@nakama.com
                     _ => conversationAuthorIds[rng.Next(conversationAuthorIds.Count)]
                 };
-                var title = $"Duda sobre {topic.ToLowerInvariant()} #{c + 1}";
-                var startedAt = now.AddDays(-rng.Next(0, 60)).AddHours(-rng.Next(0, 24));
+                string title = $"Duda sobre {topic.ToLowerInvariant()} #{c + 1}";
+                DateTime startedAt = now.AddDays(-rng.Next(0, 60)).AddHours(-rng.Next(0, 24));
 
-                var exchangeCount = rng.Next(2, 5);
-                var exchanges = new List<ConversationExchange>();
-                var auditMessages = new List<AuditMessageRow>();
-                var historyExchanges = new List<HistoryExampleRow>();
+                int exchangeCount = rng.Next(2, 5);
+                List<ConversationExchange> exchanges = new();
+                List<AuditMessageRow> auditMessages = new();
+                List<HistoryExampleRow> historyExchanges = new();
 
-                for (var e = 0; e < exchangeCount; e++)
+                for (int e = 0; e < exchangeCount; e++)
                 {
-                    var (q, a) = QuestionAnswer(topic, e, rng);
-                    var citation = $"Guía de {topic} #{(e % 2) + 1}.pdf";
-                    var moreExplanation = $"Fuente: documentación interna de {topic}, revisada por el equipo.";
-                    var socraticVariant = $"¿Qué probaste hasta ahora con {topic.ToLowerInvariant()}?";
-                    var recordedAt = startedAt.AddMinutes(e * rng.Next(2, 15));
+                    (string q, string a) = QuestionAnswer(topic, e, rng);
+                    string citation = $"Guía de {topic} #{(e % 2) + 1}.pdf";
+                    string moreExplanation = $"Fuente: documentación interna de {topic}, revisada por el equipo.";
+                    string socraticVariant = $"¿Qué probaste hasta ahora con {topic.ToLowerInvariant()}?";
+                    DateTime recordedAt = startedAt.AddMinutes(e * rng.Next(2, 15));
 
                     exchanges.Add(new ConversationExchange(q, a, citation, moreExplanation, socraticVariant));
                     auditMessages.Add(new AuditMessageRow
@@ -410,20 +411,20 @@ public sealed class SeedDemoTestDataMigration : Migration
         }
 
         // ---- Formations -------------------------------------------------------------------------
-        for (var i = 0; i < FormationTopics.Length; i++)
+        for (int i = 0; i < FormationTopics.Length; i++)
         {
-            var topic = FormationTopics[i];
-            var formId = Guid.NewGuid();
-            var status = (FormationStatus)(rng.Next(0, 10) < 7 ? 1 : rng.Next(0, 2) == 0 ? 0 : 2);
-            var audience = FormationAudiences[i];
-            var description = $"Currículo de formación sobre {topic.ToLowerInvariant()}.";
-            var linkedChatbotKey = i < 6 ? chatbotIds[i] : (Guid?)null;
-            var linkedChatbotLabel = linkedChatbotKey is not null ? $"{ChatbotTopics[i]} Bot" : null;
+            string topic = FormationTopics[i];
+            Guid formId = Guid.NewGuid();
+            FormationStatus status = (FormationStatus)(rng.Next(0, 10) < 7 ? 1 : rng.Next(0, 2) == 0 ? 0 : 2);
+            string audience = FormationAudiences[i];
+            string description = $"Currículo de formación sobre {topic.ToLowerInvariant()}.";
+            Guid? linkedChatbotKey = i < 6 ? chatbotIds[i] : (Guid?)null;
+            string? linkedChatbotLabel = linkedChatbotKey is not null ? $"{ChatbotTopics[i]} Bot" : null;
 
-            var moduleId1 = ModuleId.From(Guid.NewGuid());
-            var moduleId2 = ModuleId.From(Guid.NewGuid());
-            var moduleId3 = ModuleId.From(Guid.NewGuid());
-            var quiz = new List<QuizQuestion>
+            ModuleId moduleId1 = ModuleId.From(Guid.NewGuid());
+            ModuleId moduleId2 = ModuleId.From(Guid.NewGuid());
+            ModuleId moduleId3 = ModuleId.From(Guid.NewGuid());
+            List<QuizQuestion> quiz = new()
             {
                 new($"¿Cuál es el primer paso al abordar {topic.ToLowerInvariant()}?",
                 [
@@ -436,7 +437,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                     "En un email suelto"
                 ], 1)
             };
-            var modules = new List<FormationModule>
+            List<FormationModule> modules = new()
             {
                 new(moduleId1, $"Introducción a {topic}", ModuleType.Document,
                     $"Documento base sobre {topic.ToLowerInvariant()}.", Gated: true, AiDraft: false,
@@ -448,7 +449,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                     $"Evaluación final de {topic.ToLowerInvariant()}.", Gated: false, AiDraft: false,
                     Quiz: quiz, PassingScore: 70)
             };
-            var detailModules = modules.Select(m => new FormationModuleRow
+            List<FormationModuleRow> detailModules = modules.Select(m => new FormationModuleRow
             {
                 Id = m.Id.Value, Title = m.Title, Type = m.Type.ToString(), Summary = m.Summary, Gated = m.Gated,
                 AiDraft = m.AiDraft,
@@ -459,17 +460,17 @@ public sealed class SeedDemoTestDataMigration : Migration
 
             // Each team member gets their OWN progress now (real FormationEnrollment rows) instead
             // of a single shared blob on the formation - this is the bug the whole feature fixes.
-            var teamSize = rng.Next(2, 6);
-            var teamUserIds = PickDistinct(rng, userIds, teamSize);
-            var moduleIds = new[] { moduleId1.Value, moduleId2.Value, moduleId3.Value };
-            var enrollments = teamUserIds.Select(uid =>
+            int teamSize = rng.Next(2, 6);
+            List<Guid> teamUserIds = PickDistinct(rng, userIds, teamSize);
+            Guid[] moduleIds = new[] { moduleId1.Value, moduleId2.Value, moduleId3.Value };
+            List<(Guid UserId, LearnerProgress Progress)> enrollments = teamUserIds.Select(uid =>
             {
-                var completedCount = rng.Next(0, modules.Count + 1);
-                var progress = moduleIds.Take(completedCount)
+                int completedCount = rng.Next(0, modules.Count + 1);
+                LearnerProgress progress = moduleIds.Take(completedCount)
                     .Aggregate(LearnerProgress.Empty, (p, moduleId) => p.WithModuleCompleted(moduleId, null));
                 return (UserId: uid, Progress: progress);
             }).ToList();
-            var detailTeam = enrollments
+            List<FormationMemberRow> detailTeam = enrollments
                 .Select(e => new FormationMemberRow
                     { UserId = e.UserId, Progress = e.Progress.CompletedModuleIds.Count * 100 / modules.Count })
                 .ToList();
@@ -487,7 +488,7 @@ public sealed class SeedDemoTestDataMigration : Migration
                 modules_json = Json(modules)
             });
 
-            foreach (var enrollment in enrollments)
+            foreach ((Guid UserId, LearnerProgress Progress) enrollment in enrollments)
             {
                 this.Insert.IntoTable("formation_enrollments").Row(new
                 {
@@ -538,13 +539,13 @@ public sealed class SeedDemoTestDataMigration : Migration
         // primary key. ON CONFLICT adds this batch's counts on top of whatever is already there,
         // and concatenates usage_by_bot_json as jsonb (safe here since every seeded botKey is a
         // freshly generated Guid, so it can never duplicate an existing array entry).
-        var totalFeedback = (int)(totalExchanges * 0.4);
-        var usefulFeedback = (int)(totalFeedback * 0.75);
-        var usageByBotJson = Json(usageByBot);
+        int totalFeedback = (int)(totalExchanges * 0.4);
+        int usefulFeedback = (int)(totalFeedback * 0.75);
+        string usageByBotJson = Json(usageByBot);
 
         this.Execute.WithConnection((connection, transaction) =>
         {
-            using var cmd = connection.CreateCommand();
+            using IDbCommand cmd = connection.CreateCommand();
             cmd.Transaction = transaction;
             cmd.CommandText = """
                               INSERT INTO read_analytics (id, activebotscount, answeredthisweek, usage_by_bot_json, usefulfeedbackcount, totalfeedbackcount)
@@ -604,7 +605,7 @@ public sealed class SeedDemoTestDataMigration : Migration
 
     private static void AddParam(System.Data.IDbCommand cmd, string name, object value)
     {
-        var p = cmd.CreateParameter();
+        IDbDataParameter p = cmd.CreateParameter();
         p.ParameterName = name;
         p.Value = value;
         cmd.Parameters.Add(p);
@@ -612,8 +613,8 @@ public sealed class SeedDemoTestDataMigration : Migration
 
     private static (string Question, string Answer) QuestionAnswer(string topic, int index, Random rng)
     {
-        var lower = topic.ToLowerInvariant();
-        var templates = new (string Q, string A)[]
+        string lower = topic.ToLowerInvariant();
+        (string Q, string A)[] templates = new (string Q, string A)[]
         {
             ($"¿Cómo configuro el entorno de {lower}?",
                 $"Seguí los pasos de la guía de {topic}: primero cloná el repositorio, después instalá las dependencias y por último corré el setup inicial."),
@@ -626,7 +627,7 @@ public sealed class SeedDemoTestDataMigration : Migration
             ($"¿Qué hago si algo de {lower} no funciona como esperaba?",
                 $"Revisá primero la sección de errores comunes de {topic}; si no aparece tu caso, contactá al equipo responsable.")
         };
-        var (q, a) = templates[(index + rng.Next(0, templates.Length)) % templates.Length];
+        (string q, string a) = templates[(index + rng.Next(0, templates.Length)) % templates.Length];
         return (q, a);
     }
 }

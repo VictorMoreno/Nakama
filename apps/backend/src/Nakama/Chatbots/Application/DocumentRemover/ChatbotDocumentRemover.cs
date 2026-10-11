@@ -29,7 +29,7 @@ public static class ChatbotDocumentRemover
         {
             Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
 
-            var fileName = chatbot.Documents.ElementAtOrDefault(index)?.FileName;
+            string? fileName = chatbot.Documents.ElementAtOrDefault(index)?.FileName;
 
             chatbot.RemoveDocument(index);
 

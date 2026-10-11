@@ -1,6 +1,8 @@
+using Nakama.FormationDetail.Application;
 using Nakama.Formations.Domain;
 using Nakama.Formations.Domain.Errors;
 using Nakama.FormationDetail.Application.Finder;
+using Nakama.FormationDetail.Domain;
 using Nakama.FormationEnrollment.Domain;
 using Nakama.FormationEnrollment.Domain.Errors;
 using Nakama.Shared.Application;
@@ -29,13 +31,13 @@ public static class FormationModuleCompleter
         public async Task Execute(FormationId id, Guid moduleId, Guid userId, int? score,
             CancellationToken cancellationToken)
         {
-            var detail = await queryBus.Ask(new FormationDetailFinder.Query(id.Value), cancellationToken);
+            FormationDetailResponse detail = await queryBus.Ask(new FormationDetailFinder.Query(id.Value), cancellationToken);
 
-            var enrollment = await enrollmentRepository.FindByFormationAndUser(id.Value, userId, cancellationToken)
-                             ?? throw FormationEnrollmentErrors.NotEnrolled(id.Value, userId);
+            Domain.FormationEnrollment enrollment = await enrollmentRepository.FindByFormationAndUser(id.Value, userId, cancellationToken)
+                                                    ?? throw FormationEnrollmentErrors.NotEnrolled(id.Value, userId);
 
-            var modules = detail.Modules;
-            var index = modules.FindIndex(m => m.Id == moduleId);
+            List<FormationModuleRow> modules = detail.Modules;
+            int index = modules.FindIndex(m => m.Id == moduleId);
             if (index < 0)
             {
                 throw FormationErrors.ModuleNotFound(moduleId.ToString(), id.Value.ToString());
@@ -43,7 +45,7 @@ public static class FormationModuleCompleter
 
             if (index > 0)
             {
-                var previous = modules[index - 1];
+                FormationModuleRow previous = modules[index - 1];
                 if (previous.Gated && !enrollment.Progress.CompletedModuleIds.Contains(previous.Id))
                 {
                     throw FormationErrors.ModuleLockedByGating;

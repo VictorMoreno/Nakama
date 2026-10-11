@@ -9,13 +9,13 @@ public sealed class FormationDetailUpdatedOnFormationModuleUpdated(IFormationDet
 {
     protected override async Task Handle(FormationModuleUpdated formationModuleUpdated, CancellationToken cancellationToken)
     {
-        var formationDetail = await formationDetailRepository.FindById(formationModuleUpdated.Id.Value, cancellationToken);
+        Domain.FormationDetail? formationDetail = await formationDetailRepository.FindById(formationModuleUpdated.Id.Value, cancellationToken);
         if (formationDetail is null)
         {
             return;
         }
 
-        var quiz = formationModuleUpdated.Module.Quiz?.Select(q => new QuizQuestionRow
+        List<QuizQuestionRow>? quiz = formationModuleUpdated.Module.Quiz?.Select(q => new QuizQuestionRow
         {
             Question = q.Question,
             Options = [.. q.Options],

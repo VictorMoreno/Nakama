@@ -19,19 +19,19 @@ public sealed class JsonUserType<T> : IUserType
 
     public object? NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
     {
-        var index = rs.GetOrdinal(names[0]);
+        int index = rs.GetOrdinal(names[0]);
         if (rs.IsDBNull(index))
         {
             return default(T);
         }
 
-        var json = rs.GetString(index);
+        string json = rs.GetString(index);
         return JsonSerializer.Deserialize<T>(json, SerializerOptions);
     }
 
     public void NullSafeSet(DbCommand cmd, object? value, int index, ISessionImplementor session)
     {
-        var parameter = cmd.Parameters[index];
+        DbParameter parameter = cmd.Parameters[index];
         parameter.Value = value is null ? DBNull.Value : JsonSerializer.Serialize((T)value, SerializerOptions);
     }
 

@@ -12,7 +12,7 @@ public static class UserSummarySearcher
     {
         public async Task<IReadOnlyCollection<UserSummaryResponse>> Handle(Query query, CancellationToken ct)
         {
-            var users = await searcher.Execute(ct);
+            IReadOnlyList<User> users = await searcher.Execute(ct);
             return users.Select(u => (UserSummaryResponse)u).ToList();
         }
     }

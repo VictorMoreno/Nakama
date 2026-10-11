@@ -15,11 +15,9 @@ public static class ConversationHistoryFinder
     {
         public async Task<ConversationHistoryResponse> Handle(Query query, CancellationToken ct)
         {
-            var history = await finder.Execute(query.BotKey, ct);
-            var response = (ConversationHistoryResponse)history;
+            ConversationHistory history = await finder.Execute(query.BotKey, ct);
+            ConversationHistoryResponse response = (ConversationHistoryResponse)history;
 
-            // Conversations are private per user - a null UserId (no caller identified) returns
-            // none of the history rather than everyone's, since there's no session to fall back on.
             return response with { Entries = response.Entries.Where(e => e.UserId == query.UserId).ToList() };
         }
     }

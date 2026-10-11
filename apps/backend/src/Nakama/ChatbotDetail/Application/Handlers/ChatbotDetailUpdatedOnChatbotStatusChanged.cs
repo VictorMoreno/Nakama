@@ -9,7 +9,7 @@ public sealed class ChatbotDetailUpdatedOnChatbotStatusChanged(IChatbotDetailRep
 {
     protected override async Task Handle(ChatbotStatusChanged chatbotStatusChanged, CancellationToken cancellationToken)
     {
-        var chatbotDetail = await chatbotDetailRepository.FindById(chatbotStatusChanged.Id.Value, cancellationToken);
+        Domain.ChatbotDetail? chatbotDetail = await chatbotDetailRepository.FindById(chatbotStatusChanged.Id.Value, cancellationToken);
         if (chatbotDetail is null)
         {
             return;

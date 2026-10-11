@@ -4,21 +4,21 @@ public partial class Analytics
 {
     public static Analytics CreateFromChatbotCreated(Guid botKey)
     {
-        var analytics = new Analytics();
+        Analytics analytics = new();
         analytics.ApplyChatbotCreated(botKey);
         return analytics;
     }
 
     public static Analytics CreateFromConversationExchangeAppended(Guid botKey)
     {
-        var analytics = new Analytics();
+        Analytics analytics = new();
         analytics.ApplyConversationExchangeAppended(botKey);
         return analytics;
     }
 
     public static Analytics CreateFromFeedbackSubmitted(bool useful)
     {
-        var analytics = new Analytics();
+        Analytics analytics = new();
         analytics.ApplyFeedbackSubmitted(useful);
         return analytics;
     }
@@ -36,7 +36,7 @@ public partial class Analytics
     {
         this.AnsweredThisWeek++;
 
-        var usage = this.UsageByBot.FirstOrDefault(u => u.BotKey == botKey);
+        UsageByBotRow? usage = this.UsageByBot.FirstOrDefault(u => u.BotKey == botKey);
 
         if (usage is not null)
         {

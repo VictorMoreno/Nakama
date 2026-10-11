@@ -82,7 +82,7 @@ public partial class ChatbotDetail
 
     public void RecordQuestion(string question)
     {
-        var existing = this.TopQuestions.FirstOrDefault(q => q.Question == question);
+        GapQuestionRow? existing = this.TopQuestions.FirstOrDefault(q => q.Question == question);
         if (existing is not null)
         {
             existing.Count++;

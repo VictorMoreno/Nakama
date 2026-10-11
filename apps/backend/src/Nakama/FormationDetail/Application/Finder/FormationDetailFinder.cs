@@ -17,7 +17,7 @@ public static class FormationDetailFinder
     {
         public async Task<FormationDetailResponse> Handle(Query query, CancellationToken ct)
         {
-            var formation = await finder.Execute(query.Id, ct);
+            FormationDetail formation = await finder.Execute(query.Id, ct);
             return FormationDetailResponse.From(formation, storage.Value.FormationIconsRoute);
         }
     }

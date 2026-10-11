@@ -13,7 +13,7 @@ public static class FormationEnrollmentFinder
     {
         public async Task<FormationEnrollmentResponse> Handle(Query query, CancellationToken ct)
         {
-            var enrollment = await finder.Execute(query.FormationId, query.UserId, ct);
+            Domain.FormationEnrollment enrollment = await finder.Execute(query.FormationId, query.UserId, ct);
             return (FormationEnrollmentResponse)enrollment;
         }
     }

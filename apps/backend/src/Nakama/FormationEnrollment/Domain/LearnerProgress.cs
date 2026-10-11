@@ -6,11 +6,11 @@ public sealed record LearnerProgress(IReadOnlyList<Guid> CompletedModuleIds, IRe
 
     public LearnerProgress WithModuleCompleted(Guid moduleId, int? score)
     {
-        var completedModuleIds = this.CompletedModuleIds.Contains(moduleId)
+        IReadOnlyList<Guid> completedModuleIds = this.CompletedModuleIds.Contains(moduleId)
             ? this.CompletedModuleIds
             : [.. this.CompletedModuleIds, moduleId];
 
-        var examScores = this.ExamScores;
+        IReadOnlyDictionary<Guid, int> examScores = this.ExamScores;
         if (score is not null)
         {
             examScores = new Dictionary<Guid, int>(this.ExamScores) { [moduleId] = score.Value };

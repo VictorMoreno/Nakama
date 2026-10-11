@@ -9,11 +9,11 @@ internal static class NhSessionFactoryBuilder
 {
     public static NHibernate.ISessionFactory Build(IConfiguration configuration, string connectionStringName)
     {
-        var connectionString = configuration.GetConnectionString(connectionStringName)
-            ?? throw new InvalidOperationException(
-                $"Missing connection string 'ConnectionStrings:{connectionStringName}'.");
+        string connectionString = configuration.GetConnectionString(connectionStringName)
+                                  ?? throw new InvalidOperationException(
+                                      $"Missing connection string 'ConnectionStrings:{connectionStringName}'.");
 
-        var cfg = new Configuration();
+        Configuration cfg = new();
         cfg.DataBaseIntegration(db =>
         {
             db.Dialect<NakamaPostgreSqlDialect>();

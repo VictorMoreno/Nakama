@@ -25,18 +25,18 @@ public static class FormationSummarySearcher
     {
         public async Task<IReadOnlyCollection<FormationSummaryResponse>> Execute(Guid userId, bool isAdmin, CancellationToken cancellationToken)
         {
-            var enrollments = await enrollmentRepository.FindAllForUser(userId, cancellationToken);
-            var enrollmentsByFormation = enrollments.ToDictionary(e => e.FormationId);
+            IReadOnlyList<FormationEnrollment.Domain.FormationEnrollment> enrollments = await enrollmentRepository.FindAllForUser(userId, cancellationToken);
+            Dictionary<Guid, FormationEnrollment.Domain.FormationEnrollment> enrollmentsByFormation = enrollments.ToDictionary(e => e.FormationId);
 
-            var formations = isAdmin
+            IReadOnlyCollection<FormationSummary> formations = isAdmin
                 ? await summaryRepository.FindAll(cancellationToken)
                 : await summaryRepository.FindByIds(enrollmentsByFormation.Keys.ToList(), cancellationToken);
 
             return formations.Select(f =>
             {
-                var enrollment = enrollmentsByFormation.GetValueOrDefault(f.Id);
-                var completedCount = enrollment?.Progress.CompletedModuleIds.Count ?? 0;
-                var progressPct = f.ModulesCount == 0 ? 0 : completedCount * 100 / f.ModulesCount;
+                FormationEnrollment.Domain.FormationEnrollment? enrollment = enrollmentsByFormation.GetValueOrDefault(f.Id);
+                int completedCount = enrollment?.Progress.CompletedModuleIds.Count ?? 0;
+                int progressPct = f.ModulesCount == 0 ? 0 : completedCount * 100 / f.ModulesCount;
 
                 return new FormationSummaryResponse(
                     f.Id,

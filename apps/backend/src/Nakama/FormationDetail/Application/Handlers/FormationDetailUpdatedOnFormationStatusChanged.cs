@@ -9,7 +9,7 @@ public sealed class FormationDetailUpdatedOnFormationStatusChanged(IFormationDet
 {
     protected override async Task Handle(FormationStatusChanged formationStatusChanged, CancellationToken cancellationToken)
     {
-        var formationDetail = await formationDetailRepository.FindById(formationStatusChanged.Id.Value, cancellationToken);
+        Domain.FormationDetail? formationDetail = await formationDetailRepository.FindById(formationStatusChanged.Id.Value, cancellationToken);
         if (formationDetail is null)
         {
             return;

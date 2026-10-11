@@ -17,7 +17,7 @@ public partial class User
 
     public static User Create(UserId key, Email email, string name, bool isAdmin, ISystemClock systemClock)
     {
-        var user = new User(key, email.Value, email.Normalized, name, isAdmin, systemClock.UtcNow);
+        User user = new(key, email.Value, email.Normalized, name, isAdmin, systemClock.UtcNow);
         user.Record(new UserCreated(key, email.Value, name));
         return user;
     }

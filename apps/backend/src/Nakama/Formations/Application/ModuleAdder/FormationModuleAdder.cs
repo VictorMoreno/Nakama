@@ -69,7 +69,7 @@ public static class FormationModuleAdder
                 throw FormationErrors.ModuleAlreadyExists(moduleId.ToString(), id.ToString());
             }
 
-            var module = new FormationModule(
+            FormationModule module = new(
                 moduleId, title, type, summary, gated, aiDraft, resourceUrl, durationMin, quiz, passingScore);
 
             formation.AddModule(module);

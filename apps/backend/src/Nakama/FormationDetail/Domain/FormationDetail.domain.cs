@@ -72,7 +72,7 @@ public partial class FormationDetail
         int? passingScore,
         List<QuizQuestionRow>? quiz)
     {
-        var module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
+        FormationModuleRow? module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
         if (module is null)
         {
             return;
@@ -93,7 +93,7 @@ public partial class FormationDetail
 
     public void ToggleModuleGating(Guid moduleId, bool gated)
     {
-        var module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
+        FormationModuleRow? module = this.Modules.FirstOrDefault(m => m.Id == moduleId);
         if (module is not null)
         {
             module.Gated = gated;
@@ -114,7 +114,7 @@ public partial class FormationDetail
 
     public void UpdateMemberProgress(Guid userId, int completedModuleCount, int totalModuleCount)
     {
-        var member = this.Team.FirstOrDefault(m => m.UserId == userId);
+        FormationMemberRow? member = this.Team.FirstOrDefault(m => m.UserId == userId);
         if (member is null)
         {
             return;

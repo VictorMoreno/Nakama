@@ -30,9 +30,9 @@ public static class UserCreator
         {
             await this._emailAvailabilityChecker.EnsureAvailable(email, ct);
 
-            var user = User.Create(id, email, name, isAdmin, systemClock);
+            User user = User.Create(id, email, name, isAdmin, systemClock);
 
-            var result = await repository.CreateWithPassword(user, initialPassword, ct);
+            UserCredentialResult result = await repository.CreateWithPassword(user, initialPassword, ct);
             if (!result.Succeeded)
             {
                 throw UserErrors.Invalid(string.Join(", ", result.Errors));

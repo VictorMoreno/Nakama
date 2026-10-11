@@ -9,7 +9,7 @@ public sealed class FormationDetailUpdatedOnPersonUnenrolled(IFormationDetailRep
 {
     protected override async Task Handle(PersonUnenrolled personUnenrolled, CancellationToken cancellationToken)
     {
-        var formationDetail = await formationDetailRepository.FindById(personUnenrolled.FormationId, cancellationToken);
+        Domain.FormationDetail? formationDetail = await formationDetailRepository.FindById(personUnenrolled.FormationId, cancellationToken);
         if (formationDetail is null)
         {
             return;

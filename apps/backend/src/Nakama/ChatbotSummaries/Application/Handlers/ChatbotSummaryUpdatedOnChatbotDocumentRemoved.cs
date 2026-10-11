@@ -9,9 +9,8 @@ public sealed class ChatbotSummaryUpdatedOnChatbotDocumentRemoved(IChatbotSummar
 {
     protected override async Task Handle(ChatbotDocumentRemoved chatbotDocumentRemoved, CancellationToken cancellationToken)
     {
-        var chatbotSummary = await chatbotSummaryRepository.FindById(chatbotDocumentRemoved.Id.Value, cancellationToken);
-        // Event arrived before ChatbotCreated - shouldn't happen in single-process sync
-        // dispatch, but not assumed (same rationale as the original raw-session projection).
+        ChatbotSummary? chatbotSummary = await chatbotSummaryRepository.FindById(chatbotDocumentRemoved.Id.Value, cancellationToken);
+
         if (chatbotSummary is null)
         {
             return;

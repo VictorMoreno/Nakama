@@ -47,7 +47,7 @@ public static class FormationCreator
                 throw FormationErrors.AlreadyExists(id.ToString());
             }
 
-            var formation = Formation.Create(id, title, audience, description, status, linkedChatbotKey);
+            Formation formation = Formation.Create(id, title, audience, description, status, linkedChatbotKey);
 
             await repository.Save(formation, cancellationToken);
             await eventBus.Publish(formation, cancellationToken);

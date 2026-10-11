@@ -15,7 +15,7 @@ public static class ChatPageFinder
     {
         public async Task<ChatPageResponse> Handle(Query query, CancellationToken ct)
         {
-            var page = await finder.Execute(query.Id, ct);
+            ChatPage page = await finder.Execute(query.Id, ct);
             return (ChatPageResponse)page;
         }
     }

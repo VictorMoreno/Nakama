@@ -15,7 +15,7 @@ public sealed class FormationDetailCreatedOnFormationCreated(
         string? linkedChatbotLabel = null;
         if (formationCreated.LinkedChatbotKey is not null)
         {
-            var labelRef = await chatbotLabelRefRepository.FindById(formationCreated.LinkedChatbotKey.Value, cancellationToken);
+            ChatbotLabelRef? labelRef = await chatbotLabelRefRepository.FindById(formationCreated.LinkedChatbotKey.Value, cancellationToken);
             linkedChatbotLabel = labelRef?.Label;
         }
 

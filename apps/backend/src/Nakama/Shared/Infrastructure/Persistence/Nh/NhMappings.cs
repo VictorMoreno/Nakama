@@ -1,4 +1,5 @@
 using NHibernate.Cfg;
+using NHibernate.Cfg.MappingSchema;
 using NHibernate.Mapping.ByCode;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh;
@@ -7,7 +8,7 @@ internal static class NhMappings
 {
     public static void AddMappings(Configuration configuration)
     {
-        var mapper = new ModelMapper();
+        ModelMapper mapper = new();
 
         mapper.AddMapping<Mappings.ChatbotMapping>();
         mapper.AddMapping<Mappings.ConversationMapping>();
@@ -27,7 +28,7 @@ internal static class NhMappings
         mapper.AddMapping<Mappings.FormationEnrollmentMapping>();
         mapper.AddMapping<Mappings.LlmProviderConfigMapping>();
 
-        var mapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
+        HbmMapping mapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
         configuration.AddMapping(mapping);
     }
 }

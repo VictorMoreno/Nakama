@@ -8,7 +8,7 @@ public static class MigrationRunner
 {
     public static void Run(string connectionString)
     {
-        using var serviceProvider = new ServiceCollection()
+        using ServiceProvider serviceProvider = new ServiceCollection()
             .AddFluentMigratorCore()
             .ConfigureRunner(rb => rb
                 .AddPostgres()
@@ -17,7 +17,7 @@ public static class MigrationRunner
             .AddLogging(lb => lb.AddFluentMigratorConsole())
             .BuildServiceProvider(false);
 
-        using var scope = serviceProvider.CreateScope();
+        using IServiceScope scope = serviceProvider.CreateScope();
         scope.ServiceProvider.GetRequiredService<IMigrationRunner>().MigrateUp();
     }
 }

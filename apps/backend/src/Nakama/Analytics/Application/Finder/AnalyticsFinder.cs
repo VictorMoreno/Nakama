@@ -22,10 +22,10 @@ public static class AnalyticsFinder
     {
         public async Task<AnalyticsResponse> Execute(CancellationToken cancellationToken)
         {
-            var analytics = await repository.Find(cancellationToken) ?? throw AnalyticsErrors.NotFound;
-            var activeUsersCount =
+            Domain.Analytics analytics = await repository.Find(cancellationToken) ?? throw AnalyticsErrors.NotFound;
+            int activeUsersCount =
                 await usersRepository.CountActiveSince(systemClock.UtcNow.AddDays(-7), cancellationToken);
-            var totalUsersCount = await usersRepository.CountAll(cancellationToken);
+            int totalUsersCount = await usersRepository.CountAll(cancellationToken);
 
             return analytics.ToResponse(activeUsersCount, totalUsersCount);
         }

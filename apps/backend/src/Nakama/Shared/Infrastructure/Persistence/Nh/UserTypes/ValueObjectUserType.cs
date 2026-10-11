@@ -10,7 +10,7 @@ namespace Nakama.Shared.Infrastructure.Persistence.Nh.UserTypes;
 public sealed class ValueObjectUserType<T> : IUserType
     where T : IStringValueObject
 {
-    public SqlType[] SqlTypes { get; } = [new SqlType(DbType.String)];
+    public SqlType[] SqlTypes { get; } = [new(DbType.String)];
 
     public Type ReturnedType => typeof(T);
 
@@ -18,19 +18,19 @@ public sealed class ValueObjectUserType<T> : IUserType
 
     public object? NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
     {
-        var index = rs.GetOrdinal(names[0]);
+        int index = rs.GetOrdinal(names[0]);
         if (rs.IsDBNull(index))
         {
             return null;
         }
 
-        var value = rs.GetString(index);
+        string value = rs.GetString(index);
         return (T)Activator.CreateInstance(typeof(T), value)!;
     }
 
     public void NullSafeSet(DbCommand cmd, object? value, int index, ISessionImplementor session)
     {
-        var parameter = cmd.Parameters[index];
+        DbParameter parameter = cmd.Parameters[index];
         parameter.Value = value is null ? DBNull.Value : ((IStringValueObject)value).Value;
     }
 

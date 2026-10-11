@@ -9,7 +9,7 @@ public sealed class ChatPageUpdatedOnChatbotSettingsUpdated(IChatPageRepository 
 {
     protected override async Task Handle(ChatbotSettingsUpdated chatbotSettingsUpdated, CancellationToken cancellationToken)
     {
-        var chatPage = await chatPageRepository.FindById(chatbotSettingsUpdated.Id.Value, cancellationToken);
+        Domain.ChatPage? chatPage = await chatPageRepository.FindById(chatbotSettingsUpdated.Id.Value, cancellationToken);
         if (chatPage is null)
         {
             return;
