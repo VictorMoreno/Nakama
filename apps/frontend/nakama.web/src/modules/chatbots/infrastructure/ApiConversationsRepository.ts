@@ -1,13 +1,8 @@
 import { authFetch } from "../../../shared/infrastructure/auth/authFetch";
+import { formatDateTime } from "../../../shared/infrastructure/formatDate";
 import type { GeneratedNakamaClient } from "../../../shared/infrastructure/GeneratedNakamaClient";
 import type { ChatExample, ConversationSummary } from "../domain/Chatbot";
 import type { IConversationsRepository } from "../domain/IConversationsRepository";
-
-function formatDate(value: Date | string | undefined): string {
-  if (!value) return "";
-  const date = typeof value === "string" ? new Date(value) : value;
-  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("es-ES");
-}
 
 function toChatExample(row: {
   question?: string;
@@ -45,7 +40,7 @@ export class ApiConversationsRepository implements IConversationsRepository {
             id: row.id ?? "",
             botKey: row.botKey ?? botId,
             title: row.title ?? "",
-            dateLabel: formatDate(row.dateLabel),
+            dateLabel: formatDateTime(row.dateLabel),
             exchanges: (row.exchanges ?? []).map(toChatExample)
           })
         );

@@ -4,6 +4,7 @@ import type { IAnalyticsRepository } from "../../../../modules/analytics/domain/
 import type { ChatExample, ConversationSummary } from "../../../../modules/chatbots/domain/Chatbot";
 import type { IConversationsRepository } from "../../../../modules/chatbots/domain/IConversationsRepository";
 import { chatConfig } from "../../../../shared/infrastructure/config/ChatConfig";
+import { formatDateTime } from "../../../../shared/infrastructure/formatDate";
 import { Services } from "../../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
@@ -151,7 +152,7 @@ export function useChat() {
 
       setConversations((prev) =>
         isNewConversation
-          ? [{ id: conversationId, botKey: bot.id, title, dateLabel: new Date().toLocaleDateString("es-ES"), exchanges: [example] }, ...prev]
+          ? [{ id: conversationId, botKey: bot.id, title, dateLabel: formatDateTime(new Date()), exchanges: [example] }, ...prev]
           : prev.map((c) => (c.id === conversationId ? { ...c, exchanges: [...c.exchanges, example] } : c))
       );
     } catch (error) {

@@ -28,6 +28,7 @@ import type {
 } from "../domain/Chatbot";
 import type { CreateChatbotInput, IChatbotsRepository } from "../domain/IChatbotsRepository";
 import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlToFileParameter";
+import { formatDate } from "../../../shared/infrastructure/formatDate";
 
 // Write side: backend enums serialize as their ordinal (0-indexed, declaration order).
 // Read side: response DTOs already stringify enums via `.ToString()` (PascalCase member
@@ -54,15 +55,6 @@ function toApiSettings(settings: ChatbotSettings): UpdateChatbotSettingsRequest 
     provider: PROVIDER_TO_ORDINAL[settings.provider],
     model: settings.model
   };
-}
-
-// Backend sends a raw Date for "updated" (no relative-time label like the old mock's
-// scripted "hace 2 días" copy) - this is a plain, honest date format, not an attempt to
-// reproduce that flavor text. A nicer relative-time formatter is a follow-up, not this swap.
-function formatDate(value: Date | string | undefined): string {
-  if (!value) return "";
-  const date = typeof value === "string" ? new Date(value) : value;
-  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("es-ES");
 }
 
 function toChatExample(row: { question?: string; answer?: string; citation?: string; moreExplanation?: string; socraticVariant?: string }): ChatExample {
