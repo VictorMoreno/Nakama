@@ -109,10 +109,10 @@ export interface IGeneratedNakamaClient {
     iconDELETE(id: string): Promise<void>;
 
     /**
-     * Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.
+     * Deletes the caller's own conversation (hard delete). The immutable conversation audit log is untouched.
      * @return No Content
      */
-    conversations(conversationId: string, userId: string): Promise<void>;
+    conversations(conversationId: string): Promise<void>;
 
     /**
      * Lists all chatbots (summary view).
@@ -127,11 +127,10 @@ export interface IGeneratedNakamaClient {
     chatPage(id: string): Promise<ChatPageResponse>;
 
     /**
-     * Gets a user's conversation history for one chatbot.
-     * @param userId (optional) 
+     * Gets the caller's conversation history for one chatbot.
      * @return OK
      */
-    conversationHistory(botKey: string, userId: string | undefined): Promise<ConversationHistoryResponse>;
+    conversationHistory(botKey: string): Promise<ConversationHistoryResponse>;
 
     /**
      * Creates a new formation with a caller-supplied id.
@@ -216,13 +215,13 @@ export interface IGeneratedNakamaClient {
      * Lists formations (summary view), scoped to the caller: admins see every formation, anyone else only the ones they're assigned to.
      * @return OK
      */
-    formationsAll(userId: string, isAdmin: boolean): Promise<FormationSummaryResponse[]>;
+    formationsAll(): Promise<FormationSummaryResponse[]>;
 
     /**
      * Gets one user's own progress in a formation. 404 if they're not assigned.
      * @return OK
      */
-    enrollment(id: string, userId: string): Promise<FormationEnrollmentResponse>;
+    enrollment(id: string): Promise<FormationEnrollmentResponse>;
 
     /**
      * Lists every known LLM provider with its configuration status and model catalog.
@@ -962,18 +961,14 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Deletes a user's own conversation (hard delete). The immutable conversation audit log is untouched.
+     * Deletes the caller's own conversation (hard delete). The immutable conversation audit log is untouched.
      * @return No Content
      */
-    conversations(conversationId: string, userId: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/chatbots/conversations/{conversationId}?";
+    conversations(conversationId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/conversations/{conversationId}";
         if (conversationId === undefined || conversationId === null)
             throw new globalThis.Error("The parameter 'conversationId' must be defined.");
         url_ = url_.replace("{conversationId}", encodeURIComponent("" + conversationId));
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined and cannot be null.");
-        else
-            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1098,19 +1093,14 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Gets a user's conversation history for one chatbot.
-     * @param userId (optional) 
+     * Gets the caller's conversation history for one chatbot.
      * @return OK
      */
-    conversationHistory(botKey: string, userId: string | undefined): Promise<ConversationHistoryResponse> {
-        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversation-history?";
+    conversationHistory(botKey: string): Promise<ConversationHistoryResponse> {
+        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversation-history";
         if (botKey === undefined || botKey === null)
             throw new globalThis.Error("The parameter 'botKey' must be defined.");
         url_ = url_.replace("{botKey}", encodeURIComponent("" + botKey));
-        if (userId === null)
-            throw new globalThis.Error("The parameter 'userId' cannot be null.");
-        else if (userId !== undefined)
-            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1810,16 +1800,8 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
      * Lists formations (summary view), scoped to the caller: admins see every formation, anyone else only the ones they're assigned to.
      * @return OK
      */
-    formationsAll(userId: string, isAdmin: boolean): Promise<FormationSummaryResponse[]> {
-        let url_ = this.baseUrl + "/api/formations?";
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined and cannot be null.");
-        else
-            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
-        if (isAdmin === undefined || isAdmin === null)
-            throw new globalThis.Error("The parameter 'isAdmin' must be defined and cannot be null.");
-        else
-            url_ += "isAdmin=" + encodeURIComponent("" + isAdmin) + "&";
+    formationsAll(): Promise<FormationSummaryResponse[]> {
+        let url_ = this.baseUrl + "/api/formations";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1857,15 +1839,11 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
      * Gets one user's own progress in a formation. 404 if they're not assigned.
      * @return OK
      */
-    enrollment(id: string, userId: string): Promise<FormationEnrollmentResponse> {
-        let url_ = this.baseUrl + "/api/formations/{id}/enrollment?";
+    enrollment(id: string): Promise<FormationEnrollmentResponse> {
+        let url_ = this.baseUrl + "/api/formations/{id}/enrollment";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined and cannot be null.");
-        else
-            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -2165,7 +2143,6 @@ export interface ChatbotSummaryResponse {
 }
 
 export interface CompleteFormationModuleRequest {
-    userId?: string;
     score?: number | undefined;
 }
 

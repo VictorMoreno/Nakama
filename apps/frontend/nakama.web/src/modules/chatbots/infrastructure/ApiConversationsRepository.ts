@@ -34,12 +34,12 @@ export class ApiConversationsRepository implements IConversationsRepository {
     this.client = client;
   }
 
-  async FindAll(userId: string): Promise<ConversationSummary[]> {
+  async FindAll(): Promise<ConversationSummary[]> {
     const summaries = await this.client.chatbotsAll();
     const perBot = await Promise.all(
       summaries.map(async (summary) => {
         const botId = summary.id ?? "";
-        const history = await this.client.conversationHistory(botId, userId);
+        const history = await this.client.conversationHistory(botId);
         return (history.entries ?? []).map(
           (row): ConversationSummary => ({
             id: row.id ?? "",
@@ -57,7 +57,6 @@ export class ApiConversationsRepository implements IConversationsRepository {
   async Ask(
     conversationId: string,
     botKey: string,
-    userId: string,
     title: string,
     question: string,
     files: File[],
@@ -65,7 +64,6 @@ export class ApiConversationsRepository implements IConversationsRepository {
   ): Promise<string> {
     const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
     const form = new FormData();
-    form.append("userId", userId);
     form.append("title", title);
     form.append("question", question);
     files.forEach((file) => form.append("files", file, file.name));
@@ -117,7 +115,7 @@ export class ApiConversationsRepository implements IConversationsRepository {
     return answer;
   }
 
-  async Delete(conversationId: string, userId: string): Promise<void> {
-    await this.client.conversations(conversationId, userId);
+  async Delete(conversationId: string): Promise<void> {
+    await this.client.conversations(conversationId);
   }
 }

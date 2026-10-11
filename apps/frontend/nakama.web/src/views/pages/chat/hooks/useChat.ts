@@ -56,7 +56,7 @@ export function useChat() {
   useEffect(() => {
     if (!currentUser) return;
     let cancelled = false;
-    conversationsRepo.FindAll(currentUser.id).then((data) => {
+    conversationsRepo.FindAll().then((data) => {
       if (!cancelled) setConversations(data);
     });
     return () => {
@@ -128,7 +128,7 @@ export function useChat() {
     const botMsgId = nextId();
 
     try {
-      const answer = await conversationsRepo.Ask(conversationId, bot.id, currentUser.id, title, val, files, (textSoFar) => {
+      const answer = await conversationsRepo.Ask(conversationId, bot.id, title, val, files, (textSoFar) => {
         setThread((prev) => {
           const alreadyStarted = prev.some((item) => item.id === botMsgId);
           const example: ChatExample = { q: val, a: textSoFar, cite: "", more: "", socratic: "", attachments: attachmentNames };
@@ -195,7 +195,7 @@ export function useChat() {
   async function deleteConversation(id: string) {
     if (!bot || !currentUser) return;
 
-    await conversationsRepo.Delete(id, currentUser.id);
+    await conversationsRepo.Delete(id);
     setConversations((prev) => prev.filter((c) => c.id !== id));
 
     if (activeConversationId === id) {

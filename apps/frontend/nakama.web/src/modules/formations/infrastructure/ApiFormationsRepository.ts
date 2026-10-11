@@ -77,8 +77,8 @@ export class ApiFormationsRepository implements IFormationsRepository {
     this.client = client;
   }
 
-  async FindAll(userId: string, isAdmin: boolean): Promise<FormationMap> {
-    const summaries = await this.client.formationsAll(userId, isAdmin);
+  async FindAll(): Promise<FormationMap> {
+    const summaries = await this.client.formationsAll();
     const entries = await Promise.all(
       summaries.map(async (summary) => {
         const id = summary.id ?? "";
@@ -178,8 +178,8 @@ export class ApiFormationsRepository implements IFormationsRepository {
     await this.client.toggleGating(id, moduleId);
   }
 
-  async CompleteModule(id: string, moduleId: string, userId: string, score?: number): Promise<void> {
-    await this.client.complete(id, moduleId, { userId, score } satisfies CompleteFormationModuleRequest);
+  async CompleteModule(id: string, moduleId: string, score?: number): Promise<void> {
+    await this.client.complete(id, moduleId, { score } satisfies CompleteFormationModuleRequest);
   }
 
   async AddTeamMember(id: string, userId: string): Promise<void> {

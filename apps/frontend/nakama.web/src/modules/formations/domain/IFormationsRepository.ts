@@ -10,7 +10,7 @@ export interface CreateFormationInput {
 }
 
 export interface IFormationsRepository {
-  FindAll(userId: string, isAdmin: boolean): Promise<FormationMap>;
+  FindAll(): Promise<FormationMap>;
   Create(input: CreateFormationInput): Promise<Formation>;
   Archive(id: string): Promise<void>;
   UpdateStatus(id: string, status: FormationLifecycleStatus): Promise<void>;
@@ -19,7 +19,7 @@ export interface IFormationsRepository {
   UpdateModule(id: string, module: FormationModule): Promise<void>;
   RemoveModule(id: string, moduleId: string): Promise<void>;
   ToggleModuleGating(id: string, moduleId: string): Promise<void>;
-  CompleteModule(id: string, moduleId: string, userId: string, score?: number): Promise<void>;
+  CompleteModule(id: string, moduleId: string, score?: number): Promise<void>;
   AddTeamMember(id: string, userId: string): Promise<void>;
   RemoveTeamMember(id: string, userId: string): Promise<void>;
 }

@@ -28,7 +28,7 @@ export function useFormationExecute() {
       return;
     }
     let cancelled = false;
-    enrollmentRepo.FindMyProgress(c.id, currentUser.id).then((progress) => {
+    enrollmentRepo.FindMyProgress(c.id).then((progress) => {
       if (!cancelled) setMyProgress(progress ?? EMPTY_PROGRESS);
     });
     return () => {
