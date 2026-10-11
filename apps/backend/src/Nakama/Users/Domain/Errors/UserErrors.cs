@@ -8,6 +8,9 @@ public sealed class UserEmailAlreadyInUseError(string email)
 public sealed class UserInvalidCredentialsError()
     : DomainError("nakama.users.invalid_credentials", "Invalid email or password.");
 
+public sealed class UserNotFoundError(string id)
+    : DomainError("nakama.users.not_found", $"User '{id}' was not found.");
+
 public sealed class UserInvalidError(string details)
     : DomainError("nakama.users.invalid", $"Could not create or update user: {details}");
 
@@ -19,6 +22,8 @@ public static class UserErrors
     public static DomainError EmailAlreadyInUse(string email) => new UserEmailAlreadyInUseError(email);
 
     public static DomainError InvalidCredentials { get; } = new UserInvalidCredentialsError();
+
+    public static DomainError NotFound(string id) => new UserNotFoundError(id);
 
     public static DomainError Invalid(string details) => new UserInvalidError(details);
 

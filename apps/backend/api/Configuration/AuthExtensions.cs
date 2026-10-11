@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Nakama.Authentication.Domain;
+using Nakama.Authentication.Infrastructure;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Auth;
-using Nakama.Users.Domain;
-using Nakama.Users.Infrastructure;
 
 namespace Api.Configuration;
 
@@ -29,7 +29,7 @@ public static class AuthExtensions
             .Validate(options => options.RefreshTokenDays > 0, "Jwt:RefreshTokenDays must be greater than zero.")
             .ValidateOnStart();
 
-        services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
+        services.AddSingleton<ITokenGenerator, HmacSha256JwtTokenGenerator>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
@@ -61,7 +61,7 @@ public static class AuthExtensions
 
         services.AddAuthorizationBuilder()
             .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
-            .AddPolicy(AuthPolicies.Admin, policy => policy.RequireRole(UserRoles.Admin));
+            .AddPolicy(AuthPolicies.Admin, policy => policy.RequireRole(AuthRoles.Admin));
 
         return services;
     }

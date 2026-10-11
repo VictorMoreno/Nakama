@@ -27,6 +27,7 @@ internal static class NhMappings
         mapper.AddMapping<Mappings.ConversationHistoryMapping>();
         mapper.AddMapping<Mappings.FormationEnrollmentMapping>();
         mapper.AddMapping<Mappings.LlmProviderConfigMapping>();
+        mapper.AddMapping<Mappings.RefreshTokenMapping>();
 
         HbmMapping mapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
         configuration.AddMapping(mapping);

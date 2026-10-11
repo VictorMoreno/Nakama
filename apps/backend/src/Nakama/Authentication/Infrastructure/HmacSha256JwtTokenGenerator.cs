@@ -2,20 +2,20 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Nakama.Authentication.Domain;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Auth;
-using Nakama.Users.Domain;
 
-namespace Nakama.Users.Infrastructure;
+namespace Nakama.Authentication.Infrastructure;
 
-public sealed class JwtTokenIssuer : ITokenIssuer
+public sealed class HmacSha256JwtTokenGenerator : ITokenGenerator
 {
     private readonly JwtOptions options;
     private readonly ISystemClock systemClock;
     private readonly SigningCredentials signingCredentials;
     private readonly JsonWebTokenHandler tokenHandler = new();
 
-    public JwtTokenIssuer(IOptions<JwtOptions> options, ISystemClock systemClock)
+    public HmacSha256JwtTokenGenerator(IOptions<JwtOptions> options, ISystemClock systemClock)
     {
         this.options = options.Value;
         this.systemClock = systemClock;
@@ -24,7 +24,7 @@ public sealed class JwtTokenIssuer : ITokenIssuer
             SecurityAlgorithms.HmacSha256);
     }
 
-    public AccessToken IssueAccessToken(User user)
+    public Token Generate(Guid userId, string email, string name, bool isAdmin)
     {
         DateTime issuedAt = this.systemClock.UtcNow;
         DateTime expiresAt = issuedAt.AddMinutes(this.options.AccessTokenMinutes);
@@ -39,14 +39,14 @@ public sealed class JwtTokenIssuer : ITokenIssuer
             SigningCredentials = this.signingCredentials,
             Claims = new Dictionary<string, object>
             {
-                [JwtRegisteredClaimNames.Sub] = user.Id.Value.ToString(),
+                [JwtRegisteredClaimNames.Sub] = userId.ToString(),
                 [JwtRegisteredClaimNames.Jti] = Guid.NewGuid().ToString(),
-                [JwtRegisteredClaimNames.Email] = user.Email,
-                [JwtRegisteredClaimNames.Name] = user.Name,
-                ["role"] = UserRoles.For(user)
+                [JwtRegisteredClaimNames.Email] = email,
+                [JwtRegisteredClaimNames.Name] = name,
+                ["role"] = AuthRoles.For(isAdmin)
             }
         };
 
-        return new AccessToken(this.tokenHandler.CreateToken(descriptor), expiresAt);
+        return new Token(this.tokenHandler.CreateToken(descriptor), expiresAt);
     }
 }

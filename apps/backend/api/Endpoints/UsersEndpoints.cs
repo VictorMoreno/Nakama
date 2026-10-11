@@ -1,7 +1,6 @@
 using Api.Configuration;
 using Nakama.Shared.Domain;
 using Nakama.Users.Application;
-using Nakama.Users.Application.Authenticator;
 using Nakama.Users.Application.Creator;
 using Nakama.Users.Application.Searcher;
 
@@ -23,15 +22,6 @@ public sealed class UsersEndpoints : IEndpoint
             .WithTags("Users")
             .WithSummary("Lists all users in the system (id, name, email) - e.g. to populate a team-assignment picker.")
             .Produces<IReadOnlyCollection<UserSummaryResponse>>();
-
-        app.MapPost("auth/login", Login)
-            .WithTags("Auth")
-            .WithSummary("Verifies email/password credentials, records real activity and issues an access token.")
-            .WithDescription(
-                "Returns a short-lived JWT access token (to send as 'Authorization: Bearer <token>'), its expiry and the user. Anonymous: it is the only endpoint reachable without a token.")
-            .AllowAnonymous()
-            .Produces<LoginResponse>()
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
     }
 
     private static async Task<IResult> CreateUser(CreateUserRequest body, ICommandBus commandBus, CancellationToken ct)
@@ -47,13 +37,5 @@ public sealed class UsersEndpoints : IEndpoint
         return Results.Ok(response);
     }
 
-    private static async Task<IResult> Login(LoginRequest body, IQueryBus queryBus, CancellationToken ct)
-    {
-        LoginResponse response = await queryBus.Ask(new UserAuthenticator.Query(body.Email, body.Password), ct);
-        return Results.Ok(response);
-    }
-
     private sealed record CreateUserRequest(string Email, string Name, bool IsAdmin, string InitialPassword);
-
-    private sealed record LoginRequest(string Email, string Password);
 }

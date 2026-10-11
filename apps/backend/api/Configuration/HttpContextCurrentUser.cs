@@ -1,6 +1,6 @@
 using Microsoft.IdentityModel.JsonWebTokens;
+using Nakama.Authentication.Domain;
 using Nakama.Shared.Domain;
-using Nakama.Users.Domain;
 
 namespace Api.Configuration;
 
@@ -17,7 +17,7 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor httpContextAcces
         }
     }
 
-    public bool IsAdmin => this.Principal.IsInRole(UserRoles.Admin);
+    public bool IsAdmin => this.Principal.IsInRole(AuthRoles.Admin);
 
     private System.Security.Claims.ClaimsPrincipal Principal =>
         httpContextAccessor.HttpContext?.User
