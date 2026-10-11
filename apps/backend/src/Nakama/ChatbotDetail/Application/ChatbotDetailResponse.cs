@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Nakama.ChatbotDetail.Domain;
 
 namespace Nakama.ChatbotDetail.Application;
@@ -23,7 +24,7 @@ public sealed record ChatbotDetailResponse(
     List<GapQuestionRow> TopQuestions,
     List<StatTileRow> Stats)
 {
-    public static ChatbotDetailResponse From(ChatbotDetail entity, string iconsRoute, string documentsRoute) => new(
+    public static ChatbotDetailResponse From(ChatbotDetail entity, string iconsRoute) => new(
         entity.Id,
         entity.Label,
         entity.Description,
@@ -36,7 +37,7 @@ public sealed record ChatbotDetailResponse(
         entity.ExplicaMas,
         entity.Provider,
         entity.Model,
-        entity.Docs.Select(d => ChatbotDocumentResponse.From(d, documentsRoute)).ToList(),
+        entity.Docs.Select(d => ChatbotDocumentResponse.From(d)).ToList(),
         entity.Team,
         entity.Gaps,
         entity.TopQuestions,
@@ -50,14 +51,14 @@ public sealed record ChatbotDocumentResponse(
     string Status,
     string StatusLabel,
     DateTime Updated,
-    string Url)
+    [property: JsonIgnore] string FileName)
 {
-    public static ChatbotDocumentResponse From(ChatbotDocumentRow row, string documentsRoute) => new(
+    public static ChatbotDocumentResponse From(ChatbotDocumentRow row) => new(
         row.Id,
         row.Name,
         row.Origin,
         row.Status,
         row.StatusLabel,
         row.Updated,
-        $"{documentsRoute}/{row.FileName}");
+        row.FileName);
 }

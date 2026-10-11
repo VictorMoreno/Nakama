@@ -150,7 +150,7 @@ public static class ChatbotQuestionAsker
 
             foreach (ChatbotDocumentResponse document in chatbot.Docs)
             {
-                string fileName = Path.GetFileName(document.Url);
+                string fileName = document.FileName;
                 LlmDocumentKind? kind = ResolveKind(fileName);
                 if (kind is null)
                 {
@@ -177,7 +177,7 @@ public static class ChatbotQuestionAsker
 
         private static string BuildSystemPrompt(ChatbotDetailResponse chatbot, bool hasDocuments)
         {
-            List<string> parts = new List<string> { $"Eres el asistente del chatbot \"{chatbot.Label}\"." };
+            List<string> parts = new() { $"Eres el asistente del chatbot \"{chatbot.Label}\"." };
 
             if (!string.IsNullOrWhiteSpace(chatbot.Description))
             {

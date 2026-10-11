@@ -34,11 +34,6 @@ public static class WebApplicationConfigurationExtensions
             FileProvider = new PhysicalFileProvider(FileStorage.ResolvePath(storage.FormationIconsPath, app.Environment)),
             RequestPath = storage.FormationIconsRoute
         });
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            FileProvider = new PhysicalFileProvider(FileStorage.ResolvePath(storage.ChatbotDocumentsPath, app.Environment)),
-            RequestPath = storage.ChatbotDocumentsRoute
-        });
 
         app.UseAuthentication();
         app.UseAuthorization();

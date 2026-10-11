@@ -6,6 +6,7 @@ using Nakama.ChatbotDetail.Application.Finder;
 using Nakama.Chatbots.Application.Archiver;
 using Nakama.Chatbots.Application.Creator;
 using Nakama.Chatbots.Application.DocumentAdder;
+using Nakama.Chatbots.Application.DocumentFileFinder;
 using Nakama.Chatbots.Application.DocumentRemover;
 using Nakama.Chatbots.Application.IconUpdater;
 using Nakama.Chatbots.Application.QuestionAsker;
@@ -68,6 +69,13 @@ public sealed class ChatbotEndpoints : IEndpoint
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Removes a document by its list position.")
             .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet("/{id:guid}/documents/{documentId:guid}/file", DownloadChatbotDocument)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Downloads the original file of a chatbot document.")
+            .WithDescription("Admin only. Documents are internal knowledge, so they are not served as public static files.")
+            .Produces<Stream>(StatusCodes.Status200OK, "application/octet-stream")
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/team", AddChatbotTeamMember)
@@ -241,6 +249,18 @@ public sealed class ChatbotEndpoints : IEndpoint
     {
         await commandBus.Send(new ChatbotIconUpdater.Command(id, null), ct);
         return Results.NoContent();
+    }
+
+    private static async Task<IResult> DownloadChatbotDocument(
+        Guid id,
+        Guid documentId,
+        IQueryBus queryBus,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        ChatbotDocumentFileResponse file = await queryBus.Ask(new ChatbotDocumentFileFinder.Query(id, documentId), ct);
+        httpContext.Response.Headers.XContentTypeOptions = "nosniff";
+        return Results.File(file.Content, file.ContentType, file.FileName);
     }
 
     private static async Task AskChatbot(

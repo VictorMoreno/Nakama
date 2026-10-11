@@ -17,8 +17,8 @@ public static class ChatbotDetailFinder
     {
         public async Task<ChatbotDetailResponse> Handle(Query query, CancellationToken ct)
         {
-            var chatbot = await finder.Execute(query.Id, ct);
-            return ChatbotDetailResponse.From(chatbot, storage.Value.ChatbotIconsRoute, storage.Value.ChatbotDocumentsRoute);
+            ChatbotDetail chatbot = await finder.Execute(query.Id, ct);
+            return ChatbotDetailResponse.From(chatbot, storage.Value.ChatbotIconsRoute);
         }
     }
 

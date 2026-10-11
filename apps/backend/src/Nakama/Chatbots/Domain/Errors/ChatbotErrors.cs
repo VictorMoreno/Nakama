@@ -29,6 +29,9 @@ public sealed class ChatbotIconTooLargeError(long maxBytes)
 public sealed class ChatbotAttachmentLimitExceededError(int maxAttachments)
     : DomainError("nakama.chatbots.attachment_limit_exceeded", $"A message can include at most {maxAttachments} attachments.");
 
+public sealed class ChatbotDocumentNotFoundError(string id)
+    : DomainError("nakama.chatbot_documents.not_found", $"Document '{id}' not found.");
+
 public static class ChatbotErrors
 {
     public static DomainError OwnerCannotBeRemoved { get; } = new ChatbotOwnerCannotBeRemovedError();
@@ -38,6 +41,8 @@ public static class ChatbotErrors
     public static DomainError IconUnsupportedType { get; } = new ChatbotIconUnsupportedTypeError();
 
     public static DomainError NotFound(ChatbotId id) => new ChatbotNotFoundError(id.ToString());
+
+    public static DomainError DocumentNotFound(Guid id) => new ChatbotDocumentNotFoundError(id.ToString());
 
     public static DomainError AlreadyExists(string id) => new ChatbotAlreadyExistsError(id);
 
