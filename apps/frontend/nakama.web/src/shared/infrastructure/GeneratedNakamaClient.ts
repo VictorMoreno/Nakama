@@ -36,7 +36,19 @@ export interface IGeneratedNakamaClient {
      * Verifies email/password credentials, records real activity and issues an access token.
      * @return OK
      */
-    login(body: LoginRequest): Promise<LoginResponse>;
+    login(body: LoginRequest): Promise<TokenResponse>;
+
+    /**
+     * Exchanges the refresh-token cookie for a new access token and rotates the refresh token.
+     * @return OK
+     */
+    refresh(): Promise<TokenResponse>;
+
+    /**
+     * Revokes the refresh token of the current session and clears its cookie.
+     * @return No Content
+     */
+    logout(): Promise<void>;
 
     /**
      * Creates a new chatbot with a caller-supplied id.
@@ -354,7 +366,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
      * Verifies email/password credentials, records real activity and issues an access token.
      * @return OK
      */
-    login(body: LoginRequest): Promise<LoginResponse> {
+    login(body: LoginRequest): Promise<TokenResponse> {
         let url_ = this.baseUrl + "/api/auth/login";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -376,13 +388,13 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
         });
     }
 
-    protected processLogin(response: Response): Promise<LoginResponse> {
+    protected processLogin(response: Response): Promise<TokenResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as LoginResponse;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as TokenResponse;
             return result200;
             });
         } else if (status === 401) {
@@ -396,7 +408,88 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<LoginResponse>(null as any);
+        return Promise.resolve<TokenResponse>(null as any);
+    }
+
+    /**
+     * Exchanges the refresh-token cookie for a new access token and rotates the refresh token.
+     * @return OK
+     */
+    refresh(): Promise<TokenResponse> {
+        let url_ = this.baseUrl + "/api/auth/refresh";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processRefresh(_response));
+        });
+    }
+
+    protected processRefresh(response: Response): Promise<TokenResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as TokenResponse;
+            return result200;
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            result401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<TokenResponse>(null as any);
+    }
+
+    /**
+     * Revokes the refresh token of the current session and clears its cookie.
+     * @return No Content
+     */
+    logout(): Promise<void> {
+        let url_ = this.baseUrl + "/api/auth/logout";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processLogout(_response));
+        });
+    }
+
+    protected processLogout(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
     }
 
     /**
@@ -2331,12 +2424,6 @@ export interface LoginRequest {
     password?: string | undefined;
 }
 
-export interface LoginResponse {
-    accessToken?: string | undefined;
-    expiresAt?: Date;
-    user?: UserResponse;
-}
-
 export interface ModelInput {
     id?: string | undefined;
     label?: string | undefined;
@@ -2384,6 +2471,12 @@ export interface SubmitFeedbackRequest {
 export interface TeamMemberRow {
     userId?: string;
     role?: string | undefined;
+}
+
+export interface TokenResponse {
+    accessToken?: string | undefined;
+    expiresAt?: Date;
+    user?: UserResponse;
 }
 
 export interface UpdateChatbotSettingsRequest {

@@ -1,6 +1,8 @@
 type ExpiredListener = () => void;
+type Refresher = () => Promise<boolean>;
 
 let accessToken: string | null = null;
+let refresher: Refresher | null = null;
 const expiredListeners = new Set<ExpiredListener>();
 
 export const AuthSession = {
@@ -26,5 +28,13 @@ export const AuthSession = {
     return () => {
       expiredListeners.delete(listener);
     };
+  },
+
+  setRefresher(value: Refresher): void {
+    refresher = value;
+  },
+
+  async refresh(): Promise<boolean> {
+    return refresher ? refresher() : false;
   }
 };

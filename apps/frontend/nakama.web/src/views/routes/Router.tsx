@@ -21,15 +21,29 @@ function RequireAdmin({ children }: { children: ReactNode }) {
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { currentUser } = useUser();
+  const { currentUser, isRestoring } = useUser();
+  if (isRestoring) return null;
   return currentUser ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+function RedirectIfAuthenticated({ children }: { children: ReactNode }) {
+  const { currentUser, isRestoring } = useUser();
+  if (isRestoring) return null;
+  return currentUser ? <Navigate to="/chat" replace /> : <>{children}</>;
 }
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="login" element={<LoginPage />} />
+      <Route path="/" element={<Navigate to="/chat" replace />} />
+      <Route
+        path="login"
+        element={
+          <RedirectIfAuthenticated>
+            <LoginPage />
+          </RedirectIfAuthenticated>
+        }
+      />
       <Route
         element={
           <RequireAuth>
