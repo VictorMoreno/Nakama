@@ -6,7 +6,7 @@ namespace Nakama.Chatbots.Domain;
 
 public partial class Chatbot
 {
-    private Chatbot(
+    public Chatbot(
         ChatbotId key,
         string label,
         string description,
@@ -72,6 +72,11 @@ public partial class Chatbot
 
     public void AddTeamMember(TeamMember member)
     {
+        if (this._team.Any(existing => existing.UserId == member.UserId))
+        {
+            throw ChatbotErrors.TeamMemberAlreadyExists(member.UserId);
+        }
+
         this._team.Add(member);
         this.Record(new ChatbotTeamMemberAdded(this.Id, member));
     }

@@ -81,8 +81,10 @@ public sealed class ChatbotEndpoints : IEndpoint
         group.MapPost("/{id:guid}/team", AddChatbotTeamMember)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Adds a team member to a chatbot.")
+            .WithDescription("A user can belong to a chatbot team only once, whatever their role.")
             .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         group.MapDelete("/{id:guid}/team/{index:int}", RemoveChatbotTeamMember)
             .RequireAuthorization(AuthPolicies.Admin)

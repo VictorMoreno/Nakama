@@ -29,6 +29,9 @@ public sealed class ChatbotIconTooLargeError(long maxBytes)
 public sealed class ChatbotAttachmentLimitExceededError(int maxAttachments)
     : DomainError("nakama.chatbots.attachment_limit_exceeded", $"A message can include at most {maxAttachments} attachments.");
 
+public sealed class ChatbotTeamMemberAlreadyExistsError(string userId)
+    : DomainError("nakama.chatbot_team_members.already_exists", $"User '{userId}' is already a member of the chatbot team.");
+
 public sealed class ChatbotDocumentNotFoundError(string id)
     : DomainError("nakama.chatbot_documents.not_found", $"Document '{id}' not found.");
 
@@ -45,6 +48,8 @@ public static class ChatbotErrors
     public static DomainError DocumentNotFound(Guid id) => new ChatbotDocumentNotFoundError(id.ToString());
 
     public static DomainError AlreadyExists(string id) => new ChatbotAlreadyExistsError(id);
+
+    public static DomainError TeamMemberAlreadyExists(Guid userId) => new ChatbotTeamMemberAlreadyExistsError(userId.ToString());
 
     public static DomainError ProviderNotConnected(string provider) => new ChatbotProviderNotConnectedError(provider);
 
