@@ -4,16 +4,17 @@ namespace Nakama.FormationEnrollment.Domain;
 
 public partial class FormationEnrollment
 {
-    private FormationEnrollment(FormationEnrollmentId id, Guid formationId, Guid userId)
+    public FormationEnrollment(FormationEnrollmentId id, Guid formationId, Guid userId, LearnerProgress progress)
     {
         this.Id = id;
         this.FormationId = formationId;
         this.UserId = userId;
+        this.Progress = progress;
     }
 
     public static FormationEnrollment Create(FormationEnrollmentId id, Guid formationId, Guid userId)
     {
-        FormationEnrollment enrollment = new(id, formationId, userId);
+        FormationEnrollment enrollment = new(id, formationId, userId, LearnerProgress.Empty);
         enrollment.Record(new PersonEnrolled(formationId, userId));
         return enrollment;
     }
