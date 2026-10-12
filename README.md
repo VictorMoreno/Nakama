@@ -88,7 +88,7 @@ Levanta Vite en `http://localhost:3000`, con proxy de `/api` hacia el backend (v
 | `npm run lint` / `lint-fix` | `apps/frontend/nakama.web` | Lint de TS/React |
 | `npm run lint-css` | `apps/frontend/nakama.web` | Lint de estilos (Stylelint) |
 
-> **Tests automatizados**: todavía no hay un proyecto de tests implementado (`apps/tests/` solo define la convención a seguir cuando se añadan, con NUnit + FluentAssertions). La verificación actual es manual (build limpio + comprobación en navegador).
+> **Tests automatizados**: `apps/tests/Test` contiene los tests unitarios del backend (NUnit, Moq, AwesomeAssertions y Bogus) para los handlers de usuarios, autenticación y conversaciones, además del generador de tokens JWT. Se ejecutan con `dotnet test apps/tests/Test`; la convención a seguir está en `apps/tests/Test/agents.md`. Los tests de integración de la API y los del frontend están pendientes, y la verificación de esas partes sigue siendo manual (build limpio + comprobación en navegador).
 
 ## 📂 Estructura del proyecto
 

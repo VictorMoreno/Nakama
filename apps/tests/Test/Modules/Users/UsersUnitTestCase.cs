@@ -65,11 +65,6 @@ public abstract class UsersUnitTestCase : UnitTestCase
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
-    protected void ShouldNotHavePublishedAnything() =>
-        this.EventBus.Verify(
-            bus => bus.Publish(It.IsAny<AggregateRoot>(), It.IsAny<CancellationToken>()),
-            Times.Never);
-
     private static bool RecordsUserCreated(AggregateRoot aggregate, UserId id) =>
         aggregate.DomainEvents.OfType<UserCreated>().Any(@event => @event.Id == id);
 }

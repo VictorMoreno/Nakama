@@ -9,7 +9,7 @@ This repo has one `agents.md` per module, each defining the implementation conve
 | `apps/frontend/nakama.web/**` | `apps/frontend/nakama.web/agents.md` | React + TypeScript + Vite |
 | `apps/backend/api/**`         | `apps/backend/api/agents.md`   | ASP.NET Core API layer |
 | `apps/backend/src/**`         | `apps/backend/src/agents.md`   | .NET domain/application core (DDD + hexagonal) |
-| `apps/tests/**`                | `apps/tests/agents.md`          | .NET tests (NUnit + FluentAssertions) |
+| `apps/tests/**`                | `apps/tests/Test/agents.md`     | .NET tests (NUnit + Moq + AwesomeAssertions) |
 
 Rules:
 

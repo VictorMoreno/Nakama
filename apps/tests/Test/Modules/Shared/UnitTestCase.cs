@@ -18,4 +18,9 @@ public abstract class UnitTestCase
     }
 
     protected void ShouldBeNow(DateTime now) => this.Clock.Setup(clock => clock.UtcNow).Returns(now);
+
+    protected void ShouldNotHavePublishedAnything() =>
+        this.EventBus.Verify(
+            bus => bus.Publish(It.IsAny<AggregateRoot>(), It.IsAny<CancellationToken>()),
+            Times.Never);
 }

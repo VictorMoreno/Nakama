@@ -5,7 +5,7 @@ namespace Nakama.Chatbots.Domain;
 
 public partial class Conversation
 {
-    private Conversation(ConversationId id, ChatbotId botKey, Guid userId, string title, DateTime startedAt)
+    public Conversation(ConversationId id, ChatbotId botKey, Guid userId, string title, DateTime startedAt)
     {
         this.Id = id;
         this.BotKey = botKey;
