@@ -58,6 +58,18 @@ public sealed class UserCreatorShould : UsersUnitTestCase
     }
 
     [Test]
+    public async Task fail_without_creating_anything_when_the_email_is_not_valid()
+    {
+        UserCreator.Command command = UserCreatorCommandMother.With(email: WordMother.Random());
+
+        Func<Task> act = async () => await this._handler.Handle(command, CancellationToken.None);
+
+        await act.Should().ThrowAsync<UserInvalidEmailError>();
+        this.ShouldNotHaveCreatedAnyUser();
+        this.ShouldNotHavePublishedAnything();
+    }
+
+    [Test]
     public async Task fail_without_publishing_when_the_password_is_rejected()
     {
         string error = WordMother.Random();

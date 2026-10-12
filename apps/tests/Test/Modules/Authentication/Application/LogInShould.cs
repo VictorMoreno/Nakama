@@ -43,7 +43,7 @@ public sealed class LogInShould : AuthenticationUnitTestCase
     [Test]
     public async Task generate_the_access_token_with_the_data_of_the_verified_user()
     {
-        UserResponse user = UserResponseMother.With(isAdmin: true);
+        UserResponse user = UserResponseMother.WithAdmin();
         this.ShouldVerifyCredentials(user);
         this.ShouldGenerateAccessToken(TokenMother.Random());
 

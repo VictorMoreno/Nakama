@@ -7,6 +7,8 @@ public static class UserResponseMother
 {
     public static UserResponse Random() => With();
 
+    public static UserResponse WithAdmin() => With(isAdmin: true);
+
     public static UserResponse With(Guid? id = null, string? email = null, string? name = null, bool? isAdmin = null) =>
         new(
             id ?? UserMother.RandomId().Value,
