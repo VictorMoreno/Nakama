@@ -2,23 +2,39 @@ namespace Nakama.Analytics.Domain;
 
 public partial class Analytics
 {
+    public Analytics(
+        string id,
+        int activeBotsCount,
+        int answeredThisWeek,
+        List<UsageByBotRow> usageByBot,
+        int usefulFeedbackCount,
+        int totalFeedbackCount)
+    {
+        this.Id = id;
+        this.ActiveBotsCount = activeBotsCount;
+        this.AnsweredThisWeek = answeredThisWeek;
+        this.UsageByBot = usageByBot;
+        this.UsefulFeedbackCount = usefulFeedbackCount;
+        this.TotalFeedbackCount = totalFeedbackCount;
+    }
+
     public static Analytics CreateFromChatbotCreated(Guid botKey)
     {
-        Analytics analytics = new();
+        Analytics analytics = new(SingletonKey, 0, 0, [], 0, 0);
         analytics.ApplyChatbotCreated(botKey);
         return analytics;
     }
 
     public static Analytics CreateFromConversationExchangeAppended(Guid botKey)
     {
-        Analytics analytics = new();
+        Analytics analytics = new(SingletonKey, 0, 0, [], 0, 0);
         analytics.ApplyConversationExchangeAppended(botKey);
         return analytics;
     }
 
     public static Analytics CreateFromFeedbackSubmitted(bool useful)
     {
-        Analytics analytics = new();
+        Analytics analytics = new(SingletonKey, 0, 0, [], 0, 0);
         analytics.ApplyFeedbackSubmitted(useful);
         return analytics;
     }

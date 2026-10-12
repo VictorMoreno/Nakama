@@ -5,7 +5,7 @@ namespace Nakama.LlmProviders.Domain;
 
 public partial class LlmProviderConfig
 {
-    private LlmProviderConfig(LlmProviderConfigId id, LlmProvider provider, string apiKey, bool enabled,
+    public LlmProviderConfig(LlmProviderConfigId id, LlmProvider provider, string apiKey, bool enabled,
         IReadOnlyList<LlmModelOption> models, DateTime updatedAt)
     {
         this.Id = id;
