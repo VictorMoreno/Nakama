@@ -6,12 +6,12 @@ public partial class ChatPage : IEntity
 {
     protected ChatPage() { } // NHibernate
 
-    public virtual Guid Id { get; protected set; }
-    public virtual string Label { get; protected set; } = string.Empty;
-    public virtual string Context { get; protected set; } = string.Empty;
-    public virtual bool Socratic { get; protected set; }
-    public virtual bool ExplicaMas { get; protected set; }
-    public virtual string Provider { get; protected set; } = string.Empty;
+    public Guid Id { get; protected set; }
+    public string Label { get; protected set; } = string.Empty;
+    public string Context { get; protected set; } = string.Empty;
+    public bool Socratic { get; protected set; }
+    public bool ExplicaMas { get; protected set; }
+    public string Provider { get; protected set; } = string.Empty;
 
-    public virtual ChatExampleRow? Opening { get; protected set; }
+    public ChatExampleRow? Opening { get; protected set; }
 }

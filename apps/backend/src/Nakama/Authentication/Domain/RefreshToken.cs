@@ -8,17 +8,17 @@ public partial class RefreshToken : AggregateRoot<RefreshTokenId>
     {
     }
 
-    public virtual Guid UserId { get; private set; }
+    public Guid UserId { get; private set; }
 
-    public virtual string TokenHash { get; private set; } = string.Empty;
+    public string TokenHash { get; private set; } = string.Empty;
 
-    public virtual string? Value { get; private set; }
+    public string? Value { get; private set; }
 
-    public virtual DateTime ExpiresAt { get; private set; }
+    public DateTime ExpiresAt { get; private set; }
 
-    public virtual DateTime CreatedAt { get; private set; }
+    public DateTime CreatedAt { get; private set; }
 
-    public virtual DateTime? RevokedAt { get; private set; }
+    public DateTime? RevokedAt { get; private set; }
 
-    public virtual Guid? ReplacedById { get; private set; }
+    public Guid? ReplacedById { get; private set; }
 }

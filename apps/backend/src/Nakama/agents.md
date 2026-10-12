@@ -167,9 +167,9 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   original — no se reutiliza el nombre de otro proyecto). Los agregados de escritura además
   extienden `AggregateRoot<TId> : IEntity`; las entidades de lectura (§7) implementan `IEntity`
   directamente, nunca `AggregateRoot<TId>`.
-- Propiedades de dominio con `private set` (getter `virtual` cuando la entidad se persiste con
-  NHibernate y necesita soportar proxies de lazy-loading — `virtual` no obliga a relajar el
-  `private set`, NHibernate accede al setter privado igual vía reflexión).
+- Propiedades de dominio con `private set`, **sin `virtual`**: NHibernate solo lo exige para generar
+  proxies de lazy-loading y todos los mapeos usan `Lazy(false)` (ADR-17), así que no es necesario.
+  NHibernate accede al setter privado vía reflexión.
 - **Usar `partial` para separar SIEMPRE en dos archivos, en TODA entidad de dominio — tanto
   agregados de escritura como entidades de lectura (§7), sin excepción**:
   - `<Entidad>.cs` — mitad "estructural": declaraciones de propiedades, constantes/config

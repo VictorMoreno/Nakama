@@ -8,20 +8,20 @@ public partial class Formation : AggregateRoot<FormationId>
     {
     }
 
-    public virtual string Title { get; private set; } = string.Empty;
+    public string Title { get; private set; } = string.Empty;
 
-    public virtual string Audience { get; private set; } = string.Empty;
+    public string Audience { get; private set; } = string.Empty;
 
-    public virtual string Description { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
 
-    public virtual FormationStatus Status { get; private set; }
+    public FormationStatus Status { get; private set; }
 
-    public virtual Guid? LinkedChatbotKey { get; private set; }
+    public Guid? LinkedChatbotKey { get; private set; }
 
-    public virtual bool Archived { get; private set; }
+    public bool Archived { get; private set; }
 
-    public virtual string? IconUrl { get; private set; }
+    public string? IconUrl { get; private set; }
 
     private readonly List<FormationModule> _modules = [];
-    public virtual IReadOnlyCollection<FormationModule> Modules => this._modules;
+    public IReadOnlyCollection<FormationModule> Modules => this._modules;
 }

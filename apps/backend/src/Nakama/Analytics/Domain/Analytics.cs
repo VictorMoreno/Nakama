@@ -10,15 +10,15 @@ public partial class Analytics : IEntity
 
     public const string SingletonKey = "global";
 
-    public virtual string Id { get; protected set; } = SingletonKey;
+    public string Id { get; protected set; } = SingletonKey;
 
-    public virtual int ActiveBotsCount { get; protected set; }
+    public int ActiveBotsCount { get; protected set; }
 
-    public virtual int AnsweredThisWeek { get; protected set; }
+    public int AnsweredThisWeek { get; protected set; }
 
-    public virtual List<UsageByBotRow> UsageByBot { get; protected set; } = [];
+    public List<UsageByBotRow> UsageByBot { get; protected set; } = [];
 
-    public virtual int UsefulFeedbackCount { get; protected set; }
+    public int UsefulFeedbackCount { get; protected set; }
 
-    public virtual int TotalFeedbackCount { get; protected set; }
+    public int TotalFeedbackCount { get; protected set; }
 }

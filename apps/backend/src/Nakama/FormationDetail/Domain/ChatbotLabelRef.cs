@@ -6,6 +6,6 @@ public partial class ChatbotLabelRef : IEntity
 {
     protected ChatbotLabelRef() { } // NHibernate
 
-    public virtual Guid Id { get; protected set; }
-    public virtual string Label { get; protected set; } = string.Empty;
+    public Guid Id { get; protected set; }
+    public string Label { get; protected set; } = string.Empty;
 }

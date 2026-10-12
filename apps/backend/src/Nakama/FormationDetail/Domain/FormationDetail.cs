@@ -6,16 +6,16 @@ public partial class FormationDetail : IEntity
 {
     protected FormationDetail() { } // NHibernate
 
-    public virtual Guid Id { get; protected set; }
-    public virtual string Title { get; protected set; } = string.Empty;
-    public virtual string Audience { get; protected set; } = string.Empty;
-    public virtual string Description { get; protected set; } = string.Empty;
-    public virtual string Status { get; protected set; } = string.Empty;
-    public virtual bool Archived { get; protected set; }
-    public virtual string? IconUrl { get; protected set; }
-    public virtual Guid? LinkedChatbotKey { get; protected set; }
-    public virtual string? LinkedChatbotLabel { get; protected set; }
+    public Guid Id { get; protected set; }
+    public string Title { get; protected set; } = string.Empty;
+    public string Audience { get; protected set; } = string.Empty;
+    public string Description { get; protected set; } = string.Empty;
+    public string Status { get; protected set; } = string.Empty;
+    public bool Archived { get; protected set; }
+    public string? IconUrl { get; protected set; }
+    public Guid? LinkedChatbotKey { get; protected set; }
+    public string? LinkedChatbotLabel { get; protected set; }
 
-    public virtual List<FormationModuleRow> Modules { get; protected set; } = [];
-    public virtual List<FormationMemberRow> Team { get; protected set; } = [];
+    public List<FormationModuleRow> Modules { get; protected set; } = [];
+    public List<FormationMemberRow> Team { get; protected set; } = [];
 }

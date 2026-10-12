@@ -8,25 +8,25 @@ public partial class Chatbot : AggregateRoot<ChatbotId>
     {
     }
 
-    public virtual string Label { get; private set; } = string.Empty;
+    public string Label { get; private set; } = string.Empty;
 
-    public virtual string Description { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
 
-    public virtual ChatbotStatus Status { get; private set; }
+    public ChatbotStatus Status { get; private set; }
 
-    public virtual string Context { get; private set; } = string.Empty;
+    public string Context { get; private set; } = string.Empty;
 
-    public virtual bool Archived { get; private set; }
+    public bool Archived { get; private set; }
 
-    public virtual string? IconUrl { get; private set; }
+    public string? IconUrl { get; private set; }
 
-    public virtual ChatbotSettings Settings { get; private set; } = ChatbotSettings.Default;
+    public ChatbotSettings Settings { get; private set; } = ChatbotSettings.Default;
 
-    public virtual DateTime LastUsed { get; private set; }
+    public DateTime LastUsed { get; private set; }
 
     private readonly List<ChatbotDocument> _documents = [];
-    public virtual IReadOnlyCollection<ChatbotDocument> Documents => this._documents;
+    public IReadOnlyCollection<ChatbotDocument> Documents => this._documents;
 
     private readonly List<TeamMember> _team = [];
-    public virtual IReadOnlyCollection<TeamMember> Team => this._team;
+    public IReadOnlyCollection<TeamMember> Team => this._team;
 }
