@@ -10,7 +10,14 @@ public partial class RefreshToken
 {
     private const int ValueSizeInBytes = 32;
 
-    private RefreshToken(RefreshTokenId key, Guid userId, string value, DateTime createdAt, DateTime expiresAt)
+    public RefreshToken(
+        RefreshTokenId key,
+        Guid userId,
+        string value,
+        DateTime createdAt,
+        DateTime expiresAt,
+        DateTime? revokedAt,
+        Guid? replacedById)
     {
         this.Id = key;
         this.UserId = userId;
@@ -18,6 +25,8 @@ public partial class RefreshToken
         this.Value = value;
         this.CreatedAt = createdAt;
         this.ExpiresAt = expiresAt;
+        this.RevokedAt = revokedAt;
+        this.ReplacedById = replacedById;
     }
 
     public static RefreshToken Create(Guid userId, ISystemClock systemClock, TimeSpan lifetime)
@@ -25,7 +34,7 @@ public partial class RefreshToken
         string value = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(ValueSizeInBytes));
         DateTime now = systemClock.UtcNow;
 
-        return new RefreshToken(RefreshTokenId.New(), userId, value, now, now.Add(lifetime));
+        return new RefreshToken(RefreshTokenId.New(), userId, value, now, now.Add(lifetime), null, null);
     }
 
     public static string HashOf(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
