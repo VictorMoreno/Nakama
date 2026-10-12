@@ -12,7 +12,11 @@ public partial class Chatbot
         string description,
         ChatbotStatus status,
         ChatbotSettings settings,
-        DateTime lastUsed)
+        DateTime lastUsed,
+        string? iconUrl,
+        bool archived,
+        IReadOnlyList<TeamMember> team,
+        IReadOnlyList<ChatbotDocument> documents)
     {
         this.Id = key;
         this.Label = label;
@@ -20,6 +24,10 @@ public partial class Chatbot
         this.Status = status;
         this.Settings = settings;
         this.LastUsed = lastUsed;
+        this.IconUrl = iconUrl;
+        this.Archived = archived;
+        this._team.AddRange(team);
+        this._documents.AddRange(documents);
     }
 
     public static Chatbot Create(
@@ -30,7 +38,7 @@ public partial class Chatbot
         ChatbotSettings settings,
         ISystemClock systemClock)
     {
-        Chatbot chatbot = new(key, label, description, status, settings, systemClock.UtcNow);
+        Chatbot chatbot = new(key, label, description, status, settings, systemClock.UtcNow, null, false, [], []);
         chatbot.Record(new ChatbotCreated(key, label, description, status, settings));
         return chatbot;
     }

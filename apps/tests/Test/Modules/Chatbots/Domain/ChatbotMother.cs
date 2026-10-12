@@ -12,19 +12,15 @@ public static class ChatbotMother
         ChatbotStatus status,
         ChatbotSettings settings,
         DateTime lastUsed,
-        IReadOnlyList<TeamMember> team)
-    {
-        Chatbot chatbot = new(id, label, description, status, settings, lastUsed);
-
-        foreach (TeamMember member in team)
-        {
-            chatbot.AddTeamMember(member);
-        }
-
-        return chatbot;
-    }
+        string? iconUrl,
+        bool archived,
+        IReadOnlyList<TeamMember> team,
+        IReadOnlyList<ChatbotDocument> documents) =>
+        new(id, label, description, status, settings, lastUsed, iconUrl, archived, team, documents);
 
     public static Chatbot Random() => With();
+
+    public static Chatbot Archived() => With(archived: true);
 
     public static ChatbotId RandomId() => ChatbotId.From(Guid.NewGuid());
 
@@ -35,7 +31,10 @@ public static class ChatbotMother
         ChatbotStatus? status = null,
         ChatbotSettings? settings = null,
         DateTime? lastUsed = null,
-        IReadOnlyList<TeamMember>? team = null) =>
+        string? iconUrl = null,
+        bool? archived = null,
+        IReadOnlyList<TeamMember>? team = null,
+        IReadOnlyList<ChatbotDocument>? documents = null) =>
         Create(
             id ?? RandomId(),
             label ?? WordMother.Random(),
@@ -43,5 +42,8 @@ public static class ChatbotMother
             status ?? ChatbotStatus.Active,
             settings ?? ChatbotSettings.Default,
             lastUsed ?? DateTime.UtcNow,
-            team ?? []);
+            iconUrl,
+            archived ?? false,
+            team ?? [],
+            documents ?? []);
 }

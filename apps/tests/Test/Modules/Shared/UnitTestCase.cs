@@ -19,6 +19,14 @@ public abstract class UnitTestCase
 
     protected void ShouldBeNow(DateTime now) => this.Clock.Setup(clock => clock.UtcNow).Returns(now);
 
+    protected void ShouldHavePublished<TEvent>(Func<TEvent, bool> matches)
+        where TEvent : IDomainEvent =>
+        this.EventBus.Verify(
+            bus => bus.Publish(
+                It.Is<AggregateRoot>(aggregate => aggregate.DomainEvents.OfType<TEvent>().Any(matches)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
     protected void ShouldNotHavePublishedAnything() =>
         this.EventBus.Verify(
             bus => bus.Publish(It.IsAny<AggregateRoot>(), It.IsAny<CancellationToken>()),

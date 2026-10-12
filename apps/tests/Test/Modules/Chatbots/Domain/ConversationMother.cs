@@ -11,17 +11,8 @@ public static class ConversationMother
         Guid userId,
         string title,
         DateTime startedAt,
-        IReadOnlyList<ConversationExchange> exchanges)
-    {
-        Conversation conversation = new(id, botKey, userId, title, startedAt);
-
-        foreach (ConversationExchange exchange in exchanges)
-        {
-            conversation.AppendExchange(exchange);
-        }
-
-        return conversation;
-    }
+        IReadOnlyList<ConversationExchange> exchanges) =>
+        new(id, botKey, userId, title, startedAt, exchanges);
 
     public static Conversation Random() => With();
 
