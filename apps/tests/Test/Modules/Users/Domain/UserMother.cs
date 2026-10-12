@@ -4,8 +4,15 @@ namespace Test.Modules.Users.Domain;
 
 public static class UserMother
 {
-    public static User Create(UserId id, Email email, string name, bool isAdmin, DateTime createdAt) =>
-        new(id, email.Value, email.Normalized, name, isAdmin, createdAt);
+    public static User Create(
+        UserId id,
+        Email email,
+        string name,
+        string? passwordHash,
+        DateTime? lastActiveAt,
+        DateTime createdAt,
+        bool isAdmin) =>
+        new(id, email.Value, email.Normalized, name, passwordHash, lastActiveAt, createdAt, isAdmin);
 
     public static User Random() => With();
 
@@ -23,12 +30,16 @@ public static class UserMother
         UserId? id = null,
         Email? email = null,
         string? name = null,
-        bool? isAdmin = null,
-        DateTime? createdAt = null) =>
+        string? passwordHash = null,
+        DateTime? lastActiveAt = null,
+        DateTime? createdAt = null,
+        bool? isAdmin = null) =>
         Create(
             id ?? RandomId(),
             email ?? RandomEmail(),
             name ?? "Test User",
-            isAdmin ?? false,
-            createdAt ?? DateTime.UtcNow);
+            passwordHash,
+            lastActiveAt,
+            createdAt ?? DateTime.UtcNow,
+            isAdmin ?? false);
 }

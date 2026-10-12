@@ -5,13 +5,16 @@ namespace Nakama.Formations.Domain;
 
 public partial class Formation
 {
-    private Formation(
+    public Formation(
         FormationId key,
         string title,
         string audience,
         string description,
         FormationStatus status,
-        Guid? linkedChatbotKey)
+        Guid? linkedChatbotKey,
+        string? iconUrl,
+        bool archived,
+        IReadOnlyList<FormationModule> modules)
     {
         this.Id = key;
         this.Title = title;
@@ -19,6 +22,9 @@ public partial class Formation
         this.Description = description;
         this.Status = status;
         this.LinkedChatbotKey = linkedChatbotKey;
+        this.IconUrl = iconUrl;
+        this.Archived = archived;
+        this._modules.AddRange(modules);
     }
 
     public static Formation Create(
@@ -29,7 +35,7 @@ public partial class Formation
         FormationStatus status,
         Guid? linkedChatbotKey)
     {
-        Formation formation = new(key, title, audience, description, status, linkedChatbotKey);
+        Formation formation = new(key, title, audience, description, status, linkedChatbotKey, null, false, []);
         formation.Record(new FormationCreated(key, title, audience, description, status, linkedChatbotKey));
         return formation;
     }

@@ -13,7 +13,8 @@ public partial class RefreshToken
     public RefreshToken(
         RefreshTokenId key,
         Guid userId,
-        string value,
+        string tokenHash,
+        string? value,
         DateTime createdAt,
         DateTime expiresAt,
         DateTime? revokedAt,
@@ -21,7 +22,7 @@ public partial class RefreshToken
     {
         this.Id = key;
         this.UserId = userId;
-        this.TokenHash = HashOf(value);
+        this.TokenHash = tokenHash;
         this.Value = value;
         this.CreatedAt = createdAt;
         this.ExpiresAt = expiresAt;
@@ -34,7 +35,7 @@ public partial class RefreshToken
         string value = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(ValueSizeInBytes));
         DateTime now = systemClock.UtcNow;
 
-        return new RefreshToken(RefreshTokenId.New(), userId, value, now, now.Add(lifetime), null, null);
+        return new RefreshToken(RefreshTokenId.New(), userId, HashOf(value), value, now, now.Add(lifetime), null, null);
     }
 
     public static string HashOf(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));

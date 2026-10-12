@@ -11,6 +11,7 @@ public partial class Chatbot
         string label,
         string description,
         ChatbotStatus status,
+        string context,
         ChatbotSettings settings,
         DateTime lastUsed,
         string? iconUrl,
@@ -22,6 +23,7 @@ public partial class Chatbot
         this.Label = label;
         this.Description = description;
         this.Status = status;
+        this.Context = context;
         this.Settings = settings;
         this.LastUsed = lastUsed;
         this.IconUrl = iconUrl;
@@ -38,7 +40,7 @@ public partial class Chatbot
         ChatbotSettings settings,
         ISystemClock systemClock)
     {
-        Chatbot chatbot = new(key, label, description, status, settings, systemClock.UtcNow, null, false, [], []);
+        Chatbot chatbot = new(key, label, description, status, string.Empty, settings, systemClock.UtcNow, null, false, [], []);
         chatbot.Record(new ChatbotCreated(key, label, description, status, settings));
         return chatbot;
     }

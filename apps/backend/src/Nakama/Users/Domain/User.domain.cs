@@ -5,19 +5,29 @@ namespace Nakama.Users.Domain;
 
 public partial class User
 {
-    public User(UserId key, string email, string normalizedEmail, string name, bool isAdmin, DateTime createdAt)
+    public User(
+        UserId key,
+        string email,
+        string normalizedEmail,
+        string name,
+        string? passwordHash,
+        DateTime? lastActiveAt,
+        DateTime createdAt,
+        bool isAdmin)
     {
         this.Id = key;
         this.Email = email;
         this.NormalizedEmail = normalizedEmail;
         this.Name = name;
-        this.IsAdmin = isAdmin;
+        this.PasswordHash = passwordHash;
+        this.LastActiveAt = lastActiveAt;
         this.CreatedAt = createdAt;
+        this.IsAdmin = isAdmin;
     }
 
     public static User Create(UserId key, Email email, string name, bool isAdmin, ISystemClock systemClock)
     {
-        User user = new(key, email.Value, email.Normalized, name, isAdmin, systemClock.UtcNow);
+        User user = new(key, email.Value, email.Normalized, name, null, null, systemClock.UtcNow, isAdmin);
         user.Record(new UserCreated(key, email.Value, name));
         return user;
     }
