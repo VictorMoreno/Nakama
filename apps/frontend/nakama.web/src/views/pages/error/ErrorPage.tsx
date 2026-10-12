@@ -1,3 +1,4 @@
+import { ApiServerError } from "../../../shared/infrastructure/errors/ApiServerError";
 import { BrandMarkIcon, HomeIcon, RefreshIcon, WarningTriangleIcon } from "../../components/shared/icons";
 import styles from "./ErrorPage.module.scss";
 
@@ -28,6 +29,8 @@ export default function ErrorPage({ error }: ErrorPageProps) {
           Ocurrió un error inesperado y no pudimos continuar con esta pantalla. Probá recargar la
           página — si el problema persiste, avisá al equipo para que lo revise.
         </p>
+
+        {error instanceof ApiServerError && <p className={styles.subtitle}>{error.message}</p>}
 
         {import.meta.env.DEV && error && (
           <details className={styles.details}>
