@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Moq;
 using Nakama.ConversationHistory.Domain;
 using Test.Modules.Shared;
@@ -21,4 +22,19 @@ public abstract class ConversationHistoryUnitTestCase : UnitTestCase
         this.HistoriesRepository
             .Setup(repository => repository.FindById(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(null as ConversationHistoryEntity);
+
+    protected void ShouldHaveSavedConversationHistoryMatching(Expression<Func<ConversationHistoryEntity, bool>> matches) =>
+        this.HistoriesRepository.Verify(
+            repository => repository.Save(It.Is(matches), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+    protected void ShouldHaveUpdatedConversationHistory(ConversationHistoryEntity history) =>
+        this.HistoriesRepository.Verify(
+            repository => repository.Update(history, It.IsAny<CancellationToken>()),
+            Times.Once);
+
+    protected void ShouldNotHaveUpdatedAnyConversationHistory() =>
+        this.HistoriesRepository.Verify(
+            repository => repository.Update(It.IsAny<ConversationHistoryEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never);
 }
