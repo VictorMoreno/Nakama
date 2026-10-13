@@ -2,7 +2,7 @@ namespace Nakama.UserActivity.Domain;
 
 public partial class UserActivityEntry
 {
-    private UserActivityEntry(Guid id, Guid userId, string type, DateTime occurredAt)
+    public UserActivityEntry(Guid id, Guid userId, string type, DateTime occurredAt)
     {
         this.Id = id;
         this.UserId = userId;
