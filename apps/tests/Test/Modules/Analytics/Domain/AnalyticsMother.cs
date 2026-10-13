@@ -17,6 +17,12 @@ public static class AnalyticsMother
 
     public static AnalyticsEntity Random() => With();
 
+    public static AnalyticsEntity WithUsageRow(int? activeBotsCount = null, int? answeredThisWeek = null) =>
+        With(
+            activeBotsCount: activeBotsCount,
+            answeredThisWeek: answeredThisWeek,
+            usageByBot: [UsageByBotRowMother.Random()]);
+
     public static AnalyticsEntity With(
         string? id = null,
         int? activeBotsCount = null,

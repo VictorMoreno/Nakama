@@ -1,5 +1,6 @@
 using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Domain;
+using Test.Modules.FormationDetail.Domain;
 using Test.Modules.Shared;
 
 namespace Test.Modules.FormationDetail.Application;
@@ -7,6 +8,12 @@ namespace Test.Modules.FormationDetail.Application;
 public static class FormationDetailResponseMother
 {
     public static FormationDetailResponse Random() => With();
+
+    public static FormationDetailResponse WithModule() =>
+        With(modules: [FormationModuleRowMother.Random()]);
+
+    public static FormationDetailResponse WithTwoModules(bool firstGated) =>
+        With(modules: [FormationModuleRowMother.With(gated: firstGated), FormationModuleRowMother.Random()]);
 
     public static FormationDetailResponse With(
         Guid? id = null,

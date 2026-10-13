@@ -20,11 +20,8 @@ public sealed class LlmProviderSearcherShould : LlmProvidersUnitTestCase
     [Test]
     public async Task return_a_response_per_config_with_its_provider_flags_and_models()
     {
-        LlmModelOption model = LlmModelOptionMother.Random();
-        LlmProviderConfig config = LlmProviderConfigMother.With(
-            provider: LlmProvider.OpenAi,
-            enabled: true,
-            models: [model]);
+        LlmProviderConfig config = LlmProviderConfigMother.With(provider: LlmProvider.OpenAi, enabled: true);
+        LlmModelOption model = config.Models.Single();
         this.ShouldFindAllProviderConfigs([config]);
 
         IReadOnlyList<LlmProviderConfigResponse> response = await this._handler.Handle(

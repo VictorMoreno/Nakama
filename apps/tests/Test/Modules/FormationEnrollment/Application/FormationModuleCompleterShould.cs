@@ -28,8 +28,8 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task complete_the_module_record_the_score_and_publish_enrollment_module_completed()
     {
-        FormationModuleRow module = FormationModuleRowMother.Random();
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [module]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
+        FormationModuleRow module = detail.Modules.Single();
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         FormationModuleCompleter.Command command = FormationModuleCompleterCommandMother.With(
             detail.Id,
@@ -56,8 +56,8 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task complete_the_module_without_recording_a_score_when_none_is_given()
     {
-        FormationModuleRow module = FormationModuleRowMother.Random();
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [module]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
+        FormationModuleRow module = detail.Modules.Single();
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         this.ShouldFindFormationDetail(detail);
         this.ShouldFindEnrollment(enrollment);
@@ -73,9 +73,9 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task count_every_completed_module_in_the_published_event()
     {
-        FormationModuleRow first = FormationModuleRowMother.With(gated: false);
-        FormationModuleRow second = FormationModuleRowMother.Random();
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [first, second]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: false);
+        FormationModuleRow first = detail.Modules[0];
+        FormationModuleRow second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(
             formationId: detail.Id,
             progress: LearnerProgressMother.With(completedModuleIds: [first.Id]));
@@ -92,8 +92,8 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task keep_the_module_once_and_update_the_score_when_it_is_completed_again()
     {
-        FormationModuleRow module = FormationModuleRowMother.Random();
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [module]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
+        FormationModuleRow module = detail.Modules.Single();
         Enrollment enrollment = FormationEnrollmentMother.With(
             formationId: detail.Id,
             progress: LearnerProgressMother.With(
@@ -113,9 +113,9 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task complete_the_module_when_the_previous_gated_module_is_already_completed()
     {
-        FormationModuleRow first = FormationModuleRowMother.With(gated: true);
-        FormationModuleRow second = FormationModuleRowMother.Random();
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [first, second]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: true);
+        FormationModuleRow first = detail.Modules[0];
+        FormationModuleRow second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(
             formationId: detail.Id,
             progress: LearnerProgressMother.With(completedModuleIds: [first.Id]));
@@ -133,9 +133,9 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task complete_the_module_when_the_previous_module_is_not_gated_even_if_it_is_not_completed()
     {
-        FormationModuleRow first = FormationModuleRowMother.With(gated: false);
-        FormationModuleRow second = FormationModuleRowMother.Random();
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [first, second]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: false);
+        FormationModuleRow first = detail.Modules[0];
+        FormationModuleRow second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         this.ShouldFindFormationDetail(detail);
         this.ShouldFindEnrollment(enrollment);
@@ -150,9 +150,9 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task fail_without_saving_anything_when_the_previous_gated_module_is_not_completed()
     {
-        FormationModuleRow first = FormationModuleRowMother.With(gated: true);
-        FormationModuleRow second = FormationModuleRowMother.Random();
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [first, second]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: true);
+        FormationModuleRow first = detail.Modules[0];
+        FormationModuleRow second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         this.ShouldFindFormationDetail(detail);
         this.ShouldFindEnrollment(enrollment);
@@ -170,7 +170,7 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task fail_without_saving_anything_when_the_module_does_not_belong_to_the_formation()
     {
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [FormationModuleRowMother.Random()]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         this.ShouldFindFormationDetail(detail);
         this.ShouldFindEnrollment(enrollment);
@@ -187,8 +187,8 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     [Test]
     public async Task fail_without_saving_anything_when_the_user_is_not_enrolled()
     {
-        FormationModuleRow module = FormationModuleRowMother.Random();
-        FormationDetailResponse detail = FormationDetailResponseMother.With(modules: [module]);
+        FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
+        FormationModuleRow module = detail.Modules.Single();
         this.ShouldFindFormationDetail(detail);
         this.ShouldFindEnrollment(null);
 

@@ -22,7 +22,7 @@ public sealed class AnalyticsFinderShould : AnalyticsUnitTestCase
     [Test]
     public async Task return_the_analytics_together_with_the_user_counts()
     {
-        AnalyticsEntity analytics = AnalyticsMother.With(usageByBot: [UsageByBotRowMother.Random()]);
+        AnalyticsEntity analytics = AnalyticsMother.WithUsageRow();
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindAnalytics(analytics);
         this.ShouldCountActiveUsers(7);
@@ -30,12 +30,7 @@ public sealed class AnalyticsFinderShould : AnalyticsUnitTestCase
 
         AnalyticsResponse response = await this._handler.Handle(new AnalyticsFinder.Query(), CancellationToken.None);
 
-        response.Id.Should().Be(analytics.Id);
-        response.ActiveBotsCount.Should().Be(analytics.ActiveBotsCount);
-        response.AnsweredThisWeek.Should().Be(analytics.AnsweredThisWeek);
-        response.UsageByBot.Should().BeEquivalentTo(analytics.UsageByBot);
-        response.UsefulFeedbackCount.Should().Be(analytics.UsefulFeedbackCount);
-        response.TotalFeedbackCount.Should().Be(analytics.TotalFeedbackCount);
+        response.Should().BeEquivalentTo(analytics);
         response.ActiveUsersCount.Should().Be(7);
         response.TotalUsersCount.Should().Be(20);
     }

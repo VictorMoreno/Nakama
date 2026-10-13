@@ -61,7 +61,7 @@ public sealed class AnalyticsCreatedOnConversationExchangeAppendedShould : Analy
     public async Task add_a_usage_row_for_the_chatbot_when_it_has_none_yet()
     {
         ConversationExchangeAppended @event = ConversationExchangeAppendedMother.Random();
-        AnalyticsEntity analytics = AnalyticsMother.With(answeredThisWeek: 3, usageByBot: [UsageByBotRowMother.Random()]);
+        AnalyticsEntity analytics = AnalyticsMother.WithUsageRow(answeredThisWeek: 3);
         this.ShouldFindAnalytics(analytics);
 
         await this._handler.Handle(

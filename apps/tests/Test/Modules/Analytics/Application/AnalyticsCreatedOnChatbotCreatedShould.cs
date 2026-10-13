@@ -38,7 +38,7 @@ public sealed class AnalyticsCreatedOnChatbotCreatedShould : AnalyticsUnitTestCa
     [Test]
     public async Task count_the_chatbot_and_add_its_usage_row_in_the_existing_analytics()
     {
-        AnalyticsEntity analytics = AnalyticsMother.With(activeBotsCount: 2, usageByBot: [UsageByBotRowMother.Random()]);
+        AnalyticsEntity analytics = AnalyticsMother.WithUsageRow(activeBotsCount: 2);
         ChatbotCreated @event = ChatbotCreatedMother.Random();
         this.ShouldFindAnalytics(analytics);
 
