@@ -57,6 +57,11 @@ public abstract class AuthenticationUnitTestCase : UnitTestCase
             .Setup(repository => repository.FindByValue(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(null as RefreshToken);
 
+    protected void ShouldNotHaveSearchedForAnyRefreshToken() =>
+        this.RefreshTokens.Verify(
+            repository => repository.FindByValue(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+
     protected void ShouldGenerateAccessToken(UserResponse user, Token token) =>
         this.TokenGenerator
             .Setup(generator => generator.Generate(user.Id, user.Email, user.Name, user.IsAdmin))

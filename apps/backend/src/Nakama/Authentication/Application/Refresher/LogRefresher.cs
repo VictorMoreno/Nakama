@@ -11,7 +11,7 @@ namespace Nakama.Authentication.Application.Refresher;
 
 public static class LogRefresher
 {
-    public sealed record Query(string RefreshToken) : IQuery<AuthenticationResponse>;
+    public sealed record Query(string? RefreshToken) : IQuery<AuthenticationResponse>;
 
     public sealed class Handler(Refresher refresher) : IQueryHandler<Query, AuthenticationResponse>
     {
@@ -26,8 +26,13 @@ public static class LogRefresher
         ITokenGenerator tokenGenerator,
         IOptions<JwtOptions> jwtOptions) : IService
     {
-        public async Task<AuthenticationResponse> Execute(string refreshToken, CancellationToken ct)
+        public async Task<AuthenticationResponse> Execute(string? refreshToken, CancellationToken ct)
         {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw AuthErrors.InvalidRefreshToken;
+            }
+
             DateTime now = systemClock.UtcNow;
 
             RefreshToken current = await refreshTokens.FindByValue(refreshToken, ct)

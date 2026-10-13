@@ -66,6 +66,29 @@ public sealed class LogRefresherShould : AuthenticationUnitTestCase
     }
 
     [Test]
+    public async Task fail_without_searching_anything_when_there_is_no_refresh_token()
+    {
+        Func<Task> act = async () => await this._handler.Handle(LogRefresherQueryMother.WithoutToken(), CancellationToken.None);
+
+        await act.Should().ThrowAsync<AuthInvalidRefreshTokenError>();
+        this.ShouldNotHaveSearchedForAnyRefreshToken();
+        this.ShouldNotHaveRotated();
+        this.ShouldNotHaveRevokedAnyToken();
+    }
+
+    [Test]
+    public async Task fail_without_searching_anything_when_the_refresh_token_is_blank()
+    {
+        Func<Task> act = async () =>
+            await this._handler.Handle(LogRefresherQueryMother.With(" "), CancellationToken.None);
+
+        await act.Should().ThrowAsync<AuthInvalidRefreshTokenError>();
+        this.ShouldNotHaveSearchedForAnyRefreshToken();
+        this.ShouldNotHaveRotated();
+        this.ShouldNotHaveRevokedAnyToken();
+    }
+
+    [Test]
     public async Task fail_when_the_refresh_token_does_not_exist()
     {
         this.ShouldBeNow(DateTime.UtcNow);

@@ -3,7 +3,6 @@ using Nakama.Authentication.Application;
 using Nakama.Authentication.Application.Authenticator;
 using Nakama.Authentication.Application.Closer;
 using Nakama.Authentication.Application.Refresher;
-using Nakama.Authentication.Domain.Errors;
 using Nakama.Shared.Domain;
 
 namespace Api.Endpoints;
@@ -47,10 +46,6 @@ public sealed class AuthEndpoints : IEndpoint
     private static async Task<IResult> Refresh(HttpContext http, IQueryBus queryBus, CancellationToken ct)
     {
         string? refreshToken = RefreshTokenCookie.Read(http.Request);
-        if (refreshToken is null)
-        {
-            throw AuthErrors.InvalidRefreshToken;
-        }
 
         try
         {
