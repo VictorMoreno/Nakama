@@ -16,8 +16,6 @@ public static class ChatbotSummaryMother
         string? iconUrl) =>
         new(id, label, description, status, docsCount, teamCount, archived, iconUrl);
 
-    public static ChatbotSummary Random() => With();
-
     public static ChatbotSummary With(
         Guid? id = null,
         string? label = null,

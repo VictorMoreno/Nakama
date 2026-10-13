@@ -18,10 +18,6 @@ public static class UserMother
 
     public static User WithAdmin() => With(isAdmin: true);
 
-    public static User WithId(UserId id) => With(id: id);
-
-    public static User WithEmail(Email email) => With(email: email);
-
     public static UserId RandomId() => UserId.From(Guid.NewGuid());
 
     public static Email RandomEmail() => new($"{Guid.NewGuid():N}@nakama.test");

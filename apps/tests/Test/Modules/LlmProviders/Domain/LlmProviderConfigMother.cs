@@ -14,8 +14,6 @@ public static class LlmProviderConfigMother
         DateTime updatedAt) =>
         new(id, provider, apiKey, enabled, models, updatedAt);
 
-    public static LlmProviderConfig Random() => With();
-
     public static LlmProviderConfigId RandomId() => LlmProviderConfigId.From(Guid.NewGuid());
 
     public static LlmProviderConfig With(

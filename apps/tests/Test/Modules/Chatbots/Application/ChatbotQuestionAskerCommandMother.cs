@@ -5,8 +5,6 @@ namespace Test.Modules.Chatbots.Application;
 
 public static class ChatbotQuestionAskerCommandMother
 {
-    public static ChatbotQuestionAsker.Command Random() => With();
-
     public static ChatbotQuestionAsker.Command WithAttachmentCount(int count, Guid? botKey = null) =>
         With(botKey: botKey, attachments: Enumerable.Range(0, count).Select(_ => AttachmentUploadMother.Random()).ToList());
 

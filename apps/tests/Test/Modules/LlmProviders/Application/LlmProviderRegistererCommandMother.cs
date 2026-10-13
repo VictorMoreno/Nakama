@@ -6,8 +6,6 @@ namespace Test.Modules.LlmProviders.Application;
 
 public static class LlmProviderRegistererCommandMother
 {
-    public static LlmProviderRegisterer.Command Random() => With();
-
     public static LlmProviderRegisterer.Command With(
         LlmProvider? provider = null,
         string? apiKey = null,

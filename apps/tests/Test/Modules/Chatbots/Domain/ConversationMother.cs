@@ -16,8 +16,6 @@ public static class ConversationMother
 
     public static Conversation Random() => With();
 
-    public static Conversation WithUserId(Guid userId) => With(userId: userId);
-
     public static ConversationId RandomId() => ConversationId.From(Guid.NewGuid());
 
     public static Conversation With(
