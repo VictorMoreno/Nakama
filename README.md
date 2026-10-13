@@ -101,7 +101,6 @@ proyecto_master/
 │   │       ├── Chatbots/         #   agregado Chatbot + Conversation (escritura)
 │   │       ├── ChatbotDetail/    #   proyección de lectura del detalle de un chatbot
 │   │       ├── ChatbotSummaries/ #   proyección de lectura del listado de chatbots
-│   │       ├── ChatPage/         #   guion de ejemplo (opening/chips) del chat
 │   │       ├── ConversationHistory/ # historial de conversaciones por usuario
 │   │       ├── ConversationAudit/   # log de auditoría inmutable de conversaciones
 │   │       ├── Formations/       #   agregado Formation (currículo y módulos)

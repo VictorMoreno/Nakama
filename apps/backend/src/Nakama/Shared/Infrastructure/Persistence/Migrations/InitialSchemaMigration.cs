@@ -12,11 +12,9 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("label").AsString(255).Nullable()
             .WithColumn("description").AsCustom("text").Nullable()
             .WithColumn("status").AsInt32().Nullable()
-            .WithColumn("context").AsCustom("text").Nullable()
             .WithColumn("archived").AsBoolean().Nullable()
             .WithColumn("iconurl").AsString(255).Nullable()
             .WithColumn("settings").AsCustom("text").Nullable()
-            .WithColumn("lastused").AsDateTime().Nullable()
             .WithColumn("documents_json").AsCustom("text").Nullable()
             .WithColumn("team_json").AsCustom("text").Nullable();
 
@@ -79,7 +77,6 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("label").AsString(255).Nullable()
             .WithColumn("description").AsCustom("text").Nullable()
             .WithColumn("status").AsString(255).Nullable()
-            .WithColumn("lastused").AsDateTime().Nullable()
             .WithColumn("context").AsCustom("text").Nullable()
             .WithColumn("archived").AsBoolean().Nullable()
             .WithColumn("iconurl").AsString(255).Nullable()
@@ -92,15 +89,6 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("gaps_json").AsCustom("text").Nullable()
             .WithColumn("top_questions_json").AsCustom("text").Nullable()
             .WithColumn("stats_json").AsCustom("text").Nullable();
-
-        this.Create.Table("read_chat_page")
-            .WithColumn("id").AsGuid().PrimaryKey()
-            .WithColumn("label").AsString(255).Nullable()
-            .WithColumn("context").AsCustom("text").Nullable()
-            .WithColumn("socratic").AsBoolean().Nullable()
-            .WithColumn("explicamas").AsBoolean().Nullable()
-            .WithColumn("provider").AsString(255).Nullable()
-            .WithColumn("opening_json").AsCustom("text").Nullable();
 
         this.Create.Table("read_formations_list")
             .WithColumn("id").AsGuid().PrimaryKey()

@@ -73,7 +73,6 @@ export interface Chatbot {
   description: string;
   status: ChatbotLifecycleStatus;
   context: string;
-  opening: ChatExample | null;
   settings: ChatbotSettings;
   docs: ChatbotDocument[];
   gaps: GapQuestion[];

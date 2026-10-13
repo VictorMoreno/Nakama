@@ -17,8 +17,6 @@ using Nakama.Chatbots.Application.TeamMemberAdder;
 using Nakama.Chatbots.Application.TeamMemberRemover;
 using Nakama.ChatbotSummaries.Application;
 using Nakama.ChatbotSummaries.Application.Searcher;
-using Nakama.ChatPage.Application;
-using Nakama.ChatPage.Application.Finder;
 using Nakama.ConversationHistory.Application;
 using Nakama.ConversationHistory.Application.Finder;
 using Nakama.Shared.Domain;
@@ -131,11 +129,6 @@ public sealed class ChatbotEndpoints : IEndpoint
         group.MapGet("/{id:guid}", FindChatbotDetail)
             .WithSummary("Gets the full detail page projection for one chatbot.")
             .Produces<ChatbotDetailResponse>()
-            .ProducesProblem(StatusCodes.Status404NotFound);
-
-        group.MapGet("/{id:guid}/chat-page", FindChatPage)
-            .WithSummary("Gets the chat UI projection for one chatbot (opening example).")
-            .Produces<ChatPageResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapGet("/{botKey:guid}/conversation-history", FindConversationHistory)
@@ -348,12 +341,6 @@ public sealed class ChatbotEndpoints : IEndpoint
     private static async Task<IResult> FindChatbotDetail(Guid id, IQueryBus queryBus, CancellationToken ct)
     {
         ChatbotDetailResponse response = await queryBus.Ask(new ChatbotDetailFinder.Query(id), ct);
-        return Results.Ok(response);
-    }
-
-    private static async Task<IResult> FindChatPage(Guid id, IQueryBus queryBus, CancellationToken ct)
-    {
-        ChatPageResponse response = await queryBus.Ask(new ChatPageFinder.Query(id), ct);
         return Results.Ok(response);
     }
 

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Nakama.Analytics.Domain;
 using Nakama.ChatbotDetail.Domain;
 using Nakama.Chatbots.Domain;
-using Nakama.ChatPage.Domain;
 using Nakama.ConversationAudit.Domain;
 using Nakama.ConversationHistory.Domain;
 using Nakama.FormationDetail.Domain;
@@ -18,7 +17,7 @@ using Nakama.Users.Domain;
 namespace Nakama.Shared.Infrastructure.Persistence.Migrations;
 
 // "Analytics" collides with the sibling namespace Nakama.Analytics (same footgun as
-// ChatPage/ChatbotDetail/FormationDetail/ConversationHistory elsewhere in this codebase) -
+// ChatbotDetail/FormationDetail/ConversationHistory elsewhere in this codebase) -
 // aliased for the one bare reference to Analytics.SingletonKey below.
 using Analytics = Nakama.Analytics.Domain.Analytics;
 
@@ -209,7 +208,6 @@ public sealed class SeedDemoTestDataMigration : Migration
             string context =
                 $"Chatbot entrenado con la documentación interna de {topic}. Datos de prueba generados por SeedDemoTestDataMigration.";
             string description = $"Resuelve dudas frecuentes sobre {topic}.";
-            DateTime lastUsed = now.AddDays(-rng.Next(0, 30));
 
             // Team: 1-2 members from the seeded user pool
             int teamSize = rng.Next(1, 3);
@@ -235,27 +233,15 @@ public sealed class SeedDemoTestDataMigration : Migration
                 StatusLabel = doc.StatusLabel, Updated = doc.Updated, FileName = doc.FileName
             }).ToList();
 
-            ChatExampleRow opening = new()
-            {
-                Question = $"¿Cómo empiezo con {topic}?",
-                Answer =
-                    $"Te recomiendo arrancar por la guía de {topic} en la documentación interna. Si te trabás en algún paso, preguntame acá mismo.",
-                Citation = $"Guía de {topic} #1.pdf",
-                MoreExplanation = $"El equipo de {topic} mantiene esta documentación actualizada semanalmente.",
-                SocraticVariant = $"¿Qué parte de {topic} te genera más dudas hoy?"
-            };
-
             this.Insert.IntoTable("chatbots").Row(new
             {
                 id = botId,
                 label,
                 description,
                 status = (int)status,
-                context,
                 archived = false,
                 iconurl = (string?)null,
                 settings = Json(settings),
-                lastused = lastUsed,
                 documents_json = Json(docs),
                 team_json = Json(writeTeam)
             });
@@ -278,7 +264,6 @@ public sealed class SeedDemoTestDataMigration : Migration
                 label,
                 description,
                 status = status.ToString(),
-                lastused = lastUsed,
                 context,
                 archived = false,
                 iconurl = (string?)null,
@@ -321,17 +306,6 @@ public sealed class SeedDemoTestDataMigration : Migration
                         Bar = Math.Min(100, docs.Count * 5)
                     }
                 })
-            });
-
-            this.Insert.IntoTable("read_chat_page").Row(new
-            {
-                id = botId,
-                label,
-                context,
-                socratic = settings.Socratic,
-                explicamas = settings.ExplicaMas,
-                provider = settings.Provider.ToString(),
-                opening_json = Json(opening)
             });
 
             // ---- Conversations for this bot (write + audit + history) -------------------------
@@ -583,7 +557,6 @@ public sealed class SeedDemoTestDataMigration : Migration
     //   delete from read_formation_detail;
     //   delete from read_formations_list;
     //   delete from formations;
-    //   delete from read_chat_page;
     //   delete from read_chatbot_detail;
     //   delete from read_chatbot_summaries;
     //   delete from chatbots;

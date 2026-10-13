@@ -2,7 +2,6 @@ import type {
   ChatbotDetailResponse,
   ChatbotDocumentResponse,
   ChatbotSummaryResponse,
-  ChatPageResponse,
   CreateChatbotRequest,
   GapQuestionRow,
   GeneratedNakamaClient,
@@ -17,7 +16,6 @@ import type {
   ChatbotLifecycleStatus,
   ChatbotMap,
   ChatbotSettings,
-  ChatExample,
   DocStatus,
   DocumentFile,
   GapQuestion,
@@ -57,10 +55,6 @@ function toApiSettings(settings: ChatbotSettings): UpdateChatbotSettingsRequest 
   };
 }
 
-function toChatExample(row: { question?: string; answer?: string; citation?: string; moreExplanation?: string; socraticVariant?: string }): ChatExample {
-  return { q: row.question ?? "", a: row.answer ?? "", cite: row.citation ?? "", more: row.moreExplanation ?? "", socratic: row.socraticVariant ?? "" };
-}
-
 function toDocument(row: ChatbotDocumentResponse): ChatbotDocument {
   return {
     id: row.id,
@@ -89,14 +83,13 @@ function toStatTile(row: StatTileRow): StatTile {
  * of the app already expects (N+1+1 fetch per FindAll - fine at this scale, revisit with a
  * batching/GraphQL-style endpoint if the chatbot count grows enough to matter).
  */
-function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailResponse, chatPage: ChatPageResponse): Chatbot {
+function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailResponse): Chatbot {
   return {
     id: summary.id ?? "",
     label: summary.label ?? "",
     description: summary.description ?? "",
     status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
     context: detail.context ?? "",
-    opening: chatPage.opening ? toChatExample(chatPage.opening) : null,
     settings: {
       socratic: detail.socratic ?? false,
       explicaMas: detail.explicaMas ?? false,
@@ -125,8 +118,8 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     const entries = await Promise.all(
       summaries.map(async (summary) => {
         const id = summary.id ?? "";
-        const [detail, chatPage] = await Promise.all([this.client.chatbotsGET(id), this.client.chatPage(id)]);
-        return [id, toChatbot(summary, detail, chatPage)] as const;
+        const detail = await this.client.chatbotsGET(id);
+        return [id, toChatbot(summary, detail)] as const;
       })
     );
     return Object.fromEntries(entries);
@@ -163,7 +156,6 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
         "Chatbot recién creado" +
         (dept ? ` para el equipo de <strong>${dept}</strong>` : "") +
         ". Todavía no tiene documentos — añade contenido en la pestaña Documentos para que pueda empezar a responder.",
-      opening: null,
       settings,
       iconUrl,
       docs: [],

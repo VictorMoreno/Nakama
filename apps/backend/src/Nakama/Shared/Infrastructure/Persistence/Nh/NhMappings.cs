@@ -16,7 +16,6 @@ internal static class NhMappings
 
         mapper.AddMapping<Mappings.ChatbotSummariesMapping>();
         mapper.AddMapping<Mappings.ChatbotDetailMapping>();
-        mapper.AddMapping<Mappings.ChatPageMapping>();
         mapper.AddMapping<Mappings.FormationsListMapping>();
         mapper.AddMapping<Mappings.FormationDetailMapping>();
         mapper.AddMapping<Mappings.ChatbotLabelRefMapping>();
