@@ -15,11 +15,11 @@ apps/tests/
         Domain/                          <Entity>Mother (sin pruebas directas de entidades)
         Infrastructure/                  <Adapter>Should (solo si hay lógica que probar)
     Api/                                 integración de endpoints (pendiente)
-  Test.Architecture/                     reglas de arquitectura (pendiente)
+  Test.Architecture/                     reglas de arquitectura (NetArchTest + reflexión)
 ```
 
 - `Test`: pruebas unitarias de módulos e integración API. Referencia solo el proyecto del núcleo; la estructura de `Modules/` refleja la de `src/`.
-- `Test.Architecture`: reglas de arquitectura y convenciones (NetArchTest + reglas custom).
+- `Test.Architecture`: reglas de arquitectura y convenciones (NetArchTest + reflexión). Referencia `Nakama` y `Api`; no usa Mothers ni `UnitTestCase`.
 - No se prueban entidades ni value objects de dominio de forma aislada: su comportamiento se valida a través de los casos de uso. La carpeta `Domain/` de los tests contiene los Mothers.
 - Las pruebas de infraestructura solo se escriben si hay lógica significativa (por ejemplo, un generador de tokens o un repositorio con consultas complejas). Contra bases de datos reales usar TestContainers; contra servicios HTTP externos, MockingServer.
 
@@ -95,16 +95,33 @@ public async Task fail_without_recording_activity_when_the_password_is_wrong()
 
 ## 6) Reglas de arquitectura (deben seguirse siempre)
 
-Aún no están automatizadas: el proyecto `Test.Architecture` está pendiente.
+Están automatizadas en `apps/tests/Test.Architecture` (una clase `{Tema}Should` por tema: `LayeringShould`, `NamingShould`, `DomainShould`, `ApiShould`). Las reglas salen del código real, no de una plantilla: el proyecto usa Minimal API (`IEndpoint`) y MediatR, no controladores ni un bus propio.
 
-- Interfaces empiezan por `I`.
-- Implementaciones de repositorios respetan `{Prefijo}{NombreSinI}`.
-- Controladores terminan en `(Get|Post|Put|Patch|Delete)Controller`.
-- Controladores autorizados (sin `AllowAnonymous`, salvo excepciones explícitas).
-- Controladores solo inyectan `ICommandBus`/`IQueryBus`.
-- Servicios (`IService`) sellados e inyectando solo interfaces.
-- Entidades de dominio con setters no públicos.
-- Capas sin dependencias prohibidas (hexagonal + DDD).
+**Capas** (`LayeringShould`, una prueba por módulo):
+
+- `Domain` no depende de `Application`, de ninguna `Infrastructure` ni de frameworks (NHibernate, MediatR, ASP.NET Core, Microsoft.Extensions, FluentMigrator, Npgsql, Anthropic).
+- `Domain` no depende del resto de módulos. Excepción documentada: `Chatbots.Domain` usa el enum `LlmProvider` de `LlmProviders` (`NakamaCode.AllowedDomainDependencies`).
+- `Application` no depende de la `Infrastructure` de ningún módulo, ni de NHibernate, MediatR, ASP.NET Core, FluentMigrator, Npgsql ni Anthropic. Sí puede usar `Microsoft.Extensions.Options` y `DependencyInjection`.
+- `Shared.Domain` y `Shared.Application` no conocen los módulos ni la infraestructura.
+- Los módulos se hablan por eventos de dominio (`Domain.Events`) o por consultas del bus (`Application`), nunca por `Infrastructure`.
+
+**Nombres y forma** (`NamingShould`):
+
+- Interfaces empiezan por `I`; las implementaciones de repositorio son `Nh{NombreSinI}` y viven en `Infrastructure`.
+- Eventos de dominio: `record` sellado en `.Domain.Events`. Errores de dominio: sellados y terminados en `Error`.
+- Manejadores de eventos (`DomainEventHandler<>`): sellados, en `.Application.Handlers` y con `On` en el nombre.
+- Manejadores de comandos y consultas: clase `Handler` sellada y anidada. Comandos y consultas sellados.
+- Servicios (`IService`): sellados e inyectando solo interfaces o abstracciones genéricas (`IOptions<>`).
+
+**Dominio** (`DomainShould`): las entidades no tienen setters públicos, viven en `.Domain`, tienen constructor sin parámetros `protected` (NHibernate) y un constructor público con todo su estado (los Mothers lo usan). Las clases `*Row` de los read models no son entidades y quedan fuera.
+
+**Api** (`ApiShould`): cada `IEndpoint` es una clase sellada `*Endpoints` en `Api.Endpoints`; los endpoints no dependen de la `Infrastructure` de los módulos, de la persistencia ni de ningún `Domain`. Un endpoint solo lee y escribe datos HTTP (cookies, cuerpo) y delega las decisiones en el caso de uso; no lanza errores de dominio.
+
+Al escribir una regla de dependencia con NetArchTest:
+
+- Usar el namespace exacto de cada capa (`Nakama.{Modulo}.Domain`), nunca con punto final ni solo el prefijo del módulo: con punto final no encuentra nada y la regla pasa en vacío, y sin capa `Nakama.Formations` también casa con `Nakama.FormationsList`.
+- Comprobar la regla rompiéndola a propósito (una referencia `typeof(...)` en un tipo de la capa) y viendo que falla. Es la única forma de detectar una regla que pasa en vacío: una regla sobre un conjunto vacío, o con una lista de prohibidos que no casa con nada, es verde siempre.
+- Una excepción nueva se añade con nombre y motivo en `NakamaCode` o en la propia regla, nunca quitando la regla.
 
 ## 7) Checklist para nueva prueba
 
@@ -120,6 +137,6 @@ Aún no están automatizadas: el proyecto `Test.Architecture` está pendiente.
 ## 8) Comandos base
 
 - Ejecutar tests backend: `dotnet test .\apps\tests\Test\`
-- Ejecutar tests arquitectura (cuando exista): `dotnet test .\apps\tests\Test.Architecture\`
-- Ejecutar todo: `dotnet test`
-- Con el IDE abierto, que bloquea `Nakama.dll`, compilar a un directorio temporal: `dotnet test .\apps\tests\Test\ -p:OutDir=<ruta-temporal>/`
+- Ejecutar tests arquitectura: `dotnet test .\apps\tests\Test.Architecture\`
+- Ejecutar todo: `dotnet test` (ambos proyectos)
+- Con el IDE abierto, que bloquea `Nakama.dll`, compilar a un directorio temporal: `dotnet test .\apps\tests\Test\ -p:OutDir=<ruta-temporal>/` (usar una ruta distinta para cada proyecto de tests).
