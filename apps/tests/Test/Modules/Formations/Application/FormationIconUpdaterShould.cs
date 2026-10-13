@@ -57,7 +57,7 @@ public sealed class FormationIconUpdaterShould : FormationsUnitTestCase
     [Test]
     public async Task fail_without_touching_the_storage_when_the_formation_does_not_exist()
     {
-        this.ShouldFindFormation(null);
+        this.ShouldNotFindFormation();
 
         Func<Task> act = async () =>
             await this._handler.Handle(FormationIconUpdaterCommandMother.WithUpload(), CancellationToken.None);

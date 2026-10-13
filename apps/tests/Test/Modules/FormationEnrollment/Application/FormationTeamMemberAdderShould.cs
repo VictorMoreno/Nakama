@@ -26,7 +26,7 @@ public sealed class FormationTeamMemberAdderShould : FormationEnrollmentUnitTest
         FormationDetailResponse detail = FormationDetailResponseMother.Random();
         FormationTeamMemberAdder.Command command = FormationTeamMemberAdderCommandMother.With(detail.Id);
         this.ShouldFindFormationDetail(detail);
-        this.ShouldFindEnrollment(null);
+        this.ShouldNotFindEnrollment();
 
         await this._handler.Handle(command, CancellationToken.None);
 

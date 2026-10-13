@@ -33,7 +33,7 @@ public sealed class LogOutShould : AuthenticationUnitTestCase
     [Test]
     public async Task do_nothing_when_the_refresh_token_does_not_exist()
     {
-        this.ShouldFindRefreshToken(null);
+        this.ShouldNotFindRefreshToken();
 
         await this._handler.Handle(LogOutCommandMother.Random(), CancellationToken.None);
 

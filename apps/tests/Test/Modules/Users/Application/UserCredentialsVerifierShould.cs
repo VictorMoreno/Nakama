@@ -58,7 +58,7 @@ public sealed class UserCredentialsVerifierShould : UsersUnitTestCase
     public async Task fail_without_checking_the_password_when_the_email_is_not_registered()
     {
         this.ShouldBeNow(DateTime.UtcNow);
-        this.ShouldFindUserByEmail(null);
+        this.ShouldNotFindUserByEmail();
 
         Func<Task> act = async () =>
             await this._handler.Handle(UserCredentialsVerifierQueryMother.Random(), CancellationToken.None);

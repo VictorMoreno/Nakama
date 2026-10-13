@@ -54,7 +54,7 @@ public sealed class ConversationRemoverShould : ChatbotsUnitTestCase
     [Test]
     public async Task fail_without_removing_anything_when_the_conversation_does_not_exist()
     {
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
 
         Func<Task> act = async () =>
             await this._handler.Handle(ConversationRemoverCommandMother.Random(), CancellationToken.None);

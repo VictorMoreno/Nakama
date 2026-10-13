@@ -35,7 +35,7 @@ public sealed class FormationTeamMemberRemoverShould : FormationEnrollmentUnitTe
     [Test]
     public async Task do_nothing_when_the_user_is_not_enrolled()
     {
-        this.ShouldFindEnrollment(null);
+        this.ShouldNotFindEnrollment();
 
         await this._handler.Handle(FormationTeamMemberRemoverCommandMother.Random(), CancellationToken.None);
 

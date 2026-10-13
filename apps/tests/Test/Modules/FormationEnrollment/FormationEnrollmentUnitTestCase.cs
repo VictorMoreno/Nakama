@@ -20,21 +20,29 @@ public abstract class FormationEnrollmentUnitTestCase : UnitTestCase
 
     protected void ShouldFindFormationDetail(FormationDetailResponse detail) =>
         this.QueryBus
-            .Setup(bus => bus.Ask(It.IsAny<FormationDetailFinder.Query>(), It.IsAny<CancellationToken>()))
+            .Setup(bus => bus.Ask(It.Is<FormationDetailFinder.Query>(query => query.Id == detail.Id), It.IsAny<CancellationToken>()))
             .ReturnsAsync(detail);
 
     protected void ShouldNotFindFormationDetail(Guid id) =>
         this.QueryBus
-            .Setup(bus => bus.Ask(It.IsAny<FormationDetailFinder.Query>(), It.IsAny<CancellationToken>()))
+            .Setup(bus => bus.Ask(It.Is<FormationDetailFinder.Query>(query => query.Id == id), It.IsAny<CancellationToken>()))
             .ThrowsAsync(FormationDetailErrors.NotFound(id.ToString()));
 
-    protected void ShouldFindEnrollment(Nakama.FormationEnrollment.Domain.FormationEnrollment? enrollment) =>
+    protected void ShouldFindEnrollment(Nakama.FormationEnrollment.Domain.FormationEnrollment enrollment) =>
+        this.EnrollmentsRepository
+            .Setup(repository => repository.FindByFormationAndUser(
+                enrollment.FormationId,
+                enrollment.UserId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(enrollment);
+
+    protected void ShouldNotFindEnrollment() =>
         this.EnrollmentsRepository
             .Setup(repository => repository.FindByFormationAndUser(
                 It.IsAny<Guid>(),
                 It.IsAny<Guid>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(enrollment);
+            .ReturnsAsync(null as Nakama.FormationEnrollment.Domain.FormationEnrollment);
 
     protected void ShouldHaveAskedForFormationDetail(Guid id) =>
         this.QueryBus.Verify(

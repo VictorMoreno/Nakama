@@ -106,7 +106,7 @@ public sealed class FormationModuleAdderShould : FormationsUnitTestCase
     [Test]
     public async Task fail_without_saving_anything_when_the_formation_does_not_exist()
     {
-        this.ShouldFindFormation(null);
+        this.ShouldNotFindFormation();
 
         Func<Task> act = async () =>
             await this._handler.Handle(FormationModuleAdderCommandMother.Random(), CancellationToken.None);

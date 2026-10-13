@@ -55,7 +55,7 @@ public sealed class FormationEnrollmentFinderShould : FormationEnrollmentUnitTes
     [Test]
     public async Task fail_when_the_user_is_not_enrolled()
     {
-        this.ShouldFindEnrollment(null);
+        this.ShouldNotFindEnrollment();
 
         Func<Task> act = async () =>
             await this._handler.Handle(FormationEnrollmentFinderQueryMother.Random(), CancellationToken.None);

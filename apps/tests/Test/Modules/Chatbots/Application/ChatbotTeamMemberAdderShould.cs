@@ -71,7 +71,7 @@ public sealed class ChatbotTeamMemberAdderShould : ChatbotsUnitTestCase
     [Test]
     public async Task fail_without_saving_anything_when_the_chatbot_does_not_exist()
     {
-        this.ShouldFindChatbot(null);
+        this.ShouldNotFindChatbot();
 
         Func<Task> act = async () =>
             await this._handler.Handle(ChatbotTeamMemberAdderCommandMother.Random(), CancellationToken.None);

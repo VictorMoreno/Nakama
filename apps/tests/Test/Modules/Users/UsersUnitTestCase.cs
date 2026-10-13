@@ -13,15 +13,25 @@ public abstract class UsersUnitTestCase : UnitTestCase
     [SetUp]
     public void UsersSetUp() => this.Repository.Reset();
 
-    protected void ShouldFindUserByEmail(User? user) =>
+    protected void ShouldFindUserByEmail(User user) =>
         this.Repository
-            .Setup(repository => repository.GetByEmail(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.GetByEmail(new Email(user.Email), It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
-    protected void ShouldFindUser(User? user) =>
+    protected void ShouldNotFindUserByEmail() =>
+        this.Repository
+            .Setup(repository => repository.GetByEmail(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as User);
+
+    protected void ShouldFindUser(User user) =>
+        this.Repository
+            .Setup(repository => repository.FindById(user.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(user);
+
+    protected void ShouldNotFindUser() =>
         this.Repository
             .Setup(repository => repository.FindById(It.IsAny<UserId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+            .ReturnsAsync(null as User);
 
     protected void ShouldFindAllUsers(IReadOnlyList<User> users) =>
         this.Repository

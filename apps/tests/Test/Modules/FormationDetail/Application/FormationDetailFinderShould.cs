@@ -94,7 +94,7 @@ public sealed class FormationDetailFinderShould : FormationDetailUnitTestCase
     [Test]
     public async Task fail_when_the_formation_detail_does_not_exist()
     {
-        this.ShouldFindFormationDetail(null);
+        this.ShouldNotFindFormationDetail();
 
         Func<Task> act = async () =>
             await this._handler.Handle(FormationDetailFinderQueryMother.Random(), CancellationToken.None);

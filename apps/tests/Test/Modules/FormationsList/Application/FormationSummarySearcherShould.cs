@@ -25,11 +25,12 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
     {
         FormationSummary first = FormationSummaryMother.Random();
         FormationSummary second = FormationSummaryMother.Random();
-        this.ShouldFindEnrollmentsOfTheUser([]);
+        FormationSummarySearcher.Query query = FormationSummarySearcherQueryMother.Admin();
+        this.ShouldFindEnrollmentsOfTheUser(query.UserId, []);
         this.ShouldFindAllFormationSummaries([first, second]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
-            FormationSummarySearcherQueryMother.Admin(),
+            query,
             CancellationToken.None);
 
         response.Select(item => item.Id).Should().Equal(first.Id, second.Id);
@@ -42,7 +43,7 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
     {
         FormationSummary enrolled = FormationSummaryMother.Random();
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: enrolled.Id);
-        this.ShouldFindEnrollmentsOfTheUser([enrollment]);
+        this.ShouldFindEnrollmentsOfTheUser(enrollment.UserId, [enrollment]);
         this.ShouldFindFormationSummariesByIds([enrolled]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
@@ -57,11 +58,12 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
     [Test]
     public async Task return_an_empty_collection_to_a_regular_user_without_enrollments()
     {
-        this.ShouldFindEnrollmentsOfTheUser([]);
+        FormationSummarySearcher.Query query = FormationSummarySearcherQueryMother.Random();
+        this.ShouldFindEnrollmentsOfTheUser(query.UserId, []);
         this.ShouldFindFormationSummariesByIds([]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
-            FormationSummarySearcherQueryMother.Random(),
+            query,
             CancellationToken.None);
 
         response.Should().BeEmpty();
@@ -75,7 +77,7 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
         Enrollment enrollment = FormationEnrollmentMother.With(
             formationId: summary.Id,
             progress: LearnerProgressMother.With(completedModuleIds: [Guid.NewGuid()]));
-        this.ShouldFindEnrollmentsOfTheUser([enrollment]);
+        this.ShouldFindEnrollmentsOfTheUser(enrollment.UserId, [enrollment]);
         this.ShouldFindFormationSummariesByIds([summary]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
@@ -96,7 +98,7 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
         Enrollment enrollment = FormationEnrollmentMother.With(
             formationId: summary.Id,
             progress: LearnerProgressMother.With(completedModuleIds: [Guid.NewGuid()]));
-        this.ShouldFindEnrollmentsOfTheUser([enrollment]);
+        this.ShouldFindEnrollmentsOfTheUser(enrollment.UserId, [enrollment]);
         this.ShouldFindFormationSummariesByIds([summary]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
@@ -113,7 +115,7 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
         Enrollment enrollment = FormationEnrollmentMother.With(
             formationId: summary.Id,
             progress: LearnerProgressMother.With(completedModuleIds: [Guid.NewGuid(), Guid.NewGuid()]));
-        this.ShouldFindEnrollmentsOfTheUser([enrollment]);
+        this.ShouldFindEnrollmentsOfTheUser(enrollment.UserId, [enrollment]);
         this.ShouldFindFormationSummariesByIds([summary]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
@@ -128,7 +130,7 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
     {
         FormationSummary summary = FormationSummaryMother.With(modulesCount: 0);
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: summary.Id);
-        this.ShouldFindEnrollmentsOfTheUser([enrollment]);
+        this.ShouldFindEnrollmentsOfTheUser(enrollment.UserId, [enrollment]);
         this.ShouldFindFormationSummariesByIds([summary]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
@@ -142,11 +144,12 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
     public async Task mark_the_formation_as_not_enrolled_with_zero_progress_for_an_administrator_who_is_not_enrolled()
     {
         FormationSummary summary = FormationSummaryMother.With(modulesCount: 5);
-        this.ShouldFindEnrollmentsOfTheUser([]);
+        FormationSummarySearcher.Query query = FormationSummarySearcherQueryMother.Admin();
+        this.ShouldFindEnrollmentsOfTheUser(query.UserId, []);
         this.ShouldFindAllFormationSummaries([summary]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
-            FormationSummarySearcherQueryMother.Admin(),
+            query,
             CancellationToken.None);
 
         FormationSummaryResponse item = response.Should().ContainSingle().Which;
@@ -160,11 +163,12 @@ public sealed class FormationSummarySearcherShould : FormationsListUnitTestCase
     {
         FormationSummary withIcon = FormationSummaryMother.With(iconUrl: "icon.png");
         FormationSummary withoutIcon = FormationSummaryMother.With(iconUrl: null);
-        this.ShouldFindEnrollmentsOfTheUser([]);
+        FormationSummarySearcher.Query query = FormationSummarySearcherQueryMother.Admin();
+        this.ShouldFindEnrollmentsOfTheUser(query.UserId, []);
         this.ShouldFindAllFormationSummaries([withIcon, withoutIcon]);
 
         IReadOnlyCollection<FormationSummaryResponse> response = await this._handler.Handle(
-            FormationSummarySearcherQueryMother.Admin(),
+            query,
             CancellationToken.None);
 
         response.Select(item => item.IconUrl).Should().Equal(

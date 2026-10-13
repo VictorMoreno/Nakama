@@ -18,10 +18,15 @@ public abstract class FormationsUnitTestCase : UnitTestCase
         this.IconStorage.Reset();
     }
 
-    protected void ShouldFindFormation(Formation? formation) =>
+    protected void ShouldFindFormation(Formation formation) =>
+        this.FormationsRepository
+            .Setup(repository => repository.FindById(formation.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(formation);
+
+    protected void ShouldNotFindFormation() =>
         this.FormationsRepository
             .Setup(repository => repository.FindById(It.IsAny<FormationId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(formation);
+            .ReturnsAsync(null as Formation);
 
     protected void ShouldStoreIcon(string fileName) =>
         this.IconStorage

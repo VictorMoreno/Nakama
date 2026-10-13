@@ -52,7 +52,7 @@ public sealed class ChatbotDocumentAdderShould : ChatbotsUnitTestCase
     [Test]
     public async Task fail_without_storing_the_file_when_the_chatbot_does_not_exist()
     {
-        this.ShouldFindChatbot(null);
+        this.ShouldNotFindChatbot();
 
         Func<Task> act = async () =>
             await this._handler.Handle(ChatbotDocumentAdderCommandMother.Random(), CancellationToken.None);

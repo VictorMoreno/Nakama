@@ -24,7 +24,7 @@ public sealed class FormationCreatorShould : FormationsUnitTestCase
         FormationCreator.Command command = FormationCreatorCommandMother.With(
             status: FormationStatus.Draft,
             linkedChatbotKey: Guid.NewGuid());
-        this.ShouldFindFormation(null);
+        this.ShouldNotFindFormation();
 
         await this._handler.Handle(command, CancellationToken.None);
 
@@ -41,7 +41,7 @@ public sealed class FormationCreatorShould : FormationsUnitTestCase
     [Test]
     public async Task create_the_formation_without_a_linked_chatbot()
     {
-        this.ShouldFindFormation(null);
+        this.ShouldNotFindFormation();
 
         await this._handler.Handle(FormationCreatorCommandMother.Random(), CancellationToken.None);
 

@@ -28,7 +28,7 @@ public sealed class ChatbotCreatorShould : ChatbotsUnitTestCase
             command.ExplicaMas,
             (LlmProvider)command.Provider,
             command.Model);
-        this.ShouldFindChatbot(null);
+        this.ShouldNotFindChatbot();
 
         await this._handler.Handle(command, CancellationToken.None);
 

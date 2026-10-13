@@ -33,9 +33,9 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
             .Setup(repository => repository.FindByIds(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(summaries);
 
-    protected void ShouldFindEnrollmentsOfTheUser(IReadOnlyList<Enrollment> enrollments) =>
+    protected void ShouldFindEnrollmentsOfTheUser(Guid userId, IReadOnlyList<Enrollment> enrollments) =>
         this.EnrollmentsRepository
-            .Setup(repository => repository.FindAllForUser(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.FindAllForUser(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(enrollments);
 
     protected void ShouldHaveSearchedAllFormationSummaries() =>

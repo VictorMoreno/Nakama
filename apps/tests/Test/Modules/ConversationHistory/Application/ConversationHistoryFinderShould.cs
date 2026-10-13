@@ -83,7 +83,7 @@ public sealed class ConversationHistoryFinderShould : ConversationHistoryUnitTes
     [Test]
     public async Task fail_when_there_is_no_history_for_the_chatbot()
     {
-        this.ShouldFindConversationHistory(null);
+        this.ShouldNotFindConversationHistory();
 
         Func<Task> act = async () =>
             await this._handler.Handle(ConversationHistoryFinderQueryMother.Random(), CancellationToken.None);

@@ -190,7 +190,7 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
         FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
         FormationModuleRow module = detail.Modules.Single();
         this.ShouldFindFormationDetail(detail);
-        this.ShouldFindEnrollment(null);
+        this.ShouldNotFindEnrollment();
 
         Func<Task> act = async () => await this._handler.Handle(
             FormationModuleCompleterCommandMother.With(detail.Id, module.Id),

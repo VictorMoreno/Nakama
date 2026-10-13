@@ -76,7 +76,7 @@ public sealed class ChatbotDocumentFileFinderShould : ChatbotsUnitTestCase
     [Test]
     public async Task fail_when_the_chatbot_does_not_exist()
     {
-        this.ShouldFindChatbot(null);
+        this.ShouldNotFindChatbot();
 
         Func<Task> act = async () =>
             await this._handler.Handle(ChatbotDocumentFileFinderQueryMother.Random(), CancellationToken.None);

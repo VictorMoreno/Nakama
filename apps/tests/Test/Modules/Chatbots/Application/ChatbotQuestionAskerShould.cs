@@ -35,11 +35,11 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     public async Task start_a_new_conversation_stream_the_answer_and_publish_the_events()
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.Random();
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id);
         DateTime now = DateTime.UtcNow;
         this.ShouldBeNow(now);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldAnswer(chatbot.Provider, "Hel", "lo");
 
         List<string> chunks = await this._asker.Execute(command, CancellationToken.None).ToListAsync();
@@ -63,9 +63,12 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     public async Task append_the_exchange_to_the_existing_conversation_and_send_its_history_to_the_model()
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.Random();
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id);
         ConversationExchange previous = ConversationExchangeMother.Random();
-        Conversation conversation = ConversationMother.With(userId: command.UserId, exchanges: [previous]);
+        Conversation conversation = ConversationMother.With(
+            id: ConversationId.From(command.ConversationId),
+            userId: command.UserId,
+            exchanges: [previous]);
         this.ShouldFindChatbotDetail(chatbot);
         this.ShouldFindConversation(conversation);
         this.ShouldAnswer(chatbot.Provider, "ok");
@@ -86,8 +89,9 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     [Test]
     public async Task fail_without_touching_anything_when_the_provider_is_not_connected()
     {
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(1);
-        this.ShouldFindChatbotDetail(ChatbotDetailResponseMother.Random());
+        ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(1, chatbot.Id);
+        this.ShouldFindChatbotDetail(chatbot);
 
         Func<Task> act = async () => await this._asker.Execute(command, CancellationToken.None).ToListAsync();
 
@@ -118,7 +122,8 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
         ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(
-            this.ChatOptions.Value.MaxAttachmentsPerMessage + 1);
+            this.ChatOptions.Value.MaxAttachmentsPerMessage + 1,
+            chatbot.Id);
         this.ShouldFindChatbotDetail(chatbot);
         this.ShouldAnswer(chatbot.Provider, "ok");
 
@@ -136,10 +141,10 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
         int maximum = this.ChatOptions.Value.MaxAttachmentsPerMessage;
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(maximum);
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(maximum, chatbot.Id);
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldStoreAttachment($"{Guid.NewGuid():N}.pdf");
         this.ShouldAnswer(chatbot.Provider, "ok");
 
@@ -153,9 +158,9 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     public async Task fail_without_touching_anything_when_the_conversation_belongs_to_another_user()
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(1);
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(1, chatbot.Id);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(ConversationMother.Random());
+        this.ShouldFindConversation(ConversationMother.With(id: ConversationId.From(command.ConversationId)));
         this.ShouldAnswer(chatbot.Provider, "ok");
 
         Func<Task> act = async () => await this._asker.Execute(command, CancellationToken.None).ToListAsync();
@@ -172,11 +177,11 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
         ChatbotQuestionAsker.AttachmentUpload upload = AttachmentUploadMother.With(fileName: "report.pdf");
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.With(attachments: [upload]);
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id, attachments: [upload]);
         string storedFileName = $"{Guid.NewGuid():N}.pdf";
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldStoreAttachment(storedFileName);
         this.ShouldAnswer(chatbot.Provider, "ok");
 
@@ -197,10 +202,11 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
         ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.With(
+            botKey: chatbot.Id,
             attachments: [AttachmentUploadMother.With(fileName: "program.exe")]);
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldStoreAttachment($"{Guid.NewGuid():N}.exe");
         this.ShouldAnswer(chatbot.Provider, "ok");
 
@@ -213,11 +219,11 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     public async Task delete_the_stored_attachments_and_save_nothing_when_the_stream_fails()
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(1);
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(1, chatbot.Id);
         string storedFileName = $"{Guid.NewGuid():N}.pdf";
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldStoreAttachment(storedFileName);
         this.ShouldFailAfter(chatbot.Provider, ["partial"], new InvalidOperationException(WordMother.Random()));
 
@@ -233,11 +239,11 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     public async Task delete_the_attachments_already_stored_when_storing_a_later_one_fails()
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(2);
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.WithAttachmentCount(2, chatbot.Id);
         string firstFileName = $"{Guid.NewGuid():N}.pdf";
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldFailToStoreSecondAttachment(firstFileName, ChatbotErrors.DocumentUnsupportedType);
         this.ShouldAnswer(chatbot.Provider, "ok");
 
@@ -254,10 +260,11 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     public async Task include_the_attachments_of_previous_exchanges_in_the_history()
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.Random();
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id);
         ExchangeAttachment attachment = ExchangeAttachmentMother.Random();
         byte[] content = BytesMother.Random();
         Conversation conversation = ConversationMother.With(
+            id: ConversationId.From(command.ConversationId),
             userId: command.UserId,
             exchanges: [ConversationExchangeMother.With(attachments: [attachment])]);
         this.ShouldFindChatbotDetail(chatbot);
@@ -275,8 +282,9 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
     public async Task skip_the_attachments_of_previous_exchanges_whose_file_is_missing()
     {
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
-        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.Random();
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id);
         Conversation conversation = ConversationMother.With(
+            id: ConversationId.From(command.ConversationId),
             userId: command.UserId,
             exchanges: [ConversationExchangeMother.With(attachments: [ExchangeAttachmentMother.Random()])]);
         this.ShouldFindChatbotDetail(chatbot);
@@ -303,11 +311,11 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
         byte[] content = BytesMother.Random();
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldReadDocumentFile(content);
         this.ShouldAnswer(chatbot.Provider, "ok");
 
-        await this._asker.Execute(ChatbotQuestionAskerCommandMother.Random(), CancellationToken.None).ToListAsync();
+        await this._asker.Execute(ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id), CancellationToken.None).ToListAsync();
 
         this.AskedRequest.Documents.Should().Equal(new LlmDocument(document.Name, kind, content));
         this.AskedRequest.SystemPrompt.Should().Contain("documentación de referencia");
@@ -319,11 +327,11 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.With(docs: [ChatbotDocumentResponseMother.Random()]);
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldReadDocumentFile(null);
         this.ShouldAnswer(chatbot.Provider, "ok");
 
-        await this._asker.Execute(ChatbotQuestionAskerCommandMother.Random(), CancellationToken.None).ToListAsync();
+        await this._asker.Execute(ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id), CancellationToken.None).ToListAsync();
 
         this.AskedRequest.Documents.Should().BeEmpty();
         this.AskedRequest.SystemPrompt.Should().NotContain("documentación de referencia");
@@ -336,10 +344,10 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
             docs: [ChatbotDocumentResponseMother.With(fileName: "program.exe")]);
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldAnswer(chatbot.Provider, "ok");
 
-        await this._asker.Execute(ChatbotQuestionAskerCommandMother.Random(), CancellationToken.None).ToListAsync();
+        await this._asker.Execute(ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id), CancellationToken.None).ToListAsync();
 
         this.ShouldNotHaveReadAnyDocumentFile();
         this.AskedRequest.Documents.Should().BeEmpty();
@@ -351,10 +359,10 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.Random();
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldAnswer(chatbot.Provider, "ok");
 
-        await this._asker.Execute(ChatbotQuestionAskerCommandMother.Random(), CancellationToken.None).ToListAsync();
+        await this._asker.Execute(ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id), CancellationToken.None).ToListAsync();
 
         this.AskedRequest.SystemPrompt.Should().Contain(chatbot.Label).And.Contain(chatbot.Description);
     }
@@ -365,10 +373,10 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.With(description: " ");
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldAnswer(chatbot.Provider, "ok");
 
-        await this._asker.Execute(ChatbotQuestionAskerCommandMother.Random(), CancellationToken.None).ToListAsync();
+        await this._asker.Execute(ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id), CancellationToken.None).ToListAsync();
 
         this.AskedRequest.SystemPrompt.Split("\n\n").Should().HaveCount(2);
     }
@@ -379,10 +387,10 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.With(socratic: true, explicaMas: false);
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldAnswer(chatbot.Provider, "ok");
 
-        await this._asker.Execute(ChatbotQuestionAskerCommandMother.Random(), CancellationToken.None).ToListAsync();
+        await this._asker.Execute(ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id), CancellationToken.None).ToListAsync();
 
         this.AskedRequest.SystemPrompt.Should().Contain("Socrático").And.NotContain("explícame más");
     }
@@ -393,10 +401,10 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
         ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.With(socratic: false, explicaMas: true);
         this.ShouldBeNow(DateTime.UtcNow);
         this.ShouldFindChatbotDetail(chatbot);
-        this.ShouldFindConversation(null);
+        this.ShouldNotFindConversation();
         this.ShouldAnswer(chatbot.Provider, "ok");
 
-        await this._asker.Execute(ChatbotQuestionAskerCommandMother.Random(), CancellationToken.None).ToListAsync();
+        await this._asker.Execute(ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id), CancellationToken.None).ToListAsync();
 
         this.AskedRequest.SystemPrompt.Should().Contain("explícame más").And.NotContain("Socrático");
     }

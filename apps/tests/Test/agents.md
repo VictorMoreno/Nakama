@@ -69,6 +69,13 @@ public async Task fail_without_recording_activity_when_the_password_is_wrong()
 }
 ```
 
+### Dobles exactos, no permisivos
+
+- Los helpers `ShouldFindX(entidad)` configuran el mock solo para la clave exacta de esa entidad (`FindById(entidad.Id)`, `FindByFormationAndUser(e.FormationId, e.UserId)`). Para el caso de no encontrado hay otro helper, `ShouldNotFindX()`, que responde `null` a cualquier clave. Nunca un único `ShouldFindX(entidad?)` con `It.IsAny`: dejaría pasar un handler que buscara por el id equivocado.
+- Lo mismo para las queries del bus (`It.Is<Query>(q => q.Id == ...)`) y los colaboradores con argumentos de negocio (`Generate(user.Id, user.Email, ...)`, `Rotate(current, ..., now)`): el test construye el escenario con datos coherentes (el comando lleva el `Id` de la entidad simulada).
+- `It.IsAny` queda para los `Verify` con `Times.Never` (ninguna llamada, sea cual sea el argumento), el `CancellationToken` y valores incidentales que genera el propio código (un `Guid` nuevo, un `Stream`).
+- Los valores aleatorios que se comparan entre sí no pueden colisionar: dos `WordMother.Random()` coinciden de vez en cuando y vuelven el test intermitente. Si el escenario exige que sean distintos, derivar uno del otro (`$"{x}-other"`) o usar prefijos fijos.
+
 ## 4) Pautas para tests API
 
 - Construir el host con `WebApplicationFactory<Program>` y sustituir servicios por dobles de prueba.
@@ -105,9 +112,10 @@ Aún no están automatizadas: el proyecto `Test.Architecture` está pendiente.
 2. Reusar la base `<Module>UnitTestCase` existente y añadirle los helpers `ShouldX` que falten.
 3. Crear los datos con `Mother`, nunca con helpers privados dentro del test.
 4. Nombrar la clase `...Should` y el método en snake_case.
-5. Añadir casos positivos y negativos (incluyendo auth y errores cuando aplique), y en los negativos comprobar que no hubo efectos secundarios.
-6. Comprobar que el test detecta el fallo: romper a propósito la línea de producción que cubre y ver que falla antes de restaurarla.
-7. Ejecutar el proyecto de tests correspondiente.
+5. Configurar los dobles con la clave exacta (`ShouldFindX(entidad)`), no con `It.IsAny`.
+6. Añadir casos positivos y negativos (incluyendo auth y errores cuando aplique), y en los negativos comprobar que no hubo efectos secundarios.
+7. Comprobar que el test detecta el fallo: romper a propósito la línea de producción que cubre y ver que falla antes de restaurarla.
+8. Ejecutar el proyecto de tests correspondiente.
 
 ## 8) Comandos base
 

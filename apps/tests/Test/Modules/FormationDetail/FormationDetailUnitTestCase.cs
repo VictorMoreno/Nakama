@@ -16,8 +16,13 @@ public abstract class FormationDetailUnitTestCase : UnitTestCase
     [SetUp]
     public void FormationDetailSetUp() => this.DetailRepository.Reset();
 
-    protected void ShouldFindFormationDetail(FormationDetailEntity? detail) =>
+    protected void ShouldFindFormationDetail(FormationDetailEntity detail) =>
+        this.DetailRepository
+            .Setup(repository => repository.FindById(detail.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(detail);
+
+    protected void ShouldNotFindFormationDetail() =>
         this.DetailRepository
             .Setup(repository => repository.FindById(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(detail);
+            .ReturnsAsync(null as FormationDetailEntity);
 }

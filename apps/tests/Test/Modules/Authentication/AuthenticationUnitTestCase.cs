@@ -29,7 +29,7 @@ public abstract class AuthenticationUnitTestCase : UnitTestCase
 
     protected void ShouldVerifyCredentials(UserResponse user) =>
         this.QueryBus
-            .Setup(bus => bus.Ask(It.IsAny<UserCredentialsVerifier.Query>(), It.IsAny<CancellationToken>()))
+            .Setup(bus => bus.Ask(It.Is<UserCredentialsVerifier.Query>(query => query.Email == user.Email), It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
     protected void ShouldRejectCredentials() =>
@@ -39,34 +39,36 @@ public abstract class AuthenticationUnitTestCase : UnitTestCase
 
     protected void ShouldFindUser(UserResponse user) =>
         this.QueryBus
-            .Setup(bus => bus.Ask(It.IsAny<UserFinder.Query>(), It.IsAny<CancellationToken>()))
+            .Setup(bus => bus.Ask(It.Is<UserFinder.Query>(query => query.Id == user.Id), It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
     protected void ShouldNotFindUser(Guid id) =>
         this.QueryBus
-            .Setup(bus => bus.Ask(It.IsAny<UserFinder.Query>(), It.IsAny<CancellationToken>()))
+            .Setup(bus => bus.Ask(It.Is<UserFinder.Query>(query => query.Id == id), It.IsAny<CancellationToken>()))
             .ThrowsAsync(UserErrors.NotFound(id.ToString()));
 
-    protected void ShouldFindRefreshToken(RefreshToken? token) =>
+    protected void ShouldFindRefreshToken(RefreshToken token) =>
         this.RefreshTokens
-            .Setup(repository => repository.FindByValue(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.FindByValue(token.Value!, It.IsAny<CancellationToken>()))
             .ReturnsAsync(token);
 
-    protected void ShouldGenerateAccessToken(Token token) =>
+    protected void ShouldNotFindRefreshToken() =>
+        this.RefreshTokens
+            .Setup(repository => repository.FindByValue(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as RefreshToken);
+
+    protected void ShouldGenerateAccessToken(UserResponse user, Token token) =>
         this.TokenGenerator
-            .Setup(generator => generator.Generate(
-                It.IsAny<Guid>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<bool>()))
+            .Setup(generator => generator.Generate(user.Id, user.Email, user.Name, user.IsAdmin))
             .Returns(token);
 
-    protected void ShouldRotate(bool succeeded) =>
+    protected void ShouldRotate(RefreshToken current, bool succeeded, DateTime now) =>
         this.RefreshTokens
             .Setup(repository => repository.Rotate(
-                It.IsAny<RefreshToken>(),
-                It.IsAny<RefreshToken>(),
-                It.IsAny<DateTime>(),
+                current,
+                It.Is<RefreshToken>(replacement =>
+                    replacement.UserId == current.UserId && replacement.Value != current.Value),
+                now,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(succeeded);
 
@@ -102,13 +104,13 @@ public abstract class AuthenticationUnitTestCase : UnitTestCase
             repository => repository.Save(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()),
             Times.Never);
 
-    protected void ShouldHaveRotated(RefreshToken current) =>
+    protected void ShouldHaveRotated(RefreshToken current, DateTime now) =>
         this.RefreshTokens.Verify(
             repository => repository.Rotate(
                 current,
                 It.Is<RefreshToken>(replacement =>
                     replacement.UserId == current.UserId && replacement.Value != current.Value),
-                It.IsAny<DateTime>(),
+                now,
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
@@ -121,9 +123,9 @@ public abstract class AuthenticationUnitTestCase : UnitTestCase
                 It.IsAny<CancellationToken>()),
             Times.Never);
 
-    protected void ShouldHaveRevokedAllTokensOf(Guid userId) =>
+    protected void ShouldHaveRevokedAllTokensOf(Guid userId, DateTime now) =>
         this.RefreshTokens.Verify(
-            repository => repository.RevokeAllOf(userId, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()),
+            repository => repository.RevokeAllOf(userId, now, It.IsAny<CancellationToken>()),
             Times.Once);
 
     protected void ShouldNotHaveRevokedAnyToken() =>

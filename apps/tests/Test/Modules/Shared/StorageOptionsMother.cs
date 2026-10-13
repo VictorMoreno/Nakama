@@ -10,9 +10,9 @@ public static class StorageOptionsMother
         new()
         {
             ChatbotIconsPath = WordMother.Random(),
-            ChatbotIconsRoute = chatbotIconsRoute ?? $"/{WordMother.Random()}",
+            ChatbotIconsRoute = chatbotIconsRoute ?? $"/chatbots/{WordMother.Random()}",
             FormationIconsPath = WordMother.Random(),
-            FormationIconsRoute = formationIconsRoute ?? $"/{WordMother.Random()}",
+            FormationIconsRoute = formationIconsRoute ?? $"/formations/{WordMother.Random()}",
             ChatbotDocumentsPath = WordMother.Random(),
             ConversationAttachmentsPath = WordMother.Random()
         };

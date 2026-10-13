@@ -78,7 +78,7 @@ public sealed class ChatbotDetailFinderShould : ChatbotDetailUnitTestCase
     [Test]
     public async Task fail_when_the_chatbot_detail_does_not_exist()
     {
-        this.ShouldFindChatbotDetail(null);
+        this.ShouldNotFindChatbotDetail();
 
         Func<Task> act = async () =>
             await this._handler.Handle(ChatbotDetailFinderQueryMother.Random(), CancellationToken.None);

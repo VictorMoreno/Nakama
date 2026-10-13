@@ -33,9 +33,10 @@ public sealed class LogRefresherShould : AuthenticationUnitTestCase
         Token token = TokenMother.Random();
         this.ShouldBeNow(now);
         this.ShouldFindRefreshToken(current);
-        this.ShouldFindUser(UserResponseMother.With(id: current.UserId));
-        this.ShouldGenerateAccessToken(token);
-        this.ShouldRotate(true);
+        UserResponse user = UserResponseMother.With(id: current.UserId);
+        this.ShouldFindUser(user);
+        this.ShouldGenerateAccessToken(user, token);
+        this.ShouldRotate(current, true, now);
 
         AuthenticationResponse response = await this._handler.Handle(
             LogRefresherQueryMother.With(current.Value),
@@ -44,19 +45,20 @@ public sealed class LogRefresherShould : AuthenticationUnitTestCase
         response.Token.AccessToken.Should().Be(token.Value);
         response.RefreshToken.Should().NotBe(current.Value);
         response.RefreshTokenExpiresAt.Should().Be(now.AddDays(this.Jwt.Value.RefreshTokenDays));
-        this.ShouldHaveRotated(current);
+        this.ShouldHaveRotated(current, now);
     }
 
     [Test]
     public async Task generate_the_access_token_with_the_data_of_the_current_user()
     {
+        DateTime now = DateTime.UtcNow;
         RefreshToken current = RefreshTokenMother.Random();
         UserResponse user = UserResponseMother.With(id: current.UserId, isAdmin: true);
-        this.ShouldBeNow(DateTime.UtcNow);
+        this.ShouldBeNow(now);
         this.ShouldFindRefreshToken(current);
         this.ShouldFindUser(user);
-        this.ShouldGenerateAccessToken(TokenMother.Random());
-        this.ShouldRotate(true);
+        this.ShouldGenerateAccessToken(user, TokenMother.Random());
+        this.ShouldRotate(current, true, now);
 
         await this._handler.Handle(LogRefresherQueryMother.With(current.Value), CancellationToken.None);
 
@@ -67,7 +69,7 @@ public sealed class LogRefresherShould : AuthenticationUnitTestCase
     public async Task fail_when_the_refresh_token_does_not_exist()
     {
         this.ShouldBeNow(DateTime.UtcNow);
-        this.ShouldFindRefreshToken(null);
+        this.ShouldNotFindRefreshToken();
 
         Func<Task> act = async () => await this._handler.Handle(LogRefresherQueryMother.Random(), CancellationToken.None);
 
@@ -108,15 +110,16 @@ public sealed class LogRefresherShould : AuthenticationUnitTestCase
     [Test]
     public async Task revoke_every_token_of_the_user_when_a_rotated_refresh_token_is_reused()
     {
+        DateTime now = DateTime.UtcNow;
         RefreshToken current = RefreshTokenMother.Rotated();
-        this.ShouldBeNow(DateTime.UtcNow);
+        this.ShouldBeNow(now);
         this.ShouldFindRefreshToken(current);
 
         Func<Task> act = async () =>
             await this._handler.Handle(LogRefresherQueryMother.With(current.Value), CancellationToken.None);
 
         await act.Should().ThrowAsync<AuthInvalidRefreshTokenError>();
-        this.ShouldHaveRevokedAllTokensOf(current.UserId);
+        this.ShouldHaveRevokedAllTokensOf(current.UserId, now);
         this.ShouldNotHaveRotated();
     }
 
@@ -138,17 +141,19 @@ public sealed class LogRefresherShould : AuthenticationUnitTestCase
     [Test]
     public async Task revoke_every_token_of_the_user_when_the_rotation_loses_the_race()
     {
+        DateTime now = DateTime.UtcNow;
         RefreshToken current = RefreshTokenMother.Random();
-        this.ShouldBeNow(DateTime.UtcNow);
+        UserResponse user = UserResponseMother.With(id: current.UserId);
+        this.ShouldBeNow(now);
         this.ShouldFindRefreshToken(current);
-        this.ShouldFindUser(UserResponseMother.With(id: current.UserId));
-        this.ShouldGenerateAccessToken(TokenMother.Random());
-        this.ShouldRotate(false);
+        this.ShouldFindUser(user);
+        this.ShouldGenerateAccessToken(user, TokenMother.Random());
+        this.ShouldRotate(current, false, now);
 
         Func<Task> act = async () =>
             await this._handler.Handle(LogRefresherQueryMother.With(current.Value), CancellationToken.None);
 
         await act.Should().ThrowAsync<AuthInvalidRefreshTokenError>();
-        this.ShouldHaveRevokedAllTokensOf(current.UserId);
+        this.ShouldHaveRevokedAllTokensOf(current.UserId, now);
     }
 }

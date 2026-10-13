@@ -37,7 +37,7 @@ public sealed class UserFinderShould : UsersUnitTestCase
     [Test]
     public async Task fail_when_the_user_does_not_exist()
     {
-        this.ShouldFindUser(null);
+        this.ShouldNotFindUser();
 
         Func<Task> act = async () => await this._handler.Handle(UserFinderQueryMother.Random(), CancellationToken.None);
 

@@ -57,24 +57,34 @@ public abstract class ChatbotsUnitTestCase : UnitTestCase
         this._llmRequests.Clear();
     }
 
-    protected void ShouldFindConversation(Conversation? conversation) =>
+    protected void ShouldFindConversation(Conversation conversation) =>
         this.ConversationsRepository
-            .Setup(repository => repository.FindById(It.IsAny<ConversationId>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.FindById(conversation.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(conversation);
 
-    protected void ShouldFindChatbot(Chatbot? chatbot) =>
+    protected void ShouldNotFindConversation() =>
+        this.ConversationsRepository
+            .Setup(repository => repository.FindById(It.IsAny<ConversationId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as Conversation);
+
+    protected void ShouldFindChatbot(Chatbot chatbot) =>
+        this.ChatbotsRepository
+            .Setup(repository => repository.FindById(chatbot.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(chatbot);
+
+    protected void ShouldNotFindChatbot() =>
         this.ChatbotsRepository
             .Setup(repository => repository.FindById(It.IsAny<ChatbotId>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(chatbot);
+            .ReturnsAsync(null as Chatbot);
 
     protected void ShouldFindChatbotDetail(ChatbotDetailResponse detail) =>
         this.QueryBus
-            .Setup(bus => bus.Ask(It.IsAny<ChatbotDetailFinder.Query>(), It.IsAny<CancellationToken>()))
+            .Setup(bus => bus.Ask(It.Is<ChatbotDetailFinder.Query>(query => query.Id == detail.Id), It.IsAny<CancellationToken>()))
             .ReturnsAsync(detail);
 
     protected void ShouldNotFindChatbotDetail(Guid id) =>
         this.QueryBus
-            .Setup(bus => bus.Ask(It.IsAny<ChatbotDetailFinder.Query>(), It.IsAny<CancellationToken>()))
+            .Setup(bus => bus.Ask(It.Is<ChatbotDetailFinder.Query>(query => query.Id == id), It.IsAny<CancellationToken>()))
             .ThrowsAsync(ChatbotDetailErrors.NotFound(id.ToString()));
 
     protected void ShouldAnswer(string provider, params string[] chunks) =>

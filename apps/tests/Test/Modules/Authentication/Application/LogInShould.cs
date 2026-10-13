@@ -31,9 +31,9 @@ public sealed class LogInShould : AuthenticationUnitTestCase
         UserResponse user = UserResponseMother.Random();
         Token token = TokenMother.Random();
         this.ShouldVerifyCredentials(user);
-        this.ShouldGenerateAccessToken(token);
+        this.ShouldGenerateAccessToken(user, token);
 
-        AuthenticationResponse response = await this._handler.Handle(LogInQueryMother.Random(), CancellationToken.None);
+        AuthenticationResponse response = await this._handler.Handle(LogInQueryMother.With(user.Email), CancellationToken.None);
 
         response.Token.AccessToken.Should().Be(token.Value);
         response.Token.ExpiresAt.Should().Be(token.ExpiresAt);
@@ -45,9 +45,9 @@ public sealed class LogInShould : AuthenticationUnitTestCase
     {
         UserResponse user = UserResponseMother.WithAdmin();
         this.ShouldVerifyCredentials(user);
-        this.ShouldGenerateAccessToken(TokenMother.Random());
+        this.ShouldGenerateAccessToken(user, TokenMother.Random());
 
-        await this._handler.Handle(LogInQueryMother.Random(), CancellationToken.None);
+        await this._handler.Handle(LogInQueryMother.With(user.Email), CancellationToken.None);
 
         this.ShouldHaveGeneratedAccessTokenFor(user);
     }
@@ -59,9 +59,9 @@ public sealed class LogInShould : AuthenticationUnitTestCase
         UserResponse user = UserResponseMother.Random();
         this.ShouldBeNow(now);
         this.ShouldVerifyCredentials(user);
-        this.ShouldGenerateAccessToken(TokenMother.Random());
+        this.ShouldGenerateAccessToken(user, TokenMother.Random());
 
-        AuthenticationResponse response = await this._handler.Handle(LogInQueryMother.Random(), CancellationToken.None);
+        AuthenticationResponse response = await this._handler.Handle(LogInQueryMother.With(user.Email), CancellationToken.None);
 
         DateTime expiresAt = now.AddDays(this.Jwt.Value.RefreshTokenDays);
         response.RefreshTokenExpiresAt.Should().Be(expiresAt);

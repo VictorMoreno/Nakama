@@ -55,7 +55,7 @@ public sealed class ChatbotIconUpdaterShould : ChatbotsUnitTestCase
     [Test]
     public async Task fail_without_touching_the_storage_when_the_chatbot_does_not_exist()
     {
-        this.ShouldFindChatbot(null);
+        this.ShouldNotFindChatbot();
 
         Func<Task> act = async () =>
             await this._handler.Handle(ChatbotIconUpdaterCommandMother.WithUpload(), CancellationToken.None);

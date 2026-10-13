@@ -12,8 +12,13 @@ public abstract class ConversationHistoryUnitTestCase : UnitTestCase
     [SetUp]
     public void ConversationHistorySetUp() => this.HistoriesRepository.Reset();
 
-    protected void ShouldFindConversationHistory(ConversationHistoryEntity? history) =>
+    protected void ShouldFindConversationHistory(ConversationHistoryEntity history) =>
+        this.HistoriesRepository
+            .Setup(repository => repository.FindById(history.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(history);
+
+    protected void ShouldNotFindConversationHistory() =>
         this.HistoriesRepository
             .Setup(repository => repository.FindById(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(history);
+            .ReturnsAsync(null as ConversationHistoryEntity);
 }
