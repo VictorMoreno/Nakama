@@ -53,6 +53,25 @@ public sealed class ChatbotTeamMemberRemoverShould : ChatbotsUnitTestCase
     }
 
     [Test]
+    [TestCase(-1)]
+    [TestCase(1)]
+    public async Task fail_without_saving_anything_when_the_index_is_out_of_range(int index)
+    {
+        TeamMember owner = TeamMemberMother.With(role: TeamRole.Owner);
+        Chatbot chatbot = ChatbotMother.With(team: [owner]);
+        this.ShouldFindChatbot(chatbot);
+
+        Func<Task> act = async () => await this._handler.Handle(
+            ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, index),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<ChatbotTeamMemberNotFoundError>();
+        chatbot.Team.Should().Equal(owner);
+        this.ShouldNotHaveSavedAnyChatbot();
+        this.ShouldNotHavePublishedAnything();
+    }
+
+    [Test]
     public async Task fail_without_saving_anything_when_the_chatbot_does_not_exist()
     {
         this.ShouldFindChatbot(null);

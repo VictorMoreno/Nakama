@@ -35,6 +35,9 @@ public sealed class ChatbotTeamMemberAlreadyExistsError(string userId)
 public sealed class ChatbotDocumentNotFoundError(string id)
     : DomainError("nakama.chatbot_documents.not_found", $"Document '{id}' not found.");
 
+public sealed class ChatbotTeamMemberNotFoundError(string index)
+    : DomainError("nakama.chatbot_team_members.not_found", $"Team member '{index}' not found.");
+
 public static class ChatbotErrors
 {
     public static DomainError OwnerCannotBeRemoved { get; } = new ChatbotOwnerCannotBeRemovedError();
@@ -46,6 +49,10 @@ public static class ChatbotErrors
     public static DomainError NotFound(ChatbotId id) => new ChatbotNotFoundError(id.ToString());
 
     public static DomainError DocumentNotFound(Guid id) => new ChatbotDocumentNotFoundError(id.ToString());
+
+    public static DomainError DocumentNotFoundAt(int index) => new ChatbotDocumentNotFoundError(index.ToString());
+
+    public static DomainError TeamMemberNotFoundAt(int index) => new ChatbotTeamMemberNotFoundError(index.ToString());
 
     public static DomainError AlreadyExists(string id) => new ChatbotAlreadyExistsError(id);
 

@@ -70,6 +70,11 @@ public partial class Chatbot
 
     public void RemoveDocument(int index)
     {
+        if (index < 0 || index >= this._documents.Count)
+        {
+            throw ChatbotErrors.DocumentNotFoundAt(index);
+        }
+
         this._documents.RemoveAt(index);
         this.Record(new ChatbotDocumentRemoved(this.Id, index));
     }
@@ -87,6 +92,11 @@ public partial class Chatbot
 
     public void RemoveTeamMember(int index)
     {
+        if (index < 0 || index >= this._team.Count)
+        {
+            throw ChatbotErrors.TeamMemberNotFoundAt(index);
+        }
+
         if (this._team[index].IsOwner)
         {
             throw ChatbotErrors.OwnerCannotBeRemoved;

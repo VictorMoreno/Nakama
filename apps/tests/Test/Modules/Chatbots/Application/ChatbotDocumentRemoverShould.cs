@@ -36,6 +36,25 @@ public sealed class ChatbotDocumentRemoverShould : ChatbotsUnitTestCase
     }
 
     [Test]
+    [TestCase(-1)]
+    [TestCase(1)]
+    public async Task fail_without_deleting_any_file_when_the_index_is_out_of_range(int index)
+    {
+        Chatbot chatbot = ChatbotMother.With(documents: [ChatbotDocumentMother.Random()]);
+        this.ShouldFindChatbot(chatbot);
+
+        Func<Task> act = async () => await this._handler.Handle(
+            ChatbotDocumentRemoverCommandMother.With(chatbot.Id.Value, index),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<ChatbotDocumentNotFoundError>();
+        chatbot.Documents.Should().HaveCount(1);
+        this.ShouldNotHaveDeletedAnyDocumentFile();
+        this.ShouldNotHaveSavedAnyChatbot();
+        this.ShouldNotHavePublishedAnything();
+    }
+
+    [Test]
     public async Task fail_without_deleting_any_file_when_the_chatbot_does_not_exist()
     {
         this.ShouldFindChatbot(null);
