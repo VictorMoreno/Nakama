@@ -10,11 +10,14 @@ public abstract class UnitTestCase
 
     protected Mock<IEventBus> EventBus { get; } = new();
 
+    protected Mock<IQueryBus> QueryBus { get; } = new();
+
     [SetUp]
     public void BaseSetUp()
     {
         this.Clock.Reset();
         this.EventBus.Reset();
+        this.QueryBus.Reset();
     }
 
     protected void ShouldBeNow(DateTime now) => this.Clock.Setup(clock => clock.UtcNow).Returns(now);

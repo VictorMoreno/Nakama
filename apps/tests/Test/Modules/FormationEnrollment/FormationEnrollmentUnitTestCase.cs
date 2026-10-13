@@ -4,21 +4,17 @@ using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Application.Finder;
 using Nakama.FormationDetail.Domain.Errors;
 using Nakama.FormationEnrollment.Domain;
-using Nakama.Shared.Domain;
 using Test.Modules.Shared;
 
 namespace Test.Modules.FormationEnrollment;
 
 public abstract class FormationEnrollmentUnitTestCase : UnitTestCase
 {
-    protected Mock<IQueryBus> QueryBus { get; } = new();
-
     protected Mock<IFormationEnrollmentRepository> EnrollmentsRepository { get; } = new();
 
     [SetUp]
     public void FormationEnrollmentSetUp()
     {
-        this.QueryBus.Reset();
         this.EnrollmentsRepository.Reset();
     }
 

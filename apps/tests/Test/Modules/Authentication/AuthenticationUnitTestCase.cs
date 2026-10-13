@@ -14,8 +14,6 @@ namespace Test.Modules.Authentication;
 
 public abstract class AuthenticationUnitTestCase : UnitTestCase
 {
-    protected Mock<IQueryBus> QueryBus { get; } = new();
-
     protected Mock<IRefreshTokensRepository> RefreshTokens { get; } = new();
 
     protected Mock<ITokenGenerator> TokenGenerator { get; } = new();
@@ -25,7 +23,6 @@ public abstract class AuthenticationUnitTestCase : UnitTestCase
     [SetUp]
     public void AuthenticationSetUp()
     {
-        this.QueryBus.Reset();
         this.RefreshTokens.Reset();
         this.TokenGenerator.Reset();
     }
