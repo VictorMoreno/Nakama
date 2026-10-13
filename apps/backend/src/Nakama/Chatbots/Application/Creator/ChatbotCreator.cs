@@ -33,10 +33,7 @@ public static class ChatbotCreator
         }
     }
 
-    public sealed class Creator(
-        IChatbotsRepository repository,
-        IEventBus eventBus,
-        ISystemClock systemClock) : IService
+    public sealed class Creator(IChatbotsRepository repository, IEventBus eventBus) : IService
     {
         public async Task Execute(
             ChatbotId id,
@@ -51,7 +48,7 @@ public static class ChatbotCreator
                 throw ChatbotErrors.AlreadyExists(id.ToString());
             }
 
-            Chatbot chatbot = Chatbot.Create(id, label, description, status, settings, systemClock);
+            Chatbot chatbot = Chatbot.Create(id, label, description, status, settings);
 
             await repository.Save(chatbot, cancellationToken);
             await eventBus.Publish(chatbot, cancellationToken);

@@ -25,12 +25,8 @@ public partial class User
         this.IsAdmin = isAdmin;
     }
 
-    public static User Create(UserId key, Email email, string name, bool isAdmin, ISystemClock systemClock)
-    {
-        User user = new(key, email.Value, email.Normalized, name, null, null, systemClock.UtcNow, isAdmin);
-        user.Record(new UserCreated(key, email.Value, name));
-        return user;
-    }
+    public static User Create(UserId key, Email email, string name, bool isAdmin, ISystemClock systemClock) =>
+        new(key, email.Value, email.Normalized, name, null, null, systemClock.UtcNow, isAdmin);
 
     public void SetPasswordHash(string? hash) => this.PasswordHash = hash;
 

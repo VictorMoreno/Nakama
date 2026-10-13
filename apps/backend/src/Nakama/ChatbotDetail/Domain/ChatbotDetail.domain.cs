@@ -2,23 +2,40 @@ namespace Nakama.ChatbotDetail.Domain;
 
 public partial class ChatbotDetail
 {
-    private ChatbotDetail(Guid key,
+    public ChatbotDetail(
+        Guid key,
         string label,
         string description,
         string status,
+        string context,
+        bool archived,
+        string? iconUrl,
         bool socratic,
         bool explicaMas,
         string provider,
-        string model)
+        string model,
+        List<ChatbotDocumentRow> docs,
+        List<TeamMemberRow> team,
+        List<GapQuestionRow> gaps,
+        List<GapQuestionRow> topQuestions,
+        List<StatTileRow> stats)
     {
         this.Id = key;
         this.Label = label;
         this.Description = description;
         this.Status = status;
+        this.Context = context;
+        this.Archived = archived;
+        this.IconUrl = iconUrl;
         this.Socratic = socratic;
         this.ExplicaMas = explicaMas;
         this.Provider = provider;
         this.Model = model;
+        this.Docs = docs;
+        this.Team = team;
+        this.Gaps = gaps;
+        this.TopQuestions = topQuestions;
+        this.Stats = stats;
     }
 
     public static ChatbotDetail Create(Guid key,
@@ -29,7 +46,23 @@ public partial class ChatbotDetail
         bool explicaMas,
         string provider,
         string model) =>
-        new(key, label, description, status, socratic, explicaMas, provider, model);
+        new(
+            key,
+            label,
+            description,
+            status,
+            string.Empty,
+            false,
+            null,
+            socratic,
+            explicaMas,
+            provider,
+            model,
+            [],
+            [],
+            [],
+            [],
+            []);
 
     public void UpdateStatus(string status) => this.Status = status;
 

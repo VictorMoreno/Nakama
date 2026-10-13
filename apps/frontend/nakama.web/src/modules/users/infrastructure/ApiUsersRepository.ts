@@ -14,7 +14,7 @@ export class ApiUsersRepository implements IUsersRepository {
   }
 
   async FindAll(): Promise<UserSummary[]> {
-    const rows = await this.client.usersAll();
+    const rows = await this.client.users();
     return rows.map(toUserSummary);
   }
 }

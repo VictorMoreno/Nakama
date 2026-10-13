@@ -107,21 +107,19 @@ publish would lose the event; acceptable for the current scope, worth revisiting
 
 ### ADR-9: Denormalized read-model entities pattern
 
-A read entity (`ChatbotSummary`, `ChatbotDetail`, `FormationSummary`, `FormationDetail`, `ChatPage`, `Analytics`)
+A read entity (`ChatbotSummary`, `ChatbotDetail`, `FormationSummary`, `FormationDetail`, `Analytics`)
 implements `IEntity` like any domain entity but is **not** an `AggregateRoot`: it never raises its own events, it only
 consumes events raised by a real aggregate, and it's fed exclusively through its own module's `Application/Handlers`.
 One read model exists per route, not per tab/section — e.g. `ChatbotDetail` covers all 4 tabs (General, Documents, Team,
 Analytics) of `/chatbots/:key` in one entity, including a cross-aggregate derivation
 (`Apply(ConversationExchangeAppended)` computes the Analytics tab's "most repeated questions" from `Conversation`
 events). Where no real signal exists yet for a field (e.g. `ChatbotDetail.Gaps`, "was this answer good"), it's
-deliberately left empty rather than faking a heuristic. `ChatPage` is the clearest cross-aggregate case: fed by both
-`Chatbot` (label/settings) and `Conversation` (history) events without either aggregate referencing the other's Domain
-type. `Analytics` is the degenerate case: not an aggregate, no identity of its own, a singleton row (`SingletonKey` is
+deliberately left empty rather than faking a heuristic. `Analytics` is the degenerate case: not an aggregate, no identity of its own, a singleton row (`SingletonKey` is
 always `"global"`) computed entirely as a derived projection across `Chatbot`/`Conversation`/`Formation` events — see
 ADR-11 for its specific defensive-handler shape.
 
 **Where it applies:** `ChatbotSummaries/Domain/ChatbotSummary.cs`, `ChatbotDetail/Domain/ChatbotDetail.cs`,
-`FormationsList/Domain/FormationSummary.cs`, `FormationDetail/Domain/FormationDetail.cs`, `ChatPage/Domain/ChatPage.cs`,
+`FormationsList/Domain/FormationSummary.cs`, `FormationDetail/Domain/FormationDetail.cs`,
 `Analytics/Domain/Analytics.cs`
 
 ### ADR-10: Cross-module event subscriptions are intentional projection coupling
@@ -343,7 +341,7 @@ marker, so resolving by the interface would be ambiguous.
 **Naming the nested class**: it is named after what it does, matching the outer static class's own suffix —
 `ChatbotCreator.Creator`, `ChatbotDocumentAdder.Adder`, `ChatbotDocumentRemover.Remover`,
 `ChatbotStatusUpdater.Updater`, `ConversationExchangeAppender.Appender`, `FormationModuleGatingToggler.Toggler`,
-`FormationModuleCompleter.Completer`, `ChatbotDetailFinder.Finder`, `ChatPageFinder.Finder`,
+`FormationModuleCompleter.Completer`, `ChatbotDetailFinder.Finder`,
 `FormationDetailFinder.Finder`, `AnalyticsFinder.Finder`, `ChatbotSummarySearcher.Searcher`,
 `FormationSummarySearcher.Searcher`. It is *not* always called `Updater` — that name is reserved for cases that are
 genuinely an update of an existing aggregate's field (`ChatbotStatusUpdater`, `ChatbotSettingsUpdater`,
@@ -366,7 +364,7 @@ genuinely an update of an existing aggregate's field (`ChatbotStatusUpdater`, `C
 
 **Queries don't get a `Domain/Services` finder of their own.** `ChatbotFinderById`/`FormationFinderById` exist because
 the *same* "find this aggregate or throw `NotFound`" logic is genuinely repeated across many different Commands for the
-same aggregate. Every read-model Query (`ChatbotDetailFinder`, `ChatPageFinder`, `FormationDetailFinder`,
+same aggregate. Every read-model Query (`ChatbotDetailFinder`, `FormationDetailFinder`,
 `AnalyticsFinder`, and the two Searchers) has exactly one consumer — its own `Handler` — so the `Finder`/`Searcher`
 nested class already *is* the use case; there's no second caller to justify pulling the fetch logic out into a shared
 `Domain/Services` class the way the write side does.
@@ -484,14 +482,14 @@ Wrong credentials are neither a not-found nor a conflict, and 401 is the correct
 `switch` the other two rules already live in.
 
 **`Email` is a domain value object** (`Users/Domain/Email.cs`) wrapping the raw string plus a computed `Normalized`
-property, used from `UserCreator`/`UserAuthenticator` onward so neither caller — nor any future Users use case — has to
+property, used by the Users use cases (`UserCredentialsVerifier` today) so no caller — nor any future Users use case — has to
 remember to call `.ToUpperInvariant()` itself; the constructor also rejects an obviously malformed value
 (`UserErrors.InvalidEmail`, falls through to 422). It is **not** an `IStringValueObject`/`ValueObjectUserType<T>`
 (ADR-3): that pattern round-trips an identity value object through a *single* DB column via
 `Activator.CreateInstance`, but `Email`/`NormalizedEmail` persist as two independent columns because
 `IUserEmailStore<User>`'s contract sets each one separately (Identity's own store methods call
 `SetEmailAsync`/`SetNormalizedEmailAsync` independently) — `Email` only exists in Domain/Application code, never
-persisted as a unit. Command/Query DTOs (`UserCreator.Command`, `UserAuthenticator.Query`) still carry a plain `string
+persisted as a unit. Command/Query DTOs (`UserCredentialsVerifier.Query`) still carry a plain `string
 Email`, per ADR-18 — the `Handler` is what constructs `new Email(cmd.Email)`, same as every other domain-typed
 conversion in this codebase. `NhUserStore`'s own setters (`SetEmail`/`SetNormalizedEmail` on `User`) stay raw `string`
 on purpose: Identity computes those values itself (via its own normalizer) when calling into the store, never through
@@ -503,22 +501,15 @@ compares against a normalized index) into the interface contract, and still requ
 normalize before calling it. There is exactly one lookup method on the interface, not a second raw-string one for
 infrastructure's sake.
 
-**`UserEmailAvailabilityChecker`** (`Users/Domain/Services/UserEmailAvailabilityChecker.cs`) wraps the "email must not
-already belong to another user" check (`EnsureAvailable(Email, ct)`, throws `UserErrors.EmailAlreadyInUse`) — the one
-deliberate exception to ADR-18's own guidance for the Creator "must-not-already-exist" case ("a NotFound-throwing
-finder doesn't fit, keep the check inline... a single caller, not worth its own service class"). `UserCreator` is
-still the only caller today, but the check is a real invariant of the `Users` bounded context, not a
-`ChatbotCreator`-style one-off — a future email-change use case would need the exact same check, and giving it a name
-now (`EnsureAvailable`, mirroring `<Aggregate>FinderById`'s `Execute`) reads better at the call site than the raw
-`GetByEmail(...) is not null` check it replaces, even before that second caller exists.
+**User provisioning is out of the MVP.** The `UserCreator` use case, `POST /users` and everything that existed only for them
+(`UserEmailAvailabilityChecker`, `IUsersRepository.CreateWithPassword`, the `UserCreated` event and the
+`EmailAlreadyInUse`/`Invalid` errors) were removed; users come from the seed migrations. `GetByEmail` stays because
+credential verification needs it.
 
-**`IUsersRepository` also owns credential verification** (`CreateWithPassword(User, string, ct)`,
-`VerifyPassword(User, string, ct)`, both on `NhUsersRepository`, wrapping `UserManager<User>`) — `UserCreator` and
-`UserAuthenticator` no longer reference `Microsoft.AspNetCore.Identity` at all. This was an explicit call, made after
-weighing the alternative of a separate `IUserAccountManager` port: the counter-argument for keeping repository and
-credentials apart was that `UserManager.CreateAsync` already persists internally (via the store), so a repository
-method that both validates/hashes *and* persists behaves differently in kind from `Save`/`GetByEmail` on the same
-interface — the decision was made anyway, on the grounds that both concerns describe the same aggregate's contract.
+**`IUsersRepository` also owns credential verification** (`VerifyPassword(User, string, ct)` on `NhUsersRepository`, wrapping
+`UserManager<User>`) — `UserCredentialsVerifier` no longer references `Microsoft.AspNetCore.Identity` at all. This was an
+explicit call, made after weighing the alternative of a separate `IUserAccountManager` port, on the grounds that both
+concerns describe the same aggregate's contract.
 
 **Consequence, found live, not assumed: `NhUserStore` can no longer depend on `IUsersRepository`.**
 `NhUsersRepository` now depends on `UserManager<User>` for the credential methods; `UserManager<User>` needs an
@@ -593,7 +584,7 @@ found by letting the compiler error rather than assuming.
 
 `User.MarkActive` (ADR-20) raises `UserActivityRecorded`, but until this entry nothing subscribed to it, and — found
 live, not by reading the code — `UserAuthenticator.Authenticator.Execute` called `user.MarkActive(...)` and
-`repository.Save(user, ct)` but never `eventBus.Publish(user, ct)`, unlike `UserCreator`, which does. The event was
+`repository.Save(user, ct)` but never `eventBus.Publish(user, ct)`, unlike the other use cases that mutate an aggregate, which do. The event was
 being raised into the aggregate's own `DomainEvents` list and then silently dropped, forever — no exception, no log
 line, nothing, because there was nothing downstream to fail. Two logins against a running instance produced zero rows
 in the new table until `eventBus.Publish(user, ct)` was added to `Authenticator.Execute`; the same two logins

@@ -36,46 +36,6 @@ public abstract class UsersUnitTestCase : UnitTestCase
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(isValid);
 
-    protected void ShouldAcceptPassword() =>
-        this.Repository
-            .Setup(repository => repository.CreateWithPassword(
-                It.IsAny<User>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new UserCredentialResult(true, []));
-
-    protected void ShouldRejectPassword(string error) =>
-        this.Repository
-            .Setup(repository => repository.CreateWithPassword(
-                It.IsAny<User>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new UserCredentialResult(false, [error]));
-
-    protected void ShouldHaveCreated(UserId id, string password) =>
-        this.Repository.Verify(
-            repository => repository.CreateWithPassword(
-                It.Is<User>(user => user.Id == id),
-                password,
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-    protected void ShouldHaveCreatedUserAt(DateTime createdAt) =>
-        this.Repository.Verify(
-            repository => repository.CreateWithPassword(
-                It.Is<User>(user => user.CreatedAt == createdAt),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-    protected void ShouldNotHaveCreatedAnyUser() =>
-        this.Repository.Verify(
-            repository => repository.CreateWithPassword(
-                It.IsAny<User>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Never);
-
     protected void ShouldHaveSavedUser(User user) =>
         this.Repository.Verify(
             repository => repository.Save(user, It.IsAny<CancellationToken>()),
@@ -101,18 +61,8 @@ public abstract class UsersUnitTestCase : UnitTestCase
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
-    protected void ShouldHavePublishedUserCreated(UserId id) =>
-        this.EventBus.Verify(
-            bus => bus.Publish(
-                It.Is<AggregateRoot>(aggregate => RecordsUserCreated(aggregate, id)),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
     private static bool RecordsUserActivity(AggregateRoot aggregate, UserId id, DateTime occurredAt) =>
         aggregate.DomainEvents
             .OfType<UserActivityRecorded>()
             .Any(@event => @event.Id == id && @event.OccurredAt == occurredAt);
-
-    private static bool RecordsUserCreated(AggregateRoot aggregate, UserId id) =>
-        aggregate.DomainEvents.OfType<UserCreated>().Any(@event => @event.Id == id);
 }

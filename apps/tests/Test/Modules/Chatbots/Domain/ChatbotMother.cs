@@ -10,14 +10,12 @@ public static class ChatbotMother
         string label,
         string description,
         ChatbotStatus status,
-        string context,
         ChatbotSettings settings,
-        DateTime lastUsed,
         string? iconUrl,
         bool archived,
         IReadOnlyList<TeamMember> team,
         IReadOnlyList<ChatbotDocument> documents) =>
-        new(id, label, description, status, context, settings, lastUsed, iconUrl, archived, team, documents);
+        new(id, label, description, status, settings, iconUrl, archived, team, documents);
 
     public static Chatbot Random() => With();
 
@@ -30,9 +28,7 @@ public static class ChatbotMother
         string? label = null,
         string? description = null,
         ChatbotStatus? status = null,
-        string? context = null,
         ChatbotSettings? settings = null,
-        DateTime? lastUsed = null,
         string? iconUrl = null,
         bool? archived = null,
         IReadOnlyList<TeamMember>? team = null,
@@ -42,9 +38,7 @@ public static class ChatbotMother
             label ?? WordMother.Random(),
             description ?? WordMother.Random(),
             status ?? ChatbotStatus.Active,
-            context ?? WordMother.Random(),
             settings ?? ChatbotSettings.Default,
-            lastUsed ?? DateTime.UtcNow,
             iconUrl,
             archived ?? false,
             team ?? [],

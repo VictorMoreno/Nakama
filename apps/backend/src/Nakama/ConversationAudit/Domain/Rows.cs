@@ -1,7 +1,7 @@
 namespace Nakama.ConversationAudit.Domain;
 
 // Embedded (as JSON) inside ConversationAuditLog below - denormalized, immutable record data,
-// not a domain value object. Same convention as ChatPage/Domain/Rows.cs.
+// not a domain value object. Same convention as ChatbotDetail/Domain/Rows.cs.
 
 public sealed class AuditMessageRow
 {

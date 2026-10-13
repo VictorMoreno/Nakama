@@ -9,7 +9,7 @@ import type { Formation, FormationLifecycleStatus } from "../modules/formations/
  */
 export type StatusLevel = "ok" | "pending" | "muted" | "danger";
 
-export interface EntityStatus {
+interface EntityStatus {
   level: StatusLevel;
   label: string;
 }

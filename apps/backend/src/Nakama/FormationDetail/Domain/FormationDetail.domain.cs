@@ -2,22 +2,30 @@ namespace Nakama.FormationDetail.Domain;
 
 public partial class FormationDetail
 {
-    private FormationDetail(
+    public FormationDetail(
         Guid key,
         string title,
         string audience,
         string description,
         string status,
+        bool archived,
+        string? iconUrl,
         Guid? linkedChatbotKey,
-        string? linkedChatbotLabel)
+        string? linkedChatbotLabel,
+        List<FormationModuleRow> modules,
+        List<FormationMemberRow> team)
     {
         this.Id = key;
         this.Title = title;
         this.Audience = audience;
         this.Description = description;
         this.Status = status;
+        this.Archived = archived;
+        this.IconUrl = iconUrl;
         this.LinkedChatbotKey = linkedChatbotKey;
         this.LinkedChatbotLabel = linkedChatbotLabel;
+        this.Modules = modules;
+        this.Team = team;
     }
 
     public static FormationDetail Create(
@@ -28,7 +36,18 @@ public partial class FormationDetail
         string status,
         Guid? linkedChatbotKey,
         string? linkedChatbotLabel) =>
-        new(key, title, audience, description, status, linkedChatbotKey, linkedChatbotLabel);
+        new(
+            key,
+            title,
+            audience,
+            description,
+            status,
+            false,
+            null,
+            linkedChatbotKey,
+            linkedChatbotLabel,
+            [],
+            []);
 
     public void UpdateStatus(string status) => this.Status = status;
 

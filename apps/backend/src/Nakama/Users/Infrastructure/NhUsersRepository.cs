@@ -10,15 +10,8 @@ namespace Nakama.Users.Infrastructure;
 public sealed class NhUsersRepository(IWriteSessionFactory writeSessions, UserManager<User> userManager)
     : NhRepositoryBase<User, UserId>(writeSessions), IUsersRepository
 {
-    public async Task<UserCredentialResult> CreateWithPassword(User user, string password, CancellationToken ct)
-    {
-        IdentityResult result = await userManager.CreateAsync(user, password);
-        return new UserCredentialResult(result.Succeeded, result.Errors.Select(e => e.Description).ToList());
-    }
-
     public Task<bool> VerifyPassword(User user, string password, CancellationToken ct) =>
         userManager.CheckPasswordAsync(user, password);
-
 
     public async Task<User?> GetByEmail(Email email, CancellationToken ct)
     {

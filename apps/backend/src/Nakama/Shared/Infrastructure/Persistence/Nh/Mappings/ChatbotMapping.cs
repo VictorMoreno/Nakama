@@ -22,10 +22,8 @@ public sealed class ChatbotMapping : ClassMapping<Chatbot>
         this.Property(x => x.Label);
         this.Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
         this.Property(x => x.Status);
-        this.Property(x => x.Context, m => m.Column(c => c.SqlType("text")));
         this.Property(x => x.Archived);
         this.Property(x => x.IconUrl);
-        this.Property(x => x.LastUsed);
         this.Property(x => x.Settings, m =>
         {
             m.Type<JsonUserType<ChatbotSettings>>();

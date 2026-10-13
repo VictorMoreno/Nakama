@@ -25,11 +25,11 @@ apps/tests/
 
 ## 2) Convenciones de naming
 
-- Clases de prueba: sufijo `Should`, `sealed` y `[TestFixture]` (`UserCreatorShould`, `LogRefresherShould`).
+- Clases de prueba: sufijo `Should`, `sealed` y `[TestFixture]` (`UserFinderShould`, `LogRefresherShould`).
 - Métodos de prueba: snake_case descriptivo, legible como una frase (`fail_when_the_refresh_token_is_expired`).
 - Builders/fakers de datos: patrón `Mother`:
   - `<Entity>Mother` en `Domain/` (`UserMother`, `RefreshTokenMother`).
-  - `<UseCase>CommandMother` o `<UseCase>QueryMother` en `Application/` (`UserCreatorCommandMother`).
+  - `<UseCase>CommandMother` o `<UseCase>QueryMother` en `Application/` (`UserCredentialsVerifierQueryMother`).
   - Mothers de objetos de respuesta, junto al módulo que los define (`UserResponseMother`).
 - Bases de prueba: `UnitTestCase` (compartida) y `<Module>UnitTestCase` por módulo (`UsersUnitTestCase`).
 - Namespaces: `Test.Modules.<Module>.<Layer>`.
@@ -51,15 +51,20 @@ apps/tests/
 
 ```csharp
 [Test]
-public async Task fail_without_creating_anything_when_email_is_already_in_use()
+public async Task fail_without_recording_activity_when_the_password_is_wrong()
 {
-    UserCreator.Command command = UserCreatorCommandMother.Random();
-    this.ShouldFindUserByEmail(UserMother.WithEmail(new Email(command.Email)));
+    User user = UserMother.Random();
+    this.ShouldBeNow(DateTime.UtcNow);
+    this.ShouldFindUserByEmail(user);
+    this.ShouldVerifyPassword(false);
 
-    Func<Task> act = async () => await this._handler.Handle(command, CancellationToken.None);
+    Func<Task> act = async () => await this._handler.Handle(
+        UserCredentialsVerifierQueryMother.With(user.Email),
+        CancellationToken.None);
 
-    await act.Should().ThrowAsync<UserEmailAlreadyInUseError>();
-    this.ShouldNotHaveCreatedAnyUser();
+    await act.Should().ThrowAsync<UserInvalidCredentialsError>();
+    user.LastActiveAt.Should().BeNull();
+    this.ShouldNotHaveSavedAnyUser();
     this.ShouldNotHavePublishedAnything();
 }
 ```

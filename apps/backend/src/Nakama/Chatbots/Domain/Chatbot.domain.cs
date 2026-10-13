@@ -1,6 +1,5 @@
 using Nakama.Chatbots.Domain.Errors;
 using Nakama.Chatbots.Domain.Events;
-using Nakama.Shared.Domain;
 
 namespace Nakama.Chatbots.Domain;
 
@@ -11,9 +10,7 @@ public partial class Chatbot
         string label,
         string description,
         ChatbotStatus status,
-        string context,
         ChatbotSettings settings,
-        DateTime lastUsed,
         string? iconUrl,
         bool archived,
         IReadOnlyList<TeamMember> team,
@@ -23,9 +20,7 @@ public partial class Chatbot
         this.Label = label;
         this.Description = description;
         this.Status = status;
-        this.Context = context;
         this.Settings = settings;
-        this.LastUsed = lastUsed;
         this.IconUrl = iconUrl;
         this.Archived = archived;
         this._team.AddRange(team);
@@ -37,10 +32,9 @@ public partial class Chatbot
         string label,
         string description,
         ChatbotStatus status,
-        ChatbotSettings settings,
-        ISystemClock systemClock)
+        ChatbotSettings settings)
     {
-        Chatbot chatbot = new(key, label, description, status, string.Empty, settings, systemClock.UtcNow, null, false, [], []);
+        Chatbot chatbot = new(key, label, description, status, settings, null, false, [], []);
         chatbot.Record(new ChatbotCreated(key, label, description, status, settings));
         return chatbot;
     }

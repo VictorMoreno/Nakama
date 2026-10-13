@@ -1,4 +1,3 @@
-using Nakama.LlmProviders.Domain.Events;
 using Nakama.Shared.Domain;
 
 namespace Nakama.LlmProviders.Domain;
@@ -18,11 +17,7 @@ public partial class LlmProviderConfig
 
     public static LlmProviderConfig Register(LlmProvider provider, string apiKey, bool enabled, IReadOnlyList<LlmModelOption> models,
         ISystemClock systemClock)
-    {
-        LlmProviderConfig config = new(LlmProviderConfigId.From(Guid.NewGuid()), provider, apiKey, enabled, models, systemClock.UtcNow);
-        config.Record(new LlmProviderConfigured(config.Id, provider, enabled, models));
-        return config;
-    }
+        => new(LlmProviderConfigId.From(Guid.NewGuid()), provider, apiKey, enabled, models, systemClock.UtcNow);
 
     public void Update(string apiKey, bool enabled, IReadOnlyList<LlmModelOption> models, ISystemClock systemClock)
     {
@@ -31,7 +26,5 @@ public partial class LlmProviderConfig
         this._models.Clear();
         this._models.AddRange(models);
         this.UpdatedAt = systemClock.UtcNow;
-
-        this.Record(new LlmProviderConfigured(this.Id, this.Provider, enabled, models));
     }
 }

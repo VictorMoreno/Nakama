@@ -14,15 +14,11 @@ public partial class Chatbot : AggregateRoot<ChatbotId>
 
     public ChatbotStatus Status { get; private set; }
 
-    public string Context { get; private set; } = string.Empty;
-
     public bool Archived { get; private set; }
 
     public string? IconUrl { get; private set; }
 
     public ChatbotSettings Settings { get; private set; } = ChatbotSettings.Default;
-
-    public DateTime LastUsed { get; private set; }
 
     private readonly List<ChatbotDocument> _documents = [];
     public IReadOnlyCollection<ChatbotDocument> Documents => this._documents;

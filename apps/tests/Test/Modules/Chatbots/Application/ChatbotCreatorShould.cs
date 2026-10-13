@@ -16,8 +16,7 @@ public sealed class ChatbotCreatorShould : ChatbotsUnitTestCase
     [SetUp]
     public void SetUp()
     {
-        this._handler = new ChatbotCreator.Handler(
-            new(this.ChatbotsRepository.Object, this.EventBus.Object, this.Clock.Object));
+        this._handler = new ChatbotCreator.Handler(new(this.ChatbotsRepository.Object, this.EventBus.Object));
     }
 
     [Test]
@@ -40,18 +39,6 @@ public sealed class ChatbotCreatorShould : ChatbotsUnitTestCase
             && chatbot.Status == (ChatbotStatus)command.Status
             && chatbot.Settings == settings);
         this.ShouldHavePublished<ChatbotCreated>(@event => @event.Id.Value == command.Id);
-    }
-
-    [Test]
-    public async Task stamp_the_last_used_date_with_the_time_given_by_the_clock()
-    {
-        DateTime now = DateTime.UtcNow;
-        this.ShouldBeNow(now);
-        this.ShouldFindChatbot(null);
-
-        await this._handler.Handle(ChatbotCreatorCommandMother.Random(), CancellationToken.None);
-
-        this.ShouldHaveSavedChatbotMatching(chatbot => chatbot.LastUsed == now);
     }
 
     [Test]

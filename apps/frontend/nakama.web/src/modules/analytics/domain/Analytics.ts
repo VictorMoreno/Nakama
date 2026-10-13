@@ -1,4 +1,4 @@
-export interface UsageByBot {
+interface UsageByBot {
   botKey: string;
   value: number;
 }

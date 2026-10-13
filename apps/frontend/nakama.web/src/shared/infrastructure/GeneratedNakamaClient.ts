@@ -139,12 +139,6 @@ export interface IGeneratedNakamaClient {
     chatbotsAll(): Promise<ChatbotSummaryResponse[]>;
 
     /**
-     * Gets the chat UI projection for one chatbot (opening example).
-     * @return OK
-     */
-    chatPage(id: string): Promise<ChatPageResponse>;
-
-    /**
      * Gets the caller's conversation history for one chatbot.
      * @return OK
      */
@@ -254,16 +248,10 @@ export interface IGeneratedNakamaClient {
     llmProviders(provider: number, body: RegisterLlmProviderRequest): Promise<void>;
 
     /**
-     * Admin-provisions a new user with an initial password.
-     * @return Created
-     */
-    users(body: CreateUserRequest): Promise<void>;
-
-    /**
      * Lists all users in the system (id, name, email) - e.g. to populate a team-assignment picker.
      * @return OK
      */
-    usersAll(): Promise<UserSummaryResponse[]>;
+    users(): Promise<UserSummaryResponse[]>;
 }
 
 export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNakamaClient {
@@ -949,6 +937,12 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
             return throwException("Not Found", status, _responseText, _headers, result404);
             });
+        } else if (status === 409) {
+            return response.text().then((_responseText) => {
+            let result409: any = null;
+            result409 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Conflict", status, _responseText, _headers, result409);
+            });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
@@ -1197,54 +1191,6 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             });
         }
         return Promise.resolve<ChatbotSummaryResponse[]>(null as any);
-    }
-
-    /**
-     * Gets the chat UI projection for one chatbot (opening example).
-     * @return OK
-     */
-    chatPage(id: string): Promise<ChatPageResponse> {
-        let url_ = this.baseUrl + "/api/chatbots/{id}/chat-page";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processChatPage(_response));
-        });
-    }
-
-    protected processChatPage(response: Response): Promise<ChatPageResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ChatPageResponse;
-            return result200;
-            });
-        } else if (status === 404) {
-            return response.text().then((_responseText) => {
-            let result404: any = null;
-            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
-            return throwException("Not Found", status, _responseText, _headers, result404);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ChatPageResponse>(null as any);
     }
 
     /**
@@ -2121,56 +2067,10 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Admin-provisions a new user with an initial password.
-     * @return Created
-     */
-    users(body: CreateUserRequest): Promise<void> {
-        let url_ = this.baseUrl + "/api/users";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        };
-
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processUsers(_response));
-        });
-    }
-
-    protected processUsers(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 201) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 409) {
-            return response.text().then((_responseText) => {
-            let result409: any = null;
-            result409 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
-            return throwException("Conflict", status, _responseText, _headers, result409);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
      * Lists all users in the system (id, name, email) - e.g. to populate a team-assignment picker.
      * @return OK
      */
-    usersAll(): Promise<UserSummaryResponse[]> {
+    users(): Promise<UserSummaryResponse[]> {
         let url_ = this.baseUrl + "/api/users";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -2184,11 +2084,11 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processUsersAll(_response));
+            return this.transformResult(url_, _response, (_response: Response) => this.processUsers(_response));
         });
     }
 
-    protected processUsersAll(response: Response): Promise<UserSummaryResponse[]> {
+    protected processUsers(response: Response): Promise<UserSummaryResponse[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2238,30 +2138,11 @@ export interface AnalyticsResponse {
     totalFeedbackCount?: number;
 }
 
-export interface ChatExampleRow {
-    question?: string | undefined;
-    answer?: string | undefined;
-    citation?: string | undefined;
-    moreExplanation?: string | undefined;
-    socraticVariant?: string | undefined;
-}
-
-export interface ChatPageResponse {
-    id?: string;
-    label?: string | undefined;
-    context?: string | undefined;
-    socratic?: boolean;
-    explicaMas?: boolean;
-    provider?: string | undefined;
-    opening?: ChatExampleRow;
-}
-
 export interface ChatbotDetailResponse {
     id?: string;
     label?: string | undefined;
     description?: string | undefined;
     status?: string | undefined;
-    lastUsed?: Date;
     context?: string | undefined;
     archived?: boolean;
     iconUrl?: string | undefined;
@@ -2330,13 +2211,6 @@ export interface CreateFormationRequest {
     description?: string | undefined;
     status?: number;
     linkedChatbotKey?: string | undefined;
-}
-
-export interface CreateUserRequest {
-    email?: string | undefined;
-    name?: string | undefined;
-    isAdmin?: boolean;
-    initialPassword?: string | undefined;
 }
 
 export interface FormationDetailResponse {

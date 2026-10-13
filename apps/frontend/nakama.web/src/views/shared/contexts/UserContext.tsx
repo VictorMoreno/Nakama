@@ -7,7 +7,7 @@ import { AuthSession } from "../../../shared/infrastructure/auth/AuthSession";
 import { Services } from "../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../shared/infrastructure/injection/useInjection";
 
-export interface CurrentUser {
+interface CurrentUser {
   id: string;
   email: string;
   name: string;

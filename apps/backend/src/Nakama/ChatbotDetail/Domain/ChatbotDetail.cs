@@ -10,7 +10,6 @@ public partial class ChatbotDetail : IEntity
     public string Label { get; protected set; } = string.Empty;
     public string Description { get; protected set; } = string.Empty;
     public string Status { get; protected set; } = string.Empty;
-    public DateTime LastUsed { get; protected set; }
     public string Context { get; protected set; } = string.Empty;
     public bool Archived { get; protected set; }
     public string? IconUrl { get; protected set; }

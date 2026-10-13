@@ -184,49 +184,59 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   `Analytics/Domain/Analytics.domain.cs` (`From`/`Apply`); mismo split en
   `Chatbots/Domain/Chatbot.cs`/`.domain.cs`, `ChatbotSummaries/Domain/ChatbotSummary.cs`/`.domain.cs`,
   etc.
-- **Toda entidad de dominio construye con un constructor `private` con todos los parámetros de
-  negocio, nunca con `new() { Prop = valor, ... }` en el factory — agregados de escritura Y
-  entidades de lectura (§7) por igual**: una entidad de lectura también necesita una creación
-  real para poder persistirse, aunque no extienda `AggregateRoot<TId>`. El constructor vive en
-  `.domain.cs` (es comportamiento, igual que `Create`/`From`), asigna cada propiedad en su
-  cuerpo, y es `private` — el único punto que lo invoca es el propio `Create`/`From` de la
-  entidad, manteniendo ese factory como la única puerta de entrada pública para construir la
-  entidad con datos. Ejemplo en un agregado de escritura (`Chatbots/Domain/Chatbot.domain.cs`):
+- **Toda entidad de dominio tiene un constructor `public` con TODOS sus campos — agregados de
+  escritura Y entidades de lectura (§7) por igual**: la entidad se puede construir en cualquier
+  estado (los tests la construyen con sus Mothers, incluido un estado inválido) sin pasar por
+  el factory. El constructor recibe cada propiedad de la clase, en el mismo orden, también las
+  que el factory deja por defecto o las derivadas (p. ej. `TokenHash`), nunca solo las que el
+  factory necesita en ese momento. Vive en `.domain.cs`, asigna cada propiedad en su cuerpo y
+  no registra eventos. El factory (`Create`/`From`/`Start`) lo invoca con los valores por
+  defecto y es el que registra el evento de creación. Nunca `new() { Prop = valor, ... }`.
+  Ejemplo en un agregado de escritura (`Chatbots/Domain/Chatbot.domain.cs`):
   ```csharp
-  private Chatbot(ChatbotId key, string label, string description, ChatbotStatus status,
-      ChatbotSettings settings, DateTime lastUsed)
+  public Chatbot(ChatbotId key, string label, string description, ChatbotStatus status,
+      ChatbotSettings settings, string? iconUrl, bool archived,
+      IReadOnlyList<TeamMember> team, IReadOnlyList<ChatbotDocument> documents)
   {
       this.Id = key;
       this.Label = label;
       this.Description = description;
       this.Status = status;
       this.Settings = settings;
-      this.LastUsed = lastUsed;
+      this.IconUrl = iconUrl;
+      this.Archived = archived;
+      this._team.AddRange(team);
+      this._documents.AddRange(documents);
   }
 
   public static Chatbot Create(ChatbotId key, string label, string description,
-      ChatbotStatus status, ChatbotSettings settings, ISystemClock systemClock)
+      ChatbotStatus status, ChatbotSettings settings)
   {
-      var chatbot = new Chatbot(key, label, description, status, settings, systemClock.UtcNow);
+      Chatbot chatbot = new(key, label, description, status, settings, null, false, [], []);
       chatbot.Record(new ChatbotCreated(key, label, description, status, settings));
       return chatbot;
   }
   ```
   `Id` (heredado de `AggregateRoot<TId>`) tiene `protected set`, así que el constructor —parte
   de la misma clase `partial`— lo asigna sin problema. Mismo criterio en una entidad de lectura
-  (`ChatbotDetail/Domain/ChatbotDetail.domain.cs`), sin `AggregateRoot`/`Record`, solo asignar y
+  (`ChatbotSummaries/Domain/ChatbotSummary.domain.cs`), sin `AggregateRoot`/`Record`, solo asignar y
   devolver:
   ```csharp
-  private ChatbotDetail(string key, string label, string description, string status)
+  public ChatbotSummary(Guid key, string label, string description, string status,
+      int docsCount, int teamCount, bool archived, string? iconUrl)
   {
-      this.Key = key;
+      this.Id = key;
       this.Label = label;
       this.Description = description;
       this.Status = status;
+      this.DocsCount = docsCount;
+      this.TeamCount = teamCount;
+      this.Archived = archived;
+      this.IconUrl = iconUrl;
   }
 
-  public static ChatbotDetail Create(string key, string label, string description, string status) =>
-      new(key, label, description, status);
+  public static ChatbotSummary Create(Guid key, string label, string description, string status) =>
+      new(key, label, description, status, 0, 0, false, null);
   ```
 - Errores de negocio en `Domain/Errors`, heredando de `DomainError`, con código estable
   (`nakama.<módulo>...` — adaptado del `yq.spare_parts...` de la guía original). `DomainError`
@@ -329,7 +339,7 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
 - **Nombre de la entidad de lectura: siempre en singular** — una instancia representa un único
   registro proyectado, nunca la colección completa, y no lleva sufijo técnico que delate que
   "es una proyección" (`Entry`/`ReadModel`/`Row`): se nombra como un concepto de dominio, igual
-  que `ChatbotDetail`/`ChatPage`/`FormationDetail`. Coincide con el nombre del bounded context
+  que `ChatbotDetail`/`FormationDetail`. Coincide con el nombre del bounded context
   solo cuando ese nombre ya es singular. Cuando el bounded context describe una vista de
   listado y por eso es plural (`ChatbotSummaries`, `FormationsList` — una por ruta de listado:
   `/chatbots`, `/formacion`), la entidad **no** hereda ese plural: se nombra

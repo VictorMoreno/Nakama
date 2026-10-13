@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDownIcon } from "./icons";
 import styles from "./Select.module.scss";
 
-export interface SelectOption<T extends string> {
+interface SelectOption<T extends string> {
   value: T;
   label: string;
 }

@@ -2,12 +2,13 @@ namespace Nakama.ConversationHistory.Domain;
 
 public partial class ConversationHistory
 {
-    private ConversationHistory(Guid botKey)
+    public ConversationHistory(Guid botKey, List<ConversationSummaryRow> entries)
     {
         this.Id = botKey;
+        this.Entries = entries;
     }
 
-    public static ConversationHistory Create(Guid botKey) => new(botKey);
+    public static ConversationHistory Create(Guid botKey) => new(botKey, []);
 
     public void StartConversation(Guid id, Guid botKey, Guid userId, string title, DateTime startedAt) => this.Entries.Add(new ConversationSummaryRow
     {

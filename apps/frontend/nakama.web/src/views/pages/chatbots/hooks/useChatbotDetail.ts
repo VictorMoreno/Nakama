@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useUser } from "../../../shared/contexts/UserContext";
 
-export type TabKey = "config" | "docs" | "permisos" | "analitica";
+type TabKey = "config" | "docs" | "permisos" | "analitica";
 
 export const TABS: { key: TabKey; label: string }[] = [
   { key: "config", label: "General" },
