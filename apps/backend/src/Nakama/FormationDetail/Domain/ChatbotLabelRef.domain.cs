@@ -2,7 +2,7 @@ namespace Nakama.FormationDetail.Domain;
 
 public partial class ChatbotLabelRef
 {
-    private ChatbotLabelRef(Guid botKey, string label)
+    public ChatbotLabelRef(Guid botKey, string label)
     {
         this.Id = botKey;
         this.Label = label;
