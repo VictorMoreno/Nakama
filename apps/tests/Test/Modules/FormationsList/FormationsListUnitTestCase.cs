@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Nakama.FormationEnrollment.Domain;
@@ -58,5 +59,30 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
     protected void ShouldNotHaveSearchedFormationSummariesByIds() =>
         this.SummariesRepository.Verify(
             repository => repository.FindByIds(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+
+    protected void ShouldFindFormationSummary(FormationSummary summary) =>
+        this.SummariesRepository
+            .Setup(repository => repository.FindById(summary.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(summary);
+
+    protected void ShouldNotFindFormationSummary() =>
+        this.SummariesRepository
+            .Setup(repository => repository.FindById(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(null as FormationSummary);
+
+    protected void ShouldHaveSavedFormationSummaryMatching(Expression<Func<FormationSummary, bool>> matches) =>
+        this.SummariesRepository.Verify(
+            repository => repository.Save(It.Is(matches), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+    protected void ShouldHaveUpdatedFormationSummary(FormationSummary summary) =>
+        this.SummariesRepository.Verify(
+            repository => repository.Update(summary, It.IsAny<CancellationToken>()),
+            Times.Once);
+
+    protected void ShouldNotHaveUpdatedAnyFormationSummary() =>
+        this.SummariesRepository.Verify(
+            repository => repository.Update(It.IsAny<FormationSummary>(), It.IsAny<CancellationToken>()),
             Times.Never);
 }
