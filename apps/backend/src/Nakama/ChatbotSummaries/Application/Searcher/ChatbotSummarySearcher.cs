@@ -15,14 +15,14 @@ public static class ChatbotSummarySearcher
     {
         public async Task<IReadOnlyCollection<ChatbotSummaryResponse>> Handle(Query query, CancellationToken ct)
         {
-            IReadOnlyCollection<ChatbotSummary> chatbots = await searcher.Execute(ct);
+            IReadOnlyList<ChatbotSummary> chatbots = await searcher.Execute(ct);
             return chatbots.Select(e => ChatbotSummaryResponse.From(e, storage.Value.ChatbotIconsRoute)).ToList();
         }
     }
 
     public sealed class Searcher(IChatbotSummaryRepository repository) : IService
     {
-        public Task<IReadOnlyCollection<ChatbotSummary>> Execute(CancellationToken cancellationToken) =>
-            repository.FindAll(cancellationToken);
+        public Task<IReadOnlyList<ChatbotSummary>> Execute(CancellationToken cancellationToken) =>
+            repository.Search(new ChatbotSummaryListingSpecification(), cancellationToken);
     }
 }

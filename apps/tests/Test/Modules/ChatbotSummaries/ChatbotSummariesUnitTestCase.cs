@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Nakama.ChatbotSummaries.Domain;
+using Nakama.Shared.Domain.Specification;
 using Nakama.Shared.Infrastructure.Storage;
 using Test.Modules.Shared;
 
@@ -16,9 +17,11 @@ public abstract class ChatbotSummariesUnitTestCase : UnitTestCase
     [SetUp]
     public void ChatbotSummariesSetUp() => this.SummariesRepository.Reset();
 
-    protected void ShouldFindAllChatbotSummaries(IReadOnlyCollection<ChatbotSummary> summaries) =>
+    protected void ShouldFindAllChatbotSummaries(IReadOnlyList<ChatbotSummary> summaries) =>
         this.SummariesRepository
-            .Setup(repository => repository.FindAll(It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<ChatbotSummary>>(specification => specification is ChatbotSummaryListingSpecification),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(summaries);
 
     protected void ShouldFindChatbotSummary(ChatbotSummary summary) =>
