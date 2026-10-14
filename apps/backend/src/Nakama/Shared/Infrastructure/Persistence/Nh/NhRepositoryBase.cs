@@ -1,3 +1,4 @@
+using Nakama.Shared.Domain.Specification;
 using NHibernate;
 using NHibernate.Linq;
 
@@ -17,6 +18,51 @@ public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) w
     {
         using ISession session = sessions.OpenSession();
         return await session.Query<TEntity>().ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TEntity>> Search(ISpecification<TEntity> specification, CancellationToken ct)
+    {
+        using ISession session = sessions.OpenSession();
+
+        if (specification.GroupBy is null)
+        {
+            return await NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).ToListAsync(ct);
+        }
+
+        List<TEntity> ordered = await NhSpecificationConverter<TEntity>
+            .GetQuery(session.Query<TEntity>(), specification, includePaging: false)
+            .ToListAsync(ct);
+
+        return NhSpecificationConverter<TEntity>.FirstOfEachGroup(ordered, specification);
+    }
+
+    public async Task<TEntity> Find(ISpecification<TEntity> specification, CancellationToken ct)
+    {
+        if (specification.GroupBy is not null)
+        {
+            IReadOnlyList<TEntity> groups = await this.Search(specification, ct);
+
+            return groups.First();
+        }
+
+        using ISession session = sessions.OpenSession();
+
+        return await NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).FirstAsync(ct);
+    }
+
+    public async Task<int> Count(ISpecification<TEntity> specification, CancellationToken ct)
+    {
+        using ISession session = sessions.OpenSession();
+        IQueryable<TEntity> matching = session.Query<TEntity>().Where(specification.Criteria);
+
+        if (specification.GroupBy is null)
+        {
+            return await matching.CountAsync(ct);
+        }
+
+        List<TEntity> entities = await matching.ToListAsync(ct);
+
+        return NhSpecificationConverter<TEntity>.CountGroups(entities, specification);
     }
 
     public async Task Save(TEntity entity, CancellationToken ct)
