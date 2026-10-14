@@ -12,6 +12,8 @@ public abstract class InfrastructureTestCase
 
     protected IWriteSessionFactory WriteSessions => this._writeSessions;
 
+    protected async Task Execute(string sql) => await PostgresContainer.Run(this._database, sql);
+
     [SetUp]
     public async Task InfrastructureSetUp()
     {

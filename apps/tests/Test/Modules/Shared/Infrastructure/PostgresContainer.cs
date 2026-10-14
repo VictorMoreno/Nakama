@@ -27,6 +27,14 @@ public static class PostgresContainer
         await Execute(container, $"DROP DATABASE IF EXISTS \"{database.Name}\" WITH (FORCE)");
     }
 
+    public static async Task Run(TestDatabase database, string sql)
+    {
+        await using NpgsqlConnection connection = new(database.ConnectionString);
+        await connection.OpenAsync();
+        await using NpgsqlCommand command = new(sql, connection);
+        await command.ExecuteNonQueryAsync();
+    }
+
     public static async Task Stop()
     {
         if (!Container.IsValueCreated)
