@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Moq;
 using Nakama.LlmProviders.Domain;
+using Nakama.Shared.Domain.Specification;
 using Test.Modules.Shared;
 
 namespace Test.Modules.LlmProviders;
@@ -14,12 +15,18 @@ public abstract class LlmProvidersUnitTestCase : UnitTestCase
 
     protected void ShouldFindProviderConfig(LlmProvider provider, LlmProviderConfig? config) =>
         this.ProviderConfigsRepository
-            .Setup(repository => repository.FindByProvider(provider, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(config);
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<LlmProviderConfig>>(specification =>
+                    specification is LlmProviderConfigByProviderSpecification
+                    && ((LlmProviderConfigByProviderSpecification)specification).Provider == provider),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(config is null ? [] : [config]);
 
     protected void ShouldFindAllProviderConfigs(IReadOnlyList<LlmProviderConfig> configs) =>
         this.ProviderConfigsRepository
-            .Setup(repository => repository.FindAll(It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<LlmProviderConfig>>(specification => specification is LlmProviderConfigListingSpecification),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(configs);
 
     protected void ShouldHaveSavedProviderConfig(LlmProviderConfig config) =>

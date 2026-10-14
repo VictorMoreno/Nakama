@@ -20,7 +20,9 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository, 
         IReadOnlyList<LlmDocument> documents,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        LlmProviderConfig? config = await repository.FindByProvider(LlmProvider.Anthropic, ct);
+        IReadOnlyList<LlmProviderConfig> found = await repository.Search(
+            new LlmProviderConfigByProviderSpecification(LlmProvider.Anthropic), ct);
+        LlmProviderConfig? config = found.FirstOrDefault();
         if (config is null || !config.Enabled || string.IsNullOrEmpty(config.ApiKey))
         {
             throw LlmProviderErrors.NotConfigured(LlmProvider.Anthropic);

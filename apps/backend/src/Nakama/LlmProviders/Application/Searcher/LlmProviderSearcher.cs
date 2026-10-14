@@ -20,6 +20,6 @@ public static class LlmProviderSearcher
     public sealed class Searcher(ILlmProviderConfigRepository repository) : IService
     {
         public Task<IReadOnlyList<LlmProviderConfig>> Execute(CancellationToken cancellationToken) =>
-            repository.FindAll(cancellationToken);
+            repository.Search(new LlmProviderConfigListingSpecification(), cancellationToken);
     }
 }

@@ -25,9 +25,12 @@ public static class LlmProviderRegisterer
 
     public sealed class Registerer(ILlmProviderConfigRepository repository, ISystemClock systemClock) : IService
     {
-        public async Task Execute(LlmProvider provider, string apiKey, bool enabled, IReadOnlyList<LlmModelOption> models, CancellationToken cancellationToken)
+        public async Task Execute(LlmProvider provider, string apiKey, bool enabled, IReadOnlyList<LlmModelOption> models,
+            CancellationToken cancellationToken)
         {
-            LlmProviderConfig? existing = await repository.FindByProvider(provider, cancellationToken);
+            IReadOnlyList<LlmProviderConfig> found =
+                await repository.Search(new LlmProviderConfigByProviderSpecification(provider), cancellationToken);
+            LlmProviderConfig? existing = found.FirstOrDefault();
 
             if (existing is null)
             {
