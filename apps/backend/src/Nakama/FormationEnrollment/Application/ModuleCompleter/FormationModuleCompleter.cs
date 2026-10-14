@@ -33,7 +33,10 @@ public static class FormationModuleCompleter
         {
             FormationDetailResponse detail = await queryBus.Ask(new FormationDetailFinder.Query(id.Value), cancellationToken);
 
-            Domain.FormationEnrollment enrollment = await enrollmentRepository.FindByFormationAndUser(id.Value, userId, cancellationToken)
+            IReadOnlyList<Domain.FormationEnrollment> found = await enrollmentRepository.Search(
+                new FormationEnrollmentByFormationAndUserSpecification(id.Value, userId),
+                cancellationToken);
+            Domain.FormationEnrollment enrollment = found.FirstOrDefault()
                                                     ?? throw FormationEnrollmentErrors.NotEnrolled(id.Value, userId);
 
             List<FormationModuleRow> modules = detail.Modules;

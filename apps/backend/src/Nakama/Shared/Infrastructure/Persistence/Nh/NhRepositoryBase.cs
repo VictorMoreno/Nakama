@@ -14,12 +14,6 @@ public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) w
         return await session.GetAsync<TEntity>(id, ct);
     }
 
-    protected async Task<IReadOnlyCollection<TEntity>> FindAllEntities(CancellationToken ct)
-    {
-        using ISession session = sessions.OpenSession();
-        return await session.Query<TEntity>().ToListAsync(ct);
-    }
-
     public async Task<IReadOnlyList<TEntity>> Search(ISpecification<TEntity> specification, CancellationToken ct)
     {
         using ISession session = sessions.OpenSession();

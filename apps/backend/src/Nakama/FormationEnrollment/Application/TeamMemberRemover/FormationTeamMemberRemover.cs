@@ -22,7 +22,10 @@ public static class FormationTeamMemberRemover
     {
         public async Task Execute(FormationId id, Guid userId, CancellationToken cancellationToken)
         {
-            Domain.FormationEnrollment? enrollment = await enrollmentRepository.FindByFormationAndUser(id.Value, userId, cancellationToken);
+            IReadOnlyList<Domain.FormationEnrollment> found = await enrollmentRepository.Search(
+                new FormationEnrollmentByFormationAndUserSpecification(id.Value, userId), cancellationToken);
+            Domain.FormationEnrollment? enrollment = found.FirstOrDefault();
+
             if (enrollment is null)
             {
                 return;

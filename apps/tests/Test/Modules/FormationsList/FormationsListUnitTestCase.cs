@@ -41,7 +41,11 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
 
     protected void ShouldFindEnrollmentsOfTheUser(Guid userId, IReadOnlyList<Enrollment> enrollments) =>
         this.EnrollmentsRepository
-            .Setup(repository => repository.FindAllForUser(userId, It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<Enrollment>>(specification =>
+                    specification is FormationEnrollmentByUserSpecification
+                    && ((FormationEnrollmentByUserSpecification)specification).UserId == userId),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(enrollments);
 
     protected void ShouldHaveSearchedAllFormationSummaries() =>

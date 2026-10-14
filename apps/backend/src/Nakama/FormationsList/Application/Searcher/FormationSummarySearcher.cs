@@ -26,7 +26,8 @@ public static class FormationSummarySearcher
     {
         public async Task<IReadOnlyCollection<FormationSummaryResponse>> Execute(Guid userId, bool isAdmin, CancellationToken cancellationToken)
         {
-            IReadOnlyList<FormationEnrollment.Domain.FormationEnrollment> enrollments = await enrollmentRepository.FindAllForUser(userId, cancellationToken);
+            IReadOnlyList<FormationEnrollment.Domain.FormationEnrollment> enrollments = await enrollmentRepository.Search(
+                new FormationEnrollmentByUserSpecification(userId), cancellationToken);
             Dictionary<Guid, FormationEnrollment.Domain.FormationEnrollment> enrollmentsByFormation = enrollments.ToDictionary(e => e.FormationId);
 
             ISpecification<FormationSummary> specification = isAdmin

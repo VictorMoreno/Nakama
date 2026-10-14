@@ -30,8 +30,10 @@ public static class FormationTeamMemberAdder
         {
             await queryBus.Ask(new FormationDetailFinder.Query(id.Value), cancellationToken); // 404 if the formation doesn't exist
 
-            FormationEnrollment? existing = await enrollmentRepository.FindByFormationAndUser(id.Value, userId, cancellationToken);
-            if (existing is not null)
+            IReadOnlyList<FormationEnrollment> existing = await enrollmentRepository.Search(
+                new FormationEnrollmentByFormationAndUserSpecification(id.Value, userId), cancellationToken);
+
+            if (existing.Count > 0)
             {
                 return;
             }

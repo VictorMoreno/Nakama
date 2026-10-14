@@ -20,8 +20,13 @@ public static class FormationEnrollmentFinder
 
     public sealed class Finder(IFormationEnrollmentRepository repository) : IService
     {
-        public async Task<Domain.FormationEnrollment> Execute(Guid formationId, Guid userId, CancellationToken cancellationToken) =>
-            await repository.FindByFormationAndUser(formationId, userId, cancellationToken)
-                ?? throw FormationEnrollmentErrors.NotEnrolled(formationId, userId);
+        public async Task<Domain.FormationEnrollment> Execute(Guid formationId, Guid userId, CancellationToken cancellationToken)
+        {
+            IReadOnlyList<Domain.FormationEnrollment> found = await repository.Search(
+                new FormationEnrollmentByFormationAndUserSpecification(formationId, userId),
+                cancellationToken);
+
+            return found.FirstOrDefault() ?? throw FormationEnrollmentErrors.NotEnrolled(formationId, userId);
+        }
     }
 }

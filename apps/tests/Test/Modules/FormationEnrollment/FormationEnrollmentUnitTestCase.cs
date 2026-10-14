@@ -4,6 +4,7 @@ using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Application.Finder;
 using Nakama.FormationDetail.Domain.Errors;
 using Nakama.FormationEnrollment.Domain;
+using Nakama.Shared.Domain.Specification;
 using Test.Modules.Shared;
 
 namespace Test.Modules.FormationEnrollment;
@@ -30,19 +31,19 @@ public abstract class FormationEnrollmentUnitTestCase : UnitTestCase
 
     protected void ShouldFindEnrollment(Nakama.FormationEnrollment.Domain.FormationEnrollment enrollment) =>
         this.EnrollmentsRepository
-            .Setup(repository => repository.FindByFormationAndUser(
-                enrollment.FormationId,
-                enrollment.UserId,
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<Nakama.FormationEnrollment.Domain.FormationEnrollment>>(specification =>
+                    IsByFormationAndUser(specification, enrollment.FormationId, enrollment.UserId)),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(enrollment);
+            .ReturnsAsync([enrollment]);
 
     protected void ShouldNotFindEnrollment() =>
         this.EnrollmentsRepository
-            .Setup(repository => repository.FindByFormationAndUser(
-                It.IsAny<Guid>(),
-                It.IsAny<Guid>(),
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<Nakama.FormationEnrollment.Domain.FormationEnrollment>>(specification =>
+                    specification is FormationEnrollmentByFormationAndUserSpecification),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as Nakama.FormationEnrollment.Domain.FormationEnrollment);
+            .ReturnsAsync([]);
 
     protected void ShouldHaveAskedForFormationDetail(Guid id) =>
         this.QueryBus.Verify(
@@ -58,7 +59,7 @@ public abstract class FormationEnrollmentUnitTestCase : UnitTestCase
         Expression<Func<Nakama.FormationEnrollment.Domain.FormationEnrollment, bool>> matches) =>
         this.EnrollmentsRepository.Verify(
             repository => repository.Save(
-                It.Is<Nakama.FormationEnrollment.Domain.FormationEnrollment>(matches),
+                It.Is(matches),
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
@@ -80,4 +81,12 @@ public abstract class FormationEnrollmentUnitTestCase : UnitTestCase
                 It.IsAny<Nakama.FormationEnrollment.Domain.FormationEnrollment>(),
                 It.IsAny<CancellationToken>()),
             Times.Never);
+
+    private static bool IsByFormationAndUser(
+        ISpecification<Nakama.FormationEnrollment.Domain.FormationEnrollment> specification,
+        Guid formationId,
+        Guid userId) =>
+        specification is FormationEnrollmentByFormationAndUserSpecification byFormationAndUser
+        && byFormationAndUser.FormationId == formationId
+        && byFormationAndUser.UserId == userId;
 }
