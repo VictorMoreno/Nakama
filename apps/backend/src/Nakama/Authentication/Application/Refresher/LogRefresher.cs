@@ -35,8 +35,8 @@ public static class LogRefresher
 
             DateTime now = systemClock.UtcNow;
 
-            RefreshToken current = await refreshTokens.FindByValue(refreshToken, ct)
-                                   ?? throw AuthErrors.InvalidRefreshToken;
+            IReadOnlyList<RefreshToken> found = await refreshTokens.Search(new RefreshTokenByValueSpecification(refreshToken), ct);
+            RefreshToken current = found.FirstOrDefault() ?? throw AuthErrors.InvalidRefreshToken;
 
             await this.EnsureValid(current, refreshToken, now, ct);
 

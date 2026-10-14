@@ -2,20 +2,12 @@ using Nakama.Authentication.Domain;
 using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
 using NHibernate;
-using NHibernate.Linq;
 
 namespace Nakama.Authentication.Infrastructure;
 
 public sealed class NhRefreshTokensRepository(IWriteSessionFactory writeSessions)
     : NhRepositoryBase<RefreshToken, RefreshTokenId>(writeSessions), IRefreshTokensRepository
 {
-    public async Task<RefreshToken?> FindByValue(string value, CancellationToken ct)
-    {
-        string tokenHash = RefreshToken.HashOf(value);
-        using ISession session = this.Sessions.OpenSession();
-        return await session.Query<RefreshToken>().SingleOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
-    }
-
     public async Task<bool> Rotate(RefreshToken current, RefreshToken replacement, DateTime now, CancellationToken ct)
     {
         using ISession session = this.Sessions.OpenSession();

@@ -25,9 +25,11 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
         RefreshToken token = RefreshTokenMother.Random();
         await this._repository.Save(token, CancellationToken.None);
 
-        RefreshToken? found = await this._repository.FindByValue(token.Value!, CancellationToken.None);
+        IReadOnlyList<RefreshToken> matching = await this._repository.Search(
+            new RefreshTokenByValueSpecification(token.Value!),
+            CancellationToken.None);
+        RefreshToken found = matching.Should().ContainSingle().Subject;
 
-        found.Should().NotBeNull();
         found.Id.Should().Be(token.Id);
         found.UserId.Should().Be(token.UserId);
         found.TokenHash.Should().Be(token.TokenHash);
@@ -41,9 +43,11 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
     {
         await this._repository.Save(RefreshTokenMother.Random(), CancellationToken.None);
 
-        RefreshToken? found = await this._repository.FindByValue(RefreshTokenMother.RandomValue(), CancellationToken.None);
+        IReadOnlyList<RefreshToken> found = await this._repository.Search(
+            new RefreshTokenByValueSpecification(RefreshTokenMother.RandomValue()),
+            CancellationToken.None);
 
-        found.Should().BeNull();
+        found.Should().BeEmpty();
     }
 
     [Test]

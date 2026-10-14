@@ -17,7 +17,8 @@ public static class LogOut
     {
         public async Task Execute(string refreshToken, CancellationToken ct)
         {
-            RefreshToken? token = await refreshTokens.FindByValue(refreshToken, ct);
+            IReadOnlyList<RefreshToken> found = await refreshTokens.Search(new RefreshTokenByValueSpecification(refreshToken), ct);
+            RefreshToken? token = found.FirstOrDefault();
 
             if (token is null)
             {

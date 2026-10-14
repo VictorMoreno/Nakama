@@ -2,7 +2,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Nakama.Authentication.Domain;
 using Nakama.Shared.Infrastructure.Auth;
-using Nakama.Shared.Domain;
+using Nakama.Shared.Domain.Specification;
 using Nakama.Users.Application;
 using Nakama.Users.Application.CredentialsVerifier;
 using Nakama.Users.Application.Finder;
@@ -49,17 +49,25 @@ public abstract class AuthenticationUnitTestCase : UnitTestCase
 
     protected void ShouldFindRefreshToken(RefreshToken token) =>
         this.RefreshTokens
-            .Setup(repository => repository.FindByValue(token.Value!, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(token);
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<RefreshToken>>(specification =>
+                    specification is RefreshTokenByValueSpecification
+                    && ((RefreshTokenByValueSpecification)specification).Value == token.Value),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([token]);
 
     protected void ShouldNotFindRefreshToken() =>
         this.RefreshTokens
-            .Setup(repository => repository.FindByValue(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as RefreshToken);
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<RefreshToken>>(specification => specification is RefreshTokenByValueSpecification),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
 
     protected void ShouldNotHaveSearchedForAnyRefreshToken() =>
         this.RefreshTokens.Verify(
-            repository => repository.FindByValue(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            repository => repository.Search(
+                It.Is<ISpecification<RefreshToken>>(specification => specification is RefreshTokenByValueSpecification),
+                It.IsAny<CancellationToken>()),
             Times.Never);
 
     protected void ShouldGenerateAccessToken(UserResponse user, Token token) =>

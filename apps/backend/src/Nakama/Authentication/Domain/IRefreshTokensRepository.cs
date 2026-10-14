@@ -1,8 +1,10 @@
+using Nakama.Shared.Domain.Specification;
+
 namespace Nakama.Authentication.Domain;
 
 public interface IRefreshTokensRepository
 {
-    Task<RefreshToken?> FindByValue(string value, CancellationToken ct);
+    Task<IReadOnlyList<RefreshToken>> Search(ISpecification<RefreshToken> specification, CancellationToken ct);
 
     Task Save(RefreshToken token, CancellationToken ct);
 
