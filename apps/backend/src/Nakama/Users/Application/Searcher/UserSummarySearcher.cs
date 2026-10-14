@@ -20,6 +20,6 @@ public static class UserSummarySearcher
     public sealed class Searcher(IUsersRepository repository) : IService
     {
         public Task<IReadOnlyList<User>> Execute(CancellationToken cancellationToken) =>
-            repository.FindAll(cancellationToken);
+            repository.Search(new UserListingSpecification(), cancellationToken);
     }
 }

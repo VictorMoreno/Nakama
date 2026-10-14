@@ -23,8 +23,10 @@ public static class UserCredentialsVerifier
     {
         public async Task<User> Execute(Email email, string password, CancellationToken ct)
         {
-            User? user = await repository.GetByEmail(email, ct);
-            if (user is null || !await repository.VerifyPassword(user, password, ct))
+            IReadOnlyList<User> matching = await repository.Search(new UserByEmailSpecification(email), ct);
+            User? user = matching.FirstOrDefault();
+
+            if (user is null || !await repository.VerifyPassword(user, password))
             {
                 throw UserErrors.InvalidCredentials;
             }

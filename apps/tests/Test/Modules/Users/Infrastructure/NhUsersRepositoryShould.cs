@@ -1,7 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Users.Domain;
 using Nakama.Users.Infrastructure;
 using Test.Modules.Shared.Infrastructure;
@@ -58,10 +57,11 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
         await this._repository.Save(user, CancellationToken.None);
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
 
-        User? found = await this._repository.GetByEmail(new Email("ada.lovelace@nakama.test"), CancellationToken.None);
+        IReadOnlyList<User> found = await this._repository.Search(
+            new UserByEmailSpecification(new Email("ada.lovelace@nakama.test")),
+            CancellationToken.None);
 
-        found.Should().NotBeNull();
-        found.Id.Should().Be(user.Id);
+        found.Should().ContainSingle().Which.Id.Should().Be(user.Id);
     }
 
     [Test]
@@ -69,9 +69,11 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
     {
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
 
-        User? found = await this._repository.GetByEmail(UserMother.RandomEmail(), CancellationToken.None);
+        IReadOnlyList<User> found = await this._repository.Search(
+            new UserByEmailSpecification(UserMother.RandomEmail()),
+            CancellationToken.None);
 
-        found.Should().BeNull();
+        found.Should().BeEmpty();
     }
 
     [Test]
@@ -81,7 +83,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
         await this._repository.Save(UserMother.With(name: "Ana"), CancellationToken.None);
         await this._repository.Save(UserMother.With(name: "Bruno"), CancellationToken.None);
 
-        IReadOnlyList<User> users = await this._repository.FindAll(CancellationToken.None);
+        IReadOnlyList<User> users = await this._repository.Search(new UserListingSpecification(), CancellationToken.None);
 
         users.Select(user => user.Name).Should().Equal("Ana", "Bruno", "Carla");
     }
@@ -89,7 +91,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
     [Test]
     public async Task list_no_users_when_there_are_none()
     {
-        IReadOnlyList<User> users = await this._repository.FindAll(CancellationToken.None);
+        IReadOnlyList<User> users = await this._repository.Search(new UserListingSpecification(), CancellationToken.None);
 
         users.Should().BeEmpty();
     }
@@ -101,7 +103,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
 
-        int count = await this._repository.CountAll(CancellationToken.None);
+        int count = await this._repository.Count(new UserListingSpecification(), CancellationToken.None);
 
         count.Should().Be(3);
     }
@@ -109,7 +111,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
     [Test]
     public async Task count_no_users_when_there_are_none()
     {
-        int count = await this._repository.CountAll(CancellationToken.None);
+        int count = await this._repository.Count(new UserListingSpecification(), CancellationToken.None);
 
         count.Should().Be(0);
     }
@@ -124,7 +126,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
         await this._repository.Save(UserMother.With(lastActiveAt: cutoff.AddHours(-1)), CancellationToken.None);
         await this._repository.Save(UserMother.With(lastActiveAt: null), CancellationToken.None);
 
-        int count = await this._repository.CountActiveSince(cutoff, CancellationToken.None);
+        int count = await this._repository.Count(new UserActiveSinceSpecification(cutoff), CancellationToken.None);
 
         count.Should().Be(2);
     }

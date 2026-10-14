@@ -1,5 +1,6 @@
 using Moq;
 using Nakama.Shared.Domain;
+using Nakama.Shared.Domain.Specification;
 using Test.Modules.Shared;
 using Nakama.Users.Domain;
 using Nakama.Users.Domain.Events;
@@ -15,13 +16,17 @@ public abstract class UsersUnitTestCase : UnitTestCase
 
     protected void ShouldFindUserByEmail(User user) =>
         this.Repository
-            .Setup(repository => repository.GetByEmail(new Email(user.Email), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<User>>(specification => IsByEmail(specification, new Email(user.Email))),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([user]);
 
     protected void ShouldNotFindUserByEmail() =>
         this.Repository
-            .Setup(repository => repository.GetByEmail(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(null as User);
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<User>>(specification => specification is UserByEmailSpecification),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
 
     protected void ShouldFindUser(User user) =>
         this.Repository
@@ -35,34 +40,23 @@ public abstract class UsersUnitTestCase : UnitTestCase
 
     protected void ShouldFindAllUsers(IReadOnlyList<User> users) =>
         this.Repository
-            .Setup(repository => repository.FindAll(It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<User>>(specification => specification is UserListingSpecification),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(users);
 
     protected void ShouldVerifyPassword(bool isValid) =>
-        this.Repository
-            .Setup(repository => repository.VerifyPassword(
-                It.IsAny<User>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
+        this.Repository.Setup(repository => repository.VerifyPassword(It.IsAny<User>(), It.IsAny<string>()))
             .ReturnsAsync(isValid);
 
     protected void ShouldHaveSavedUser(User user) =>
-        this.Repository.Verify(
-            repository => repository.Save(user, It.IsAny<CancellationToken>()),
-            Times.Once);
+        this.Repository.Verify(repository => repository.Save(user, It.IsAny<CancellationToken>()), Times.Once);
 
     protected void ShouldNotHaveSavedAnyUser() =>
-        this.Repository.Verify(
-            repository => repository.Save(It.IsAny<User>(), It.IsAny<CancellationToken>()),
-            Times.Never);
+        this.Repository.Verify(repository => repository.Save(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
 
     protected void ShouldNotHaveVerifiedAnyPassword() =>
-        this.Repository.Verify(
-            repository => repository.VerifyPassword(
-                It.IsAny<User>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Never);
+        this.Repository.Verify(repository => repository.VerifyPassword(It.IsAny<User>(), It.IsAny<string>()), Times.Never);
 
     protected void ShouldHavePublishedUserActivityRecorded(UserId id, DateTime occurredAt) =>
         this.EventBus.Verify(
@@ -70,6 +64,9 @@ public abstract class UsersUnitTestCase : UnitTestCase
                 It.Is<AggregateRoot>(aggregate => RecordsUserActivity(aggregate, id, occurredAt)),
                 It.IsAny<CancellationToken>()),
             Times.Once);
+
+    private static bool IsByEmail(ISpecification<User> specification, Email email) =>
+        specification is UserByEmailSpecification byEmail && byEmail.Email == email;
 
     private static bool RecordsUserActivity(AggregateRoot aggregate, UserId id, DateTime occurredAt) =>
         aggregate.DomainEvents

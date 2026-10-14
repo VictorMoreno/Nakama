@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Moq;
 using Nakama.Analytics.Domain;
+using Nakama.Shared.Domain.Specification;
 using Nakama.Users.Domain;
 using Test.Modules.Shared;
 using AnalyticsEntity = Nakama.Analytics.Domain.Analytics;
@@ -27,17 +28,24 @@ public abstract class AnalyticsUnitTestCase : UnitTestCase
 
     protected void ShouldCountActiveUsers(int count) =>
         this.UsersRepository
-            .Setup(repository => repository.CountActiveSince(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.Count(
+                It.Is<ISpecification<User>>(specification => specification is UserActiveSinceSpecification),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(count);
 
     protected void ShouldCountUsers(int count) =>
         this.UsersRepository
-            .Setup(repository => repository.CountAll(It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.Count(
+                It.Is<ISpecification<User>>(specification => specification is UserListingSpecification),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(count);
 
     protected void ShouldHaveCountedActiveUsersSince(DateTime cutoff) =>
         this.UsersRepository.Verify(
-            repository => repository.CountActiveSince(cutoff, It.IsAny<CancellationToken>()),
+            repository => repository.Count(
+                It.Is<ISpecification<User>>(specification =>
+                    specification is UserActiveSinceSpecification && ((UserActiveSinceSpecification)specification).Cutoff == cutoff),
+                It.IsAny<CancellationToken>()),
             Times.Once);
 
     protected void ShouldHaveSavedAnalyticsMatching(Expression<Func<AnalyticsEntity, bool>> matches) =>

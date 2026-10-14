@@ -23,9 +23,10 @@ public static class AnalyticsFinder
         public async Task<AnalyticsResponse> Execute(CancellationToken cancellationToken)
         {
             Domain.Analytics analytics = await repository.Find(cancellationToken) ?? throw AnalyticsErrors.NotFound;
-            int activeUsersCount =
-                await usersRepository.CountActiveSince(systemClock.UtcNow.AddDays(-7), cancellationToken);
-            int totalUsersCount = await usersRepository.CountAll(cancellationToken);
+            int activeUsersCount = await usersRepository.Count(
+                new UserActiveSinceSpecification(systemClock.UtcNow.AddDays(-7)),
+                cancellationToken);
+            int totalUsersCount = await usersRepository.Count(new UserListingSpecification(), cancellationToken);
 
             return analytics.ToResponse(activeUsersCount, totalUsersCount);
         }
