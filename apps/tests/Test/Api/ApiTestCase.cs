@@ -19,6 +19,8 @@ public abstract class ApiTestCase
 
     protected HttpClient Client { get; private set; } = null!;
 
+    protected FakeLlmClient Llm => this._factory.Llm;
+
     [SetUp]
     public async Task ApiSetUp()
     {

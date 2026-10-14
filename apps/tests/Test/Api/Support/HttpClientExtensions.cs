@@ -25,6 +25,14 @@ public static class HttpClientExtensions
         string accessToken) =>
         client.Send(path, method, null, accessToken, JsonContent.Create(body));
 
+    public static Task<HttpResponseMessage> SendContent(
+        this HttpClient client,
+        HttpMethod method,
+        string path,
+        string accessToken,
+        HttpContent content) =>
+        client.Send(path, method, null, accessToken, content);
+
     public static Task<HttpResponseMessage> Send(this HttpClient client, HttpMethod method, string path, string accessToken) =>
         client.Send(path, method, null, accessToken);
 
