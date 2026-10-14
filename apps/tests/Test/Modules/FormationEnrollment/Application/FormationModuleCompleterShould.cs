@@ -134,7 +134,6 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     public async Task complete_the_module_when_the_previous_module_is_not_gated_even_if_it_is_not_completed()
     {
         FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: false);
-        FormationModuleRow first = detail.Modules[0];
         FormationModuleRow second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         this.ShouldFindFormationDetail(detail);
@@ -151,7 +150,6 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     public async Task fail_without_saving_anything_when_the_previous_gated_module_is_not_completed()
     {
         FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: true);
-        FormationModuleRow first = detail.Modules[0];
         FormationModuleRow second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         this.ShouldFindFormationDetail(detail);
