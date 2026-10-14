@@ -20,6 +20,7 @@
   <Folder Name="/_solutionItems/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
+    <File Path="docs/db/demo-data.sql" />
     <File Path="docker-compose.yaml" />
     <File Path="README.md" />
      <File Path="Directory.Packages.props" />

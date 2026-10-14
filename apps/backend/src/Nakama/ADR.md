@@ -503,7 +503,7 @@ infrastructure's sake.
 
 **User provisioning is out of the MVP.** The `UserCreator` use case, `POST /users` and everything that existed only for them
 (`UserEmailAvailabilityChecker`, `IUsersRepository.CreateWithPassword`, the `UserCreated` event and the
-`EmailAlreadyInUse`/`Invalid` errors) were removed; users come from the seed migrations. `GetByEmail` stays because
+`EmailAlreadyInUse`/`Invalid` errors) were removed; users come from `docs/db/demo-data.sql` (ADR-25). `GetByEmail` stays because
 credential verification needs it.
 
 **`IUsersRepository` also owns credential verification** (`VerifyPassword(User, string, ct)` on `NhUsersRepository`, wrapping
@@ -607,6 +607,8 @@ exercise that payoff.
 
 ### ADR-24: `SeedUsersMigration` — two dev-only accounts, so a freshly-recreated database has someone to log in as
 
+**Superseded by ADR-25:** the migration was removed and the accounts now live in `docs/db/demo-data.sql`. The reasoning below is kept as history.
+
 `InitialSchemaMigration` only ever created tables, never rows — every `docker compose down -v && up -d` (routine
 throughout this project's local workflow) left `users` empty, with no way in until someone first called
 `POST /api/users` by hand. `[Migration(2)] SeedUsersMigration` inserts `admin@nakama.com` and `user@nakama.com`
@@ -625,3 +627,26 @@ live: recreated Postgres from scratch, confirmed `SeedUsersMigration migrated` r
 and logged in as both seeded accounts through the real `POST /api/auth/login` endpoint.
 
 **Where it applies:** `Shared/Infrastructure/Persistence/Migrations/SeedUsersMigration.cs`.
+
+### ADR-25: seed data is a manual script (`docs/db/demo-data.sql`), not a migration
+
+`SeedUsersMigration` (ADR-24) and `SeedDemoTestDataMigration` ran on every database the migrations touched, which
+is the wrong place for rows that are not schema: they were applied to every fresh database including the
+Testcontainers template, hard-coded passwords into the assembly, and could not be skipped. Both are gone. The
+migrations now only create tables, and everything they used to insert — the two login accounts plus 20 users, 15
+chatbots, 10 formations, 72 conversations and the read models that go with them — lives in `docs/db/demo-data.sql`, which
+a person runs by hand (`docker exec -i nakama-postgres psql -U nakama -d nakama < docs/db/demo-data.sql`).
+
+The script was not written by hand. The old generator was run once against a throwaway PostgreSQL and its output was
+dumped with `pg_dump --data-only --column-inserts --on-conflict-do-nothing`, then the generator was deleted. That
+keeps the exact JSON shapes and password hashes the application produces, and `ON CONFLICT DO NOTHING` makes the
+script safe to run twice. The `pg_dump` preamble was trimmed to `client_encoding` and `standard_conforming_strings`
+(`SET transaction_timeout` does not exist before PostgreSQL 17 and the `\restrict` meta-commands are psql-only).
+
+Consequences: a fresh database has **no users**, so nobody can log in until the script is run; the dates inside it
+are those of the day it was generated; `read_analytics` only exists once a chatbot is created or the script is loaded.
+No test covers the script on purpose: it is demonstration data, nothing depends on it, and a schema change that
+breaks it shows up as an error the moment someone runs it. If that turns out to be annoying, a single test that
+loads it into a freshly migrated database (no row counts, no passwords) is the most that would be worth adding.
+
+**Where it applies:** `docs/db/demo-data.sql`.

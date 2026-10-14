@@ -136,16 +136,22 @@ Cada módulo relevante tiene su propio `agents.md` con las convenciones de imple
 - **Analítica global**: chatbots activos, preguntas respondidas, uso por bot, tasa de respuestas útiles.
 - **Autenticación propia**: login por email/contraseña contra la base de usuarios propia. Devuelve un JWT de acceso de 15 minutos, que se exige en todos los endpoints salvo login, refresh y logout; los de administración requieren además el rol de administrador. La sesión sobrevive a las recargas con un refresh token de 7 días en una cookie `HttpOnly` que se rota en cada uso (reutilizar uno ya rotado cierra todas las sesiones del usuario). Sin SSO todavía — ver nota de stack planificado más arriba.
 
-## 🔑 Usuario y contraseña de prueba
+## 🔑 Datos y cuentas de prueba
 
-El arranque en entorno `Development` siembra automáticamente dos cuentas (ver [`SeedUsersMigration.cs`](apps/backend/src/Nakama/Shared/Infrastructure/Persistence/Migrations/SeedUsersMigration.cs)):
+Las migraciones solo crean el esquema: una base nueva está **vacía y no hay ninguna cuenta con la que entrar** (la aplicación no tiene alta de usuarios). Para tener datos con los que explorarla, ejecuta a mano el script [`docs/db/demo-data.sql`](docs/db/demo-data.sql) una vez que la API haya aplicado las migraciones:
+
+```bash
+docker exec -i nakama-postgres psql -U nakama -d nakama < docs/db/demo-data.sql
+```
+
+El script se puede lanzar más de una vez (omite las filas que ya existen). Crea dos cuentas de acceso, otros 20 usuarios, 15 chatbots, 10 formaciones y 72 conversaciones con sus proyecciones de lectura:
 
 | Rol | Email | Contraseña |
 |---|---|---|
 | Administrador | `admin@nakama.com` | `Admin123.` |
 | Persona de equipo | `user@nakama.com` | `Admin123.` |
 
-Además se siembran chatbots y formaciones de ejemplo con datos realistas (ver [`SeedDemoTestDataMigration.cs`](apps/backend/src/Nakama/Shared/Infrastructure/Persistence/Migrations/SeedDemoTestDataMigration.cs)).
+El resto de usuarios son `@seed.nakama.test` con la contraseña `Seed1234.`.
 
 ## 📦 Despliegue
 
