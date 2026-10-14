@@ -11,6 +11,7 @@
     <ItemGroup>
         <PackageReference Include="AwesomeAssertions" />
         <PackageReference Include="Bogus" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
         <PackageReference Include="Microsoft.Extensions.Configuration" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Moq" />
@@ -24,6 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\backend\api\Api.csproj" />
         <ProjectReference Include="..\..\backend\src\Nakama\Nakama.csproj" />
     </ItemGroup>
 

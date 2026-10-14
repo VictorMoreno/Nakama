@@ -14,7 +14,7 @@ apps/tests/
         Application/                     <UseCase>Should, <UseCase>CommandMother | <UseCase>QueryMother
         Domain/                          <Entity>Mother (sin pruebas directas de entidades)
         Infrastructure/                  <Adapter>Should (solo si hay lógica que probar; repositorios contra PostgreSQL real con TestContainers)
-    Api/                                 integración de endpoints (pendiente)
+    Api/                                 E2E de la API: HTTP -> casos de uso -> PostgreSQL (Testcontainers)
   Test.Architecture/                     reglas de arquitectura (NetArchTest + reflexión)
 ```
 
@@ -89,13 +89,21 @@ Los repositorios con SQL propio o consultas no triviales se prueban contra un Po
 - **Comprobarlo:** romper a propósito la línea SQL (quitar una condición del `where`) y ver que falla algún test, como con el resto.
 - **Ejecutar:** necesita Docker en marcha. Solo unitarios: `dotnet test --filter "TestCategory!=Infrastructure"`. Solo infraestructura: `--filter "TestCategory=Infrastructure"`.
 
-## 4) Pautas para tests API
+## 4) Pautas para tests API (E2E)
 
-- Construir el host con `WebApplicationFactory<Program>` y sustituir servicios por dobles de prueba.
-- Verificar autenticación y roles con casos explícitos (200, 401, 403) y, para recursos ajenos, 404.
-- Comprobar los errores como `ProblemDetails` con su `type` (`nakama.<recurso>.<situacion>`).
-- Usar las mismas opciones JSON que la API para una serialización consistente.
-- En escenarios asíncronos o eventuales, reintentar la comprobación con un temporizador limitado en lugar de dormir.
+Son pocos y de flujo completo: cada uno recorre la API real por HTTP, con la base de datos real, y comprueba lo que ningún test unitario ve (autorización, cookies, serialización, errores como `ProblemDetails`, eventos y proyecciones). Los casos sueltos de cada regla ya están en los tests de aplicación.
+
+- **Dónde:** `Api/{Tema}/{Flujo}Should.cs`, heredando de `ApiTestCase` (categoría `E2E`). Ejemplo: `Api/Authentication/SessionFlowShould.cs`.
+- **Cómo arranca:** `NakamaApiFactory` extiende `WebApplicationFactory<Program>`: levanta la API entera en memoria (sin puerto de red) con el `TestServer` de ASP.NET Core. `Program` es `public partial` solo para eso.
+- **Entorno `Testing`:** no es `Development`, así que la API no migra por su cuenta ni lee los *user-secrets* de quien ejecuta. La base ya viene migrada porque es un clon de la plantilla de Testcontainers.
+- **Configuración que inyecta el test:** cadena de conexión de su base, clave de firma del JWT (de `JwtOptionsMother`) y carpetas temporales para los ficheros, que se borran al terminar.
+- **Una API y una base por test:** en `[SetUp]` se clona la plantilla y se arranca la fábrica; en `[TearDown]` se libera y se borra la base. Ningún test ve datos de otro. Como las migraciones no siembran nada, cada test crea al menos el usuario que necesita con `RegisterUser`.
+- **Usuarios:** no hay endpoint de alta, así que `RegisterUser` usa el `UserManager<User>` de la propia aplicación, igual que haría el código de producción.
+- **Cookies a mano:** el cliente se crea con `HandleCookies = false` para leer la cabecera `Set-Cookie` y reenviarla uno mismo (`SessionCookie`, `HttpClientExtensions`). Así se puede reutilizar una cookie antigua, que es justo lo que prueba el robo de un refresh token.
+- **Errores:** la API devuelve `ProblemDetails` con el código del error de dominio en `title` (`nakama.users.invalid_credentials`).
+- **Qué probar:** el camino feliz de los flujos importantes y sus fallos de seguridad (401, 403, token reutilizado). No repetir validaciones que ya cubre un test de aplicación.
+- **Comprobarlo:** romper la aplicación real a propósito (quitar `RequireAuthorization`, poner la cookie sin `HttpOnly`) y ver que falla un E2E.
+- **Ejecutar:** necesita Docker. Solo E2E: `--filter "TestCategory=E2E"`. Sin ellos: `--filter "TestCategory!=E2E&TestCategory!=Infrastructure"`.
 
 ## 5) Pautas para datos de prueba
 
@@ -152,5 +160,5 @@ Al escribir una regla de dependencia con NetArchTest:
 - Ejecutar tests backend: `dotnet test .\apps\tests\Test\`
 - Ejecutar tests arquitectura: `dotnet test .\apps\tests\Test.Architecture\`
 - Ejecutar todo: `dotnet test` (ambos proyectos; los tests de infraestructura necesitan Docker)
-- Sin Docker: `dotnet test .\apps\tests\Test\ --filter "TestCategory!=Infrastructure"`
+- Sin Docker: `dotnet test .\apps\tests\Test\ --filter "TestCategory!=Infrastructure&TestCategory!=E2E"`
 - Con el IDE abierto, que bloquea `Nakama.dll`, compilar a un directorio temporal: `dotnet test .\apps\tests\Test\ -p:OutDir=<ruta-temporal>/` (usar una ruta distinta para cada proyecto de tests).
