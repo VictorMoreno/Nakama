@@ -36,6 +36,7 @@ csharp_using_directive_placement = outside_namespace:suggestion
 
 dotnet_diagnostic.S3376.severity = none
 dotnet_diagnostic.S3246.severity = none
+dotnet_diagnostic.S6608.severity = none
 
 [*.{ts,tsx,js,jsx}]
 indent_size = 2
