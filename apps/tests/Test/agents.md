@@ -13,7 +13,7 @@ apps/tests/
         <Module>UnitTestCase.cs
         Application/                     <UseCase>Should, <UseCase>CommandMother | <UseCase>QueryMother
         Domain/                          <Entity>Mother (sin pruebas directas de entidades)
-        Infrastructure/                  <Adapter>Should (solo si hay lógica que probar)
+        Infrastructure/                  <Adapter>Should (solo si hay lógica que probar; repositorios contra PostgreSQL real con TestContainers)
     Api/                                 integración de endpoints (pendiente)
   Test.Architecture/                     reglas de arquitectura (NetArchTest + reflexión)
 ```
@@ -75,6 +75,19 @@ public async Task fail_without_recording_activity_when_the_password_is_wrong()
 - Lo mismo para las queries del bus (`It.Is<Query>(q => q.Id == ...)`) y los colaboradores con argumentos de negocio (`Generate(user.Id, user.Email, ...)`, `Rotate(current, ..., now)`): el test construye el escenario con datos coherentes (el comando lleva el `Id` de la entidad simulada).
 - `It.IsAny` queda para los `Verify` con `Times.Never` (ninguna llamada, sea cual sea el argumento), el `CancellationToken` y valores incidentales que genera el propio código (un `Guid` nuevo, un `Stream`).
 - Los valores aleatorios que se comparan entre sí no pueden colisionar: dos `WordMother.Random()` coinciden de vez en cuando y vuelven el test intermitente. Si el escenario exige que sean distintos, derivar uno del otro (`$"{x}-other"`) o usar prefijos fijos.
+
+### Infraestructura con base de datos real (TestContainers)
+
+Los repositorios con SQL propio o consultas no triviales se prueban contra un PostgreSQL real (`postgres:18-alpine`, la misma imagen que `docker-compose.yaml`). Un mock no puede verificar un `update ... where revoked_at is null`.
+
+- **Dónde:** `Modules/{Modulo}/Infrastructure/{Repositorio}Should.cs`, en el mismo proyecto `Test`. La clase hereda de `InfrastructureTestCase`, que ya trae la categoría `Infrastructure`.
+- **Contenedor:** uno por ejecución, arrancado la primera vez que un test de infraestructura lo pide (los unitarios no tocan Docker). Aplica `MigrationRunner` en una base plantilla; las migraciones solo crean el esquema, así que la plantilla y cada base clonada nacen vacías. Ryuk, el contenedor auxiliar de Testcontainers, lo elimina si el proceso muere.
+- **Una base por test:** en `[SetUp]` cada test clona la plantilla (`CREATE DATABASE ... TEMPLATE`, casi instantáneo) y en `[TearDown]` la borra. Ningún test ve lo que escribió otro, ni siquiera sus repeticiones, así que no hace falta limpiar tablas ni usar ids únicos. Las conexiones van sin `pool` para que el borrado no espere conexiones abiertas.
+- **Fábrica de NHibernate por test:** cada test construye la suya (`NhWriteSessionFactory` con la cadena de su base) y la libera en `[TearDown]`; por eso la fábrica es `IDisposable`. `WriteSessions` ya la entrega y el repositorio se crea en el `[SetUp]` de la clase de test. Cuesta unos 0,4 s por test.
+- **Qué probar:** el SQL y las condiciones que un mock no ve (atomicidad, concurrencia, filtros por usuario, hashes, mapeos). No repetir lo que ya cubren los tests de aplicación.
+- **Fechas:** PostgreSQL guarda microsegundos y .NET 100 ns; comparar con `BeCloseTo(valor, TimeSpan.FromMilliseconds(1))`, nunca con `Be`.
+- **Comprobarlo:** romper a propósito la línea SQL (quitar una condición del `where`) y ver que falla algún test, como con el resto.
+- **Ejecutar:** necesita Docker en marcha. Solo unitarios: `dotnet test --filter "TestCategory!=Infrastructure"`. Solo infraestructura: `--filter "TestCategory=Infrastructure"`.
 
 ## 4) Pautas para tests API
 
@@ -138,5 +151,6 @@ Al escribir una regla de dependencia con NetArchTest:
 
 - Ejecutar tests backend: `dotnet test .\apps\tests\Test\`
 - Ejecutar tests arquitectura: `dotnet test .\apps\tests\Test.Architecture\`
-- Ejecutar todo: `dotnet test` (ambos proyectos)
+- Ejecutar todo: `dotnet test` (ambos proyectos; los tests de infraestructura necesitan Docker)
+- Sin Docker: `dotnet test .\apps\tests\Test\ --filter "TestCategory!=Infrastructure"`
 - Con el IDE abierto, que bloquea `Nakama.dll`, compilar a un directorio temporal: `dotnet test .\apps\tests\Test\ -p:OutDir=<ruta-temporal>/` (usar una ruta distinta para cada proyecto de tests).
