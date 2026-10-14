@@ -1,5 +1,7 @@
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Nakama.Authentication.Application;
 using Nakama.Users.Domain;
 using Test.Api.Support;
 using Test.Modules.Shared;
@@ -35,6 +37,15 @@ public abstract class ApiTestCase
         this.Client.Dispose();
         await this._factory.DisposeAsync();
         await PostgresContainer.DropDatabase(this._database);
+    }
+
+    protected async Task<string> SignIn(bool isAdmin)
+    {
+        UserCredentials credentials = await this.RegisterUser(isAdmin);
+        HttpResponseMessage login = await this.Client.LogIn(credentials);
+        TokenResponse? token = await login.Content.ReadFromJsonAsync<TokenResponse>();
+
+        return token!.AccessToken;
     }
 
     protected async Task<UserCredentials> RegisterUser(bool isAdmin)

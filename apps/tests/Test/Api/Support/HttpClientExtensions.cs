@@ -17,14 +17,26 @@ public static class HttpClientExtensions
     public static Task<HttpResponseMessage> Get(this HttpClient client, string path, string? accessToken) =>
         client.Send(path, HttpMethod.Get, null, accessToken);
 
+    public static Task<HttpResponseMessage> SendJson<TBody>(
+        this HttpClient client,
+        HttpMethod method,
+        string path,
+        TBody body,
+        string accessToken) =>
+        client.Send(path, method, null, accessToken, JsonContent.Create(body));
+
+    public static Task<HttpResponseMessage> Send(this HttpClient client, HttpMethod method, string path, string accessToken) =>
+        client.Send(path, method, null, accessToken);
+
     private static Task<HttpResponseMessage> Send(
         this HttpClient client,
         string path,
         HttpMethod method,
         string? cookieValue,
-        string? accessToken)
+        string? accessToken,
+        HttpContent? content = null)
     {
-        HttpRequestMessage request = new(method, path);
+        HttpRequestMessage request = new(method, path) { Content = content };
 
         if (cookieValue is not null)
         {

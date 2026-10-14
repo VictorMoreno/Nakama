@@ -102,7 +102,8 @@ Son pocos y de flujo completo: cada uno recorre la API real por HTTP, con la bas
 - **Cookies a mano:** el cliente se crea con `HandleCookies = false` para leer la cabecera `Set-Cookie` y reenviarla uno mismo (`SessionCookie`, `HttpClientExtensions`). Así se puede reutilizar una cookie antigua, que es justo lo que prueba el robo de un refresh token.
 - **Errores:** la API devuelve `ProblemDetails` con el código del error de dominio en `title` (`nakama.users.invalid_credentials`).
 - **Qué probar:** el camino feliz de los flujos importantes y sus fallos de seguridad (401, 403, token reutilizado). No repetir validaciones que ya cubre un test de aplicación.
-- **Comprobarlo:** romper la aplicación real a propósito (quitar `RequireAuthorization`, poner la cookie sin `HttpOnly`) y ver que falla un E2E.
+- **Comprobarlo:** romper la aplicación real a propósito (quitar `RequireAuthorization`, poner la cookie sin `HttpOnly`) y ver que falla un E2E. Si una rotura parece no afectar a nada, antes de fiarse hay que forzar la recompilación (`touch` del fichero tocado): la compilación incremental puede ejecutar el código sin romper y dar un falso "sobrevive".
+- **Sesión:** `SignIn(isAdmin)` registra un usuario y devuelve su token de acceso; las llamadas de cada recurso viven en extensiones de `HttpClient` (`ChatbotHttpClientExtensions`) para que el test se lea como el flujo.
 - **Ejecutar:** necesita Docker. Solo E2E: `--filter "TestCategory=E2E"`. Sin ellos: `--filter "TestCategory!=E2E&TestCategory!=Infrastructure"`.
 
 ## 5) Pautas para datos de prueba
