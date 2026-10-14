@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Nakama.FormationEnrollment.Domain;
 using Nakama.FormationsList.Domain;
+using Nakama.Shared.Domain.Specification;
 using Nakama.Shared.Infrastructure.Storage;
 using Test.Modules.Shared;
 using Enrollment = Nakama.FormationEnrollment.Domain.FormationEnrollment;
@@ -26,13 +27,17 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
 
     protected void ShouldFindAllFormationSummaries(IReadOnlyCollection<FormationSummary> summaries) =>
         this.SummariesRepository
-            .Setup(repository => repository.FindAll(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(summaries);
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<FormationSummary>>(specification => specification is FormationSummaryListingSpecification),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(summaries.ToList());
 
     protected void ShouldFindFormationSummariesByIds(IReadOnlyCollection<FormationSummary> summaries) =>
         this.SummariesRepository
-            .Setup(repository => repository.FindByIds(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(summaries);
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<FormationSummary>>(specification => specification is FormationSummaryByIdsSpecification),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(summaries.ToList());
 
     protected void ShouldFindEnrollmentsOfTheUser(Guid userId, IReadOnlyList<Enrollment> enrollments) =>
         this.EnrollmentsRepository
@@ -41,24 +46,30 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
 
     protected void ShouldHaveSearchedAllFormationSummaries() =>
         this.SummariesRepository.Verify(
-            repository => repository.FindAll(It.IsAny<CancellationToken>()),
+            repository => repository.Search(
+                It.Is<ISpecification<FormationSummary>>(specification => specification is FormationSummaryListingSpecification),
+                It.IsAny<CancellationToken>()),
             Times.Once);
 
     protected void ShouldNotHaveSearchedAllFormationSummaries() =>
         this.SummariesRepository.Verify(
-            repository => repository.FindAll(It.IsAny<CancellationToken>()),
+            repository => repository.Search(
+                It.Is<ISpecification<FormationSummary>>(specification => specification is FormationSummaryListingSpecification),
+                It.IsAny<CancellationToken>()),
             Times.Never);
 
     protected void ShouldHaveSearchedFormationSummariesByIds(IReadOnlyCollection<Guid> ids) =>
         this.SummariesRepository.Verify(
-            repository => repository.FindByIds(
-                It.Is<IReadOnlyCollection<Guid>>(received => received.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id))),
+            repository => repository.Search(
+                It.Is<ISpecification<FormationSummary>>(specification => HasIds(specification, ids)),
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
     protected void ShouldNotHaveSearchedFormationSummariesByIds() =>
         this.SummariesRepository.Verify(
-            repository => repository.FindByIds(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
+            repository => repository.Search(
+                It.Is<ISpecification<FormationSummary>>(specification => specification is FormationSummaryByIdsSpecification),
+                It.IsAny<CancellationToken>()),
             Times.Never);
 
     protected void ShouldFindFormationSummary(FormationSummary summary) =>
@@ -85,4 +96,8 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
         this.SummariesRepository.Verify(
             repository => repository.Update(It.IsAny<FormationSummary>(), It.IsAny<CancellationToken>()),
             Times.Never);
+
+    private static bool HasIds(ISpecification<FormationSummary> specification, IReadOnlyCollection<Guid> ids) =>
+        specification is FormationSummaryByIdsSpecification byIds
+        && byIds.Ids.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id));
 }

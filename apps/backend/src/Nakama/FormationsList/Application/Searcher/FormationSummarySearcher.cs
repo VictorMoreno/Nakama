@@ -3,6 +3,7 @@ using Nakama.FormationEnrollment.Domain;
 using Nakama.FormationsList.Domain;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
+using Nakama.Shared.Domain.Specification;
 using Nakama.Shared.Infrastructure.Storage;
 
 namespace Nakama.FormationsList.Application.Searcher;
@@ -28,9 +29,10 @@ public static class FormationSummarySearcher
             IReadOnlyList<FormationEnrollment.Domain.FormationEnrollment> enrollments = await enrollmentRepository.FindAllForUser(userId, cancellationToken);
             Dictionary<Guid, FormationEnrollment.Domain.FormationEnrollment> enrollmentsByFormation = enrollments.ToDictionary(e => e.FormationId);
 
-            IReadOnlyCollection<FormationSummary> formations = isAdmin
-                ? await summaryRepository.FindAll(cancellationToken)
-                : await summaryRepository.FindByIds(enrollmentsByFormation.Keys.ToList(), cancellationToken);
+            ISpecification<FormationSummary> specification = isAdmin
+                ? new FormationSummaryListingSpecification()
+                : new FormationSummaryByIdsSpecification(enrollmentsByFormation.Keys.ToList());
+            IReadOnlyCollection<FormationSummary> formations = await summaryRepository.Search(specification, cancellationToken);
 
             return formations.Select(f =>
             {
