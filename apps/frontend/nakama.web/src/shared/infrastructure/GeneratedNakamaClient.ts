@@ -57,7 +57,7 @@ export interface IGeneratedNakamaClient {
     chatbotsPUT(id: string, body: CreateChatbotRequest): Promise<void>;
 
     /**
-     * Gets the full detail page projection for one chatbot.
+     * Gets the full detail page projection for one chatbot. Only members of its team (or administrators) may read it.
      * @return OK
      */
     chatbotsGET(id: string): Promise<ChatbotDetailResponse>;
@@ -90,10 +90,10 @@ export interface IGeneratedNakamaClient {
     documentsPUT(id: string, documentId: string, file: FileParameter | undefined, name: string | undefined, origin: string | undefined): Promise<void>;
 
     /**
-     * Removes a document by its list position.
+     * Removes a document by its id.
      * @return No Content
      */
-    documentsDELETE(id: string, index: number): Promise<void>;
+    documentsDELETE(id: string, documentId: string): Promise<void>;
 
     /**
      * Downloads the original file of a chatbot document.
@@ -108,10 +108,10 @@ export interface IGeneratedNakamaClient {
     teamPOST(id: string, body: AddChatbotTeamMemberRequest): Promise<void>;
 
     /**
-     * Removes a team member by their list position. The owner cannot be removed.
+     * Removes a team member by their user id. The owner cannot be removed.
      * @return No Content
      */
-    teamDELETE(id: string, index: number): Promise<void>;
+    teamDELETE(id: string, userId: string): Promise<void>;
 
     /**
      * Uploads or replaces a chatbot's icon image (PNG or JPEG, max 2 MB).
@@ -530,7 +530,7 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Gets the full detail page projection for one chatbot.
+     * Gets the full detail page projection for one chatbot. Only members of its team (or administrators) may read it.
      * @return OK
      */
     chatbotsGET(id: string): Promise<ChatbotDetailResponse> {
@@ -562,6 +562,12 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             let result200: any = null;
             result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ChatbotDetailResponse;
             return result200;
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            let result403: any = null;
+            result403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Forbidden", status, _responseText, _headers, result403);
             });
         } else if (status === 404) {
             return response.text().then((_responseText) => {
@@ -793,17 +799,17 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Removes a document by its list position.
+     * Removes a document by its id.
      * @return No Content
      */
-    documentsDELETE(id: string, index: number): Promise<void> {
-        let url_ = this.baseUrl + "/api/chatbots/{id}/documents/{index}";
+    documentsDELETE(id: string, documentId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{id}/documents/{documentId}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (index === undefined || index === null)
-            throw new globalThis.Error("The parameter 'index' must be defined.");
-        url_ = url_.replace("{index}", encodeURIComponent("" + index));
+        if (documentId === undefined || documentId === null)
+            throw new globalThis.Error("The parameter 'documentId' must be defined.");
+        url_ = url_.replace("{documentId}", encodeURIComponent("" + documentId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -952,17 +958,17 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Removes a team member by their list position. The owner cannot be removed.
+     * Removes a team member by their user id. The owner cannot be removed.
      * @return No Content
      */
-    teamDELETE(id: string, index: number): Promise<void> {
-        let url_ = this.baseUrl + "/api/chatbots/{id}/team/{index}";
+    teamDELETE(id: string, userId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{id}/team/{userId}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (index === undefined || index === null)
-            throw new globalThis.Error("The parameter 'index' must be defined.");
-        url_ = url_.replace("{index}", encodeURIComponent("" + index));
+        if (userId === undefined || userId === null)
+            throw new globalThis.Error("The parameter 'userId' must be defined.");
+        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {

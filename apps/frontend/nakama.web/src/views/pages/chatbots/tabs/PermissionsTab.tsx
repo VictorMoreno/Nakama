@@ -18,7 +18,7 @@ function roleClass(role: string): string {
 }
 
 export default function PermissionsTab({ bot }: PermissionsTabProps) {
-  const { inviteOpen, setInviteOpen, setRemoveIndex, target, handleRemoveConfirm } = usePermissionsTab(bot);
+  const { inviteOpen, setInviteOpen, setRemoveUserId, target, handleRemoveConfirm } = usePermissionsTab(bot);
   const { findUser } = useUsers();
 
   return (
@@ -31,14 +31,14 @@ export default function PermissionsTab({ bot }: PermissionsTabProps) {
           </button>
         </div>
         <div className={styles.teamList}>
-          {bot.team.map((person, idx) => (
-            <div className={styles.teamItem} key={`${person.userId}-${idx}`}>
+          {bot.team.map((person) => (
+            <div className={styles.teamItem} key={person.userId}>
               <div>
                 <span className={styles.teamItemName}>{findUser(person.userId)?.name ?? "Usuario eliminado"}</span>
                 <span className={`${styles.roleBadge} ${styles[roleClass(person.role)]}`}>{person.role}</span>
               </div>
               {!isOwnerRole(person.role) && (
-                <button className="btn-ghost danger" type="button" onClick={() => setRemoveIndex(idx)}>
+                <button className="btn-ghost danger" type="button" onClick={() => setRemoveUserId(person.userId)}>
                   <RecycleBinIcon /> Quitar acceso
                 </button>
               )}
@@ -59,7 +59,7 @@ export default function PermissionsTab({ bot }: PermissionsTabProps) {
         }
         confirmLabel="Quitar acceso"
         danger
-        onCancel={() => setRemoveIndex(null)}
+        onCancel={() => setRemoveUserId(null)}
         onConfirm={handleRemoveConfirm}
       />
     </div>

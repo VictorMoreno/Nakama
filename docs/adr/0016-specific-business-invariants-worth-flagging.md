@@ -4,7 +4,7 @@
 - **Area:** Domain model notes
 
 - `Chatbot` protects two invariants: an owner can't be removed from the team (`Chatbot.RemoveTeamMember`, reached through
-  `ChatbotTeamMemberRemover`, throws `ChatbotErrors.OwnerCannotBeRemoved` when the target index is the owner), and status
+  `ChatbotTeamMemberRemover`, throws `ChatbotErrors.OwnerCannotBeRemoved` when the target member is the owner; the member is identified by user id, never by list position), and status
   transitions and archival are explicit, event-raising operations rather than free property sets.
 - `ChatbotDetail.Context` (HTML shown in the chat panel) is a distinct property from `Description` (the short listing
   blurb) — not duplicates.

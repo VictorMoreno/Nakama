@@ -10,7 +10,7 @@ interface DocumentsTabProps {
 }
 
 export default function DocumentsTab({ bot }: DocumentsTabProps) {
-  const { uploadOpen, setUploadOpen, setDeleteIndex, target, handleRemoveConfirm, openDocument } = useDocumentsTab(bot);
+  const { uploadOpen, setUploadOpen, setDeleteId, target, handleRemoveConfirm, openDocument } = useDocumentsTab(bot);
 
   return (
     <div className="tab-panel active">
@@ -32,7 +32,7 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
               </tr>
             </thead>
             <tbody>
-              {bot.docs.map((doc, idx) => (
+              {bot.docs.map((doc) => (
                 <tr key={doc.id ?? doc.name}>
                   <td className={`${styles.td} ${styles.docName}`}>
                     {doc.id ? (
@@ -48,7 +48,7 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
                   </td>
                   <td className={styles.td}>{doc.updated}</td>
                   <td className={styles.td}>
-                    <button className="btn-ghost danger" type="button" onClick={() => setDeleteIndex(idx)}>
+                    <button className="btn-ghost danger" type="button" onClick={() => setDeleteId(doc.id)}>
                       <RecycleBinIcon /> Eliminar
                     </button>
                   </td>
@@ -71,7 +71,7 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
         }
         confirmLabel="Eliminar"
         danger
-        onCancel={() => setDeleteIndex(null)}
+        onCancel={() => setDeleteId(null)}
         onConfirm={handleRemoveConfirm}
       />
     </div>

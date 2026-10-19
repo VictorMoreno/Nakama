@@ -51,7 +51,7 @@ la creación es `PUT`, no `POST`: el id ya se conoce antes de la llamada.
 | Acción de dominio sin campo directo (ej. Archive, Complete, ToggleGating) | `POST /{recurso}/{id:guid}/{acción}` | 204 |
 | Agregar a una colección (ej. Documents, Team, Exchanges) | `POST /{recurso}/{id:guid}/{colección}` | 204 |
 | Agregar a una colección con id propio provisto por el cliente (ej. Modules) | `PUT /{recurso}/{id:guid}/{colección}/{subId:guid}` | 201 |
-| Quitar por índice de lista (sin id estable, solo posición) | `DELETE /{recurso}/{id:guid}/{colección}/{index:int}` | 204 |
+| Quitar un elemento de una colección por su identificador (id propio, o el id del usuario si es un miembro) | `DELETE /{recurso}/{id:guid}/{colección}/{subId:guid}` | 204 |
 | Listado | `GET /{recurso}` | 200 |
 | Detalle por id (o una vista distinta del mismo agregado) | `GET /{recurso}/{id:guid}[/{vista}]` | 200 |
 

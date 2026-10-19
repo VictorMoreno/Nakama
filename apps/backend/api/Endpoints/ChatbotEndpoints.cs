@@ -63,9 +63,9 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapDelete("/{id:guid}/documents/{index:int}", RemoveChatbotDocument)
+        group.MapDelete("/{id:guid}/documents/{documentId:guid}", RemoveChatbotDocument)
             .RequireAuthorization(AuthPolicies.Admin)
-            .WithSummary("Removes a document by its list position.")
+            .WithSummary("Removes a document by its id.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -84,9 +84,9 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
-        group.MapDelete("/{id:guid}/team/{index:int}", RemoveChatbotTeamMember)
+        group.MapDelete("/{id:guid}/team/{userId:guid}", RemoveChatbotTeamMember)
             .RequireAuthorization(AuthPolicies.Admin)
-            .WithSummary("Removes a team member by their list position. The owner cannot be removed.")
+            .WithSummary("Removes a team member by their user id. The owner cannot be removed.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
@@ -201,11 +201,11 @@ public sealed class ChatbotEndpoints : IEndpoint
 
     private static async Task<IResult> RemoveChatbotDocument(
         Guid id,
-        int index,
+        Guid documentId,
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await commandBus.Send(new ChatbotDocumentRemover.Command(id, index), ct);
+        await commandBus.Send(new ChatbotDocumentRemover.Command(id, documentId), ct);
         return Results.NoContent();
     }
 
@@ -220,11 +220,11 @@ public sealed class ChatbotEndpoints : IEndpoint
     }
 
     private static async Task<IResult> RemoveChatbotTeamMember(Guid id,
-        int index,
+        Guid userId,
         ICommandBus commandBus,
         CancellationToken ct)
     {
-        await commandBus.Send(new ChatbotTeamMemberRemover.Command(id, index), ct);
+        await commandBus.Send(new ChatbotTeamMemberRemover.Command(id, userId), ct);
         return Results.NoContent();
     }
 

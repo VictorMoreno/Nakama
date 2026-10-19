@@ -15,7 +15,7 @@ public sealed class ChatbotDetailUpdatedOnChatbotTeamMemberRemoved(IChatbotDetai
             return;
         }
 
-        chatbotDetail.RemoveTeamMember(chatbotTeamMemberRemoved.Index);
+        chatbotDetail.RemoveTeamMember(chatbotTeamMemberRemoved.UserId);
         await chatbotDetailRepository.Update(chatbotDetail, cancellationToken);
     }
 }

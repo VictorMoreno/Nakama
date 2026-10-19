@@ -45,9 +45,9 @@ public static class ChatbotHttpClientExtensions
     public static Task<HttpResponseMessage> RemoveChatbotTeamMember(
         this HttpClient client,
         Guid id,
-        int index,
+        Guid userId,
         string accessToken) =>
-        client.Send(HttpMethod.Delete, $"/api/chatbots/{id}/team/{index}", accessToken);
+        client.Send(HttpMethod.Delete, $"/api/chatbots/{id}/team/{userId}", accessToken);
 
     public static Task<HttpResponseMessage> ListChatbots(this HttpClient client, string accessToken) =>
         client.Send(HttpMethod.Get, "/api/chatbots", accessToken);

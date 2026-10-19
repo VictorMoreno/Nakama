@@ -22,12 +22,12 @@ public sealed class ChatbotDetailUpdatedOnChatbotTeamMemberRemovedShould : Chatb
     }
 
     [Test]
-    public async Task remove_the_member_row_at_the_index()
+    public async Task remove_the_member_row_with_that_user_id()
     {
         TeamMemberRow first = TeamMemberRowMother.Random();
         TeamMemberRow second = TeamMemberRowMother.Random();
         ChatbotDetailEntity detail = ChatbotDetailMother.With(team: [first, second]);
-        ChatbotTeamMemberRemoved @event = ChatbotTeamMemberRemovedMother.With(ChatbotId.From(detail.Id), 1);
+        ChatbotTeamMemberRemoved @event = ChatbotTeamMemberRemovedMother.With(ChatbotId.From(detail.Id), second.UserId);
         this.ShouldFindChatbotDetail(detail);
 
         await this._handler.Handle(new DomainEventNotification<ChatbotTeamMemberRemoved>(@event), CancellationToken.None);
@@ -37,13 +37,11 @@ public sealed class ChatbotDetailUpdatedOnChatbotTeamMemberRemovedShould : Chatb
     }
 
     [Test]
-    [TestCase(-1)]
-    [TestCase(1)]
-    public async Task leave_the_team_untouched_when_the_index_is_out_of_range(int index)
+    public async Task leave_the_team_untouched_when_no_row_has_that_user_id()
     {
         TeamMemberRow member = TeamMemberRowMother.Random();
         ChatbotDetailEntity detail = ChatbotDetailMother.With(team: [member]);
-        ChatbotTeamMemberRemoved @event = ChatbotTeamMemberRemovedMother.With(ChatbotId.From(detail.Id), index);
+        ChatbotTeamMemberRemoved @event = ChatbotTeamMemberRemovedMother.With(ChatbotId.From(detail.Id), Guid.NewGuid());
         this.ShouldFindChatbotDetail(detail);
 
         await this._handler.Handle(new DomainEventNotification<ChatbotTeamMemberRemoved>(@event), CancellationToken.None);

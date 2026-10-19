@@ -63,7 +63,7 @@ public sealed class ChatbotAccessShould : ApiTestCase
         await this.Client.CreateChatbot(command, adminToken);
         await this.Client.AddChatbotTeamMember(command.Id, member.Id, TeamRole.Reader, adminToken);
 
-        HttpResponseMessage removed = await this.Client.RemoveChatbotTeamMember(command.Id, 0, adminToken);
+        HttpResponseMessage removed = await this.Client.RemoveChatbotTeamMember(command.Id, member.Id, adminToken);
 
         removed.StatusCode.Should().Be(HttpStatusCode.NoContent);
         (await this.ListedIds(member.Token)).Should().BeEmpty();
@@ -80,7 +80,7 @@ public sealed class ChatbotAccessShould : ApiTestCase
         await this.Client.AddChatbotTeamMember(command.Id, staying.Id, TeamRole.Editor, adminToken);
         await this.Client.AddChatbotTeamMember(command.Id, leaving.Id, TeamRole.Reader, adminToken);
 
-        HttpResponseMessage removed = await this.Client.RemoveChatbotTeamMember(command.Id, 1, adminToken);
+        HttpResponseMessage removed = await this.Client.RemoveChatbotTeamMember(command.Id, leaving.Id, adminToken);
 
         removed.StatusCode.Should().Be(HttpStatusCode.NoContent);
         (await this.ListedIds(leaving.Token)).Should().BeEmpty();
@@ -151,7 +151,7 @@ public sealed class ChatbotAccessShould : ApiTestCase
         ChatbotCreator.Command command = ChatbotCreatorCommandMother.Random();
         await this.Client.CreateChatbot(command, adminToken);
         await this.Client.AddChatbotTeamMember(command.Id, member.Id, TeamRole.Editor, adminToken);
-        await this.Client.RemoveChatbotTeamMember(command.Id, 0, adminToken);
+        await this.Client.RemoveChatbotTeamMember(command.Id, member.Id, adminToken);
 
         HttpResponseMessage detail = await this.Client.GetChatbot(command.Id, member.Token);
 

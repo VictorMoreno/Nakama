@@ -57,7 +57,7 @@ function toApiSettings(settings: ChatbotSettings): UpdateChatbotSettingsRequest 
 
 function toDocument(row: ChatbotDocumentResponse): ChatbotDocument {
   return {
-    id: row.id,
+    id: row.id ?? "",
     name: row.name ?? "",
     origin: row.origin ?? "",
     status: DOC_STATUS_FROM_API[row.status ?? "Ok"] ?? "ok",
@@ -205,8 +205,8 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     await this.client.documentsPUT(id, crypto.randomUUID(), { data: file, fileName: file.name }, name, origin);
   }
 
-  async RemoveDocument(id: string, index: number): Promise<void> {
-    await this.client.documentsDELETE(id, index);
+  async RemoveDocument(id: string, documentId: string): Promise<void> {
+    await this.client.documentsDELETE(id, documentId);
   }
 
   async DownloadDocument(id: string, documentId: string): Promise<DocumentFile> {
@@ -218,11 +218,11 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     await this.client.teamPOST(id, { userId: member.userId, role: ROLE_TO_ORDINAL[member.role] });
   }
 
-  async RemoveTeamMember(id: string, index: number): Promise<void> {
+  async RemoveTeamMember(id: string, userId: string): Promise<void> {
     // The mock pre-checked "is this the owner" locally before removing; without a locally
     // cached team list here, that guard is enforced server-side only now
     // (ChatbotErrors.OwnerCannotBeRemoved -> 422) - the domain invariant still holds, it's
     // just checked in one place instead of two.
-    await this.client.teamDELETE(id, index);
+    await this.client.teamDELETE(id, userId);
   }
 }

@@ -19,19 +19,34 @@ public sealed class ChatbotTeamMemberRemoverShould : ChatbotsUnitTestCase
     }
 
     [Test]
-    public async Task remove_the_member_at_the_index_and_publish_team_member_removed()
+    public async Task remove_the_member_with_that_user_id_and_publish_team_member_removed()
     {
         TeamMember owner = TeamMemberMother.With(role: TeamRole.Owner);
         TeamMember editor = TeamMemberMother.With(role: TeamRole.Editor);
         Chatbot chatbot = ChatbotMother.With(team: [owner, editor]);
         this.ShouldFindChatbot(chatbot);
 
-        await this._handler.Handle(ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, 1), CancellationToken.None);
+        await this._handler.Handle(ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, editor.UserId), CancellationToken.None);
 
         chatbot.Team.Should().ContainSingle().Which.Should().Be(owner);
         this.ShouldHaveSavedChatbot(chatbot);
         this.ShouldHavePublished<ChatbotTeamMemberRemoved>(
-            @event => @event.Id == chatbot.Id && @event.Index == 1 && @event.UserId == editor.UserId);
+            @event => @event.Id == chatbot.Id && @event.UserId == editor.UserId);
+    }
+
+    [Test]
+    public async Task remove_only_the_requested_member_whatever_the_order_of_the_team()
+    {
+        TeamMember owner = TeamMemberMother.With(role: TeamRole.Owner);
+        TeamMember first = TeamMemberMother.With(role: TeamRole.Editor);
+        TeamMember second = TeamMemberMother.With(role: TeamRole.Reader);
+        Chatbot chatbot = ChatbotMother.With(team: [owner, first, second]);
+        this.ShouldFindChatbot(chatbot);
+
+        await this._handler.Handle(ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, first.UserId), CancellationToken.None);
+        await this._handler.Handle(ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, second.UserId), CancellationToken.None);
+
+        chatbot.Team.Should().ContainSingle().Which.Should().Be(owner);
     }
 
     [Test]
@@ -43,7 +58,7 @@ public sealed class ChatbotTeamMemberRemoverShould : ChatbotsUnitTestCase
         this.ShouldFindChatbot(chatbot);
 
         Func<Task> act = async () => await this._handler.Handle(
-            ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, 0),
+            ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, owner.UserId),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ChatbotOwnerCannotBeRemovedError>();
@@ -53,16 +68,14 @@ public sealed class ChatbotTeamMemberRemoverShould : ChatbotsUnitTestCase
     }
 
     [Test]
-    [TestCase(-1)]
-    [TestCase(1)]
-    public async Task fail_without_saving_anything_when_the_index_is_out_of_range(int index)
+    public async Task fail_without_saving_anything_when_no_member_has_that_user_id()
     {
         TeamMember owner = TeamMemberMother.With(role: TeamRole.Owner);
         Chatbot chatbot = ChatbotMother.With(team: [owner]);
         this.ShouldFindChatbot(chatbot);
 
         Func<Task> act = async () => await this._handler.Handle(
-            ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, index),
+            ChatbotTeamMemberRemoverCommandMother.With(chatbot.Id.Value, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ChatbotTeamMemberNotFoundError>();

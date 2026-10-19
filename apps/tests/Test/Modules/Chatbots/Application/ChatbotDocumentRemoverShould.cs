@@ -20,31 +20,46 @@ public sealed class ChatbotDocumentRemoverShould : ChatbotsUnitTestCase
     }
 
     [Test]
-    public async Task remove_the_document_at_the_index_and_delete_its_file()
+    public async Task remove_the_document_with_that_id_and_delete_its_file()
     {
         ChatbotDocument first = ChatbotDocumentMother.Random();
         ChatbotDocument second = ChatbotDocumentMother.Random();
         Chatbot chatbot = ChatbotMother.With(documents: [first, second]);
         this.ShouldFindChatbot(chatbot);
 
-        await this._handler.Handle(ChatbotDocumentRemoverCommandMother.With(chatbot.Id.Value, 1), CancellationToken.None);
+        await this._handler.Handle(ChatbotDocumentRemoverCommandMother.With(chatbot.Id.Value, second.Id), CancellationToken.None);
 
         chatbot.Documents.Should().ContainSingle().Which.Should().Be(first);
         this.ShouldHaveDeletedDocumentFile(second.FileName);
         this.ShouldHaveSavedChatbot(chatbot);
-        this.ShouldHavePublished<ChatbotDocumentRemoved>(@event => @event.Id == chatbot.Id && @event.Index == 1);
+        this.ShouldHavePublished<ChatbotDocumentRemoved>(@event => @event.Id == chatbot.Id && @event.DocumentId == second.Id);
     }
 
     [Test]
-    [TestCase(-1)]
-    [TestCase(1)]
-    public async Task fail_without_deleting_any_file_when_the_index_is_out_of_range(int index)
+    public async Task remove_the_same_document_whatever_its_position_in_the_list()
+    {
+        ChatbotDocument first = ChatbotDocumentMother.Random();
+        ChatbotDocument second = ChatbotDocumentMother.Random();
+        ChatbotDocument third = ChatbotDocumentMother.Random();
+        Chatbot chatbot = ChatbotMother.With(documents: [first, second, third]);
+        this.ShouldFindChatbot(chatbot);
+
+        await this._handler.Handle(ChatbotDocumentRemoverCommandMother.With(chatbot.Id.Value, first.Id), CancellationToken.None);
+        await this._handler.Handle(ChatbotDocumentRemoverCommandMother.With(chatbot.Id.Value, third.Id), CancellationToken.None);
+
+        chatbot.Documents.Should().ContainSingle().Which.Should().Be(second);
+        this.ShouldHaveDeletedDocumentFile(first.FileName);
+        this.ShouldHaveDeletedDocumentFile(third.FileName);
+    }
+
+    [Test]
+    public async Task fail_without_deleting_any_file_when_no_document_has_that_id()
     {
         Chatbot chatbot = ChatbotMother.With(documents: [ChatbotDocumentMother.Random()]);
         this.ShouldFindChatbot(chatbot);
 
         Func<Task> act = async () => await this._handler.Handle(
-            ChatbotDocumentRemoverCommandMother.With(chatbot.Id.Value, index),
+            ChatbotDocumentRemoverCommandMother.With(chatbot.Id.Value, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ChatbotDocumentNotFoundError>();

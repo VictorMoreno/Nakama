@@ -22,12 +22,12 @@ public sealed class ChatbotDetailUpdatedOnChatbotDocumentRemovedShould : Chatbot
     }
 
     [Test]
-    public async Task remove_the_document_row_at_the_index()
+    public async Task remove_the_document_row_with_that_id()
     {
         ChatbotDocumentRow first = ChatbotDocumentRowMother.Random();
         ChatbotDocumentRow second = ChatbotDocumentRowMother.Random();
         ChatbotDetailEntity detail = ChatbotDetailMother.With(docs: [first, second]);
-        ChatbotDocumentRemoved @event = ChatbotDocumentRemovedMother.With(ChatbotId.From(detail.Id), 0);
+        ChatbotDocumentRemoved @event = ChatbotDocumentRemovedMother.With(ChatbotId.From(detail.Id), first.Id);
         this.ShouldFindChatbotDetail(detail);
 
         await this._handler.Handle(new DomainEventNotification<ChatbotDocumentRemoved>(@event), CancellationToken.None);
@@ -37,13 +37,11 @@ public sealed class ChatbotDetailUpdatedOnChatbotDocumentRemovedShould : Chatbot
     }
 
     [Test]
-    [TestCase(-1)]
-    [TestCase(1)]
-    public async Task leave_the_documents_untouched_when_the_index_is_out_of_range(int index)
+    public async Task leave_the_documents_untouched_when_no_row_has_that_id()
     {
         ChatbotDocumentRow document = ChatbotDocumentRowMother.Random();
         ChatbotDetailEntity detail = ChatbotDetailMother.With(docs: [document]);
-        ChatbotDocumentRemoved @event = ChatbotDocumentRemovedMother.With(ChatbotId.From(detail.Id), index);
+        ChatbotDocumentRemoved @event = ChatbotDocumentRemovedMother.With(ChatbotId.From(detail.Id), Guid.NewGuid());
         this.ShouldFindChatbotDetail(detail);
 
         await this._handler.Handle(new DomainEventNotification<ChatbotDocumentRemoved>(@event), CancellationToken.None);

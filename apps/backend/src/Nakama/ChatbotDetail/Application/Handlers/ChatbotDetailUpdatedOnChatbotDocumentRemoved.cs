@@ -15,7 +15,7 @@ public sealed class ChatbotDetailUpdatedOnChatbotDocumentRemoved(IChatbotDetailR
             return;
         }
 
-        chatbotDetail.RemoveDocument(chatbotDocumentRemoved.Index);
+        chatbotDetail.RemoveDocument(chatbotDocumentRemoved.DocumentId);
         await chatbotDetailRepository.Update(chatbotDetail, cancellationToken);
     }
 }

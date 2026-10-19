@@ -91,13 +91,7 @@ public partial class ChatbotDetail
             FileName = fileName,
         });
 
-    public void RemoveDocument(int index)
-    {
-        if (index >= 0 && index < this.Docs.Count)
-        {
-            this.Docs.RemoveAt(index);
-        }
-    }
+    public void RemoveDocument(Guid documentId) => this.Docs.RemoveAll(document => document.Id == documentId);
 
     public void AddTeamMember(Guid userId, string role) => this.Team.Add(new TeamMemberRow
     {
@@ -105,13 +99,7 @@ public partial class ChatbotDetail
         Role = role,
     });
 
-    public void RemoveTeamMember(int index)
-    {
-        if (index >= 0 && index < this.Team.Count)
-        {
-            this.Team.RemoveAt(index);
-        }
-    }
+    public void RemoveTeamMember(Guid userId) => this.Team.RemoveAll(member => member.UserId == userId);
 
     public void RecordQuestion(string question)
     {

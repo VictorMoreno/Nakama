@@ -12,7 +12,7 @@ export interface ChatbotSettings {
 export type DocStatus = "ok" | "pending";
 
 export interface ChatbotDocument {
-  id?: string;
+  id: string;
   name: string;
   origin: string;
   status: DocStatus;

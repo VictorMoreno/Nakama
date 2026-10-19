@@ -17,8 +17,8 @@ export interface IChatbotsRepository {
   UpdateStatus(id: string, status: ChatbotLifecycleStatus): Promise<void>;
   UpdateIcon(id: string, iconUrl: string | undefined): Promise<void>;
   AddDocument(id: string, file: File, name: string, origin: string): Promise<void>;
-  RemoveDocument(id: string, index: number): Promise<void>;
+  RemoveDocument(id: string, documentId: string): Promise<void>;
   DownloadDocument(id: string, documentId: string): Promise<DocumentFile>;
   AddTeamMember(id: string, member: TeamMember): Promise<void>;
-  RemoveTeamMember(id: string, index: number): Promise<void>;
+  RemoveTeamMember(id: string, userId: string): Promise<void>;
 }

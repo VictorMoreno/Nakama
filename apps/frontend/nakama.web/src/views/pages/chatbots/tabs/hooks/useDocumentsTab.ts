@@ -25,15 +25,15 @@ export function useDocumentsTab(bot: Chatbot) {
   const { showToast } = useToast();
   const repo = useInjection<IChatbotsRepository>(Services.ChatbotsRepository.id);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
-  const target = deleteIndex != null ? bot.docs[deleteIndex] : null;
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const target = deleteId != null ? bot.docs.find((doc) => doc.id === deleteId) : null;
 
   function handleRemoveConfirm() {
-    if (deleteIndex != null) {
-      removeDocument(bot.id, deleteIndex);
+    if (deleteId != null) {
+      removeDocument(bot.id, deleteId);
       showToast("Documento eliminado");
     }
-    setDeleteIndex(null);
+    setDeleteId(null);
   }
 
   async function openDocument(doc: ChatbotDocument) {
@@ -58,5 +58,5 @@ export function useDocumentsTab(bot: Chatbot) {
     }
   }
 
-  return { uploadOpen, setUploadOpen, deleteIndex, setDeleteIndex, target, handleRemoveConfirm, openDocument };
+  return { uploadOpen, setUploadOpen, deleteId, setDeleteId, target, handleRemoveConfirm, openDocument };
 }

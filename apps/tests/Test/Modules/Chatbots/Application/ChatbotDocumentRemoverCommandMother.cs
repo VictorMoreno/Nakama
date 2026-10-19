@@ -7,6 +7,6 @@ public static class ChatbotDocumentRemoverCommandMother
 {
     public static ChatbotDocumentRemover.Command Random() => With();
 
-    public static ChatbotDocumentRemover.Command With(Guid? id = null, int index = 0) =>
-        new(id ?? ChatbotMother.RandomId().Value, index);
+    public static ChatbotDocumentRemover.Command With(Guid? id = null, Guid? documentId = null) =>
+        new(id ?? ChatbotMother.RandomId().Value, documentId ?? Guid.NewGuid());
 }

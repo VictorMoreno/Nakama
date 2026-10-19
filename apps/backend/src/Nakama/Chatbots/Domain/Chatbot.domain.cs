@@ -68,15 +68,15 @@ public partial class Chatbot
         this.Record(new ChatbotDocumentAdded(this.Id, document));
     }
 
-    public void RemoveDocument(int index)
+    public void RemoveDocument(Guid documentId)
     {
-        if (index < 0 || index >= this._documents.Count)
+        if (!this._documents.Any(existing => existing.Id == documentId))
         {
-            throw ChatbotErrors.DocumentNotFoundAt(index);
+            throw ChatbotErrors.DocumentNotFound(documentId);
         }
 
-        this._documents.RemoveAt(index);
-        this.Record(new ChatbotDocumentRemoved(this.Id, index));
+        this._documents.RemoveAll(existing => existing.Id == documentId);
+        this.Record(new ChatbotDocumentRemoved(this.Id, documentId));
     }
 
     public void AddTeamMember(TeamMember member)
@@ -90,21 +90,18 @@ public partial class Chatbot
         this.Record(new ChatbotTeamMemberAdded(this.Id, member));
     }
 
-    public void RemoveTeamMember(int index)
+    public void RemoveTeamMember(Guid userId)
     {
-        if (index < 0 || index >= this._team.Count)
-        {
-            throw ChatbotErrors.TeamMemberNotFoundAt(index);
-        }
+        TeamMember member = this._team.FirstOrDefault(existing => existing.UserId == userId)
+                            ?? throw ChatbotErrors.TeamMemberNotFound(userId);
 
-        TeamMember member = this._team[index];
         if (member.IsOwner)
         {
             throw ChatbotErrors.OwnerCannotBeRemoved;
         }
 
-        this._team.RemoveAt(index);
-        this.Record(new ChatbotTeamMemberRemoved(this.Id, index, member.UserId));
+        this._team.Remove(member);
+        this.Record(new ChatbotTeamMemberRemoved(this.Id, userId));
     }
 
     public void Archive()

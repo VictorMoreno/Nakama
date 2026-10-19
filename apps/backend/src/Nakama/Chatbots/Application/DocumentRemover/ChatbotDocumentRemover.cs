@@ -8,13 +8,13 @@ namespace Nakama.Chatbots.Application.DocumentRemover;
 
 public static class ChatbotDocumentRemover
 {
-    public sealed record Command(Guid Id, int Index) : ICommand;
+    public sealed record Command(Guid Id, Guid DocumentId) : ICommand;
 
     public sealed class Handler(Remover remover) : ICommandHandler<Command>
     {
         public async Task Handle(Command cmd, CancellationToken ct)
         {
-            await remover.Execute(ChatbotId.From(cmd.Id), cmd.Index, ct);
+            await remover.Execute(ChatbotId.From(cmd.Id), cmd.DocumentId, ct);
         }
     }
 
@@ -25,13 +25,13 @@ public static class ChatbotDocumentRemover
     {
         private readonly ChatbotFinderById _finder = new(repository);
 
-        public async Task Execute(ChatbotId id, int index, CancellationToken cancellationToken)
+        public async Task Execute(ChatbotId id, Guid documentId, CancellationToken cancellationToken)
         {
             Chatbot chatbot = await this._finder.Execute(id, cancellationToken);
 
-            string? fileName = chatbot.Documents.ElementAtOrDefault(index)?.FileName;
+            string? fileName = chatbot.Documents.FirstOrDefault(document => document.Id == documentId)?.FileName;
 
-            chatbot.RemoveDocument(index);
+            chatbot.RemoveDocument(documentId);
 
             if (fileName is not null)
             {

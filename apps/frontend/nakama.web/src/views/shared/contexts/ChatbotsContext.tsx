@@ -23,9 +23,9 @@ interface ChatbotsContextValue {
   updateStatus: (key: string, status: Chatbot["status"]) => Promise<void>;
   updateIcon: (key: string, iconUrl: string | undefined) => Promise<void>;
   addDocument: (key: string, file: File, name: string, origin: string) => Promise<void>;
-  removeDocument: (key: string, index: number) => Promise<void>;
+  removeDocument: (key: string, documentId: string) => Promise<void>;
   addTeamMember: (key: string, member: TeamMember) => Promise<void>;
-  removeTeamMember: (key: string, index: number) => Promise<void>;
+  removeTeamMember: (key: string, userId: string) => Promise<void>;
 }
 
 const ChatbotsContext = createContext<ChatbotsContextValue | null>(null);
@@ -112,13 +112,13 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
     setChatbots(all);
   }
 
-  async function removeDocument(key: string, index: number) {
-    await repo.RemoveDocument(key, index);
+  async function removeDocument(key: string, documentId: string) {
+    await repo.RemoveDocument(key, documentId);
     setChatbots((prev) =>
       prev[key]
         ? {
             ...prev,
-            [key]: { ...prev[key], docs: prev[key].docs.filter((_, i) => i !== index) }
+            [key]: { ...prev[key], docs: prev[key].docs.filter((doc) => doc.id !== documentId) }
           }
         : prev
     );
@@ -129,8 +129,8 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
     setChatbots((prev) => (prev[key] ? { ...prev, [key]: { ...prev[key], team: [...prev[key].team, member] } } : prev));
   }
 
-  async function removeTeamMember(key: string, index: number) {
-    await repo.RemoveTeamMember(key, index);
+  async function removeTeamMember(key: string, userId: string) {
+    await repo.RemoveTeamMember(key, userId);
     // Re-fetch this bot's team rather than optimistically filtering: the repository (not
     // the UI) owns the "never remove the owner" invariant, so the source of truth for
     // whether the removal actually happened is the repository's own state.
