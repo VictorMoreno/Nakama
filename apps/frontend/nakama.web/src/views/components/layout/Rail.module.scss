@@ -170,3 +170,11 @@
   .brand { justify-content: center; }
   .navItem { justify-content: center; }
 }
+
+@media (width <= 640px) {
+  .rail { width: 60px; padding-left: 8px; padding-right: 8px; }
+}
+
+@media (width <= 640px), (pointer: coarse) {
+  .navItem { min-height: 44px; }
+}

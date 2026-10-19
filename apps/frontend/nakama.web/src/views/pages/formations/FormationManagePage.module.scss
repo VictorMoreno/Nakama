@@ -35,6 +35,22 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 14px;
+
+  @media (width <= 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.moduleItemActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+
+  @media (width <= 640px) {
+    justify-content: flex-end;
+  }
 }
 
 .expandToggle {
@@ -71,6 +87,7 @@
 
 .moduleItemTitle {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   font-size: 0.86rem;

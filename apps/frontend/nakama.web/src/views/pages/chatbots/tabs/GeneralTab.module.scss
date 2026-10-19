@@ -15,3 +15,8 @@
 }
 
 .configRowControls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+@media (width <= 640px) {
+  .configRow { flex-direction: column; align-items: stretch; gap: 12px; }
+  .configRowControls { flex-shrink: 1; flex-wrap: wrap; }
+}

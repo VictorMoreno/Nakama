@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { CloseIcon, PlusIcon } from "../../components/shared/icons";
 import type { LlmModelOption, LlmProviderConfig } from "../../../modules/llmProviders/domain/LlmProviderConfig";
 import { KNOWN_PROVIDERS, useLlmProviders } from "./hooks/useLlmProviders";
+import styles from "./LlmProvidersPage.module.scss";
 
 interface ProviderPanelProps {
   config: LlmProviderConfig;
@@ -72,22 +73,20 @@ function ProviderPanel({ config, onSave }: ProviderPanelProps) {
               </p>
             )}
             {models.map((model, index) => (
-              <div key={index} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+              <div key={index} className={styles.modelRow}>
                 <input
-                  className="form-input"
+                  className={`form-input ${styles.modelInput}`}
                   placeholder="id del modelo (ej. claude-opus-5-5)"
                   value={model.id}
                   onChange={(e) => updateModel(index, { id: e.target.value })}
-                  style={{ flex: 1 }}
                 />
                 <input
-                  className="form-input"
+                  className={`form-input ${styles.modelInput}`}
                   placeholder="nombre visible (ej. Claude Opus 5.5)"
                   value={model.label}
                   onChange={(e) => updateModel(index, { label: e.target.value })}
-                  style={{ flex: 1 }}
                 />
-                <button className="btn-ghost" type="button" aria-label="Quitar modelo" onClick={() => removeModel(index)}>
+                <button className={`btn-ghost ${styles.modelRemove}`} type="button" aria-label="Quitar modelo" onClick={() => removeModel(index)}>
                   <CloseIcon />
                 </button>
               </div>

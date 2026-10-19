@@ -95,3 +95,7 @@
     font-weight: 600;
   }
 }
+
+@media (width <= 640px), (pointer: coarse) {
+  .selectTrigger { min-height: 44px; }
+}

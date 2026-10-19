@@ -137,3 +137,21 @@
 
   &:hover { background: var(--danger-soft); }
 }
+
+// The rail is icon-only up to 920px wide, so the trigger shows just the avatar there too.
+@media (width <= 920px) {
+  .userTrigger {
+    justify-content: center;
+    padding: 8px;
+
+    span:not(.userAvatar),
+    .chevron {
+      display: none;
+    }
+  }
+}
+
+@media (width <= 640px), (pointer: coarse) {
+  .userTrigger { min-height: 44px; }
+  .userDropdownLogout { min-height: 44px; }
+}

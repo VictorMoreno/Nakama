@@ -44,7 +44,7 @@
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  width: 280px;
+  width: min(280px, calc(100vw - 96px));
   background: var(--surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow);
@@ -107,4 +107,8 @@
   font-size: 0.78rem;
   color: var(--ink-faint);
   text-align: center;
+}
+
+@media (width <= 640px), (pointer: coarse) {
+  .botSwitcherTrigger { min-height: 44px; }
 }

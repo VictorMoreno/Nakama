@@ -364,3 +364,16 @@
 }
 
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+// ---------- Narrow viewports and touch ----------
+
+@media (width <= 640px) {
+  .tabs { overflow-x: auto; scrollbar-width: none; }
+  .tab-btn { flex: none; white-space: nowrap; transform: none; }
+  .config-row { flex-direction: column; align-items: stretch; gap: 12px; }
+}
+
+@media (width <= 640px), (pointer: coarse) {
+  .btn-primary, .btn-ghost, .tab-btn { min-height: 44px; }
+  .form-input { min-height: 44px; }
+}

@@ -105,7 +105,7 @@ function ManageModuleRow({ formationKey, module: m, index, expanded, onToggleExp
           )}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "none" }}>
+        <div className={styles.moduleItemActions}>
           <button className="btn-ghost danger" type="button" onClick={onDelete}>
             <RecycleBinIcon /> Eliminar
           </button>

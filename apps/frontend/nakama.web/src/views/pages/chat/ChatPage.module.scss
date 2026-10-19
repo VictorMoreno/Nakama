@@ -6,6 +6,7 @@
 
 .chatToolbarMain {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -99,6 +100,7 @@
 // MAX_COMPOSER_HEIGHT via useChat's effect (inline style) once you actually type more.
 .composerTextarea {
   flex: 1;
+  min-width: 0;
   max-height: 160px;
   overflow-y: hidden;
   resize: none;
@@ -325,4 +327,22 @@
   .chatToolbar { grid-template-columns: 1fr; }
   .chatShell { grid-template-columns: 1fr; }
   .sideCol { min-height: 260px; }
+}
+
+// ---------- Phones: tighter paddings, 44px controls, icon-only send button ----------
+
+@media (width <= 640px) {
+  .chatPanelHead { padding: 14px 16px; }
+  .thread { padding: 14px 16px; }
+  .composer { padding: 12px 14px; }
+}
+
+@media (width <= 640px), (pointer: coarse) {
+  .attachBtn { width: 44px; height: 44px; }
+  .sendBtn { height: 44px; }
+}
+
+@media (width <= 480px) {
+  .sendBtn { padding: 0 14px; }
+  .sendLabel { display: none; }
 }

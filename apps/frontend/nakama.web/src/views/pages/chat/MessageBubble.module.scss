@@ -162,3 +162,8 @@
     color: var(--danger);
   }
 }
+
+@media (width <= 640px), (pointer: coarse) {
+  .msgAction { min-height: 44px; }
+  .feedbackBtn { width: 44px; height: 44px; }
+}

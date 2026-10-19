@@ -1,0 +1,24 @@
+.modelRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  @media (width <= 640px) {
+    flex-wrap: wrap;
+  }
+}
+
+.modelInput {
+  flex: 1;
+  min-width: 0;
+
+  @media (width <= 640px) {
+    flex: 1 1 100%;
+  }
+}
+
+.modelRemove {
+  @media (width <= 640px) {
+    margin-left: auto;
+  }
+}

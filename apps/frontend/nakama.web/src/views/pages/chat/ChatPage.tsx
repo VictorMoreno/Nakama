@@ -145,9 +145,9 @@ export default function ChatPage() {
                   }
                 }}
               />
-              <button className={styles.sendBtn} type="button" onClick={() => void handleSend()}>
+              <button className={styles.sendBtn} type="button" aria-label="Enviar" onClick={() => void handleSend()}>
                 <SendIcon />
-                Enviar
+                <span className={styles.sendLabel}>Enviar</span>
               </button>
             </div>
           </div>
