@@ -42,5 +42,5 @@ code in the backend; the ADRs document *why* certain decisions were made.
 | [ADR-20](0020-users-and-authentication-asp-net-core-identity-core.md) | Users and authentication — ASP.NET Core Identity Core over NHibernate, a short-lived JWT plus a rotating refresh token | Users | Accepted |
 | [ADR-21](0021-entity-response-conversion-is-explicit-operator-by-default.md) | entity → Response conversion is `explicit operator` by default; `ToResponse` (extension method) when it can't be | Application layer | Accepted |
 | [ADR-22](0022-repositories-are-scrutor-scanned-by-base-class.md) | Repositories are Scrutor-scanned by base class, and registered in `AddInfrastructure`, not `AddApplication` | Persistence | Accepted |
-| [ADR-23](0023-useractivity-records-every-login-as-its-own-row-and-fixed.md) | `UserActivity` records every login as its own row — and fixed a real bug where the event was raised but never published | Users | Accepted |
+| [ADR-23](0023-useractivity-records-every-login-as-its-own-row.md) | `UserActivity` records every login as its own row | Users | Accepted |
 | [ADR-25](0025-seed-data-is-a-manual-script-docs-db-demo-data-sql.md) | seed data is a manual script (`docs/db/demo-data.sql`), not a migration | Persistence — schema | Accepted |

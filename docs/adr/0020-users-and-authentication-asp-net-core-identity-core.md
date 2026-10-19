@@ -43,7 +43,7 @@ timestamp write as an accepted side effect of the lookup; a `TResponse` variant 
 extend shared CQRS infrastructure for one use. The user is found with `UserByEmailSpecification` (by
 `NormalizedEmail`) and its password is verified by `IUsersRepository.VerifyPassword`, so the use case never references
 `Microsoft.AspNetCore.Identity`: both operations describe the same aggregate's contract. A wrong email and a wrong password
-raise the same `InvalidCredentials` error, and a successful login raises `UserActivityRecorded` ([ADR-23](0023-useractivity-records-every-login-as-its-own-row-and-fixed.md)).
+raise the same `InvalidCredentials` error, and a successful login raises `UserActivityRecorded` ([ADR-23](0023-useractivity-records-every-login-as-its-own-row.md)).
 
 **Access token.** `HmacSha256JwtTokenGenerator` signs an HS256 JWT with claims `sub` (user id), `jti`, `email`, `name` and `role`
 (`admin` or `member`). `JwtOptions` (`Jwt:Issuer`, `Audience`, `SigningKey`, `AccessTokenMinutes`, `RefreshTokenDays`) is validated on
