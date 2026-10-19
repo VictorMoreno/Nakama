@@ -13,6 +13,8 @@ namespace Nakama.LlmProviders.Infrastructure;
 
 public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository, IOptions<LlmOptions> options) : ILlmClient
 {
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromMinutes(5);
+
     public async IAsyncEnumerable<string> AskStream(
         string model,
         string systemPrompt,
@@ -28,7 +30,7 @@ public sealed class AnthropicLlmClient(ILlmProviderConfigRepository repository, 
             throw LlmProviderErrors.NotConfigured(LlmProvider.Anthropic);
         }
 
-        AnthropicClient client = new() { ApiKey = config.ApiKey };
+        AnthropicClient client = new() { ApiKey = config.ApiKey, Timeout = RequestTimeout };
 
         MessageCreateParams parameters = new()
         {
