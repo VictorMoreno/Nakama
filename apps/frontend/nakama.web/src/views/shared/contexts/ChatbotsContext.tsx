@@ -112,16 +112,20 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
     setChatbots(all);
   }
 
+  async function reloadChatbots() {
+    try {
+      setChatbots(await repo.FindAll());
+    } catch {
+      return;
+    }
+  }
+
   async function removeDocument(key: string, documentId: string) {
-    await repo.RemoveDocument(key, documentId);
-    setChatbots((prev) =>
-      prev[key]
-        ? {
-            ...prev,
-            [key]: { ...prev[key], docs: prev[key].docs.filter((doc) => doc.id !== documentId) }
-          }
-        : prev
-    );
+    try {
+      await repo.RemoveDocument(key, documentId);
+    } finally {
+      await reloadChatbots();
+    }
   }
 
   async function addTeamMember(key: string, member: TeamMember) {
@@ -130,12 +134,11 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
   }
 
   async function removeTeamMember(key: string, userId: string) {
-    await repo.RemoveTeamMember(key, userId);
-    // Re-fetch this bot's team rather than optimistically filtering: the repository (not
-    // the UI) owns the "never remove the owner" invariant, so the source of truth for
-    // whether the removal actually happened is the repository's own state.
-    const all = await repo.FindAll();
-    setChatbots(all);
+    try {
+      await repo.RemoveTeamMember(key, userId);
+    } finally {
+      await reloadChatbots();
+    }
   }
 
   const value: ChatbotsContextValue = {
