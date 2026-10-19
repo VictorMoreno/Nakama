@@ -1,8 +1,8 @@
 # API Agent Guide
 
 Convenciones reales de `apps/backend/api` — Minimal API. Ver `apps/backend/src/Nakama/agents.md`
-para las convenciones de dominio/aplicación (se siguen al pie de la letra) y `ADR.md` en esa
-misma carpeta para el porqué de las decisiones arquitectónicas referenciadas abajo.
+para las convenciones de dominio/aplicación (se siguen al pie de la letra) y los ADR de
+`docs/adr/` para el porqué de las decisiones arquitectónicas referenciadas abajo.
 
 ## 1) Stack y arranque
 
@@ -71,7 +71,7 @@ tiene wiring de XML-doc-a-OpenAPI (`Api.csproj` no declara `GenerateDocumentatio
 idiomática de documentar acá es `.WithSummary("...")` (siempre) / `.WithDescription("...")` (solo
 cuando el comportamiento no es obvio, ej. semántica de upsert) / `.Produces<T>()` /
 `.ProducesProblem(...)`. Esto es intencional: en el resto del backend (`Domain`/`Application`/
-`Infrastructure`) no hay comentarios `///` — viven en `ADR.md` cuando explican un "por qué" no
+`Infrastructure`) no hay comentarios `///` — viven en `docs/adr/` cuando explican un "por qué" no
 obvio — y `apps/backend/api` es la única capa donde sí se documenta en el código, porque acá
 alimenta Swagger.
 
