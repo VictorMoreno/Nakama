@@ -10,12 +10,16 @@ export function usePermissionsTab(bot: Chatbot) {
   const [removeUserId, setRemoveUserId] = useState<string | null>(null);
   const target = removeUserId != null ? bot.team.find((member) => member.userId === removeUserId) : null;
 
-  function handleRemoveConfirm() {
-    if (removeUserId != null) {
-      removeTeamMember(bot.id, removeUserId);
-      showToast("Acceso actualizado");
-    }
+  async function handleRemoveConfirm() {
+    const userId = removeUserId;
     setRemoveUserId(null);
+    if (userId == null) return;
+    try {
+      await removeTeamMember(bot.id, userId);
+      showToast("Acceso actualizado");
+    } catch {
+      showToast("No se pudo quitar el acceso");
+    }
   }
 
   return { inviteOpen, setInviteOpen, removeUserId, setRemoveUserId, target, handleRemoveConfirm };
