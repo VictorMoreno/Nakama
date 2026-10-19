@@ -435,117 +435,98 @@ is frozen and every change is a new numbered migration.
 
 ## Users
 
-### ADR-20:
-`Users` is a real bounded context, backed by NHibernate-flavored ASP.NET Core Identity Core — deliberately without OAuth/SSO/cookie sessions yet
+### ADR-20: Users and authentication — ASP.NET Core Identity Core over NHibernate, a short-lived JWT plus a rotating refresh token
 
-`docs/architecture/stack-tecnologico.md` documents the long-term auth plan (an own identity server now, replaced by
-Jaltest Auth later, behind an OIDC/SAML port) but leaves two decisions explicitly open (Duende IdentityServer vs.
-OpenIddict; validating Jaltest's OIDC/SAML contract). This ADR is **not** that pass. It only replaces the fully-fake
-login (`LoginPage.tsx` used to `e.preventDefault(); navigate("/chat")` with zero backend call, accepting any
-credentials) with a real one: a `Users` bounded context, real password hashing/verification, and a real `LastActiveAt`
-timestamp — needed to stop the Analytics "Usuarios activos esta semana" card from being hardcoded (`34`,
-`de 48 con acceso`). No cookie/JWT/session is issued; a page reload still loses the "logged in" state. No per-endpoint
-authorization exists anywhere in this API either way (today's `isAdmin` is a pure frontend toggle) — this pass doesn't
-add any, since real authorization is meaningless without a real session to check.
+**Decision.** `Users` and `Authentication` are two bounded contexts. `Users` owns the `User` aggregate and checks credentials
+with ASP.NET Core Identity Core backed by NHibernate. `Authentication` owns the session: it issues a JWT access token and a
+rotating refresh token, and the API authorizes every request from that token. OAuth/SSO is out of scope here:
+`docs/architecture/stack-tecnologico.md` plans an own identity server now and Jaltest Auth later behind an OIDC/SAML port,
+and leaves two choices open (Duende IdentityServer vs. OpenIddict, and validating Jaltest's contract) that this ADR does
+not take.
 
-**ASP.NET Core Identity works with NHibernate, verified, not assumed.** Checked the published nuspec for
-`Microsoft.Extensions.Identity.Core` (the `net10.0` dependency group): only
-`Microsoft.AspNetCore.Cryptography.KeyDerivation`, `Microsoft.Extensions.Logging`, `Microsoft.Extensions.Options` — zero
-EF Core. `UserManager<TUser>`, `IUserStore<TUser>` (+ `IUserPasswordStore<TUser>`, `IUserEmailStore<TUser>`), and
-`PasswordHasher<TUser>` all live in this package and are 100% storage-agnostic; EF coupling only exists in the separate,
-never-referenced `Microsoft.AspNetCore.Identity.EntityFrameworkCore` adapter — same officially-supported shape as
-Microsoft's "Custom storage providers for ASP.NET Core Identity" doc. `NhUserStore`
-(`Users/Infrastructure/NhUserStore.cs`) implements exactly the minimal trio (`IUserStore<User>`,
-`IUserPasswordStore<User>`, `IUserEmailStore<User>` — no roles/claims/lockout/2FA, nothing here asks for that) as thin
-translations onto `IUsersRepository`/`User`'s own domain setters. DI is
-`services.AddIdentityCore<User>().AddUserStore<NhUserStore>()` — deliberately `AddIdentityCore`, not `AddIdentity`: the
-latter also wires a default cookie scheme + `SignInManager`, exactly the session/OAuth-adjacent machinery this pass
-skips.
+**Identity Core works with NHibernate — verified, not assumed.** The `net10.0` dependency group of
+`Microsoft.Extensions.Identity.Core` has zero EF Core: `UserManager<TUser>`, `IUserStore<TUser>` and `PasswordHasher<TUser>`
+are storage-agnostic, and the EF coupling lives in the separate `Microsoft.AspNetCore.Identity.EntityFrameworkCore` package,
+which is not referenced (the shape of Microsoft's "Custom storage providers" guide). `NhUserRepository`
+(`Users/Infrastructure`) is that store: it implements only `IUserPasswordStore<User>` and `IUserEmailStore<User>` — no roles,
+claims, lockout or two-factor, because nothing asks for them — as thin translations onto `User`'s own setters. The
+registration is `AddIdentityCore<User>().AddUserStore<NhUserRepository>()`, deliberately not `AddIdentity`, which would also
+wire a default cookie scheme and `SignInManager`.
 
-`User` is a normal `AggregateRoot<UserId>` domain class (not `Microsoft.AspNetCore.Identity.IdentityUser`) — Identity's
-`TUser` generic parameter has no base-class requirement; every property Identity touches is reached only through
-`IUserStore<User>`'s methods, which this codebase's own `NhUserStore` implements, so `User` stays exactly as domain-pure
-as `Chatbot`/`Formation`. Users are admin-provisioned (`POST /api/users`, matching RF6 "Panel de administración:
-Gestionar usuarios"), not self-registered — `UserAuthenticator` is the only unauthenticated-facing surface
-(`POST /api/auth/login`).
+**`NhUserRepository` talks to NHibernate directly, never through `IUsersRepository`.** The domain repository
+(`NhUsersRepository`) wraps `UserManager<User>` to verify passwords, and `UserManager<User>` needs an `IUserStore<User>` to be
+built. If the store depended on `IUsersRepository` the container would have a cycle
+(`IUserStore<User>` → `IUsersRepository` → `UserManager<User>` → `IUserStore<User>`) and refuse to build the service tree.
+So the store takes `IWriteSessionFactory` and does its own minimal session work for find-by-id, save and
+find-by-normalized-email. That small duplication of what `NhUsersRepository` also does is the accepted cost, not an
+oversight.
 
-**`UserAuthenticator` is modeled as a Query, not a Command** — the one deliberate exception to ADR-18's Command/Query
-split. `ICommand`/`ICommandBus` in this codebase are void-only (confirmed: none of the other 14 commands carry a
-response), and login's purpose from the caller's side is fundamentally a value (is this credential real, who is it) with
-`MarkActive`'s timestamp write as an accepted side effect of the lookup — inventing an `ICommand<TResponse>` variant
-just for this one caller would mean extending shared CQRS infrastructure for a single use.
+**`User` is a plain `AggregateRoot<UserId>`**, not `IdentityUser`: Identity's `TUser` has no base-class requirement and reaches
+every property only through the store, so `User` stays as domain-pure as `Chatbot` or `Formation`. `Email` is a domain
+value object (`Users/Domain/Email.cs`) wrapping the raw string and a computed `Normalized` value, and rejecting a malformed
+address (`UserErrors.InvalidEmail`, 422). It is not an `IStringValueObject` (ADR-3): `Email` and `NormalizedEmail` persist as two
+independent columns because Identity sets each one separately, so `Email` only exists in Domain/Application code. The
+store's own setters stay plain strings because Identity computes those values with its own normalizer. Use cases and
+commands carry a plain `string Email` (ADR-18) and the `Handler` builds the value object. Users are provisioned by an
+administrator, never self-registered, and the MVP has no user-creation endpoint: accounts come from
+`docs/db/demo-data.sql` (ADR-25). The users listing is the only user endpoint.
 
-**`AnalyticsFinder.Finder` now assembles the full `AnalyticsResponse` itself**, not just the domain `Analytics` entity —
-the one deliberate exception to the rest of this codebase's Finder pattern (every other Finder returns a domain
-entity/collection; `Handler` does the `(Response)entity` cast). Reason: this response now merges two independent read
-sources — the `Analytics` singleton's lifetime incrementing counters (`ActiveBotsCount`, `AnsweredThisWeek`), and a
-live, rolling 7-day-window count over `Users` (`ActiveUsersCount`, via
-`IUsersRepository.CountActiveSince(systemClock.UtcNow.AddDays(-7), ct)`) plus `TotalUsersCount`. The rolling-window
-count is **not** folded into `Analytics`'s own incrementing-counter model, because an incrementing counter can never
-represent "active in the last 7 days" correctly — users need to be able to drop *out* of the count as time passes, which
-only a live query (not an event-sourced running total) can do.
+**Checking credentials.** `UserCredentialsVerifier` is modeled as a Query, the one deliberate exception to ADR-18's
+Command/Query split: commands are void-only and login's purpose is a value (who is this credential), with `MarkActive`'s
+timestamp write as an accepted side effect of the lookup; a `TResponse` variant of `ICommand` just for this caller would
+extend shared CQRS infrastructure for one use. The user is found with `UserByEmailSpecification` (by
+`NormalizedEmail`) and its password is verified by `IUsersRepository.VerifyPassword`, so the use case never references
+`Microsoft.AspNetCore.Identity`: both operations describe the same aggregate's contract. A wrong email and a wrong password
+raise the same `InvalidCredentials` error, and a successful login raises `UserActivityRecorded` (ADR-23).
 
-**`NhRepositoryBase<TEntity, TId>` gained a `protected ISessionFactory Sessions => sessions;` accessor.** Every
-repository before `NhUsersRepository` only ever needed `FindById`/`FindAllEntities`/`Save`/`Remove` from the base —
-`NhUsersRepository` is the first that needs a genuinely custom query (`GetByEmail`, `CountAll`,
-`CountActiveSince`) the base doesn't expose, and the base's session factory was a private primary-constructor capture
-with no subclass access at all. The new accessor is the same `OpenSession()`-per-call shape every existing base method
-already uses — any future repository needing a custom query reuses it instead of taking its own separate session-factory
-dependency.
+**Access token.** `HmacSha256JwtTokenGenerator` signs an HS256 JWT with claims `sub` (user id), `jti`, `email`, `name` and `role`
+(`admin` or `member`). `JwtOptions` (`Jwt:Issuer`, `Audience`, `SigningKey`, `AccessTokenMinutes`, `RefreshTokenDays`) is validated on
+startup — the signing key must be at least 32 bytes and comes from user-secrets or the environment, never from source —
+and the bearer validation checks issuer, audience, signature, algorithm and lifetime with a 30 second skew. The access
+token lasts 15 minutes.
 
-**`DomainErrorExceptionHandler` gained one more status-code rule**: `.invalid_credentials` → `401 Unauthorized`,
-alongside the existing `.not_found` → 404 and `.already_exists` → 409 (everything else still falls through to 422).
-Wrong credentials are neither a not-found nor a conflict, and 401 is the correct HTTP status for them — same extensible
-`switch` the other two rules already live in.
+**Refresh token.** `RefreshToken` is the aggregate of its own module, `Authentication`, because a second aggregate gets its own
+module; it reaches `Users` only through `IQueryBus`. The value is 32 random bytes (Base64Url); only its SHA-256 hash is stored
+(`token_hash`, unique). It travels in the cookie `nakama_refresh`: `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/api/auth`.
+`POST /api/auth/login`, `/refresh` and `/logout` are the only anonymous endpoints besides `/health`. Every refresh rotates
+the token: `NhRefreshTokensRepository.Rotate` revokes the current one and stores its replacement in one transaction with
+`update ... where revoked_at is null`, so two concurrent refreshes cannot both win. Presenting a token that was already
+rotated (or losing the rotation race) is treated as theft: `RevokeAllOf` closes every session of that user and the answer is
+the same generic `InvalidRefreshToken`. Rotate and revoke-all are raw SQL on purpose, so they are not specifications.
+`POST /api/auth/logout` revokes the token and clears the cookie.
 
-**`Email` is a domain value object** (`Users/Domain/Email.cs`) wrapping the raw string plus a computed `Normalized`
-property, used by the Users use cases (`UserCredentialsVerifier` today) so no caller — nor any future Users use case — has to
-remember to call `.ToUpperInvariant()` itself; the constructor also rejects an obviously malformed value
-(`UserErrors.InvalidEmail`, falls through to 422). It is **not** an `IStringValueObject`/`ValueObjectUserType<T>`
-(ADR-3): that pattern round-trips an identity value object through a *single* DB column via
-`Activator.CreateInstance`, but `Email`/`NormalizedEmail` persist as two independent columns because
-`IUserEmailStore<User>`'s contract sets each one separately (Identity's own store methods call
-`SetEmailAsync`/`SetNormalizedEmailAsync` independently) — `Email` only exists in Domain/Application code, never
-persisted as a unit. Command/Query DTOs (`UserCredentialsVerifier.Query`) still carry a plain `string
-Email`, per ADR-18 — the `Handler` is what constructs `new Email(cmd.Email)`, same as every other domain-typed
-conversion in this codebase. `NhUserStore`'s own setters (`SetEmail`/`SetNormalizedEmail` on `User`) stay raw `string`
-on purpose: Identity computes those values itself (via its own normalizer) when calling into the store, never through
-this VO.
+**Authorization.** The identity always comes from the token: `ICurrentUser` (`HttpContextCurrentUser`) reads `sub` and the
+role claim, and no endpoint accepts a `userId` or an `isAdmin` from the client. The fallback policy requires an authenticated
+user, so a new endpoint is protected unless it opts out with `AllowAnonymous`. The `Admin` policy requires the admin role,
+and `ChatbotMember` is a resource policy: `ChatbotMemberAuthorizationHandler` lets administrators through and otherwise asks
+`ChatbotMemberSearcher` (module `ChatbotMembers`, through `IQueryBus`) whether the user belongs to the chatbot named in the
+route (`id` or `botKey`). It protects the chatbot detail and the question endpoint, and the chatbot list is filtered by the
+same membership. Team roles (owner, editor, reader) exist in the domain but are not enforced yet.
 
-**`IUsersRepository.GetByEmail` takes the `Email` VO, not a normalized string** — an earlier version was named
-`FindByNormalizedEmail(string normalizedEmail, ...)`, which leaked the lookup's implementation detail (that it
-compares against a normalized index) into the interface contract, and still required every caller to remember to
-normalize before calling it. There is exactly one lookup method on the interface, not a second raw-string one for
-infrastructure's sake.
+**HTTP statuses.** `ApiExceptionHandler` maps a `DomainError` by its code suffix: `.not_found` 404, `.already_exists` 409,
+`.invalid_credentials`, `.invalid_refresh_token` and `.refresh_token_reused` 401, and anything else 422. A failed policy is a
+403 from the framework.
 
-**User provisioning is out of the MVP.** The `UserCreator` use case, `POST /users` and everything that existed only for them
-(`UserEmailAvailabilityChecker`, `IUsersRepository.CreateWithPassword`, the `UserCreated` event and the
-`EmailAlreadyInUse`/`Invalid` errors) were removed; users come from `docs/db/demo-data.sql` (ADR-25). `GetByEmail` stays because
-credential verification needs it.
+**The client keeps the access token in memory only** (`AuthSession`), never in web storage, so a script cannot read it and
+the refresh cookie stays unreachable from JavaScript. On load `UserProvider` calls refresh to restore the session
+(`isRestoring` holds the UI until it answers). `authFetch` attaches the bearer token and, on a 401 for a non-auth endpoint,
+refreshes once and retries; if that fails it expires the session and the user returns to the login.
 
-**`IUsersRepository` also owns credential verification** (`VerifyPassword(User, string, ct)` on `NhUsersRepository`, wrapping
-`UserManager<User>`) — `UserCredentialsVerifier` no longer references `Microsoft.AspNetCore.Identity` at all. This was an
-explicit call, made after weighing the alternative of a separate `IUserAccountManager` port, on the grounds that both
-concerns describe the same aggregate's contract.
+**Active-users figures.** `AnalyticsFinder.Finder` assembles the whole `AnalyticsResponse` itself instead of returning the
+`Analytics` entity, the one deliberate exception to the Finder pattern (ADR-18; the `ToResponse` extension is ADR-21). The response merges the `Analytics`
+singleton's incrementing counters with a live count of users active in the last 7 days
+(`UserActiveSinceSpecification`) and the total (`UserListingSpecification`). The rolling window is not part of `Analytics`'s
+running totals because an incrementing counter cannot represent users dropping out of "active in the last 7 days" as time
+passes; only a live query can.
 
-**Consequence, found live, not assumed: `NhUserStore` can no longer depend on `IUsersRepository`.**
-`NhUsersRepository` now depends on `UserManager<User>` for the credential methods; `UserManager<User>` needs an
-`IUserStore<User>` to be constructed at all; `NhUserStore` used to satisfy its own `FindById`/`Save`/find-by-email
-needs by calling into `IUsersRepository`. Wiring all three together is a cycle
-(`IUserStore<User>(NhUserStore) → IUsersRepository(NhUsersRepository) → UserManager<User> → IUserStore<User>`), and
-the .NET DI container refuses to build the service tree at all when it exists — confirmed by actually starting the
-API with the naive wiring and reading its own error before touching anything further, not by reasoning about it on
-paper. `NhUserStore` now takes `IWriteSessionFactory` directly and does its own minimal NHibernate session
-work for `FindById`/`Save`/find-by-normalized-email, instead of delegating to the repository — a small, deliberate
-duplication of what `NhUsersRepository` also does, and the accepted cost of the decision above, not an oversight.
+**Not covered.** Login has no rate limit or lockout, the provider API keys are stored in plain text, the demo
+accounts share a fixed password and there is no HSTS/CSP/CORS policy (all in `TODO.md`).
 
-**Where it applies:** `Users/**` (new),
-`Shared/Infrastructure/Persistence/Nh/{NhRepositoryBase,Mappings/UserMapping}.cs`,
-`Shared/Infrastructure/Persistence/Migrations/InitialSchemaMigration.cs`,
-`Analytics/Application/{AnalyticsResponse,Finder/AnalyticsFinder}.cs`,
-`apps/backend/api/{Configuration/{InfrastructureExtensions,DomainErrorExceptionHandler},Endpoints/UsersEndpoints}.cs`,
-`Nakama.csproj`, `Directory.Packages.props`, and on the frontend
-`apps/frontend/nakama.web/src/{views/pages/auth/LoginPage.tsx,modules/analytics/**,views/pages/analytics/{AnalyticsPage.tsx,analyticsData.ts}}`.
+**Where it applies:** `Users/**`, `Authentication/**`, `ChatbotMembers/**`,
+`Shared/Infrastructure/Auth/JwtOptions.cs`, `Shared/Infrastructure/Persistence/Nh/Mappings/{UserMapping,RefreshTokenMapping}.cs`,
+`Shared/Infrastructure/Persistence/Migrations/InitialSchemaMigration.cs`, `Analytics/Application/Finder/AnalyticsFinder.cs`,
+`apps/backend/api/{Configuration/{AuthExtensions,AuthPolicies,ChatbotMemberAuthorizationHandler,ApiExceptionHandler,RefreshTokenCookie,HttpContextCurrentUser,InfrastructureExtensions},Endpoints/{AuthEndpoints,UsersEndpoints}}.cs`,
+and on the frontend `apps/frontend/nakama.web/src/{shared/infrastructure/auth/**,modules/auth/**,views/pages/auth/LoginPage.tsx,views/shared/contexts/UserContext.tsx}`.
 
 ### ADR-21: entity → Response conversion is `explicit operator` by default; `ToResponse` (extension method) when it can't be
 
@@ -599,12 +580,12 @@ found by letting the compiler error rather than assuming.
 
 ### ADR-23: `UserActivity` records every login as its own row — and fixed a real bug where the event was raised but never published
 
-`User.MarkActive` (ADR-20) raises `UserActivityRecorded`, but until this entry nothing subscribed to it, and — found
-live, not by reading the code — `UserAuthenticator.Authenticator.Execute` called `user.MarkActive(...)` and
+`User.MarkActive` raises `UserActivityRecorded`, but until this entry nothing subscribed to it, and — found
+live, not by reading the code — `UserCredentialsVerifier.Verifier.Execute` called `user.MarkActive(...)` and
 `repository.Save(user, ct)` but never `eventBus.Publish(user, ct)`, unlike the other use cases that mutate an aggregate, which do. The event was
 being raised into the aggregate's own `DomainEvents` list and then silently dropped, forever — no exception, no log
 line, nothing, because there was nothing downstream to fail. Two logins against a running instance produced zero rows
-in the new table until `eventBus.Publish(user, ct)` was added to `Authenticator.Execute`; the same two logins
+in the new table until `eventBus.Publish(user, ct)` was added to `Verifier.Execute`; the same two logins
 afterward produced two rows, each with the right `UserId` and timestamp — verified by querying Postgres directly, not
 by trusting a 200 response, since the endpoint's response never depended on the event actually being published.
 
@@ -613,46 +594,22 @@ New bounded context, `UserActivity`, is a pure read-model in the same shape as `
 `UserActivityEntryCreatedOnUserActivityRecorded` (`UserActivity/Application/Handlers/`) reacting to
 `UserActivityRecorded`. `Type` is a plain `string`, hardcoded `"Login"` by the handler rather than modeled as an enum
 yet, because `UserActivityRecorded` only ever fires today from a successful login — there is no logout flow to
-produce a second value (no session/cookie exists to log out of, per ADR-20). `NhUserActivityRepository` needed zero
+produce a second value (logout and token refresh are not recorded as activity). `NhUserActivityRepository` needed zero
 manual DI registration: it derives from `NhRepositoryBase<UserActivityEntry, Guid>` and implements
 `IUserActivityRepository`, so ADR-22's Scrutor scan picks it up automatically — the first bounded context to actually
 exercise that payoff.
 
 **Where it applies:** `UserActivity/**` (new), `Shared/Infrastructure/Persistence/Nh/Mappings/UserActivityEntryMapping.cs`,
 `Shared/Infrastructure/Persistence/{NhMappings,Migrations/InitialSchemaMigration}.cs`,
-`Users/Application/Authenticator/UserAuthenticator.cs`.
-
-### ADR-24: `SeedUsersMigration` — two dev-only accounts, so a freshly-recreated database has someone to log in as
-
-**Superseded by ADR-25:** the migration was removed and the accounts now live in `docs/db/demo-data.sql`. The reasoning below is kept as history.
-
-`InitialSchemaMigration` only ever created tables, never rows — every `docker compose down -v && up -d` (routine
-throughout this project's local workflow) left `users` empty, with no way in until someone first called
-`POST /api/users` by hand. `[Migration(2)] SeedUsersMigration` inserts `admin@nakama.com` and `user@nakama.com`
-(password `Admin123.` for both) directly into the `users` table via `Insert.IntoTable(...).Row(...)`. Neither name
-implies a real elevated role — no authorization/roles exist yet (ADR-20), so "admin" here is only a naming
-convention, exactly like the "admin-provisioned" wording in that same ADR entry.
-
-The password hash is computed inside the migration with `new PasswordHasher<User>().HashPassword(user, password)` —
-the identical class `UserManager<User>.CreateAsync` uses internally (ADR-20) — rather than a hand-written or
-precomputed hash string, so it is guaranteed to verify correctly through the normal login path with zero risk of a
-format mismatch. Building a real `User` via `User.Create(...)` (not a bare anonymous object) to pass into
-`HashPassword` was deliberate too: the default `PasswordHasher<TUser>` implementation happens to ignore its `user`
-argument entirely, but relying on that undocumented behavior (e.g. passing `null!`) is exactly the kind of thing that
-silently breaks if Identity ever changes it — constructing a real entity costs nothing and removes the risk. Verified
-live: recreated Postgres from scratch, confirmed `SeedUsersMigration migrated` ran right after `InitialSchemaMigration`,
-and logged in as both seeded accounts through the real `POST /api/auth/login` endpoint.
-
-**Where it applies:** `Shared/Infrastructure/Persistence/Migrations/SeedUsersMigration.cs`.
+`Authentication/Application/Authenticator/LogIn.cs`.
 
 ### ADR-25: seed data is a manual script (`docs/db/demo-data.sql`), not a migration
 
-`SeedUsersMigration` (ADR-24) and `SeedDemoTestDataMigration` ran on every database the migrations touched, which
-is the wrong place for rows that are not schema: they were applied to every fresh database including the
-Testcontainers template, hard-coded passwords into the assembly, and could not be skipped. Both are gone. The
-migrations now only create tables, and everything they used to insert — the two login accounts plus 20 users, 15
-chatbots, 10 formations, 72 conversations and the read models that go with them — lives in `docs/db/demo-data.sql`, which
-a person runs by hand (`docker exec -i nakama-postgres psql -U nakama -d nakama < docs/db/demo-data.sql`).
+Seed rows are not schema, so they do not belong in a migration: a migration runs on every database it touches —
+including the Testcontainers template —, would hard-code passwords into the assembly and cannot be skipped. The
+migrations only create the schema, and the demo data — the two login accounts (`admin@nakama.com` and `user@nakama.com`)
+plus 20 users, 15 chatbots, 10 formations, 72 conversations and the read models that go with them — lives in
+`docs/db/demo-data.sql`, which a person runs by hand (`docker exec -i nakama-postgres psql -U nakama -d nakama < docs/db/demo-data.sql`).
 
 The script was not written by hand. The old generator was run once against a throwaway PostgreSQL and its output was
 dumped with `pg_dump --data-only --column-inserts --on-conflict-do-nothing`, then the generator was deleted. That
