@@ -56,11 +56,10 @@ the private `_documents`/`_team` backing fields (`ChatbotMapping`).
 
 ### ADR-5: Cross-aggregate/cross-module references are raw identifiers, never the other side's Domain type
 
-`Formation.LinkedChatbotKey` is a plain `Guid`, never `Chatbots.Domain.ChatbotId` — a bounded context must not reference
-another context's Domain (agents.md §1). Same rule for `Conversation`, which references `Chatbot` only by `ChatbotId`
-value, never by object reference or NHibernate association — it's deliberately its own aggregate (see ADR-9 below for
-why). Mapping-wise, `FormationMapping`/`ConversationMapping` declare these as plain scalar columns, never NHibernate
-associations, for the same reason.
+`Conversation` references `Chatbot` only by `ChatbotId` value, never by object reference or NHibernate association —
+a bounded context must not reference another context's Domain (agents.md §1), and `Conversation` is deliberately its
+own aggregate (see ADR-9 below for why). Mapping-wise, `ConversationMapping` declares it as a plain scalar column,
+never an NHibernate association, for the same reason.
 
 **Where it applies:** `Formations/Domain/Formation.cs`, `Chatbots/Domain/Conversation.cs`,
 `Shared/Infrastructure/Persistence/Nh/Mappings/{FormationMapping,ConversationMapping}.cs`
@@ -124,21 +123,15 @@ ADR-11 for its specific defensive-handler shape.
 
 ### ADR-10: Cross-module event subscriptions are intentional projection coupling
 
-`ChatbotLabelRef` is `FormationDetail`'s own local denormalized copy of a chatbot's label, keyed by the chatbot's id. It
-is **not** exposed through `IFormationDetailRepository`/Application — it exists purely so `FormationDetail`'s own
-projection handler can resolve `Chatbot.Label` for the "Basado en la documentación de X" caption without
-`FormationDetail`'s Infrastructure ever touching `Chatbots`' Domain entities or its read model's repository directly.
-`ChatbotLabelRefCreatedOnChatbotCreated` listens to `ChatbotCreated` — a totally different module's `Domain/Events` —
-which is the intentional projection coupling this pattern relies on. There is no `ChatbotLabelChanged` event (a label
-never changes after creation), so `ChatbotLabelRef` has no other `Apply` method. `FormationDetail.LinkedChatbotLabel` is
-resolved at creation time (`FormationDetailCreatedOnFormationCreated`) via this local lookup, kept current by the
-handler above, so the caption never needs a live cross-context join.
+A read-model handler may subscribe to a *different* module's `Domain/Events` — for example
+`FormationDetailCreatedOnFormationCreated` listens to `Formations`' `FormationCreated`. That is the intentional
+projection coupling this pattern relies on: the read model never touches the write side's Domain entities or another
+read model's repository, it only consumes the events. The `ChatbotLabelRef` lookup that once resolved a linked
+chatbot's label for `FormationDetail` was removed together with the formation's linked chatbot, since nothing consumed it; neither the column nor the
+table exists in the baseline schema (ADR-19).
 
-**Where it applies:** `FormationDetail/Domain/ChatbotLabelRef.cs`,
-`FormationDetail/Domain/IChatbotLabelRefRepository.cs`,
-`FormationDetail/Application/Handlers/ChatbotLabelRefCreatedOnChatbotCreated.cs`,
-`FormationDetail/Application/Handlers/FormationDetailCreatedOnFormationCreated.cs`,
-`FormationDetail/Domain/FormationDetail.cs`
+**Where it applies:** `FormationDetail/Application/Handlers/FormationDetailCreatedOnFormationCreated.cs`,
+`ChatbotSummaries/Application/Handlers/*`
 
 ### ADR-11: Analytics defensive dual-path handler
 
@@ -406,12 +399,36 @@ entirely, matching what the old SchemaExport-generated unquoted SQL produced.
 Every `ClassMapping<T>`'s `Id(x => x.Id, m => m.Column("..."))` that used to name its primary-key column `key` (or, for
 two read-model tables whose id happens to equal their owning chatbot's id, `bot_key`) now names it `id` — consistent,
 predictable naming across all ten mapped tables, no exceptions for read-model tables. This does **not** apply to genuine
-foreign-key-shaped columns that reference a *different* aggregate's identity (`conversations.bot_key`,
-`formations.linked_chatbot_key`) — those keep their `_key` suffix, since renaming them to `id` would make a foreign
+foreign-key-shaped columns that reference a *different* aggregate's identity (`conversations.bot_key`)
+— that keeps its `_key` suffix, since renaming them to `id` would make a foreign
 reference look like a local primary key. Since this changed the physical schema and there was no production data to
 preserve, the fix was a full local Postgres volume recreation (`docker compose down -v && docker compose up -d`) rather
 than a second migration transforming the old columns in place — acceptable because `MigrationRunner.Run` only ever
 executes in Development (ADR-17).
+
+**The schema is a single baseline until the first production release.** While nothing is deployed, every schema change
+is edited straight into `InitialSchemaMigration` instead of stacking new migrations: the refresh-tokens table that
+briefly lived in its own migration and the removal of the formation's linked chatbot (the
+`linked_chatbot_key`/`linked_chatbot_label` columns and the `read_formation_detail_chatbot_label_ref` table) were folded
+back in, so the file always describes the whole schema as one `CREATE`, with no history to replay. The folded result was
+checked against the three migrations it replaced by dumping `information_schema.columns` and `pg_indexes` from a
+freshly migrated database before and after (identical) and by running NHibernate's `SchemaValidator` against it (no
+mapping/schema mismatch).
+
+Before freezing it the baseline was also hardened. Every column is `NOT NULL` except the ones whose C# property is
+nullable (`iconurl` on the chatbot and formation tables and their read models, `users.passwordhash`,
+`users.lastactiveat`, `refresh_tokens.revoked_at` and `replaced_by_id`); the JSON columns are `NOT NULL` too, since the
+domain never leaves a collection or a settings object null. Two indexes were added where the code actually queries:
+a unique `users.normalizedemail` (login and `UserByEmailSpecification` look users up by it, and two accounts must not
+share an email) and `formation_enrollments (user_id, formation_id)` unique, which replaces the previous
+`(formation_id, user_id)` one because its `user_id` prefix also serves `FormationEnrollmentByUserSpecification`. No
+foreign keys on purpose: cross-aggregate references are raw ids (ADR-5). The hardened schema was verified with the whole
+suite (including the E2E tests) and by loading `docs/db/demo-data.sql` into it with no constraint violation.
+
+The cost is that any existing local database must be recreated
+(`docker compose down -v && docker compose up -d`): its `VersionInfo` already records version 1 as applied, so
+FluentMigrator would not re-run the rewritten file. From the first production deployment on, `InitialSchemaMigration`
+is frozen and every change is a new numbered migration.
 
 **Where it applies:** `Shared/Infrastructure/Persistence/{MigrationRunner,Migrations/InitialSchemaMigration}.cs`,
 `Shared/Infrastructure/Persistence/Nh/Mappings/*.cs`, `Nakama.csproj`, `Directory.Packages.props`.

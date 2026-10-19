@@ -401,10 +401,9 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
   evento `ChatbotCreated` alimentando `Analytics` es
   la clase `AnalyticsCreatedOnChatbotCreated`; el evento `ChatbotStatusChanged` alimentando
   `ChatbotDetail` es `ChatbotDetailUpdatedOnChatbotStatusChanged`. Si un módulo de lectura
-  mantiene más de una entidad interna (p. ej. `FormationDetail` también mantiene su propia
-  `ChatbotLabelRef` de denormalización, ver más abajo), el nombre usa la entidad que ESE
-  handler concreto muta, no el nombre del módulo — `ChatbotLabelRefCreatedOnChatbotCreated`,
-  nunca `FormationDetailCreatedOnChatbotCreated`. Sin `Mutate` compartido entre handlers de
+  mantiene más de una entidad interna (ver la denormalización cross-módulo más abajo), el nombre
+  usa la entidad que ESE handler concreto muta, no el nombre del módulo — `<EntidadInterna>CreatedOn<Evento>`,
+  nunca `<Modulo>CreatedOn<Evento>`. Sin `Mutate` compartido entre handlers de
   eventos distintos: cada clase hace su propio `find → Apply/From → Save` inline (el `Handler`
   de un `Command` tampoco extrae ese tipo de helper compartido entre casos de uso, §2 — mismo
   criterio). MediatR descubre estas clases por ensamblado (`RegisterServicesFromAssembly`), no
@@ -423,11 +422,11 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
   (nunca un `Response` nested propio, porque un ReadModel también es un agregado a estos
   efectos).
 - **Denormalización cross-módulo entre dos ReadModels**: si el ReadModel A necesita un dato
-  que "pertenece" a otro ReadModel B (p. ej. `FormationDetail` necesita el label del chatbot
-  vinculado, que en teoría "vive" en `ChatbotSummaries`), **no** lee el repositorio de B — eso
+  que "pertenece" a otro ReadModel B (p. ej. el label de un chatbot, que "vive" en `ChatbotSummaries`),
+  **no** lee el repositorio de B — eso
   violaría la regla de dependencia (§1: ningún bounded context referencia el `Domain` de otro,
   ReadModels incluidos). En vez de eso, A modela su propia entidad interna, pequeña, dentro de
-  su propio `Domain` (p. ej. `FormationDetail/Domain/ChatbotLabelRef.cs`), alimentada
+  su propio `Domain` (hoy ningún módulo lo necesita), alimentada
   escuchando directamente los eventos del bounded context de escritura de origen (`Chatbot`),
   igual que cualquier proyección — nunca leyendo el ReadModel ajeno.
 
@@ -449,9 +448,9 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
   `IChatbotDetailRepository` → `chatbotDetailRepository`, `ISystemClock` → `systemClock`,
   `IEventBus` → `eventBus`. Nunca `repo`, `ids`, `clock` a
   secas: son abreviaturas que no dicen a qué repositorio/generador se refieren, y una clase con
-  dos repositorios inyectados (p. ej. `FormationDetailCreatedOnFormationCreated`, que inyecta
-  `IFormationDetailRepository` + `IChatbotLabelRefRepository`) directamente los necesita
-  distinguibles — `formationDetailRepository`/`chatbotLabelRefRepository`, nunca dos parámetros
+  dos repositorios inyectados (p. ej. `FormationSummarySearcher`, que inyecta
+  `IFormationSummaryRepository` + `IFormationEnrollmentRepository`) directamente los necesita
+  distinguibles — `summaryRepository`/`enrollmentRepository`, nunca dos parámetros
   llamados `repo`. Esta regla no es exclusiva de parámetros de constructor: aplica a cualquier
   variable tipada a una interfaz `I...`, incluyendo parámetros de factory methods de dominio
   (`Chatbot.Create(..., ISystemClock systemClock)`, no `clock`).
