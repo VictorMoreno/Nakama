@@ -154,7 +154,7 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       status,
       context:
         "Chatbot recién creado" +
-        (dept ? ` para el equipo de <strong>${dept}</strong>` : "") +
+        (dept ? ` para el equipo de ${dept}` : "") +
         ". Todavía no tiene documentos — añade contenido en la pestaña Documentos para que pueda empezar a responder.",
       settings,
       iconUrl,

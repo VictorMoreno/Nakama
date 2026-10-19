@@ -1,0 +1,91 @@
+.markdown {
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+
+  > :first-child { margin-top: 0; }
+  > :last-child { margin-bottom: 0; }
+
+  p,
+  ul,
+  ol,
+  pre,
+  blockquote,
+  .tableScroll {
+    margin: 0 0 0.6em;
+  }
+
+  ul,
+  ol { padding-left: 1.3em; }
+
+  li + li { margin-top: 2px; }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0.8em 0 0.4em;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  code {
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    background: var(--border);
+    font-family: ui-monospace, sfmono-regular, menlo, consolas, monospace;
+    font-size: 0.85em;
+  }
+
+  pre {
+    padding: 10px 12px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+
+    code {
+      padding: 0;
+      background: none;
+      font-size: 0.8rem;
+      white-space: pre;
+    }
+  }
+
+  blockquote {
+    padding-left: 10px;
+    border-left: 3px solid var(--border-strong);
+    color: var(--ink-soft);
+  }
+
+  hr {
+    margin: 0.8em 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  table {
+    min-width: 100%;
+    width: max-content;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    font-size: 0.82rem;
+    text-align: left;
+  }
+
+  th { background: var(--border); }
+}
+
+.tableScroll { overflow-x: auto; }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AttachIcon, BrandMarkIcon, ThumbDownIcon, ThumbUpIcon } from "../../components/shared/icons";
+import Markdown from "../../components/shared/Markdown";
 import { useToast } from "../../shared/contexts/ToastContext";
 import type { ChatExample, ChatbotSettings } from "../../../modules/chatbots/domain/Chatbot";
 import styles from "./MessageBubble.module.scss";
@@ -21,7 +22,7 @@ export function UserBubble({ text, attachments = [] }: UserBubbleProps) {
     <div className={`${styles.msg} ${styles.user}`}>
       <div className={styles.msgAvatar}>TÚ</div>
       <div className={styles.bubble}>
-        <span dangerouslySetInnerHTML={{ __html: text }} />
+        <span className={styles.plainText}>{text}</span>
         {attachments.length > 0 && (
           <div className={styles.bubbleAttachments}>
             {attachments.map((name, i) => (
@@ -101,7 +102,7 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
       <div className={styles.bubble}>
         {showSocratic ? (
           <div>
-            <span dangerouslySetInnerHTML={{ __html: state.example.socratic }} />
+            <Markdown>{state.example.socratic}</Markdown>
             <div className={styles.msgActions}>
               <button className={styles.msgAction} type="button" onClick={() => onReveal(state.id)}>
                 Ver respuesta directa
@@ -110,7 +111,7 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
           </div>
         ) : (
           <div>
-            <span dangerouslySetInnerHTML={{ __html: state.example.a }} />
+            <Markdown>{state.example.a}</Markdown>
             {state.example.cite !== "" && (
               <button className={styles.citationChip} type="button">
                 ◆ {state.example.cite}
@@ -126,7 +127,9 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
             )}
 
             {settings.explicaMas && state.example.more !== "" && (
-              <div className={`${styles.layer}${moreOpen ? ` ${styles.open}` : ""}`} dangerouslySetInnerHTML={{ __html: state.example.more }} />
+              <div className={`${styles.layer}${moreOpen ? ` ${styles.open}` : ""}`}>
+                <Markdown>{state.example.more}</Markdown>
+              </div>
             )}
 
             <div className={styles.msgFeedback}>

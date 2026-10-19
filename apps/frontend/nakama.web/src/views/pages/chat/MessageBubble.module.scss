@@ -167,3 +167,8 @@
   .msgAction { min-height: 44px; }
   .feedbackBtn { width: 44px; height: 44px; }
 }
+
+.plainText {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
