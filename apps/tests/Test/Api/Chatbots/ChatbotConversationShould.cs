@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nakama.Analytics.Application;
 using Nakama.ChatbotDetail.Application;
 using Nakama.Chatbots.Application.Creator;
+using Nakama.Chatbots.Domain;
 using Nakama.ConversationHistory.Application;
 using Nakama.ConversationHistory.Domain;
 using Nakama.LlmProviders.Domain;
@@ -23,9 +24,9 @@ public sealed class ChatbotConversationShould : ApiTestCase
     public async Task stream_the_answer_in_chunks_and_keep_the_conversation_in_the_history()
     {
         string admin = await this.SignIn(isAdmin: true);
-        string member = await this.SignIn(isAdmin: false);
         ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
         await this.Client.CreateChatbot(chatbot, admin);
+        string member = await this.JoinTeamOf(chatbot, admin);
         this.Llm.Answer("Hel", "lo ", "there");
         Guid conversationId = Guid.NewGuid();
         string title = WordMother.Random();
@@ -52,9 +53,9 @@ public sealed class ChatbotConversationShould : ApiTestCase
     public async Task send_the_model_the_prompt_of_the_chatbot_and_the_question()
     {
         string admin = await this.SignIn(isAdmin: true);
-        string member = await this.SignIn(isAdmin: false);
         ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
         await this.Client.CreateChatbot(chatbot, admin);
+        string member = await this.JoinTeamOf(chatbot, admin);
         string question = WordMother.Random();
 
         await this.Client.AskChatbot(chatbot.Id, Guid.NewGuid(), WordMother.Random(), question, member);
@@ -69,9 +70,9 @@ public sealed class ChatbotConversationShould : ApiTestCase
     public async Task continue_a_conversation_sending_the_previous_exchanges_to_the_model()
     {
         string admin = await this.SignIn(isAdmin: true);
-        string member = await this.SignIn(isAdmin: false);
         ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
         await this.Client.CreateChatbot(chatbot, admin);
+        string member = await this.JoinTeamOf(chatbot, admin);
         Guid conversationId = Guid.NewGuid();
         string firstQuestion = WordMother.Random();
         string secondQuestion = WordMother.Random();
@@ -96,9 +97,9 @@ public sealed class ChatbotConversationShould : ApiTestCase
     public async Task count_the_answer_in_the_analytics_and_remember_the_question_in_the_chatbot_detail()
     {
         string admin = await this.SignIn(isAdmin: true);
-        string member = await this.SignIn(isAdmin: false);
         ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
         await this.Client.CreateChatbot(chatbot, admin);
+        string member = await this.JoinTeamOf(chatbot, admin);
         string question = WordMother.Random();
 
         await this.Client.AskChatbot(chatbot.Id, Guid.NewGuid(), WordMother.Random(), question, member);
@@ -116,9 +117,9 @@ public sealed class ChatbotConversationShould : ApiTestCase
     public async Task send_the_attachments_to_the_model_and_list_them_in_the_history()
     {
         string admin = await this.SignIn(isAdmin: true);
-        string member = await this.SignIn(isAdmin: false);
         ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
         await this.Client.CreateChatbot(chatbot, admin);
+        string member = await this.JoinTeamOf(chatbot, admin);
         AttachedFile notes = new("notes.txt", BytesMother.Random());
 
         await this.Client.AskChatbot(chatbot.Id, Guid.NewGuid(), WordMother.Random(), WordMother.Random(), member, notes);
@@ -136,9 +137,9 @@ public sealed class ChatbotConversationShould : ApiTestCase
     public async Task report_a_failure_of_the_model_as_an_error_event_and_save_nothing()
     {
         string admin = await this.SignIn(isAdmin: true);
-        string member = await this.SignIn(isAdmin: false);
         ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
         await this.Client.CreateChatbot(chatbot, admin);
+        string member = await this.JoinTeamOf(chatbot, admin);
         this.Llm.FailAfter(["partial"], new InvalidOperationException(WordMother.Random()));
 
         HttpResponseMessage response = await this.Client.AskChatbot(
@@ -162,14 +163,14 @@ public sealed class ChatbotConversationShould : ApiTestCase
     [Test]
     public async Task answer_not_found_before_streaming_when_the_chatbot_does_not_exist()
     {
-        string member = await this.SignIn(isAdmin: false);
+        string admin = await this.SignIn(isAdmin: true);
 
         HttpResponseMessage response = await this.Client.AskChatbot(
             Guid.NewGuid(),
             Guid.NewGuid(),
             WordMother.Random(),
             WordMother.Random(),
-            member);
+            admin);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         (await response.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.chatbot_detail.not_found");
@@ -180,9 +181,9 @@ public sealed class ChatbotConversationShould : ApiTestCase
     public async Task refuse_to_ask_a_chatbot_whose_provider_is_not_connected()
     {
         string admin = await this.SignIn(isAdmin: true);
-        string member = await this.SignIn(isAdmin: false);
         ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.OpenAi);
         await this.Client.CreateChatbot(chatbot, admin);
+        string member = await this.JoinTeamOf(chatbot, admin);
 
         HttpResponseMessage response = await this.Client.AskChatbot(
             chatbot.Id,
@@ -194,5 +195,13 @@ public sealed class ChatbotConversationShould : ApiTestCase
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         (await response.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.chatbots.provider_not_connected");
         this.Llm.Requests.Should().BeEmpty();
+    }
+
+    private async Task<string> JoinTeamOf(ChatbotCreator.Command chatbot, string adminToken)
+    {
+        SignedInUser member = await this.SignInAs(isAdmin: false);
+        await this.Client.AddChatbotTeamMember(chatbot.Id, member.Id, TeamRole.Editor, adminToken);
+
+        return member.Token;
     }
 }

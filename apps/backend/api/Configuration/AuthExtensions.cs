@@ -61,7 +61,12 @@ public static class AuthExtensions
 
         services.AddAuthorizationBuilder()
             .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
-            .AddPolicy(AuthPolicies.Admin, policy => policy.RequireRole(AuthRoles.Admin));
+            .AddPolicy(AuthPolicies.Admin, policy => policy.RequireRole(AuthRoles.Admin))
+            .AddPolicy(AuthPolicies.ChatbotMember, policy => policy
+                .RequireAuthenticatedUser()
+                .AddRequirements(new ChatbotMemberRequirement()));
+
+        services.AddScoped<IAuthorizationHandler, ChatbotMemberAuthorizationHandler>();
 
         return services;
     }

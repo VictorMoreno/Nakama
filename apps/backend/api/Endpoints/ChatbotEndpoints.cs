@@ -106,7 +106,8 @@ public sealed class ChatbotEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{botKey:guid}/conversations/{conversationId:guid}/ask", AskChatbot)
-            .WithSummary("Streams a chatbot answer token-by-token via Server-Sent Events.")
+            .RequireAuthorization(AuthPolicies.ChatbotMember)
+            .WithSummary("Streams a chatbot answer token-by-token via Server-Sent Events. Only members of the chatbot's team (or administrators) may ask it.")
             .WithDescription(
                 "Generates the answer with the chatbot's configured LLM provider/model and persists the exchange once " +
                 "the stream completes. If no conversation exists yet with the given conversationId, one is started " +
@@ -127,8 +128,10 @@ public sealed class ChatbotEndpoints : IEndpoint
             .Produces<IReadOnlyCollection<ChatbotSummaryResponse>>();
 
         group.MapGet("/{id:guid}", FindChatbotDetail)
-            .WithSummary("Gets the full detail page projection for one chatbot.")
+            .RequireAuthorization(AuthPolicies.ChatbotMember)
+            .WithSummary("Gets the full detail page projection for one chatbot. Only members of its team (or administrators) may read it.")
             .Produces<ChatbotDetailResponse>()
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapGet("/{botKey:guid}/conversation-history", FindConversationHistory)

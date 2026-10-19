@@ -4,8 +4,10 @@ using AwesomeAssertions;
 using Nakama.ChatbotSummaries.Application;
 using Nakama.Chatbots.Application.Creator;
 using Nakama.Chatbots.Domain;
+using Nakama.LlmProviders.Domain;
 using Test.Api.Support;
 using Test.Modules.Chatbots.Application;
+using Test.Modules.Shared;
 
 namespace Test.Api.Chatbots;
 
@@ -83,6 +85,77 @@ public sealed class ChatbotAccessShould : ApiTestCase
         removed.StatusCode.Should().Be(HttpStatusCode.NoContent);
         (await this.ListedIds(leaving.Token)).Should().BeEmpty();
         (await this.ListedIds(staying.Token)).Should().Equal(command.Id);
+    }
+
+    [Test]
+    public async Task let_a_member_read_the_detail_of_their_chatbot_but_not_the_detail_of_another_one()
+    {
+        string adminToken = await this.SignIn(isAdmin: true);
+        SignedInUser member = await this.SignInAs(isAdmin: false);
+        ChatbotCreator.Command mine = ChatbotCreatorCommandMother.Random();
+        ChatbotCreator.Command notMine = ChatbotCreatorCommandMother.Random();
+        await this.Client.CreateChatbot(mine, adminToken);
+        await this.Client.CreateChatbot(notMine, adminToken);
+        await this.Client.AddChatbotTeamMember(mine.Id, member.Id, TeamRole.Reader, adminToken);
+
+        HttpResponseMessage own = await this.Client.GetChatbot(mine.Id, member.Token);
+        HttpResponseMessage other = await this.Client.GetChatbot(notMine.Id, member.Token);
+
+        own.StatusCode.Should().Be(HttpStatusCode.OK);
+        other.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Test]
+    public async Task refuse_a_question_to_a_chatbot_the_user_does_not_belong_to()
+    {
+        string adminToken = await this.SignIn(isAdmin: true);
+        string outsiderToken = await this.SignIn(isAdmin: false);
+        ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
+        await this.Client.CreateChatbot(chatbot, adminToken);
+
+        HttpResponseMessage response = await this.Client.AskChatbot(
+            chatbot.Id,
+            Guid.NewGuid(),
+            WordMother.Random(),
+            WordMother.Random(),
+            outsiderToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        this.Llm.Requests.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task let_an_administrator_read_and_ask_any_chatbot()
+    {
+        string adminToken = await this.SignIn(isAdmin: true);
+        ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
+        await this.Client.CreateChatbot(chatbot, adminToken);
+
+        HttpResponseMessage detail = await this.Client.GetChatbot(chatbot.Id, adminToken);
+        HttpResponseMessage answer = await this.Client.AskChatbot(
+            chatbot.Id,
+            Guid.NewGuid(),
+            WordMother.Random(),
+            WordMother.Random(),
+            adminToken);
+
+        detail.StatusCode.Should().Be(HttpStatusCode.OK);
+        answer.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Test]
+    public async Task refuse_the_detail_of_a_chatbot_to_a_member_removed_from_its_team()
+    {
+        string adminToken = await this.SignIn(isAdmin: true);
+        SignedInUser member = await this.SignInAs(isAdmin: false);
+        ChatbotCreator.Command command = ChatbotCreatorCommandMother.Random();
+        await this.Client.CreateChatbot(command, adminToken);
+        await this.Client.AddChatbotTeamMember(command.Id, member.Id, TeamRole.Editor, adminToken);
+        await this.Client.RemoveChatbotTeamMember(command.Id, 0, adminToken);
+
+        HttpResponseMessage detail = await this.Client.GetChatbot(command.Id, member.Token);
+
+        detail.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     private async Task<List<Guid>> ListedIds(string token)
