@@ -7,7 +7,7 @@ Same intent as [ADR-7](0007-domain-events-never-reference-mediatr.md) (domain ev
 `Query` record implements MediatR's `IRequest<TResponse>`, and no `Handler` implements `IRequestHandler<,>`. Instead,
 every command implements the framework-agnostic `ICommand` (no `TResponse` — every command in this codebase is a pure
 side effect, so there is nothing to return) and its handler implements `ICommandHandler<TCommand>`; every query
-implements `IQuery<TResponse>` (unchanged) and its handler implements `IQueryHandler<TQuery, TResponse>`. `CommandBus`/
+implements `IQuery<TResponse>` and its handler implements `IQueryHandler<TQuery, TResponse>`. `CommandBus`/
 `QueryBus` are the only two classes that know MediatR/DI exist: `ICommandBus.Send`/`IQueryBus.Ask` resolve the closed
 `ICommandHandler<TCommand>`/`IQueryHandler<TQuery, TResponse>` directly from the DI container via `MakeGenericType`
 (same reflection technique as `EventBus.WrapAsNotification`, since the concrete command/query type is only known at

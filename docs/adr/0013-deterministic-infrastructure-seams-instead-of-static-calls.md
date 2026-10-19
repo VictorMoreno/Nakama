@@ -7,4 +7,4 @@ Factory methods take `ISystemClock` instead of calling `DateTime.UtcNow` directl
 deterministic and testable via injection.
 
 **Where it applies:** `Shared/Domain/ISystemClock.cs`, every aggregate factory method that stamps a time (e.g.
-`Chatbot.Create`)
+`LlmProviderConfig.Register`, `RefreshToken.Create`)

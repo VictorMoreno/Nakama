@@ -36,9 +36,9 @@ code in the backend; the ADRs document *why* certain decisions were made.
 | [ADR-14](0014-domainerror-doubles-as-the-exception-it-throws.md) | `DomainError` doubles as the exception it throws | Domain model notes | Accepted |
 | [ADR-15](0015-several-domain-enums-intentionally-mirror-a-frontend.md) | Several Domain enums intentionally mirror a frontend TypeScript union | Domain model notes | Accepted |
 | [ADR-16](0016-specific-business-invariants-worth-flagging.md) | Specific business invariants worth flagging | Domain model notes | Accepted |
-| [ADR-17](0017-migrations-are-generated-from-the-real-nhibernate-mapping.md) | Migrations are generated from the real NHibernate mapping metadata, not hand-written | Persistence — schema | Superseded |
+| [ADR-17](0017-nhibernate-mapping-conventions-the-schema-depends-on.md) | NHibernate mapping conventions the schema depends on: a Guid dialect, enums by convention, `Lazy(false)` and explicit `text` columns | Persistence | Accepted |
 | [ADR-18](0018-handler-is-a-thin-transformation-layer-the-actual-use-case.md) | `Handler` is a thin transformation layer; the actual use case is a separate, Scrutor-scanned class — Commands and Queries alike | CQRS / cross-module reads | Accepted |
-| [ADR-19](0019-fluentmigrator-replaces-dbup-as-the-migration-runner-every.md) | FluentMigrator replaces DbUp as the migration runner; every table's primary key column is `id`, not `key` | Persistence — schema | Accepted |
+| [ADR-19](0019-fluentmigrator-runs-the-migrations-single-hand-written-baseline.md) | FluentMigrator runs the migrations and the schema is a single hand-written baseline | Persistence — schema | Accepted |
 | [ADR-20](0020-users-and-authentication-asp-net-core-identity-core.md) | Users and authentication — ASP.NET Core Identity Core over NHibernate, a short-lived JWT plus a rotating refresh token | Users | Accepted |
 | [ADR-21](0021-entity-response-conversion-is-explicit-operator-by-default.md) | entity → Response conversion is `explicit operator` by default; `ToResponse` (extension method) when it can't be | Application layer | Accepted |
 | [ADR-22](0022-repositories-are-scrutor-scanned-by-base-class.md) | Repositories are Scrutor-scanned by base class, and registered in `AddInfrastructure`, not `AddApplication` | Persistence | Accepted |

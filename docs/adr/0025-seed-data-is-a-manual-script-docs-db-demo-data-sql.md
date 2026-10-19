@@ -6,7 +6,8 @@
 Seed rows are not schema, so they do not belong in a migration: a migration runs on every database it touches —
 including the Testcontainers template —, would hard-code passwords into the assembly and cannot be skipped. The
 migrations only create the schema, and the demo data — the two login accounts (`admin@nakama.com` and `user@nakama.com`)
-plus 20 users, 15 chatbots, 10 formations, 72 conversations and the read models that go with them — lives in
+plus 20 users, 15 chatbots, 10 formations, 72 conversations and the read models that go with them (including
+`read_chatbot_members`, derived at the end of the script from each chatbot's team) — lives in
 `docs/db/demo-data.sql`, which a person runs by hand (`docker exec -i nakama-postgres psql -U nakama -d nakama < docs/db/demo-data.sql`).
 
 The script was not written by hand. The old generator was run once against a throwaway PostgreSQL and its output was

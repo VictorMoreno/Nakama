@@ -3,20 +3,25 @@
 - **Status:** Accepted
 - **Area:** Domain model notes
 
-`ChatbotCreator`, `FormationCreator`, `FormationModuleAdder`, and `ConversationExchangeAppender` (when starting a new
-conversation) used to generate their new entity's id server-side via `IUuidGenerator` and return it in a `Response`,
-which was the only reason those 4 commands returned anything — every other command in the codebase already returns an
-empty `Response`. Since a client-generated GUID v4 has negligible collision probability, the id is now supplied by the
-caller instead: the client already knows the id before sending the command, so the command can stay a pure side effect
-with an empty `Response`, and `IUuidGenerator`/`GuidUuidGenerator` were deleted as dead code (they had no other
-callers). This does introduce a risk that server-generated ids never had: a client could resend or accidentally reuse an
-id, and `Save`'s NHibernate `SaveOrUpdate` semantics would silently overwrite the existing row instead of failing. The 3
-pure-create handlers (`ChatbotCreator`, `FormationCreator`, `FormationModuleAdder`) guard against this explicitly with a
-`FindById`-then-throw-`AlreadyExists` check before creating. `ConversationExchangeAppender` is the one exception:
-finding an existing row for the supplied id is its *intended* "continue this conversation" path, not a collision, so it
-has no such guard — it's a legitimate find-or-start.
+A resource that a client creates and then refers to has its id supplied by the caller (a client-generated GUID v4); the
+server does not generate it. That keeps the command a pure side effect with an empty result, since the client already
+knows the id it needs, and there is no id-generator abstraction. `ChatbotCreator`, `FormationCreator` and
+`FormationModuleAdder` take the id from their command.
+
+Supplying ids brings a risk that server-generated ids never had: a client can resend or reuse an id, and `Save`'s
+`SaveOrUpdate` semantics would silently overwrite the existing row instead of failing. The three pure-create use cases
+therefore check first and throw `AlreadyExists` (`ChatbotErrors.AlreadyExists`, `FormationErrors.AlreadyExists`, and
+`FormationErrors.ModuleAlreadyExists` for a module that is already in its formation).
+
+`ChatbotQuestionAsker` is a find-or-start rather than a create. The conversation id in the route is either the caller's own
+conversation, to continue it, or an unused one, to start it. `ConversationFinderById.FindOwned` throws `NotFound` when the
+id belongs to another user, so an id cannot be used to take over or overwrite someone else's conversation.
+
+Aggregates that exist as a side effect of another action get a server-generated GUID, because no client ever needs to
+name them in advance: `RefreshToken` (`RefreshTokenId.New()` at login or refresh), `FormationEnrollment` (created when a
+member is added to a formation) and `LlmProviderConfig` (registered on first use of a provider).
 
 **Where it applies:** `Chatbots/Application/Creator/ChatbotCreator.cs`,
 `Formations/Application/Creator/FormationCreator.cs`, `Formations/Application/ModuleAdder/FormationModuleAdder.cs`,
-`Chatbots/Application/ExchangeAppender/ConversationExchangeAppender.cs`, `Chatbots/Domain/Errors/ChatbotErrors.cs`,
-`Formations/Domain/Errors/FormationErrors.cs`
+`Chatbots/Application/QuestionAsker/ChatbotQuestionAsker.cs`, `Chatbots/Domain/Services/ConversationFinderById.cs`,
+`Chatbots/Domain/Errors/ChatbotErrors.cs`, `Formations/Domain/Errors/FormationErrors.cs`

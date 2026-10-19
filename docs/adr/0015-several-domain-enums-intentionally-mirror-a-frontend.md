@@ -9,5 +9,5 @@ the frontend distinguishes grammatical gender for the owner label ("Propietario"
 only — the domain models a single `Owner` role, rendering the gendered label is a presentation concern. `TeamMember`'s
 `isOwnerRole`-equivalent check is the domain invariant carrier behind that same frontend concept.
 
-**Where it applies:** `Chatbots/Domain/{ChatbotStatus,LlmProvider,DocStatus,TeamRole,TeamMember}.cs`,
+**Where it applies:** `Chatbots/Domain/{ChatbotStatus,DocStatus,TeamRole,TeamMember}.cs`, `LlmProviders/Domain/LlmProvider.cs`,
 `Formations/Domain/{FormationStatus,ModuleType}.cs`
