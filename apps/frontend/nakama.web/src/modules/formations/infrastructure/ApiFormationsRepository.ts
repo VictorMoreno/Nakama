@@ -59,7 +59,6 @@ function toFormation(summary: FormationSummaryResponse, detail: FormationDetailR
     audience: summary.audience ?? "",
     description: summary.description ?? "",
     status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
-    linkedChatbotKey: detail.linkedChatbotKey,
     modules: (detail.modules ?? []).map(toFormationModule),
     team: (detail.team ?? []).map(toFormationMember),
     archived: summary.archived ?? false,
@@ -90,7 +89,7 @@ export class ApiFormationsRepository implements IFormationsRepository {
   }
 
   async Create(input: CreateFormationInput): Promise<Formation> {
-    const { title, audience, description, status, linkedChatbotKey, iconUrl } = input;
+    const { title, audience, description, status, iconUrl } = input;
     const id = crypto.randomUUID();
     const trimmedDescription = description.trim();
     const finalAudience = audience || "Sin definir";
@@ -100,8 +99,7 @@ export class ApiFormationsRepository implements IFormationsRepository {
       title,
       audience: finalAudience,
       description: finalDescription,
-      status: STATUS_TO_ORDINAL[status],
-      linkedChatbotKey
+      status: STATUS_TO_ORDINAL[status]
     } satisfies CreateFormationRequest);
 
     if (iconUrl) {
@@ -115,7 +113,6 @@ export class ApiFormationsRepository implements IFormationsRepository {
       audience: finalAudience,
       description: finalDescription,
       status,
-      linkedChatbotKey,
       iconUrl,
       modules: [],
       team: [],

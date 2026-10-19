@@ -16,8 +16,6 @@ public partial class Formation : AggregateRoot<FormationId>
 
     public FormationStatus Status { get; private set; }
 
-    public Guid? LinkedChatbotKey { get; private set; }
-
     public bool Archived { get; private set; }
 
     public string? IconUrl { get; private set; }

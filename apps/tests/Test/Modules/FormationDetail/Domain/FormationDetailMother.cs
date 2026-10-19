@@ -14,11 +14,9 @@ public static class FormationDetailMother
         string status,
         bool archived,
         string? iconUrl,
-        Guid? linkedChatbotKey,
-        string? linkedChatbotLabel,
         List<FormationModuleRow> modules,
         List<FormationMemberRow> team) =>
-        new(id, title, audience, description, status, archived, iconUrl, linkedChatbotKey, linkedChatbotLabel, modules, team);
+        new(id, title, audience, description, status, archived, iconUrl, modules, team);
 
     public static FormationDetailEntity Random() => With();
 
@@ -35,8 +33,6 @@ public static class FormationDetailMother
         string? status = null,
         bool? archived = null,
         string? iconUrl = null,
-        Guid? linkedChatbotKey = null,
-        string? linkedChatbotLabel = null,
         List<FormationModuleRow>? modules = null,
         List<FormationMemberRow>? team = null) =>
         Create(
@@ -47,8 +43,6 @@ public static class FormationDetailMother
             status ?? "Active",
             archived ?? false,
             iconUrl,
-            linkedChatbotKey,
-            linkedChatbotLabel,
             modules ?? [],
             team ?? []);
 }

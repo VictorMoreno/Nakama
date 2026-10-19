@@ -12,8 +12,6 @@ public sealed record FormationDetailResponse(
     string Status,
     bool Archived,
     string? IconUrl,
-    Guid? LinkedChatbotKey,
-    string? LinkedChatbotLabel,
     List<FormationModuleRow> Modules,
     List<FormationMemberRow> Team)
 {
@@ -25,8 +23,6 @@ public sealed record FormationDetailResponse(
         entity.Status,
         entity.Archived,
         entity.IconUrl is null ? null : $"{iconsRoute}/{entity.IconUrl}",
-        entity.LinkedChatbotKey,
-        entity.LinkedChatbotLabel,
         entity.Modules,
         entity.Team);
 }

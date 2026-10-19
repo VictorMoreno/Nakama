@@ -11,11 +11,10 @@ public static class FormationMother
         string audience,
         string description,
         FormationStatus status,
-        Guid? linkedChatbotKey,
         string? iconUrl,
         bool archived,
         IReadOnlyList<FormationModule> modules) =>
-        new(id, title, audience, description, status, linkedChatbotKey, iconUrl, archived, modules);
+        new(id, title, audience, description, status, iconUrl, archived, modules);
 
     public static Formation Random() => With();
 
@@ -29,7 +28,6 @@ public static class FormationMother
         string? audience = null,
         string? description = null,
         FormationStatus? status = null,
-        Guid? linkedChatbotKey = null,
         string? iconUrl = null,
         bool? archived = null,
         IReadOnlyList<FormationModule>? modules = null) =>
@@ -39,7 +37,6 @@ public static class FormationMother
             audience ?? WordMother.Random(),
             description ?? WordMother.Random(),
             status ?? FormationStatus.Active,
-            linkedChatbotKey,
             iconUrl,
             archived ?? false,
             modules ?? []);

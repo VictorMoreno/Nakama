@@ -23,7 +23,6 @@ public sealed class FormationMapping : ClassMapping<Formation>
         this.Property(x => x.Audience);
         this.Property(x => x.Description, m => m.Column(c => c.SqlType("text")));
         this.Property(x => x.Status);
-        this.Property(x => x.LinkedChatbotKey, m => m.Column("linked_chatbot_key"));
         this.Property(x => x.Archived);
         this.Property(x => x.IconUrl);
 

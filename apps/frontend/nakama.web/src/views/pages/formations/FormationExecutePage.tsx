@@ -167,7 +167,7 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
 }
 
 export default function FormationExecutePage() {
-  const { c, navigate, pct, linkedBot, isLocked, myProgress } = useFormationExecute();
+  const { c, navigate, pct, isLocked, myProgress } = useFormationExecute();
 
   if (!c) {
     return (
@@ -196,7 +196,6 @@ export default function FormationExecutePage() {
             <h2>{c.title}</h2>
             <p>
               {c.audience} · {c.description}
-              {linkedBot && <> · Basado en la documentación de <strong>{linkedBot.label}</strong></>}
             </p>
           </div>
           <span className={`status-tag ${FORMATION_STATUS_META[c.status].level}`}>{FORMATION_STATUS_META[c.status].label}</span>

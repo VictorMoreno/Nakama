@@ -127,8 +127,7 @@ public sealed class FormationEndpoints : IEndpoint
         CancellationToken ct)
     {
         await commandBus.Send(
-            new FormationCreator.Command(id, body.Title, body.Audience, body.Description, body.Status,
-                body.LinkedChatbotKey), ct);
+            new FormationCreator.Command(id, body.Title, body.Audience, body.Description, body.Status), ct);
         return Results.Created();
     }
 
@@ -267,8 +266,7 @@ public sealed class FormationEndpoints : IEndpoint
         string Title,
         string Audience,
         string Description,
-        int Status,
-        Guid? LinkedChatbotKey);
+        int Status);
 
     private sealed record UpdateFormationStatusRequest(int Status);
 

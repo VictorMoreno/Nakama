@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import IconUploadField from "../../components/shared/IconUploadField";
-import Select from "../../components/shared/Select";
 import StatusSelect, { type StatusSelectOption } from "../../components/shared/StatusSelect";
 import { ChevronLeftIcon, CloseIcon, PlusIcon } from "../../components/shared/icons";
 import { FORMATION_STATUS_META } from "../../../lib/status";
@@ -15,7 +14,6 @@ const STATUS_OPTIONS: StatusSelectOption<FormationLifecycleStatus>[] = (
 export default function CreateFormationPage() {
   const navigate = useNavigate();
   const {
-    activeChatbots,
     title,
     setTitle,
     audience,
@@ -24,8 +22,6 @@ export default function CreateFormationPage() {
     setDescription,
     status,
     setStatus,
-    linkedChatbotKey,
-    setLinkedChatbotKey,
     iconUrl,
     setIconUrl,
     titleError,
@@ -89,25 +85,6 @@ export default function CreateFormationPage() {
                 placeholder="Se mostrará en la card del listado para ayudar a encontrar esta formación."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="config-rows">
-            <div className="config-row">
-              <div className="config-row-text">
-                <div className="title">Chatbot de referencia</div>
-                <div className="desc">
-                  Opcional — solo se usa para generar borradores de examen con IA a partir de su documentación. La
-                  formación funciona igual sin ninguno asociado.
-                </div>
-              </div>
-              <Select
-                id="new-formation-chatbot"
-                value={linkedChatbotKey}
-                onChange={setLinkedChatbotKey}
-                options={[{ value: "", label: "Ninguno" }, ...activeChatbots.map((bot) => ({ value: bot.id, label: bot.label }))]}
-                ariaLabel="Chatbot de referencia"
               />
             </div>
           </div>

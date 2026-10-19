@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { FormationLifecycleStatus } from "../../../../modules/formations/domain/Formation";
-import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useFormations } from "../../../shared/contexts/FormationsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
 
@@ -9,7 +8,6 @@ import { useToast } from "../../../shared/contexts/ToastContext";
 export function useFormationManage() {
   const { key } = useParams<{ key: string }>();
   const { formations, updateStatus, updateIcon, removeModule, removeTeamMember } = useFormations();
-  const { chatbots } = useChatbots();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -23,7 +21,6 @@ export function useFormationManage() {
   const deleteTarget = c?.modules.find((m) => m.id === deleteId);
   const teamMemberTarget = removeTeamMemberUserId != null ? c?.team.find((m) => m.userId === removeTeamMemberUserId) : undefined;
   const avgTeamProgress = c?.team.length ? Math.round(c.team.reduce((sum, m) => sum + m.progress, 0) / c.team.length) : 0;
-  const linkedBot = c?.linkedChatbotKey ? chatbots[c.linkedChatbotKey] : undefined;
 
   function toggleModuleExpanded(moduleId: string) {
     setCreatingNew(false);
@@ -62,7 +59,6 @@ export function useFormationManage() {
   return {
     c,
     navigate,
-    linkedBot,
     expandedModuleId,
     toggleModuleExpanded,
     creatingNew,

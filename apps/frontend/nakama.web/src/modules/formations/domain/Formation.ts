@@ -57,8 +57,6 @@ export interface Formation {
   description: string;
   /** Configurado por el admin del currículo, independiente del progreso de aprendizaje */
   status: FormationLifecycleStatus;
-  /** Chatbot key opcional, solo para contexto de generación por IA */
-  linkedChatbotKey?: string;
   modules: FormationModule[];
   team: FormationMember[];
   archived?: boolean;

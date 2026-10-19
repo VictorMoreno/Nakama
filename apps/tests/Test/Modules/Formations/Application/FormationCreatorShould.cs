@@ -21,9 +21,7 @@ public sealed class FormationCreatorShould : FormationsUnitTestCase
     [Test]
     public async Task create_the_formation_and_publish_formation_created_when_it_does_not_exist()
     {
-        FormationCreator.Command command = FormationCreatorCommandMother.With(
-            status: FormationStatus.Draft,
-            linkedChatbotKey: Guid.NewGuid());
+        FormationCreator.Command command = FormationCreatorCommandMother.With(status: FormationStatus.Draft);
         this.ShouldNotFindFormation();
 
         await this._handler.Handle(command, CancellationToken.None);
@@ -33,19 +31,8 @@ public sealed class FormationCreatorShould : FormationsUnitTestCase
             && formation.Title == command.Title
             && formation.Audience == command.Audience
             && formation.Description == command.Description
-            && formation.Status == FormationStatus.Draft
-            && formation.LinkedChatbotKey == command.LinkedChatbotKey);
+            && formation.Status == FormationStatus.Draft);
         this.ShouldHavePublished<FormationCreated>(@event => @event.Id.Value == command.Id);
-    }
-
-    [Test]
-    public async Task create_the_formation_without_a_linked_chatbot()
-    {
-        this.ShouldNotFindFormation();
-
-        await this._handler.Handle(FormationCreatorCommandMother.Random(), CancellationToken.None);
-
-        this.ShouldHaveSavedFormationMatching(formation => formation.LinkedChatbotKey == null);
     }
 
     [Test]

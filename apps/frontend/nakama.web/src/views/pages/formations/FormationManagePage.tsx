@@ -130,7 +130,6 @@ export default function FormationManagePage() {
   const {
     c,
     navigate,
-    linkedBot,
     expandedModuleId,
     toggleModuleExpanded,
     creatingNew,
@@ -177,7 +176,6 @@ export default function FormationManagePage() {
             <h2>{c.title}</h2>
             <p>
               {c.audience} · {c.description}
-              {linkedBot && <> · Basado en la documentación de <strong>{linkedBot.label}</strong></>}
             </p>
           </div>
           <StatusSelect value={c.status} onChange={handleUpdateStatus} options={STATUS_OPTIONS} ariaLabel="Estado de la formación" />

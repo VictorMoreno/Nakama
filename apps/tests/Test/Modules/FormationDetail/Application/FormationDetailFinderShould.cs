@@ -32,13 +32,9 @@ public sealed class FormationDetailFinderShould : FormationDetailUnitTestCase
     }
 
     [Test]
-    public async Task return_the_archived_flag_and_the_linked_chatbot()
+    public async Task return_the_archived_flag()
     {
-        Guid chatbotKey = Guid.NewGuid();
-        FormationDetailEntity detail = FormationDetailMother.With(
-            archived: true,
-            linkedChatbotKey: chatbotKey,
-            linkedChatbotLabel: "Soporte");
+        FormationDetailEntity detail = FormationDetailMother.With(archived: true);
         this.ShouldFindFormationDetail(detail);
 
         FormationDetailResponse response = await this._handler.Handle(
@@ -46,8 +42,6 @@ public sealed class FormationDetailFinderShould : FormationDetailUnitTestCase
             CancellationToken.None);
 
         response.Archived.Should().BeTrue();
-        response.LinkedChatbotKey.Should().Be(chatbotKey);
-        response.LinkedChatbotLabel.Should().Be("Soporte");
     }
 
     [Test]
@@ -75,20 +69,6 @@ public sealed class FormationDetailFinderShould : FormationDetailUnitTestCase
             CancellationToken.None);
 
         response.IconUrl.Should().BeNull();
-    }
-
-    [Test]
-    public async Task return_no_linked_chatbot_when_the_formation_has_none()
-    {
-        FormationDetailEntity detail = FormationDetailMother.Random();
-        this.ShouldFindFormationDetail(detail);
-
-        FormationDetailResponse response = await this._handler.Handle(
-            FormationDetailFinderQueryMother.With(detail.Id),
-            CancellationToken.None);
-
-        response.LinkedChatbotKey.Should().BeNull();
-        response.LinkedChatbotLabel.Should().BeNull();
     }
 
     [Test]

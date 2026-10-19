@@ -11,7 +11,6 @@ public partial class Formation
         string audience,
         string description,
         FormationStatus status,
-        Guid? linkedChatbotKey,
         string? iconUrl,
         bool archived,
         IReadOnlyList<FormationModule> modules)
@@ -21,7 +20,6 @@ public partial class Formation
         this.Audience = audience;
         this.Description = description;
         this.Status = status;
-        this.LinkedChatbotKey = linkedChatbotKey;
         this.IconUrl = iconUrl;
         this.Archived = archived;
         this._modules.AddRange(modules);
@@ -32,11 +30,10 @@ public partial class Formation
         string title,
         string audience,
         string description,
-        FormationStatus status,
-        Guid? linkedChatbotKey)
+        FormationStatus status)
     {
-        Formation formation = new(key, title, audience, description, status, linkedChatbotKey, null, false, []);
-        formation.Record(new FormationCreated(key, title, audience, description, status, linkedChatbotKey));
+        Formation formation = new(key, title, audience, description, status, null, false, []);
+        formation.Record(new FormationCreated(key, title, audience, description, status));
         return formation;
     }
 

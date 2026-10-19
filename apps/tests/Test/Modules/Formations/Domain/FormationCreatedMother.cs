@@ -13,13 +13,11 @@ public static class FormationCreatedMother
         string? title = null,
         string? audience = null,
         string? description = null,
-        FormationStatus? status = null,
-        Guid? linkedChatbotKey = null) =>
+        FormationStatus? status = null) =>
         new(
             id ?? FormationMother.RandomId(),
             title ?? WordMother.Random(),
             audience ?? WordMother.Random(),
             description ?? WordMother.Random(),
-            status ?? FormationStatus.Active,
-            linkedChatbotKey);
+            status ?? FormationStatus.Active);
 }

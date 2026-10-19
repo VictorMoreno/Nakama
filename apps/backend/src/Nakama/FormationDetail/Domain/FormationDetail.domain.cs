@@ -10,8 +10,6 @@ public partial class FormationDetail
         string status,
         bool archived,
         string? iconUrl,
-        Guid? linkedChatbotKey,
-        string? linkedChatbotLabel,
         List<FormationModuleRow> modules,
         List<FormationMemberRow> team)
     {
@@ -22,8 +20,6 @@ public partial class FormationDetail
         this.Status = status;
         this.Archived = archived;
         this.IconUrl = iconUrl;
-        this.LinkedChatbotKey = linkedChatbotKey;
-        this.LinkedChatbotLabel = linkedChatbotLabel;
         this.Modules = modules;
         this.Team = team;
     }
@@ -33,9 +29,7 @@ public partial class FormationDetail
         string title,
         string audience,
         string description,
-        string status,
-        Guid? linkedChatbotKey,
-        string? linkedChatbotLabel) =>
+        string status) =>
         new(
             key,
             title,
@@ -44,8 +38,6 @@ public partial class FormationDetail
             status,
             false,
             null,
-            linkedChatbotKey,
-            linkedChatbotLabel,
             [],
             []);
 

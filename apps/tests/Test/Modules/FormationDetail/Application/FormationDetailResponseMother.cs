@@ -23,8 +23,6 @@ public static class FormationDetailResponseMother
         string? status = null,
         bool? archived = null,
         string? iconUrl = null,
-        Guid? linkedChatbotKey = null,
-        string? linkedChatbotLabel = null,
         List<FormationModuleRow>? modules = null,
         List<FormationMemberRow>? team = null) =>
         new(
@@ -35,8 +33,6 @@ public static class FormationDetailResponseMother
             status ?? "Active",
             archived ?? false,
             iconUrl,
-            linkedChatbotKey,
-            linkedChatbotLabel,
             modules ?? [],
             team ?? []);
 }

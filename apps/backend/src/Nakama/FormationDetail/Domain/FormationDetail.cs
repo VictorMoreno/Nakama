@@ -13,8 +13,6 @@ public partial class FormationDetail : IEntity
     public string Status { get; protected set; } = string.Empty;
     public bool Archived { get; protected set; }
     public string? IconUrl { get; protected set; }
-    public Guid? LinkedChatbotKey { get; protected set; }
-    public string? LinkedChatbotLabel { get; protected set; }
 
     public List<FormationModuleRow> Modules { get; protected set; } = [];
     public List<FormationMemberRow> Team { get; protected set; } = [];

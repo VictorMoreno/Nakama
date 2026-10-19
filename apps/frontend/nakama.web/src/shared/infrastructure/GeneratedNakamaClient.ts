@@ -2210,7 +2210,6 @@ export interface CreateFormationRequest {
     audience?: string | undefined;
     description?: string | undefined;
     status?: number;
-    linkedChatbotKey?: string | undefined;
 }
 
 export interface FormationDetailResponse {
@@ -2221,8 +2220,6 @@ export interface FormationDetailResponse {
     status?: string | undefined;
     archived?: boolean;
     iconUrl?: string | undefined;
-    linkedChatbotKey?: string | undefined;
-    linkedChatbotLabel?: string | undefined;
     modules?: FormationModuleRow[] | undefined;
     team?: FormationMemberRow[] | undefined;
 }

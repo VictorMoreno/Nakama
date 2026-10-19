@@ -13,8 +13,7 @@ public static class FormationCreator
         string Title,
         string Audience,
         string Description,
-        int Status,
-        Guid? LinkedChatbotKey) : ICommand;
+        int Status) : ICommand;
 
     public sealed class Handler(Creator creator) : ICommandHandler<Command>
     {
@@ -26,7 +25,6 @@ public static class FormationCreator
                 cmd.Audience,
                 cmd.Description,
                 (FormationStatus)cmd.Status,
-                cmd.LinkedChatbotKey,
                 ct);
         }
     }
@@ -39,7 +37,6 @@ public static class FormationCreator
             string audience,
             string description,
             FormationStatus status,
-            Guid? linkedChatbotKey,
             CancellationToken cancellationToken)
         {
             if (await repository.FindById(id, cancellationToken) is not null)
@@ -47,7 +44,7 @@ public static class FormationCreator
                 throw FormationErrors.AlreadyExists(id.ToString());
             }
 
-            Formation formation = Formation.Create(id, title, audience, description, status, linkedChatbotKey);
+            Formation formation = Formation.Create(id, title, audience, description, status);
 
             await repository.Save(formation, cancellationToken);
             await eventBus.Publish(formation, cancellationToken);

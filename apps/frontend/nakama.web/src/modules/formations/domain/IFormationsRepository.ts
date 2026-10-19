@@ -5,7 +5,6 @@ export interface CreateFormationInput {
   audience: string;
   description: string;
   status: FormationLifecycleStatus;
-  linkedChatbotKey?: string;
   iconUrl?: string;
 }
 

@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { FormationLifecycleStatus } from "../../../../modules/formations/domain/Formation";
-import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useFormations } from "../../../shared/contexts/FormationsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
 
 export function useCreateFormation() {
   const navigate = useNavigate();
-  const { activeChatbots } = useChatbots();
   const { createFormation } = useFormations();
   const { showToast } = useToast();
 
@@ -15,7 +13,6 @@ export function useCreateFormation() {
   const [audience, setAudience] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<FormationLifecycleStatus>("borrador");
-  const [linkedChatbotKey, setLinkedChatbotKey] = useState("");
   const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
   const [titleError, setTitleError] = useState(false);
 
@@ -30,7 +27,6 @@ export function useCreateFormation() {
       audience: audience.trim(),
       description,
       status,
-      linkedChatbotKey: linkedChatbotKey || undefined,
       iconUrl
     });
     showToast("Formación creada");
@@ -40,7 +36,6 @@ export function useCreateFormation() {
   }
 
   return {
-    activeChatbots,
     title,
     setTitle,
     audience,
@@ -49,8 +44,6 @@ export function useCreateFormation() {
     setDescription,
     status,
     setStatus,
-    linkedChatbotKey,
-    setLinkedChatbotKey,
     iconUrl,
     setIconUrl,
     titleError,
