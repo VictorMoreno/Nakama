@@ -71,6 +71,17 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("archived").AsBoolean().NotNullable()
             .WithColumn("iconurl").AsString(255).Nullable();
 
+        this.Create.Table("read_chatbot_members")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("chatbot_id").AsGuid().NotNullable()
+            .WithColumn("user_id").AsGuid().NotNullable();
+
+        this.Create.Index("ix_read_chatbot_members_user_chatbot")
+            .OnTable("read_chatbot_members")
+            .OnColumn("user_id").Ascending()
+            .OnColumn("chatbot_id").Ascending()
+            .WithOptions().Unique();
+
         this.Create.Table("read_chatbot_detail")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("label").AsString(255).NotNullable()

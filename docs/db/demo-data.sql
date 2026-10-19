@@ -358,3 +358,6 @@ INSERT INTO public.users (id, email, normalizedemail, name, isadmin, passwordhas
 INSERT INTO public.users (id, email, normalizedemail, name, isadmin, passwordhash, lastactiveat, createdat) VALUES ('6faeb0aa-1201-454a-811b-4789eeabf72f', 'sergio.sanchez@seed.nakama.test', 'SERGIO.SANCHEZ@SEED.NAKAMA.TEST', 'Sergio Sánchez', false, 'AQAAAAIAAYagAAAAEEhPBkez4LJHJbt8JhXCW2/SGIomfG/U8Lv51bdnbQ3/elfloGhOCRABxgPQdzIELw==', '2026-10-06 19:31:06', '2026-08-22 05:31:06') ON CONFLICT DO NOTHING;
 
 COMMIT;
+
+-- Chatbot membership read model, derived from each chatbot team (the handlers only run on live events)
+INSERT INTO public.read_chatbot_members (id, chatbot_id, user_id) SELECT gen_random_uuid(), c.id, (m->>'userId')::uuid FROM public.chatbots c, jsonb_array_elements(c.team_json::jsonb) AS m ON CONFLICT DO NOTHING;

@@ -31,7 +31,7 @@ public sealed class ChatbotTeamMemberRemoverShould : ChatbotsUnitTestCase
         chatbot.Team.Should().ContainSingle().Which.Should().Be(owner);
         this.ShouldHaveSavedChatbot(chatbot);
         this.ShouldHavePublished<ChatbotTeamMemberRemoved>(
-            @event => @event.Id == chatbot.Id && @event.Index == 1);
+            @event => @event.Id == chatbot.Id && @event.Index == 1 && @event.UserId == editor.UserId);
     }
 
     [Test]

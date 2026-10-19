@@ -50,7 +50,23 @@ public abstract class ApiTestCase
         return token!.AccessToken;
     }
 
+    protected async Task<SignedInUser> SignInAs(bool isAdmin)
+    {
+        (User user, UserCredentials credentials) = await this.CreateAccount(isAdmin);
+        HttpResponseMessage login = await this.Client.LogIn(credentials);
+        TokenResponse? token = await login.Content.ReadFromJsonAsync<TokenResponse>();
+
+        return new SignedInUser(user.Id.Value, token!.AccessToken);
+    }
+
     protected async Task<UserCredentials> RegisterUser(bool isAdmin)
+    {
+        (_, UserCredentials credentials) = await this.CreateAccount(isAdmin);
+
+        return credentials;
+    }
+
+    private async Task<(User User, UserCredentials Credentials)> CreateAccount(bool isAdmin)
     {
         User user = UserMother.With(isAdmin: isAdmin);
         string password = PasswordMother.Valid();
@@ -61,6 +77,8 @@ public abstract class ApiTestCase
 
         Assert.That(result.Succeeded, Is.True, string.Join(", ", result.Errors.Select(error => error.Description)));
 
-        return new UserCredentials(user.Email, password);
+        return (user, new UserCredentials(user.Email, password));
     }
 }
+
+public sealed record SignedInUser(Guid Id, string Token);

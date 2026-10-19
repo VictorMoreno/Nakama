@@ -97,13 +97,14 @@ public partial class Chatbot
             throw ChatbotErrors.TeamMemberNotFoundAt(index);
         }
 
-        if (this._team[index].IsOwner)
+        TeamMember member = this._team[index];
+        if (member.IsOwner)
         {
             throw ChatbotErrors.OwnerCannotBeRemoved;
         }
 
         this._team.RemoveAt(index);
-        this.Record(new ChatbotTeamMemberRemoved(this.Id, index));
+        this.Record(new ChatbotTeamMemberRemoved(this.Id, index, member.UserId));
     }
 
     public void Archive()

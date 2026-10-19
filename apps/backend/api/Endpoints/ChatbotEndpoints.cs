@@ -332,9 +332,10 @@ public sealed class ChatbotEndpoints : IEndpoint
         return Results.NoContent();
     }
 
-    private static async Task<IResult> SearchChatbotSummaries(IQueryBus queryBus, CancellationToken ct)
+    private static async Task<IResult> SearchChatbotSummaries(ICurrentUser currentUser, IQueryBus queryBus, CancellationToken ct)
     {
-        IReadOnlyCollection<ChatbotSummaryResponse> response = await queryBus.Ask(new ChatbotSummarySearcher.Query(), ct);
+        IReadOnlyCollection<ChatbotSummaryResponse> response = await queryBus.Ask(
+            new ChatbotSummarySearcher.Query(currentUser.Id, currentUser.IsAdmin), ct);
         return Results.Ok(response);
     }
 

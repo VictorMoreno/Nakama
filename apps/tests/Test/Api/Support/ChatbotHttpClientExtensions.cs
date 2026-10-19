@@ -1,4 +1,5 @@
 using Nakama.Chatbots.Application.Creator;
+using Nakama.Chatbots.Domain;
 
 namespace Test.Api.Support;
 
@@ -32,6 +33,21 @@ public static class ChatbotHttpClientExtensions
 
     public static Task<HttpResponseMessage> ArchiveChatbot(this HttpClient client, Guid id, string accessToken) =>
         client.Send(HttpMethod.Post, $"/api/chatbots/{id}/archive", accessToken);
+
+    public static Task<HttpResponseMessage> AddChatbotTeamMember(
+        this HttpClient client,
+        Guid id,
+        Guid userId,
+        TeamRole role,
+        string accessToken) =>
+        client.SendJson(HttpMethod.Post, $"/api/chatbots/{id}/team", new { UserId = userId, Role = (int)role }, accessToken);
+
+    public static Task<HttpResponseMessage> RemoveChatbotTeamMember(
+        this HttpClient client,
+        Guid id,
+        int index,
+        string accessToken) =>
+        client.Send(HttpMethod.Delete, $"/api/chatbots/{id}/team/{index}", accessToken);
 
     public static Task<HttpResponseMessage> ListChatbots(this HttpClient client, string accessToken) =>
         client.Send(HttpMethod.Get, "/api/chatbots", accessToken);

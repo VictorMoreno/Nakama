@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Nakama.ChatbotMembers.Application;
 using Nakama.ChatbotSummaries.Application;
 using Nakama.ChatbotSummaries.Application.Searcher;
 using Test.Modules.ChatbotSummaries.Domain;
@@ -13,7 +14,9 @@ public sealed class ChatbotSummarySearcherShould : ChatbotSummariesUnitTestCase
     [SetUp]
     public void SetUp()
     {
-        this._handler = new ChatbotSummarySearcher.Handler(new(this.SummariesRepository.Object), this.Storage);
+        this._handler = new ChatbotSummarySearcher.Handler(
+            new(this.SummariesRepository.Object, this.QueryBus.Object),
+            this.Storage);
     }
 
     [Test]
@@ -30,7 +33,7 @@ public sealed class ChatbotSummarySearcherShould : ChatbotSummariesUnitTestCase
         this.ShouldFindAllChatbotSummaries([active, archived]);
 
         IReadOnlyCollection<ChatbotSummaryResponse> response = await this._handler.Handle(
-            new ChatbotSummarySearcher.Query(),
+            new ChatbotSummarySearcher.Query(Guid.NewGuid(), true),
             CancellationToken.None);
 
         response.Select(item => (item.Id, item.Label, item.Description, item.Status, item.DocsCount, item.TeamCount, item.Archived))
@@ -45,7 +48,7 @@ public sealed class ChatbotSummarySearcherShould : ChatbotSummariesUnitTestCase
         this.ShouldFindAllChatbotSummaries([ChatbotSummaryMother.With(iconUrl: "icon.png")]);
 
         IReadOnlyCollection<ChatbotSummaryResponse> response = await this._handler.Handle(
-            new ChatbotSummarySearcher.Query(),
+            new ChatbotSummarySearcher.Query(Guid.NewGuid(), true),
             CancellationToken.None);
 
         response.Should().ContainSingle().Which.IconUrl.Should().Be($"{this.Storage.Value.ChatbotIconsRoute}/icon.png");
@@ -57,7 +60,7 @@ public sealed class ChatbotSummarySearcherShould : ChatbotSummariesUnitTestCase
         this.ShouldFindAllChatbotSummaries([ChatbotSummaryMother.With(iconUrl: null)]);
 
         IReadOnlyCollection<ChatbotSummaryResponse> response = await this._handler.Handle(
-            new ChatbotSummarySearcher.Query(),
+            new ChatbotSummarySearcher.Query(Guid.NewGuid(), true),
             CancellationToken.None);
 
         response.Should().ContainSingle().Which.IconUrl.Should().BeNull();
@@ -69,9 +72,60 @@ public sealed class ChatbotSummarySearcherShould : ChatbotSummariesUnitTestCase
         this.ShouldFindAllChatbotSummaries([]);
 
         IReadOnlyCollection<ChatbotSummaryResponse> response = await this._handler.Handle(
-            new ChatbotSummarySearcher.Query(),
+            new ChatbotSummarySearcher.Query(Guid.NewGuid(), true),
             CancellationToken.None);
 
         response.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task return_every_chatbot_to_an_administrator_without_looking_at_memberships()
+    {
+        Nakama.ChatbotSummaries.Domain.ChatbotSummary first = ChatbotSummaryMother.With();
+        Nakama.ChatbotSummaries.Domain.ChatbotSummary second = ChatbotSummaryMother.With();
+        this.ShouldFindAllChatbotSummaries([first, second]);
+
+        IReadOnlyCollection<ChatbotSummaryResponse> response = await this._handler.Handle(
+            new ChatbotSummarySearcher.Query(Guid.NewGuid(), true),
+            CancellationToken.None);
+
+        response.Select(item => item.Id).Should().Equal(first.Id, second.Id);
+        this.ShouldNotHaveAskedForAnyMembership();
+    }
+
+    [Test]
+    public async Task return_only_the_chatbots_the_user_is_a_member_of()
+    {
+        Guid userId = Guid.NewGuid();
+        Nakama.ChatbotSummaries.Domain.ChatbotSummary mine = ChatbotSummaryMother.With();
+        Nakama.ChatbotSummaries.Domain.ChatbotSummary alsoMine = ChatbotSummaryMother.With();
+        this.ShouldFindMembershipsOfTheUser(
+            userId,
+            [new ChatbotMemberResponse(mine.Id, userId), new ChatbotMemberResponse(alsoMine.Id, userId)]);
+        this.ShouldFindChatbotSummariesByIds([mine, alsoMine]);
+
+        IReadOnlyCollection<ChatbotSummaryResponse> response = await this._handler.Handle(
+            new ChatbotSummarySearcher.Query(userId, false),
+            CancellationToken.None);
+
+        response.Select(item => item.Id).Should().Equal(mine.Id, alsoMine.Id);
+        this.ShouldHaveSearchedChatbotSummariesByIds([mine.Id, alsoMine.Id]);
+        this.ShouldNotHaveSearchedAllChatbotSummaries();
+    }
+
+    [Test]
+    public async Task return_no_chatbots_to_a_user_that_is_not_a_member_of_any()
+    {
+        Guid userId = Guid.NewGuid();
+        this.ShouldFindMembershipsOfTheUser(userId, []);
+        this.ShouldFindChatbotSummariesByIds([]);
+
+        IReadOnlyCollection<ChatbotSummaryResponse> response = await this._handler.Handle(
+            new ChatbotSummarySearcher.Query(userId, false),
+            CancellationToken.None);
+
+        response.Should().BeEmpty();
+        this.ShouldHaveSearchedChatbotSummariesByIds([]);
+        this.ShouldNotHaveSearchedAllChatbotSummaries();
     }
 }

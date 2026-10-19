@@ -1,6 +1,8 @@
 using System.Linq.Expressions;
 using Microsoft.Extensions.Options;
 using Moq;
+using Nakama.ChatbotMembers.Application;
+using Nakama.ChatbotMembers.Application.Searcher;
 using Nakama.ChatbotSummaries.Domain;
 using Nakama.Shared.Domain.Specification;
 using Nakama.Shared.Infrastructure.Storage;
@@ -48,4 +50,41 @@ public abstract class ChatbotSummariesUnitTestCase : UnitTestCase
         this.SummariesRepository.Verify(
             repository => repository.Update(It.IsAny<ChatbotSummary>(), It.IsAny<CancellationToken>()),
             Times.Never);
+
+    protected void ShouldFindChatbotSummariesByIds(IReadOnlyList<ChatbotSummary> summaries) =>
+        this.SummariesRepository
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<ChatbotSummary>>(specification => specification is ChatbotSummaryByIdsSpecification),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(summaries);
+
+    protected void ShouldHaveSearchedChatbotSummariesByIds(IReadOnlyCollection<Guid> ids) =>
+        this.SummariesRepository.Verify(
+            repository => repository.Search(
+                It.Is<ISpecification<ChatbotSummary>>(specification => HasIds(specification, ids)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+    protected void ShouldNotHaveSearchedAllChatbotSummaries() =>
+        this.SummariesRepository.Verify(
+            repository => repository.Search(
+                It.Is<ISpecification<ChatbotSummary>>(specification => specification is ChatbotSummaryListingSpecification),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+
+    protected void ShouldFindMembershipsOfTheUser(Guid userId, IReadOnlyCollection<ChatbotMemberResponse> memberships) =>
+        this.QueryBus
+            .Setup(bus => bus.Ask(
+                It.Is<ChatbotMemberSearcher.Query>(query => query.UserId == userId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(memberships);
+
+    protected void ShouldNotHaveAskedForAnyMembership() =>
+        this.QueryBus.Verify(
+            bus => bus.Ask(It.IsAny<ChatbotMemberSearcher.Query>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+
+    private static bool HasIds(ISpecification<ChatbotSummary> specification, IReadOnlyCollection<Guid> ids) =>
+        specification is ChatbotSummaryByIdsSpecification byIds
+        && byIds.Ids.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id));
 }
