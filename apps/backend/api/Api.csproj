@@ -10,7 +10,7 @@
         <Configurations>Debug;Production</Configurations>
         <DefaultItemsExcludes>$(DefaultItemsExcludes);$(SpaRoot)node_modules\**</DefaultItemsExcludes>
         <SpaProxyServerUrl>https://localhost:3000</SpaProxyServerUrl>
-        <SpaProxyLaunchCommand>pnpm run dev -- --m $(Configuration.toLower())</SpaProxyLaunchCommand>
+        <SpaProxyLaunchCommand>pnpm run dev --m $(Configuration.toLower())</SpaProxyLaunchCommand>
         <UserSecretsId>bc03e484-f791-445b-926d-197c510a51a7</UserSecretsId>
     </PropertyGroup>
 
@@ -51,14 +51,14 @@
 
     <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
         <Exec WorkingDirectory="$(SpaRoot) " Command="pnpm i"/>
-        <Exec WorkingDirectory="$(SpaRoot)" Command="pnpm run build -- --m $(Configuratíon.toLower())"/>
+        <Exec WorkingDirectory="$(SpaRoot)" Command="pnpm run build --m $(Configuration.toLower())"/>
 
         <ItemGroup>
             <DistFiles Include="$(SpaRoot)dist\**"/>
-            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)') " Exclude="@(ResolvedFileToPublish)">
+            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
                 <RelativePath>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
                 <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-                <ExcludeFromSingLeFile>true</ExcludeFromSingLeFile>
+                <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
             </ResolvedFileToPublish>
         </ItemGroup>
     </Target>

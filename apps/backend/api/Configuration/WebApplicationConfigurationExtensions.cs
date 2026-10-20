@@ -29,9 +29,9 @@ public static class WebApplicationConfigurationExtensions
                     }
                 }
             });
-
-            MigrationRunner.Run(app.Configuration.GetConnectionString("Nakama")!);
         }
+
+        MigrationRunner.Run(app.Configuration.GetConnectionString("Nakama")!);
 
         app.UseExceptionHandler();
         app.UseStatusCodePages();
@@ -49,10 +49,14 @@ public static class WebApplicationConfigurationExtensions
             RequestPath = storage.FormationIconsRoute
         });
 
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapEndpoints();
         app.MapHealthChecks("/health").AllowAnonymous();
+        app.MapFallbackToFile("{*path:nonfile:regex(^(?!api(/|$)).*$)}", "index.html").AllowAnonymous();
     }
 }

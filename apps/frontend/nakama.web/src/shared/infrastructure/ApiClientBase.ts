@@ -4,7 +4,7 @@
         return options_;
     }
 
-    protected async transformResult(url: string, response: Response, processor: (_response: Response) => Promise<any>): Promise<any> {
+    protected async transformResult(_url: string, response: Response, processor: (_response: Response) => Promise<any>): Promise<any> {
         return processor(response);
     }
 }
