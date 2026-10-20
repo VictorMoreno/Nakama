@@ -22,14 +22,18 @@ terraform apply -var-file=dev.tfvars
 
 ## Variables de entorno del App Service (a mano, en el portal)
 
-Terraform solo define la configuración no sensible (`ASPNETCORE_ENVIRONMENT` y las rutas `Storage__*` bajo
-`D:\home\site\external_resources`) y no sobrescribe las app settings posteriores (`ignore_changes`). Hay que añadir en
-*Configuración → Variables de entorno*:
+Terraform no define ninguna app setting y no toca las que se añadan después (`ignore_changes`). Hay que crearlas a mano
+en *Configuración → Variables de entorno*:
 
 | Nombre | Valor |
 |---|---|
+| `ASPNETCORE_ENVIRONMENT` | `Production` |
 | `ConnectionStrings__Nakama` | el output `connection_string_template` con la contraseña real |
 | `Jwt__SigningKey` | una clave aleatoria larga |
+| `Storage__ChatbotDocumentsPath` | `D:\home\site\external_resources\chatbot-documents` |
+| `Storage__ConversationAttachmentsPath` | `D:\home\site\external_resources\conversation-attachments` |
+| `Storage__ChatbotIconsPath` | `D:\home\site\external_resources\chatbot-icons` |
+| `Storage__FormationIconsPath` | `D:\home\site\external_resources\formation-icons` |
 
 ## Publicar la aplicación
 

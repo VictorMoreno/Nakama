@@ -1,7 +1,3 @@
-locals {
-  external_resources = "D:\\home\\site\\external_resources"
-}
-
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.location
@@ -70,14 +66,6 @@ resource "azurerm_windows_web_app" "main" {
       current_stack  = "dotnet"
       dotnet_version = "v10.0"
     }
-  }
-
-  app_settings = {
-    ASPNETCORE_ENVIRONMENT               = "Production"
-    Storage__ChatbotDocumentsPath        = "${local.external_resources}\\chatbot-documents"
-    Storage__ConversationAttachmentsPath = "${local.external_resources}\\conversation-attachments"
-    Storage__ChatbotIconsPath            = "${local.external_resources}\\chatbot-icons"
-    Storage__FormationIconsPath          = "${local.external_resources}\\formation-icons"
   }
 
   lifecycle {
