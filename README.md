@@ -121,6 +121,7 @@ proyecto_master/
 │   │           └── routes/            # definición de rutas (React Router)
 │   └── tests/                    # convención para tests .NET (NUnit + FluentAssertions) — aún sin implementar
 ├── docs/                         # ADRs, requisitos y documentación de arquitectura
+├── infra/                        # Terraform del entorno de Azure (nakama-dev)
 └── docker-compose.yaml           # PostgreSQL local
 ```
 
@@ -155,7 +156,7 @@ El resto de usuarios son `@seed.nakama.test` con la contraseña `Seed1234.`.
 
 ## 📦 Despliegue
 
-Todavía no hay pipeline de CI/CD ni configuración de despliegue en el repositorio. El flujo actual es ejecución local (backend + frontend + PostgreSQL vía Docker Compose, como se describe arriba).
+La infraestructura de Azure (App Service Windows + PostgreSQL flexible server) se define con Terraform en [`infra/`](infra/README.md), junto con los pasos para publicar y configurar el entorno. Todavía no hay pipeline de CI/CD: el despliegue es manual.
 
 ## 🤝 Contribuyendo
 
