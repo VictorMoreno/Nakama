@@ -37,6 +37,14 @@ en *Configuración → Variables de entorno*:
 
 ## Publicar la aplicación
 
+Con el script (publica, comprime, sube y comprueba `/health`; pide confirmación mostrando la suscripción activa):
+
+```powershell
+.\infra\deploy.ps1
+```
+
+Parámetros opcionales: `-ResourceGroup`, `-AppName`, `-Configuration` y `-SkipConfirmation`. Los pasos manuales equivalentes:
+
 ```powershell
 dotnet publish apps/backend/api/Api.csproj -c Release -o publish
 Compress-Archive -Path publish\* -DestinationPath publish.zip -Force
