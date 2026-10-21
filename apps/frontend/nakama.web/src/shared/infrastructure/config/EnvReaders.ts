@@ -6,6 +6,18 @@ export function readPositiveInt(name: string, raw: string | undefined): number {
   return value;
 }
 
+export function readPositiveIntList(name: string, raw: string | undefined): number[] {
+  const values = (raw ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "")
+    .map(Number);
+  if (values.length === 0 || values.some((value) => !Number.isInteger(value) || value <= 0)) {
+    throw new Error(`Missing or invalid environment variable ${name}: expected a comma-separated list of positive integers.`);
+  }
+  return values;
+}
+
 export function readList(name: string, raw: string | undefined): string[] {
   const items = (raw ?? "")
     .split(",")

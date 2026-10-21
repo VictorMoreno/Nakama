@@ -139,6 +139,16 @@ export interface IGeneratedNakamaClient {
     chatbotsAll(): Promise<ChatbotSummaryResponse[]>;
 
     /**
+     * Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded.
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @param search (optional) 
+     * @param status (optional) 
+     * @return OK
+     */
+    paged(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<ChatbotSummaryResponsePagedResponse>;
+
+    /**
      * Gets the caller's conversation history for one chatbot.
      * @return OK
      */
@@ -228,6 +238,16 @@ export interface IGeneratedNakamaClient {
      * @return OK
      */
     formationsAll(): Promise<FormationSummaryResponse[]>;
+
+    /**
+     * Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded.
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @param search (optional) 
+     * @param status (optional) 
+     * @return OK
+     */
+    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<FormationSummaryResponsePagedResponse>;
 
     /**
      * Gets one user's own progress in a formation. 404 if they're not assigned.
@@ -1200,6 +1220,71 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded.
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @param search (optional) 
+     * @param status (optional) 
+     * @return OK
+     */
+    paged(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<ChatbotSummaryResponsePagedResponse> {
+        let url_ = this.baseUrl + "/api/chatbots/paged?";
+        if (page === null)
+            throw new globalThis.Error("The parameter 'page' cannot be null.");
+        else if (page !== undefined)
+            url_ += "page=" + encodeURIComponent("" + page) + "&";
+        if (pageSize === null)
+            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
+        if (search === null)
+            throw new globalThis.Error("The parameter 'search' cannot be null.");
+        else if (search !== undefined)
+            url_ += "search=" + encodeURIComponent("" + search) + "&";
+        if (status === null)
+            throw new globalThis.Error("The parameter 'status' cannot be null.");
+        else if (status !== undefined)
+            url_ += "status=" + encodeURIComponent("" + status) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processPaged(_response));
+        });
+    }
+
+    protected processPaged(response: Response): Promise<ChatbotSummaryResponsePagedResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ChatbotSummaryResponsePagedResponse;
+            return result200;
+            });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            result422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Unprocessable Content", status, _responseText, _headers, result422);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ChatbotSummaryResponsePagedResponse>(null as any);
+    }
+
+    /**
      * Gets the caller's conversation history for one chatbot.
      * @return OK
      */
@@ -1943,6 +2028,71 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded.
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @param search (optional) 
+     * @param status (optional) 
+     * @return OK
+     */
+    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<FormationSummaryResponsePagedResponse> {
+        let url_ = this.baseUrl + "/api/formations/paged?";
+        if (page === null)
+            throw new globalThis.Error("The parameter 'page' cannot be null.");
+        else if (page !== undefined)
+            url_ += "page=" + encodeURIComponent("" + page) + "&";
+        if (pageSize === null)
+            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
+        if (search === null)
+            throw new globalThis.Error("The parameter 'search' cannot be null.");
+        else if (search !== undefined)
+            url_ += "search=" + encodeURIComponent("" + search) + "&";
+        if (status === null)
+            throw new globalThis.Error("The parameter 'status' cannot be null.");
+        else if (status !== undefined)
+            url_ += "status=" + encodeURIComponent("" + status) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processPaged2(_response));
+        });
+    }
+
+    protected processPaged2(response: Response): Promise<FormationSummaryResponsePagedResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as FormationSummaryResponsePagedResponse;
+            return result200;
+            });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            result422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Unprocessable Content", status, _responseText, _headers, result422);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FormationSummaryResponsePagedResponse>(null as any);
+    }
+
+    /**
      * Gets one user's own progress in a formation. 404 if they're not assigned.
      * @return OK
      */
@@ -2183,6 +2333,14 @@ export interface ChatbotSummaryResponse {
     iconUrl?: string | undefined;
 }
 
+export interface ChatbotSummaryResponsePagedResponse {
+    items?: ChatbotSummaryResponse[] | undefined;
+    totalCount?: number;
+    page?: number;
+    pageSize?: number;
+    readonly totalPages?: number;
+}
+
 export interface CompleteFormationModuleRequest {
     score?: number | undefined;
 }
@@ -2267,6 +2425,14 @@ export interface FormationSummaryResponse {
     modulesCount?: number;
     completedModulesCount?: number;
     isEnrolled?: boolean;
+}
+
+export interface FormationSummaryResponsePagedResponse {
+    items?: FormationSummaryResponse[] | undefined;
+    totalCount?: number;
+    page?: number;
+    pageSize?: number;
+    readonly totalPages?: number;
 }
 
 export interface GapQuestionRow {

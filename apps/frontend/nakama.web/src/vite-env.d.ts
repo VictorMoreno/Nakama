@@ -17,6 +17,10 @@ interface ImportMetaEnv {
   readonly VITE_ICONS_MAX_SIZE_MB: string;
   /** Comma-separated allowed icon content types; mirrors the keys of Icons:ContentTypeExtensions. */
   readonly VITE_ICONS_ALLOWED_CONTENT_TYPES: string;
+  /** Page size used by the list pages when none is chosen; must be one of the options. Mirrors Pagination:DefaultPageSize. */
+  readonly VITE_PAGINATION_DEFAULT_PAGE_SIZE: string;
+  /** Comma-separated page sizes offered on the list pages; none may exceed Pagination:MaxPageSize. */
+  readonly VITE_PAGINATION_PAGE_SIZE_OPTIONS: string;
 }
 
 interface ImportMeta {

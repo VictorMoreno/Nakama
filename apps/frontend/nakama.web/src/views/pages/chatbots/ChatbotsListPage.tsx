@@ -1,19 +1,25 @@
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
+import Pagination from "../../components/shared/Pagination";
 import Select from "../../components/shared/Select";
 import { ArrowRightIcon, LockIcon, PlusIcon, RecycleBinIcon } from "../../components/shared/icons";
-import { getChatbotStatus } from "../../../lib/status";
+import { CHATBOT_STATUS_META } from "../../../lib/status";
 import { pluralWord } from "../../../lib/text";
+import { paginationConfig } from "../../../shared/infrastructure/config/PaginationConfig";
 import { STATUS_OPTIONS, useChatbotsList } from "./hooks/useChatbotsList";
 import styles from "./ChatbotsListPage.module.scss";
 
 export default function ChatbotsListPage() {
   const {
     navigate,
+    chatbots,
+    slide,
+    displayedPage,
+    isLoading,
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
-    filteredChatbots,
+    pagination,
     setDeleteKey,
     deleteTarget,
     handleDeleteConfirm
@@ -44,12 +50,18 @@ export default function ChatbotsListPage() {
           <Select value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} ariaLabel="Filtrar por estado" />
         </div>
 
-        {filteredChatbots.length === 0 ? (
-          <p className="list-empty">No hay chatbots que coincidan con la búsqueda o el filtro.</p>
+        {chatbots.length === 0 ? (
+          <p className="list-empty">
+            {isLoading ? "Cargando chatbots…" : "No hay chatbots que coincidan con la búsqueda o el filtro."}
+          </p>
         ) : (
-        <div className={styles.botGrid}>
-          {filteredChatbots.map((bot) => {
-            const status = getChatbotStatus(bot);
+        <div
+          className={`${styles.botGrid}${slide === "none" ? "" : ` list-slide-${slide}`}`}
+          key={displayedPage}
+          aria-busy={isLoading}
+        >
+          {chatbots.map((bot) => {
+            const status = CHATBOT_STATUS_META[bot.status];
             return (
             <div className={`${styles.botCard} glass`} key={bot.id}>
               <div className={styles.botCardTop}>
@@ -65,8 +77,8 @@ export default function ChatbotsListPage() {
               </div>
               <p className={styles.botCardDesc}>{bot.description}</p>
               <div className={styles.botCardMeta}>
-                <span>{pluralWord(bot.docs.length, "documento", "documentos")}</span>
-                <span>{pluralWord(bot.team.length, "persona", "personas")}</span>
+                <span>{pluralWord(bot.docsCount, "documento", "documentos")}</span>
+                <span>{pluralWord(bot.teamCount, "persona", "personas")}</span>
               </div>
               <div className={styles.botCardActions}>
                 <div className={styles.botCardActionsMain}>
@@ -86,6 +98,8 @@ export default function ChatbotsListPage() {
           })}
         </div>
         )}
+
+        <Pagination {...pagination} pageSizeOptions={paginationConfig.pageSizeOptions} />
       </div>
 
       <ConfirmDialog

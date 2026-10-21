@@ -205,6 +205,9 @@
 .list-search::placeholder { color: var(--ink-faint); }
 .list-search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 
+.list-slide-next { animation: slide-from-right 0.75s cubic-bezier(0.33, 0.1, 0.25, 1); }
+.list-slide-prev { animation: slide-from-left 0.75s cubic-bezier(0.33, 0.1, 0.25, 1); }
+
 .list-empty {
   padding: 32px 20px;
   text-align: center;

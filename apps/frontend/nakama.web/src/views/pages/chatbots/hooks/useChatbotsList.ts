@@ -1,54 +1,66 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
+import { usePagedList } from "../../../shared/hooks/usePagedList";
 import { CHATBOT_STATUS_META } from "../../../../lib/status";
 import type { ChatbotLifecycleStatus } from "../../../../modules/chatbots/domain/Chatbot";
+import type { IChatbotsRepository } from "../../../../modules/chatbots/domain/IChatbotsRepository";
+import type { PageQuery } from "../../../../shared/domain/Page";
+import { Services } from "../../../../shared/infrastructure/injection/Services";
+import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
 
 export type StatusFilter = "all" | ChatbotLifecycleStatus;
 
+const STATUSES = Object.keys(CHATBOT_STATUS_META) as ChatbotLifecycleStatus[];
+
 export const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "Todos los estados" },
-  ...(Object.keys(CHATBOT_STATUS_META) as ChatbotLifecycleStatus[]).map((value) => ({
+  ...STATUSES.map((value) => ({
     value,
     label: CHATBOT_STATUS_META[value].label
   }))
 ];
 
 export function useChatbotsList() {
-  const { activeChatbots, archiveChatbot } = useChatbots();
+  const repo = useInjection<IChatbotsRepository>(Services.ChatbotsRepository.id);
+  const { archiveChatbot } = useChatbots();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
+  const fetchPage = useCallback((query: PageQuery<ChatbotLifecycleStatus>) => repo.FindPage(query), [repo]);
+  const list = usePagedList(fetchPage, STATUSES);
+
   const [deleteKey, setDeleteKey] = useState<string | null>(null);
-  const deleteTarget = activeChatbots.find((b) => b.id === deleteKey);
+  const deleteTarget = list.items.find((b) => b.id === deleteKey);
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-
-  const filteredChatbots = activeChatbots.filter((bot) => {
-    const query = search.trim().toLowerCase();
-    const matchesSearch =
-      query.length === 0 || bot.label.toLowerCase().includes(query) || bot.description.toLowerCase().includes(query);
-    const matchesStatus = statusFilter === "all" || bot.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  function handleDeleteConfirm() {
-    if (deleteKey) {
-      archiveChatbot(deleteKey);
-      showToast("Chatbot eliminado (demo)");
-    }
+  async function handleDeleteConfirm() {
+    const key = deleteKey;
     setDeleteKey(null);
+    if (!key) return;
+    await archiveChatbot(key);
+    showToast("Chatbot eliminado (demo)");
+    list.reload();
   }
 
   return {
     navigate,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    filteredChatbots,
+    chatbots: list.items,
+    slide: list.slide,
+    displayedPage: list.displayedPage,
+    isLoading: list.isLoading,
+    search: list.search,
+    setSearch: list.setSearch,
+    statusFilter: list.status,
+    setStatusFilter: list.setStatus,
+    pagination: {
+      page: list.page,
+      pageSize: list.pageSize,
+      totalCount: list.totalCount,
+      totalPages: list.totalPages,
+      onPageChange: list.setPage,
+      onPageSizeChange: list.setPageSize
+    },
     deleteKey,
     setDeleteKey,
     deleteTarget,

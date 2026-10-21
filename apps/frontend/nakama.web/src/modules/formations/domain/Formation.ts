@@ -70,3 +70,15 @@ export interface Formation {
 }
 
 export type FormationMap = Record<string, Formation>;
+
+/** Fila de las páginas de listado: solo el resumen, sin cargar el detalle de cada formación. */
+export interface FormationListItem {
+  id: string;
+  title: string;
+  audience: string;
+  description: string;
+  status: FormationLifecycleStatus;
+  iconUrl?: string;
+  isEnrolled: boolean;
+  progressPct: number;
+}

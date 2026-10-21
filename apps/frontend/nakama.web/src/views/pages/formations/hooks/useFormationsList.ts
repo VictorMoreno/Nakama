@@ -1,54 +1,66 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { FormationLifecycleStatus } from "../../../../modules/formations/domain/Formation";
-import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
+import type { IFormationsRepository } from "../../../../modules/formations/domain/IFormationsRepository";
+import type { PageQuery } from "../../../../shared/domain/Page";
+import { Services } from "../../../../shared/infrastructure/injection/Services";
+import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
+import { FORMATION_STATUS_META } from "../../../../lib/status";
 import { useFormations } from "../../../shared/contexts/FormationsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
 import { useUser } from "../../../shared/contexts/UserContext";
+import { usePagedList } from "../../../shared/hooks/usePagedList";
 
 export type StatusFilter = "all" | FormationLifecycleStatus;
 
+const STATUSES = Object.keys(FORMATION_STATUS_META) as FormationLifecycleStatus[];
+
+export const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "Todos los estados" },
+  ...STATUSES.map((value) => ({
+    value,
+    label: FORMATION_STATUS_META[value].label
+  }))
+];
+
 export function useFormationsList() {
-  const { activeFormations, archiveFormation } = useFormations();
-  const { chatbots } = useChatbots();
+  const repo = useInjection<IFormationsRepository>(Services.FormationsRepository.id);
+  const { archiveFormation } = useFormations();
   const { isAdmin } = useUser();
   const { showToast } = useToast();
 
+  const fetchPage = useCallback((query: PageQuery<FormationLifecycleStatus>) => repo.FindPage(query), [repo]);
+  const list = usePagedList(fetchPage, STATUSES);
+
   const [deleteKey, setDeleteKey] = useState<string | null>(null);
-  const deleteTarget = activeFormations.find((c) => c.id === deleteKey);
-
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-
-  const withProgress = activeFormations.map((c) => ({ c, pct: c.progressPct }));
-
-  const filteredFormations = withProgress.filter(({ c }) => {
-    const query = search.trim().toLowerCase();
-    const matchesSearch =
-      query.length === 0 ||
-      c.title.toLowerCase().includes(query) ||
-      c.audience.toLowerCase().includes(query) ||
-      c.description.toLowerCase().includes(query);
-    const matchesStatus = statusFilter === "all" || c.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const deleteTarget = list.items.find((c) => c.id === deleteKey);
 
   async function confirmDelete() {
-    if (deleteKey) {
-      await archiveFormation(deleteKey);
-      showToast("Formación eliminada (demo)");
-    }
+    const key = deleteKey;
     setDeleteKey(null);
+    if (!key) return;
+    await archiveFormation(key);
+    showToast("Formación eliminada (demo)");
+    list.reload();
   }
 
   return {
-    chatbots,
     isAdmin,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    filteredFormations,
-    deleteKey,
+    formations: list.items,
+    slide: list.slide,
+    displayedPage: list.displayedPage,
+    isLoading: list.isLoading,
+    search: list.search,
+    setSearch: list.setSearch,
+    statusFilter: list.status,
+    setStatusFilter: list.setStatus,
+    pagination: {
+      page: list.page,
+      pageSize: list.pageSize,
+      totalCount: list.totalCount,
+      totalPages: list.totalPages,
+      onPageChange: list.setPage,
+      onPageSizeChange: list.setPageSize
+    },
     deleteTarget,
     setDeleteKey,
     confirmDelete

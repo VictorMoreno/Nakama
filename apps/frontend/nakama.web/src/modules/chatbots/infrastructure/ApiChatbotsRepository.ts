@@ -14,6 +14,7 @@ import type {
   Chatbot,
   ChatbotDocument,
   ChatbotLifecycleStatus,
+  ChatbotListItem,
   ChatbotMap,
   ChatbotSettings,
   DocStatus,
@@ -25,6 +26,7 @@ import type {
   TeamRole
 } from "../domain/Chatbot";
 import type { CreateChatbotInput, IChatbotsRepository } from "../domain/IChatbotsRepository";
+import type { Page, PageQuery } from "../../../shared/domain/Page";
 import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlToFileParameter";
 import { formatDate } from "../../../shared/infrastructure/formatDate";
 
@@ -33,6 +35,7 @@ import { formatDate } from "../../../shared/infrastructure/formatDate";
 // name, e.g. "Active") - the two directions are asymmetric, never share one lookup table.
 const STATUS_TO_ORDINAL: Record<ChatbotLifecycleStatus, number> = { borrador: 0, activo: 1, inactivo: 2 };
 const STATUS_FROM_API: Record<string, ChatbotLifecycleStatus> = { Draft: "borrador", Active: "activo", Inactive: "inactivo" };
+const STATUS_TO_API: Record<ChatbotLifecycleStatus, string> = { borrador: "Draft", activo: "Active", inactivo: "Inactive" };
 
 const PROVIDER_TO_ORDINAL: Record<LlmProvider, number> = { anthropic: 0, openai: 1, local: 2 };
 const PROVIDER_FROM_API: Record<string, LlmProvider> = { Anthropic: "anthropic", OpenAi: "openai", Local: "local" };
@@ -106,6 +109,18 @@ function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailRespons
   };
 }
 
+function toChatbotListItem(summary: ChatbotSummaryResponse): ChatbotListItem {
+  return {
+    id: summary.id ?? "",
+    label: summary.label ?? "",
+    description: summary.description ?? "",
+    status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
+    docsCount: summary.docsCount ?? 0,
+    teamCount: summary.teamCount ?? 0,
+    iconUrl: summary.iconUrl
+  };
+}
+
 export class ApiChatbotsRepository implements IChatbotsRepository {
   private readonly client: GeneratedNakamaClient;
 
@@ -123,6 +138,22 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       })
     );
     return Object.fromEntries(entries);
+  }
+
+  async FindPage(query: PageQuery<ChatbotLifecycleStatus>): Promise<Page<ChatbotListItem>> {
+    const response = await this.client.paged(
+      query.page,
+      query.pageSize,
+      query.search || undefined,
+      query.status ? STATUS_TO_API[query.status] : undefined
+    );
+    return {
+      items: (response.items ?? []).map(toChatbotListItem),
+      totalCount: response.totalCount ?? 0,
+      totalPages: response.totalPages ?? 0,
+      page: response.page ?? query.page,
+      pageSize: response.pageSize ?? query.pageSize
+    };
   }
 
   async Create(input: CreateChatbotInput): Promise<Chatbot> {

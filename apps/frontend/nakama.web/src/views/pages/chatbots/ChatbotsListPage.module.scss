@@ -1,4 +1,4 @@
-.botsList { display: flex; flex-direction: column; gap: 18px; }
+.botsList { display: flex; flex-direction: column; gap: 18px; flex: 1; overflow-x: clip; }
 
 .botsToolbar {
   display: flex;

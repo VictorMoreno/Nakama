@@ -70,6 +70,11 @@
   z-index: 30;
 }
 
+.select.openUp .selectDropdown {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
 .selectOption {
   display: block;
   width: 100%;

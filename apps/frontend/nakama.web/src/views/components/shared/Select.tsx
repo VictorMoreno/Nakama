@@ -15,9 +15,11 @@ interface SelectProps<T extends string> {
   ariaLabel: string;
   /** Stretch to fill the parent, matching the old `style={{ width: "100%" }}` native selects used in form fields. */
   fullWidth?: boolean;
+  /** Open the panel above the trigger, for selects pinned to the bottom edge where opening downwards would force a scroll. */
+  openUp?: boolean;
 }
 
-export default function Select<T extends string>({ id, value, onChange, options, ariaLabel, fullWidth }: SelectProps<T>) {
+export default function Select<T extends string>({ id, value, onChange, options, ariaLabel, fullWidth, openUp }: SelectProps<T>) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const current = options.find((o) => o.value === value);
@@ -40,7 +42,7 @@ export default function Select<T extends string>({ id, value, onChange, options,
 
   return (
     <div
-      className={`${styles.select}${open ? ` ${styles.open}` : ""}${fullWidth ? ` ${styles.selectFull}` : ""}`}
+      className={`${styles.select}${open ? ` ${styles.open}` : ""}${fullWidth ? ` ${styles.selectFull}` : ""}${openUp ? ` ${styles.openUp}` : ""}`}
       ref={rootRef}
     >
       <button

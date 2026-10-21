@@ -1,4 +1,13 @@
-import type { Chatbot, ChatbotLifecycleStatus, ChatbotMap, ChatbotSettings, DocumentFile, TeamMember } from "./Chatbot";
+import type { Page, PageQuery } from "../../../shared/domain/Page";
+import type {
+  Chatbot,
+  ChatbotLifecycleStatus,
+  ChatbotListItem,
+  ChatbotMap,
+  ChatbotSettings,
+  DocumentFile,
+  TeamMember
+} from "./Chatbot";
 
 export interface CreateChatbotInput {
   name: string;
@@ -11,6 +20,7 @@ export interface CreateChatbotInput {
 
 export interface IChatbotsRepository {
   FindAll(): Promise<ChatbotMap>;
+  FindPage(query: PageQuery<ChatbotLifecycleStatus>): Promise<Page<ChatbotListItem>>;
   Create(input: CreateChatbotInput): Promise<Chatbot>;
   Archive(id: string): Promise<void>;
   UpdateSettings(id: string, patch: Partial<ChatbotSettings>): Promise<void>;

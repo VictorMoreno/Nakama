@@ -1,29 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
+import Pagination from "../../components/shared/Pagination";
 import Select from "../../components/shared/Select";
 import { ArrowRightIcon, LockIcon, PlusIcon, RecycleBinIcon } from "../../components/shared/icons";
-import { FORMATION_STATUS_META, getFormationStatus } from "../../../lib/status";
-import { useFormationsList, type StatusFilter } from "./hooks/useFormationsList";
-import type { FormationLifecycleStatus } from "../../../modules/formations/domain/Formation";
+import { FORMATION_STATUS_META } from "../../../lib/status";
+import { paginationConfig } from "../../../shared/infrastructure/config/PaginationConfig";
+import { STATUS_OPTIONS, useFormationsList } from "./hooks/useFormationsList";
 import styles from "./FormationsListPage.module.scss";
-
-const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
-  { value: "all", label: "Todos los estados" },
-  ...(Object.keys(FORMATION_STATUS_META) as FormationLifecycleStatus[]).map((value) => ({
-    value,
-    label: FORMATION_STATUS_META[value].label
-  }))
-];
 
 export default function FormationsListPage() {
   const navigate = useNavigate();
   const {
     isAdmin,
+    formations,
+    slide,
+    displayedPage,
+    isLoading,
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
-    filteredFormations,
+    pagination,
     deleteTarget,
     setDeleteKey,
     confirmDelete
@@ -56,12 +53,19 @@ export default function FormationsListPage() {
           <Select value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} ariaLabel="Filtrar por estado" />
         </div>
 
-        {filteredFormations.length === 0 ? (
-          <p className="list-empty">No hay formaciones que coincidan con la búsqueda o el filtro.</p>
+        {formations.length === 0 ? (
+          <p className="list-empty">
+            {isLoading ? "Cargando formaciones…" : "No hay formaciones que coincidan con la búsqueda o el filtro."}
+          </p>
         ) : (
-        <div className={styles.botGrid}>
-          {filteredFormations.map(({ c, pct }) => {
-            const status = getFormationStatus(c);
+        <div
+          className={`${styles.botGrid}${slide === "none" ? "" : ` list-slide-${slide}`}`}
+          key={displayedPage}
+          aria-busy={isLoading}
+        >
+          {formations.map((c) => {
+            const status = FORMATION_STATUS_META[c.status];
+            const pct = c.progressPct;
             return (
               <div className={`${styles.botCard} glass`} key={c.id}>
                 <div className={styles.botCardTop}>
@@ -107,6 +111,8 @@ export default function FormationsListPage() {
           })}
         </div>
         )}
+
+        <Pagination {...pagination} pageSizeOptions={paginationConfig.pageSizeOptions} />
       </div>
 
       <ConfirmDialog

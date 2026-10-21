@@ -13,7 +13,17 @@ import type {
   UpdateFormationStatusRequest
 } from "../../../shared/infrastructure/GeneratedNakamaClient";
 import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlToFileParameter";
-import type { Formation, FormationLifecycleStatus, FormationMap, FormationMember, FormationModule, ModuleType, QuizQuestion } from "../domain/Formation";
+import type { Page, PageQuery } from "../../../shared/domain/Page";
+import type {
+  Formation,
+  FormationLifecycleStatus,
+  FormationListItem,
+  FormationMap,
+  FormationMember,
+  FormationModule,
+  ModuleType,
+  QuizQuestion
+} from "../domain/Formation";
 import type { CreateFormationInput, IFormationsRepository } from "../domain/IFormationsRepository";
 
 // Write side: backend enums serialize as their ordinal (0-indexed, declaration order).
@@ -21,6 +31,7 @@ import type { CreateFormationInput, IFormationsRepository } from "../domain/IFor
 // name, e.g. "Active") - the two directions are asymmetric, never share one lookup table.
 const STATUS_TO_ORDINAL: Record<FormationLifecycleStatus, number> = { borrador: 0, activo: 1, inactivo: 2 };
 const STATUS_FROM_API: Record<string, FormationLifecycleStatus> = { Draft: "borrador", Active: "activo", Inactive: "inactivo" };
+const STATUS_TO_API: Record<FormationLifecycleStatus, string> = { borrador: "Draft", activo: "Active", inactivo: "Inactive" };
 
 const MODULE_TYPE_TO_ORDINAL: Record<ModuleType, number> = { video: 0, documento: 1, ejercicio: 2, examen: 3 };
 const MODULE_TYPE_FROM_API: Record<string, ModuleType> = { Video: "video", Document: "documento", Exercise: "ejercicio", Exam: "examen" };
@@ -69,6 +80,19 @@ function toFormation(summary: FormationSummaryResponse, detail: FormationDetailR
   };
 }
 
+function toFormationListItem(summary: FormationSummaryResponse): FormationListItem {
+  return {
+    id: summary.id ?? "",
+    title: summary.title ?? "",
+    audience: summary.audience ?? "",
+    description: summary.description ?? "",
+    status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
+    iconUrl: summary.iconUrl,
+    isEnrolled: summary.isEnrolled ?? false,
+    progressPct: summary.progressPct ?? 0
+  };
+}
+
 export class ApiFormationsRepository implements IFormationsRepository {
   private readonly client: GeneratedNakamaClient;
 
@@ -86,6 +110,22 @@ export class ApiFormationsRepository implements IFormationsRepository {
       })
     );
     return Object.fromEntries(entries);
+  }
+
+  async FindPage(query: PageQuery<FormationLifecycleStatus>): Promise<Page<FormationListItem>> {
+    const response = await this.client.paged2(
+      query.page,
+      query.pageSize,
+      query.search || undefined,
+      query.status ? STATUS_TO_API[query.status] : undefined
+    );
+    return {
+      items: (response.items ?? []).map(toFormationListItem),
+      totalCount: response.totalCount ?? 0,
+      totalPages: response.totalPages ?? 0,
+      page: response.page ?? query.page,
+      pageSize: response.pageSize ?? query.pageSize
+    };
   }
 
   async Create(input: CreateFormationInput): Promise<Formation> {

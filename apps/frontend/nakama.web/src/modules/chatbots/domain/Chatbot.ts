@@ -84,3 +84,14 @@ export interface Chatbot {
 }
 
 export type ChatbotMap = Record<string, Chatbot>;
+
+/** Fila de las páginas de listado: solo el resumen, sin cargar el detalle de cada chatbot. */
+export interface ChatbotListItem {
+  id: string;
+  label: string;
+  description: string;
+  status: ChatbotLifecycleStatus;
+  docsCount: number;
+  teamCount: number;
+  iconUrl?: string;
+}

@@ -1,4 +1,5 @@
-import type { Formation, FormationLifecycleStatus, FormationMap, FormationModule } from "./Formation";
+import type { Page, PageQuery } from "../../../shared/domain/Page";
+import type { Formation, FormationLifecycleStatus, FormationListItem, FormationMap, FormationModule } from "./Formation";
 
 export interface CreateFormationInput {
   title: string;
@@ -10,6 +11,7 @@ export interface CreateFormationInput {
 
 export interface IFormationsRepository {
   FindAll(): Promise<FormationMap>;
+  FindPage(query: PageQuery<FormationLifecycleStatus>): Promise<Page<FormationListItem>>;
   Create(input: CreateFormationInput): Promise<Formation>;
   Archive(id: string): Promise<void>;
   UpdateStatus(id: string, status: FormationLifecycleStatus): Promise<void>;
