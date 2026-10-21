@@ -44,3 +44,4 @@ code in the backend; the ADRs document *why* certain decisions were made.
 | [ADR-22](0022-repositories-are-scrutor-scanned-by-base-class.md) | Repositories are Scrutor-scanned by base class, and registered in `AddInfrastructure`, not `AddApplication` | Persistence | Accepted |
 | [ADR-23](0023-useractivity-records-every-login-as-its-own-row.md) | `UserActivity` records every login as its own row | Users | Accepted |
 | [ADR-25](0025-seed-data-is-a-manual-script-docs-db-demo-data-sql.md) | seed data is a manual script (`docs/db/demo-data.sql`), not a migration | Persistence — schema | Accepted |
+| [ADR-26](0026-list-pages-use-a-separate-paged-endpoint-the-unpaged-list-stays.md) | List pages use a separate `GET /{resource}/paged` endpoint; the unpaged list stays | Application layer — queries / API | Accepted |

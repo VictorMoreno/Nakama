@@ -53,6 +53,7 @@ la creación es `PUT`, no `POST`: el id ya se conoce antes de la llamada.
 | Agregar a una colección con id propio provisto por el cliente (ej. Modules) | `PUT /{recurso}/{id:guid}/{colección}/{subId:guid}` | 201 |
 | Quitar un elemento de una colección por su identificador (id propio, o el id del usuario si es un miembro) | `DELETE /{recurso}/{id:guid}/{colección}/{subId:guid}` | 204 |
 | Listado | `GET /{recurso}` | 200 |
+| Listado paginado con filtros (páginas de listado de la UI) | `GET /{recurso}/paged?page=&pageSize=&search=&status=` → `PagedResponse<T>` | 200, 422 si `page`/`pageSize` no son válidos (ver ADR-26) |
 | Detalle por id (o una vista distinta del mismo agregado) | `GET /{recurso}/{id:guid}[/{vista}]` | 200 |
 
 ## 5) Request/Response DTOs

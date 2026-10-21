@@ -4,7 +4,9 @@ using Moq;
 using Nakama.ChatbotMembers.Application;
 using Nakama.ChatbotMembers.Application.Searcher;
 using Nakama.ChatbotSummaries.Domain;
+using Nakama.Shared.Domain;
 using Nakama.Shared.Domain.Specification;
+using Nakama.Shared.Infrastructure.Pagination;
 using Nakama.Shared.Infrastructure.Storage;
 using Test.Modules.Shared;
 
@@ -15,6 +17,8 @@ public abstract class ChatbotSummariesUnitTestCase : UnitTestCase
     protected Mock<IChatbotSummaryRepository> SummariesRepository { get; } = new();
 
     protected IOptions<StorageOptions> Storage { get; } = Options.Create(StorageOptionsMother.Random());
+
+    protected IOptions<PaginationOptions> Pagination { get; } = Options.Create(PaginationOptionsMother.With(defaultPageSize: 12, maxPageSize: 50));
 
     [SetUp]
     public void ChatbotSummariesSetUp() => this.SummariesRepository.Reset();
@@ -83,6 +87,45 @@ public abstract class ChatbotSummariesUnitTestCase : UnitTestCase
         this.QueryBus.Verify(
             bus => bus.Ask(It.IsAny<ChatbotMemberSearcher.Query>(), It.IsAny<CancellationToken>()),
             Times.Never);
+
+    protected void ShouldFindChatbotSummariesPage(IReadOnlyList<ChatbotSummary> summaries, int totalCount)
+    {
+        this.SummariesRepository
+            .Setup(repository => repository.SearchPage(
+                It.Is<ISpecification<ChatbotSummary>>(specification => specification is ChatbotSummaryPageSpecification),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResult<ChatbotSummary>(summaries, totalCount));
+    }
+
+    protected void ShouldHaveSearchedChatbotSummariesPage(int skip, int take, IReadOnlyCollection<Guid>? ids) =>
+        this.SummariesRepository.Verify(
+            repository => repository.SearchPage(
+                It.Is<ISpecification<ChatbotSummary>>(specification =>
+                    IsPage(specification, skip, take) && HasPageIds(specification, ids)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+    protected void ShouldNotHaveSearchedChatbotSummariesPage() =>
+        this.SummariesRepository.Verify(
+            repository => repository.SearchPage(
+                It.IsAny<ISpecification<ChatbotSummary>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+
+    private static bool IsPage(ISpecification<ChatbotSummary> specification, int skip, int take) =>
+        specification is ChatbotSummaryPageSpecification
+        && specification.IsPagingEnabled
+        && specification.Skip == skip
+        && specification.Take == take;
+
+    private static bool HasPageIds(ISpecification<ChatbotSummary> specification, IReadOnlyCollection<Guid>? ids)
+    {
+        IReadOnlyCollection<Guid>? actual = ((ChatbotSummaryPageSpecification)specification).Ids;
+
+        return ids is null
+            ? actual is null
+            : actual is not null && actual.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id));
+    }
 
     private static bool HasIds(ISpecification<ChatbotSummary> specification, IReadOnlyCollection<Guid> ids) =>
         specification is ChatbotSummaryByIdsSpecification byIds

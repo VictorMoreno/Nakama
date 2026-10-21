@@ -3,7 +3,9 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Nakama.FormationEnrollment.Domain;
 using Nakama.FormationsList.Domain;
+using Nakama.Shared.Domain;
 using Nakama.Shared.Domain.Specification;
+using Nakama.Shared.Infrastructure.Pagination;
 using Nakama.Shared.Infrastructure.Storage;
 using Test.Modules.Shared;
 using Enrollment = Nakama.FormationEnrollment.Domain.FormationEnrollment;
@@ -17,6 +19,8 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
     protected Mock<IFormationEnrollmentRepository> EnrollmentsRepository { get; } = new();
 
     protected IOptions<StorageOptions> Storage { get; } = Options.Create(StorageOptionsMother.Random());
+
+    protected IOptions<PaginationOptions> Pagination { get; } = Options.Create(PaginationOptionsMother.With(defaultPageSize: 12, maxPageSize: 50));
 
     [SetUp]
     public void FormationsListSetUp()
@@ -100,6 +104,45 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
         this.SummariesRepository.Verify(
             repository => repository.Update(It.IsAny<FormationSummary>(), It.IsAny<CancellationToken>()),
             Times.Never);
+
+    protected void ShouldFindFormationSummariesPage(IReadOnlyList<FormationSummary> summaries, int totalCount)
+    {
+        this.SummariesRepository
+            .Setup(repository => repository.SearchPage(
+                It.Is<ISpecification<FormationSummary>>(specification => specification is FormationSummaryPageSpecification),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResult<FormationSummary>(summaries, totalCount));
+    }
+
+    protected void ShouldHaveSearchedFormationSummariesPage(int skip, int take, IReadOnlyCollection<Guid>? ids) =>
+        this.SummariesRepository.Verify(
+            repository => repository.SearchPage(
+                It.Is<ISpecification<FormationSummary>>(specification =>
+                    IsPage(specification, skip, take) && HasPageIds(specification, ids)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+    protected void ShouldNotHaveSearchedFormationSummariesPage() =>
+        this.SummariesRepository.Verify(
+            repository => repository.SearchPage(
+                It.IsAny<ISpecification<FormationSummary>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+
+    private static bool IsPage(ISpecification<FormationSummary> specification, int skip, int take) =>
+        specification is FormationSummaryPageSpecification
+        && specification.IsPagingEnabled
+        && specification.Skip == skip
+        && specification.Take == take;
+
+    private static bool HasPageIds(ISpecification<FormationSummary> specification, IReadOnlyCollection<Guid>? ids)
+    {
+        IReadOnlyCollection<Guid>? actual = ((FormationSummaryPageSpecification)specification).Ids;
+
+        return ids is null
+            ? actual is null
+            : actual is not null && actual.OrderBy(id => id).SequenceEqual(ids.OrderBy(id => id));
+    }
 
     private static bool HasIds(ISpecification<FormationSummary> specification, IReadOnlyCollection<Guid> ids) =>
         specification is FormationSummaryByIdsSpecification byIds

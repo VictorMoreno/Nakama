@@ -16,9 +16,11 @@ using Nakama.Chatbots.Application.StatusUpdater;
 using Nakama.Chatbots.Application.TeamMemberAdder;
 using Nakama.Chatbots.Application.TeamMemberRemover;
 using Nakama.ChatbotSummaries.Application;
+using Nakama.ChatbotSummaries.Application.PageSearcher;
 using Nakama.ChatbotSummaries.Application.Searcher;
 using Nakama.ConversationHistory.Application;
 using Nakama.ConversationHistory.Application.Finder;
+using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 
 namespace Api.Endpoints;
@@ -126,6 +128,15 @@ public sealed class ChatbotEndpoints : IEndpoint
         group.MapGet("/", SearchChatbotSummaries)
             .WithSummary("Lists all chatbots (summary view).")
             .Produces<IReadOnlyCollection<ChatbotSummaryResponse>>();
+
+        group.MapGet("/paged", SearchChatbotSummariesPage)
+            .WithSummary("Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded.")
+            .WithDescription(
+                "Administrators see every chatbot, anyone else only the ones they belong to. `search` matches the label " +
+                "and description case-insensitively, `status` is an exact match, results are ordered by label. " +
+                "`pageSize` defaults to the configured Pagination:DefaultPageSize and cannot exceed Pagination:MaxPageSize.")
+            .Produces<PagedResponse<ChatbotSummaryResponse>>()
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         group.MapGet("/{id:guid}", FindChatbotDetail)
             .RequireAuthorization(AuthPolicies.ChatbotMember)
@@ -339,6 +350,20 @@ public sealed class ChatbotEndpoints : IEndpoint
     {
         IReadOnlyCollection<ChatbotSummaryResponse> response = await queryBus.Ask(
             new ChatbotSummarySearcher.Query(currentUser.Id, currentUser.IsAdmin), ct);
+        return Results.Ok(response);
+    }
+
+    private static async Task<IResult> SearchChatbotSummariesPage(
+        ICurrentUser currentUser,
+        IQueryBus queryBus,
+        CancellationToken ct,
+        int page = 1,
+        int? pageSize = null,
+        string? search = null,
+        string? status = null)
+    {
+        PagedResponse<ChatbotSummaryResponse> response = await queryBus.Ask(
+            new ChatbotSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status), ct);
         return Results.Ok(response);
     }
 

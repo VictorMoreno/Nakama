@@ -52,6 +52,41 @@ public static class ChatbotHttpClientExtensions
     public static Task<HttpResponseMessage> ListChatbots(this HttpClient client, string accessToken) =>
         client.Send(HttpMethod.Get, "/api/chatbots", accessToken);
 
+    public static Task<HttpResponseMessage> ListChatbotsPage(
+        this HttpClient client,
+        string accessToken,
+        int? page = null,
+        int? pageSize = null,
+        string? search = null,
+        string? status = null)
+    {
+        List<string> parameters = [];
+
+        if (page is not null)
+        {
+            parameters.Add($"page={page}");
+        }
+
+        if (pageSize is not null)
+        {
+            parameters.Add($"pageSize={pageSize}");
+        }
+
+        if (search is not null)
+        {
+            parameters.Add($"search={Uri.EscapeDataString(search)}");
+        }
+
+        if (status is not null)
+        {
+            parameters.Add($"status={Uri.EscapeDataString(status)}");
+        }
+
+        string query = parameters.Count == 0 ? string.Empty : $"?{string.Join("&", parameters)}";
+
+        return client.Send(HttpMethod.Get, $"/api/chatbots/paged{query}", accessToken);
+    }
+
     public static Task<HttpResponseMessage> GetChatbot(this HttpClient client, Guid id, string accessToken) =>
         client.Send(HttpMethod.Get, $"/api/chatbots/{id}", accessToken);
 }

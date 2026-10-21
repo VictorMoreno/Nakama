@@ -15,7 +15,9 @@ using Nakama.Formations.Application.ModuleRemover;
 using Nakama.Formations.Application.ModuleUpdater;
 using Nakama.Formations.Application.StatusUpdater;
 using Nakama.FormationsList.Application;
+using Nakama.FormationsList.Application.PageSearcher;
 using Nakama.FormationsList.Application.Searcher;
+using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 
 namespace Api.Endpoints;
@@ -108,6 +110,16 @@ public sealed class FormationEndpoints : IEndpoint
             .WithSummary(
                 "Lists formations (summary view), scoped to the caller: admins see every formation, anyone else only the ones they're assigned to.")
             .Produces<IReadOnlyCollection<FormationSummaryResponse>>();
+
+        group.MapGet("/paged", SearchFormationSummariesPage)
+            .WithSummary("Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded.")
+            .WithDescription(
+                "Administrators see every formation, anyone else only the ones they're assigned to. `search` matches the " +
+                "title, audience and description case-insensitively, `status` is an exact match, results are ordered by " +
+                "title. `pageSize` defaults to the configured Pagination:DefaultPageSize and cannot exceed " +
+                "Pagination:MaxPageSize.")
+            .Produces<PagedResponse<FormationSummaryResponse>>()
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         group.MapGet("/{id:guid}", FindFormationDetail)
             .WithSummary("Gets the full detail page projection for one formation.")
@@ -244,6 +256,20 @@ public sealed class FormationEndpoints : IEndpoint
     {
         IReadOnlyCollection<FormationSummaryResponse> response =
             await queryBus.Ask(new FormationSummarySearcher.Query(currentUser.Id, currentUser.IsAdmin), ct);
+        return Results.Ok(response);
+    }
+
+    private static async Task<IResult> SearchFormationSummariesPage(
+        ICurrentUser currentUser,
+        IQueryBus queryBus,
+        CancellationToken ct,
+        int page = 1,
+        int? pageSize = null,
+        string? search = null,
+        string? status = null)
+    {
+        PagedResponse<FormationSummaryResponse> response = await queryBus.Ask(
+            new FormationSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status), ct);
         return Results.Ok(response);
     }
 

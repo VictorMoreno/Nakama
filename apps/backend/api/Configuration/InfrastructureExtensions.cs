@@ -15,6 +15,7 @@ using Nakama.Shared.Infrastructure.Documents;
 using Nakama.Shared.Infrastructure.Events;
 using Nakama.Shared.Infrastructure.Icons;
 using Nakama.Shared.Infrastructure.Llm;
+using Nakama.Shared.Infrastructure.Pagination;
 using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
 using Nakama.Shared.Infrastructure.Queries;
@@ -61,6 +62,12 @@ public static class InfrastructureExtensions
             .BindConfiguration(DocumentsOptions.SectionName)
             .Validate(options => options.MaxSizeMb > 0, "Documents:MaxSizeMb must be greater than zero.")
             .Validate(options => options.AllowedExtensions.Length > 0, "Documents:AllowedExtensions must not be empty.")
+            .ValidateOnStart();
+
+        services.AddOptions<PaginationOptions>()
+            .BindConfiguration(PaginationOptions.SectionName)
+            .Validate(options => options.DefaultPageSize > 0, "Pagination:DefaultPageSize must be greater than zero.")
+            .Validate(options => options.MaxPageSize >= options.DefaultPageSize, "Pagination:MaxPageSize must not be lower than Pagination:DefaultPageSize.")
             .ValidateOnStart();
 
         services.AddOptions<IconsOptions>()

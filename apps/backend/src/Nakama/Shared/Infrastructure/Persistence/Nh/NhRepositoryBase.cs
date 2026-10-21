@@ -1,3 +1,4 @@
+using Nakama.Shared.Domain;
 using Nakama.Shared.Domain.Specification;
 using NHibernate;
 using NHibernate.Linq;
@@ -28,6 +29,24 @@ public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) w
             .ToListAsync(ct);
 
         return NhSpecificationConverter<TEntity>.FirstOfEachGroup(ordered, specification);
+    }
+
+    public async Task<PagedResult<TEntity>> SearchPage(ISpecification<TEntity> specification, CancellationToken ct)
+    {
+        if (specification.GroupBy is not null)
+        {
+            IReadOnlyList<TEntity> groups = await this.Search(specification, ct);
+
+            return new PagedResult<TEntity>(groups, await this.Count(specification, ct));
+        }
+
+        using ISession session = sessions.OpenSession();
+        IFutureValue<int> totalCount = session.Query<TEntity>().Where(specification.Criteria).ToFutureValue(query => query.Count());
+        IFutureEnumerable<TEntity> page = NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).ToFuture();
+
+        List<TEntity> items = (await page.GetEnumerableAsync(ct)).ToList();
+
+        return new PagedResult<TEntity>(items, await totalCount.GetValueAsync(ct));
     }
 
     public async Task<TEntity> Find(ISpecification<TEntity> specification, CancellationToken ct)
