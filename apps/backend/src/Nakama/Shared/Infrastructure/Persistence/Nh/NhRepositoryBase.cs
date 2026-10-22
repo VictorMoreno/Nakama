@@ -5,28 +5,24 @@ using NHibernate.Linq;
 
 namespace Nakama.Shared.Infrastructure.Persistence.Nh;
 
-public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) where TEntity : class
+public abstract class NhRepositoryBase<TEntity, TId>(INhUnitOfWork unitOfWork) where TEntity : class
 {
-    protected ISessionFactory Sessions => sessions;
+    protected INhUnitOfWork UnitOfWork => unitOfWork;
 
-    public async Task<TEntity?> FindById(TId id, CancellationToken ct)
-    {
-        using ISession session = sessions.OpenSession();
-        return await session.GetAsync<TEntity>(id, ct);
-    }
+    public async Task<TEntity?> FindById(TId id, CancellationToken ct) =>
+        await unitOfWork.Read(session => session.GetAsync<TEntity>(id, ct));
 
     public async Task<IReadOnlyList<TEntity>> Search(ISpecification<TEntity> specification, CancellationToken ct)
     {
-        using ISession session = sessions.OpenSession();
-
         if (specification.GroupBy is null)
         {
-            return await NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).ToListAsync(ct);
+            return await unitOfWork.Read<IReadOnlyList<TEntity>>(async session =>
+                await NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).ToListAsync(ct));
         }
 
-        List<TEntity> ordered = await NhSpecificationConverter<TEntity>
+        List<TEntity> ordered = await unitOfWork.Read(session => NhSpecificationConverter<TEntity>
             .GetQuery(session.Query<TEntity>(), specification, includePaging: false)
-            .ToListAsync(ct);
+            .ToListAsync(ct));
 
         return NhSpecificationConverter<TEntity>.FirstOfEachGroup(ordered, specification);
     }
@@ -40,13 +36,15 @@ public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) w
             return new PagedResult<TEntity>(groups, await this.Count(specification, ct));
         }
 
-        using ISession session = sessions.OpenSession();
-        IFutureValue<int> totalCount = session.Query<TEntity>().Where(specification.Criteria).ToFutureValue(query => query.Count());
-        IFutureEnumerable<TEntity> page = NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).ToFuture();
+        return await unitOfWork.Read(async session =>
+        {
+            IFutureValue<int> totalCount = session.Query<TEntity>().Where(specification.Criteria).ToFutureValue(query => query.Count());
+            IFutureEnumerable<TEntity> page = NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).ToFuture();
 
-        List<TEntity> items = (await page.GetEnumerableAsync(ct)).ToList();
+            List<TEntity> items = (await page.GetEnumerableAsync(ct)).ToList();
 
-        return new PagedResult<TEntity>(items, await totalCount.GetValueAsync(ct));
+            return new PagedResult<TEntity>(items, await totalCount.GetValueAsync(ct));
+        });
     }
 
     public async Task<TEntity> Find(ISpecification<TEntity> specification, CancellationToken ct)
@@ -58,41 +56,33 @@ public abstract class NhRepositoryBase<TEntity, TId>(ISessionFactory sessions) w
             return groups.First();
         }
 
-        using ISession session = sessions.OpenSession();
-
-        return await NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).FirstAsync(ct);
+        return await unitOfWork.Read(session =>
+            NhSpecificationConverter<TEntity>.GetQuery(session.Query<TEntity>(), specification).FirstAsync(ct));
     }
 
     public async Task<int> Count(ISpecification<TEntity> specification, CancellationToken ct)
     {
-        using ISession session = sessions.OpenSession();
-        IQueryable<TEntity> matching = session.Query<TEntity>().Where(specification.Criteria);
-
         if (specification.GroupBy is null)
         {
-            return await matching.CountAsync(ct);
+            return await unitOfWork.Read(session => session.Query<TEntity>().Where(specification.Criteria).CountAsync(ct));
         }
 
-        List<TEntity> entities = await matching.ToListAsync(ct);
+        List<TEntity> entities = await unitOfWork.Read(session => session.Query<TEntity>().Where(specification.Criteria).ToListAsync(ct));
 
         return NhSpecificationConverter<TEntity>.CountGroups(entities, specification);
     }
 
     public async Task Save(TEntity entity, CancellationToken ct)
     {
-        using ISession session = sessions.OpenSession();
-        using ITransaction tx = session.BeginTransaction();
-        await session.SaveOrUpdateAsync(entity, ct);
-        await tx.CommitAsync(ct);
+        unitOfWork.EnsureTransaction();
+        await unitOfWork.Session.SaveOrUpdateAsync(entity, ct);
     }
 
     public Task Update(TEntity entity, CancellationToken ct) => this.Save(entity, ct);
 
     public async Task Remove(TEntity entity, CancellationToken ct)
     {
-        using ISession session = sessions.OpenSession();
-        using ITransaction tx = session.BeginTransaction();
-        await session.DeleteAsync(entity, ct);
-        await tx.CommitAsync(ct);
+        unitOfWork.EnsureTransaction();
+        await unitOfWork.Session.DeleteAsync(entity, ct);
     }
 }

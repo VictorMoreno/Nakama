@@ -20,11 +20,11 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
     {
         ServiceCollection services = new();
         services.AddLogging();
-        services.AddSingleton(this.WriteSessions);
+        services.AddSingleton(this.UnitOfWork);
         services.AddIdentityCore<User>().AddUserStore<NhUserRepository>();
         UserManager<User> userManager = services.BuildServiceProvider().GetRequiredService<UserManager<User>>();
 
-        this._repository = new NhUsersRepository(this.WriteSessions, userManager);
+        this._repository = new NhUsersRepository(this.UnitOfWork, userManager);
     }
 
     [Test]
@@ -37,6 +37,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
             lastActiveAt: now.AddHours(-3),
             createdAt: now.AddDays(-30));
         await this._repository.Save(user, CancellationToken.None);
+        await this.Persist();
 
         User? found = await this._repository.FindById(user.Id, CancellationToken.None);
 
@@ -56,6 +57,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
         User user = UserMother.With(email: new Email("Ada.Lovelace@Nakama.Test"));
         await this._repository.Save(user, CancellationToken.None);
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
+        await this.Persist();
 
         IReadOnlyList<User> found = await this._repository.Search(
             new UserByEmailSpecification(new Email("ada.lovelace@nakama.test")),
@@ -68,6 +70,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
     public async Task find_nothing_when_no_user_has_that_email()
     {
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
+        await this.Persist();
 
         IReadOnlyList<User> found = await this._repository.Search(
             new UserByEmailSpecification(UserMother.RandomEmail()),
@@ -82,6 +85,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
         await this._repository.Save(UserMother.With(name: "Carla"), CancellationToken.None);
         await this._repository.Save(UserMother.With(name: "Ana"), CancellationToken.None);
         await this._repository.Save(UserMother.With(name: "Bruno"), CancellationToken.None);
+        await this.Persist();
 
         IReadOnlyList<User> users = await this._repository.Search(new UserListingSpecification(), CancellationToken.None);
 
@@ -102,6 +106,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
         await this._repository.Save(UserMother.Random(), CancellationToken.None);
+        await this.Persist();
 
         int count = await this._repository.Count(new UserListingSpecification(), CancellationToken.None);
 
@@ -125,6 +130,7 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
         await this._repository.Save(UserMother.With(lastActiveAt: cutoff), CancellationToken.None);
         await this._repository.Save(UserMother.With(lastActiveAt: cutoff.AddHours(-1)), CancellationToken.None);
         await this._repository.Save(UserMother.With(lastActiveAt: null), CancellationToken.None);
+        await this.Persist();
 
         int count = await this._repository.Count(new UserActiveSinceSpecification(cutoff), CancellationToken.None);
 

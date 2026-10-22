@@ -280,6 +280,7 @@ public sealed class ChatbotEndpoints : IEndpoint
         IFormFileCollection files,
         ICurrentUser currentUser,
         ChatbotQuestionAsker.Asker asker,
+        IUnitOfWork unitOfWork,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -301,10 +302,12 @@ public sealed class ChatbotEndpoints : IEndpoint
                 hasChunk = await stream.MoveNextAsync();
             }
 
+            await unitOfWork.SaveChanges(ct);
             await WriteSseEvent(httpContext.Response, "done", "{}", ct);
         }
         catch (Exception ex)
         {
+            await unitOfWork.Rollback(CancellationToken.None);
             (string? code, string? detail) = ex is DomainError domainError
                 ? (domainError.Code, domainError.Message)
                 : ("nakama.unexpected", "No se pudo completar la respuesta.");

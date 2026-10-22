@@ -6,8 +6,8 @@ namespace Nakama.FormationDetail.Infrastructure;
 
 using FormationDetail = Nakama.FormationDetail.Domain.FormationDetail;
 
-public sealed class NhFormationDetailRepository(IReadSessionFactory readSessions)
-    : NhRepositoryBase<FormationDetail, Guid>(readSessions), IFormationDetailRepository
+public sealed class NhFormationDetailRepository(INhUnitOfWork unitOfWork)
+    : NhRepositoryBase<FormationDetail, Guid>(unitOfWork), IFormationDetailRepository
 {
     // FindById, Save inherited directly from the base, no redeclaration needed
 }

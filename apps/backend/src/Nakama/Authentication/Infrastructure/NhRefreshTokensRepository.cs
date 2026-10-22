@@ -1,19 +1,17 @@
 using Nakama.Authentication.Domain;
 using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
-using NHibernate;
 
 namespace Nakama.Authentication.Infrastructure;
 
-public sealed class NhRefreshTokensRepository(IWriteSessionFactory writeSessions)
-    : NhRepositoryBase<RefreshToken, RefreshTokenId>(writeSessions), IRefreshTokensRepository
+public sealed class NhRefreshTokensRepository(INhUnitOfWork unitOfWork, INhUnitOfWorkFactory unitOfWorkFactory)
+    : NhRepositoryBase<RefreshToken, RefreshTokenId>(unitOfWork), IRefreshTokensRepository
 {
     public async Task<bool> Rotate(RefreshToken current, RefreshToken replacement, DateTime now, CancellationToken ct)
     {
-        using ISession session = this.Sessions.OpenSession();
-        using ITransaction tx = session.BeginTransaction();
+        this.UnitOfWork.EnsureTransaction();
 
-        int rotated = await session
+        int rotated = await this.UnitOfWork.Session
             .CreateSQLQuery("update refresh_tokens set revoked_at = :now, replaced_by_id = :replacementId where id = :id and revoked_at is null")
             .SetParameter("now", now)
             .SetParameter("replacementId", replacement.Id.Value)
@@ -22,26 +20,24 @@ public sealed class NhRefreshTokensRepository(IWriteSessionFactory writeSessions
 
         if (rotated == 0)
         {
-            await tx.RollbackAsync(ct);
             return false;
         }
 
-        await session.SaveAsync(replacement, ct);
-        await tx.CommitAsync(ct);
+        await this.UnitOfWork.Session.SaveAsync(replacement, ct);
         return true;
     }
 
     public async Task RevokeAllOf(Guid userId, DateTime now, CancellationToken ct)
     {
-        using ISession session = this.Sessions.OpenSession();
-        using ITransaction tx = session.BeginTransaction();
+        await using INhUnitOfWork independentUnitOfWork = unitOfWorkFactory.Create();
+        independentUnitOfWork.EnsureTransaction();
 
-        await session
+        await independentUnitOfWork.Session
             .CreateSQLQuery("update refresh_tokens set revoked_at = :now where user_id = :userId and revoked_at is null")
             .SetParameter("now", now)
             .SetParameter("userId", userId)
             .ExecuteUpdateAsync(ct);
 
-        await tx.CommitAsync(ct);
+        await independentUnitOfWork.SaveChanges(ct);
     }
 }

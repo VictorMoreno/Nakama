@@ -4,5 +4,5 @@ using Nakama.UserActivity.Domain;
 
 namespace Nakama.UserActivity.Infrastructure;
 
-public sealed class NhUserActivityRepository(IWriteSessionFactory writeSessions)
-    : NhRepositoryBase<UserActivityEntry, Guid>(writeSessions), IUserActivityRepository;
+public sealed class NhUserActivityRepository(INhUnitOfWork unitOfWork)
+    : NhRepositoryBase<UserActivityEntry, Guid>(unitOfWork), IUserActivityRepository;

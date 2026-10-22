@@ -4,5 +4,5 @@ using Nakama.Shared.Infrastructure.Persistence.Nh;
 
 namespace Nakama.LlmProviders.Infrastructure;
 
-public sealed class NhLlmProviderConfigRepository(IWriteSessionFactory writeSessions)
-    : NhRepositoryBase<LlmProviderConfig, LlmProviderConfigId>(writeSessions), ILlmProviderConfigRepository;
+public sealed class NhLlmProviderConfigRepository(INhUnitOfWork unitOfWork)
+    : NhRepositoryBase<LlmProviderConfig, LlmProviderConfigId>(unitOfWork), ILlmProviderConfigRepository;

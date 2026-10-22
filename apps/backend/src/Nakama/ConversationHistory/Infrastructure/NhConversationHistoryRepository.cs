@@ -6,8 +6,8 @@ namespace Nakama.ConversationHistory.Infrastructure;
 
 using ConversationHistory = Nakama.ConversationHistory.Domain.ConversationHistory;
 
-public sealed class NhConversationHistoryRepository(IReadSessionFactory readSessions)
-    : NhRepositoryBase<ConversationHistory, Guid>(readSessions), IConversationHistoryRepository
+public sealed class NhConversationHistoryRepository(INhUnitOfWork unitOfWork)
+    : NhRepositoryBase<ConversationHistory, Guid>(unitOfWork), IConversationHistoryRepository
 {
     public new async Task<ConversationHistory?> FindById(Guid botKey, CancellationToken ct)
     {

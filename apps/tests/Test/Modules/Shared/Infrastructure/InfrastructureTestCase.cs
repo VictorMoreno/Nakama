@@ -6,13 +6,31 @@ namespace Test.Modules.Shared.Infrastructure;
 [Category("Infrastructure")]
 public abstract class InfrastructureTestCase
 {
+    private readonly List<NhUnitOfWork> _unitsOfWork = [];
+
     private TestDatabase _database = null!;
 
-    private NhWriteSessionFactory _writeSessions = null!;
+    private NhSessionFactory _sessionFactory = null!;
 
-    protected IWriteSessionFactory WriteSessions => this._writeSessions;
+    protected INhUnitOfWork UnitOfWork { get; private set; } = null!;
+
+    protected INhUnitOfWorkFactory UnitOfWorkFactory { get; private set; } = null!;
 
     protected async Task Execute(string sql) => await PostgresContainer.Run(this._database, sql);
+
+    protected INhUnitOfWork NewUnitOfWork()
+    {
+        NhUnitOfWork unitOfWork = new(this._sessionFactory);
+        this._unitsOfWork.Add(unitOfWork);
+
+        return unitOfWork;
+    }
+
+    protected async Task Persist()
+    {
+        await this.UnitOfWork.SaveChanges(CancellationToken.None);
+        this.UnitOfWork.Session.Clear();
+    }
 
     [SetUp]
     public async Task InfrastructureSetUp()
@@ -26,13 +44,21 @@ public abstract class InfrastructureTestCase
             })
             .Build();
 
-        this._writeSessions = new NhWriteSessionFactory(configuration);
+        this._sessionFactory = new NhSessionFactory(configuration);
+        this.UnitOfWorkFactory = new NhUnitOfWorkFactory(this._sessionFactory);
+        this.UnitOfWork = this.NewUnitOfWork();
     }
 
     [TearDown]
     public async Task InfrastructureTearDown()
     {
-        this._writeSessions.Dispose();
+        foreach (NhUnitOfWork unitOfWork in this._unitsOfWork)
+        {
+            await unitOfWork.DisposeAsync();
+        }
+
+        this._unitsOfWork.Clear();
+        this._sessionFactory.Dispose();
         await PostgresContainer.DropDatabase(this._database);
     }
 }

@@ -4,5 +4,5 @@ using Nakama.Shared.Infrastructure.Persistence.Nh;
 
 namespace Nakama.ChatbotMembers.Infrastructure;
 
-public sealed class NhChatbotMemberRepository(IReadSessionFactory readSessions)
-    : NhRepositoryBase<ChatbotMember, Guid>(readSessions), IChatbotMemberRepository;
+public sealed class NhChatbotMemberRepository(INhUnitOfWork unitOfWork)
+    : NhRepositoryBase<ChatbotMember, Guid>(unitOfWork), IChatbotMemberRepository;

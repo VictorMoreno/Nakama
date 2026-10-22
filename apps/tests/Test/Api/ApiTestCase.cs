@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Nakama.Authentication.Application;
+using Nakama.Shared.Domain;
 using Nakama.Users.Domain;
 using Test.Api.Support;
 using Test.Modules.Shared;
@@ -21,11 +22,15 @@ public abstract class ApiTestCase
 
     protected FakeLlmClient Llm => this._factory.Llm;
 
+    protected virtual void ConfigureServices(IServiceCollection services)
+    {
+    }
+
     [SetUp]
     public async Task ApiSetUp()
     {
         this._database = await PostgresContainer.CreateDatabase();
-        this._factory = new NakamaApiFactory(this._database);
+        this._factory = new NakamaApiFactory(this._database, this.ConfigureServices);
         this.Client = this._factory.CreateClient(new()
         {
             BaseAddress = new Uri("https://localhost"),
@@ -71,9 +76,10 @@ public abstract class ApiTestCase
         User user = UserMother.With(isAdmin: isAdmin);
         string password = PasswordMother.Valid();
 
-        using IServiceScope scope = this._factory.Services.CreateScope();
+        await using AsyncServiceScope scope = this._factory.Services.CreateAsyncScope();
         UserManager<User> userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         IdentityResult result = await userManager.CreateAsync(user, password);
+        await scope.ServiceProvider.GetRequiredService<IUnitOfWork>().SaveChanges(CancellationToken.None);
 
         Assert.That(result.Succeeded, Is.True, string.Join(", ", result.Errors.Select(error => error.Description)));
 

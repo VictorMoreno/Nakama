@@ -16,7 +16,7 @@ public sealed class NhConversationsRepositoryShould : InfrastructureTestCase
     [SetUp]
     public void SetUp()
     {
-        this._repository = new NhConversationsRepository(this.WriteSessions);
+        this._repository = new NhConversationsRepository(this.UnitOfWork);
     }
 
     [Test]
@@ -26,6 +26,7 @@ public sealed class NhConversationsRepositoryShould : InfrastructureTestCase
         ConversationExchange withoutAttachments = ConversationExchangeMother.With(attachments: null);
         Conversation conversation = ConversationMother.With(exchanges: [withAttachment, withoutAttachments]);
         await this._repository.Save(conversation, CancellationToken.None);
+        await this.Persist();
 
         Conversation? found = await this._repository.FindById(conversation.Id, CancellationToken.None);
 
@@ -44,10 +45,12 @@ public sealed class NhConversationsRepositoryShould : InfrastructureTestCase
         ConversationExchange second = ConversationExchangeMother.With(attachments: [ExchangeAttachmentMother.Random()]);
         Conversation conversation = ConversationMother.With(exchanges: [first]);
         await this._repository.Save(conversation, CancellationToken.None);
+        await this.Persist();
         Conversation? stored = await this._repository.FindById(conversation.Id, CancellationToken.None);
         stored!.AppendExchange(second);
 
         await this._repository.Save(stored, CancellationToken.None);
+        await this.Persist();
 
         Conversation? found = await this._repository.FindById(conversation.Id, CancellationToken.None);
         found.Should().NotBeNull();
@@ -81,8 +84,10 @@ public sealed class NhConversationsRepositoryShould : InfrastructureTestCase
         Conversation kept = ConversationMother.Random();
         await this._repository.Save(removed, CancellationToken.None);
         await this._repository.Save(kept, CancellationToken.None);
+        await this.Persist();
 
         await this._repository.Remove(removed, CancellationToken.None);
+        await this.Persist();
 
         (await this._repository.FindById(removed.Id, CancellationToken.None)).Should().BeNull();
         (await this._repository.FindById(kept.Id, CancellationToken.None)).Should().NotBeNull();
@@ -92,6 +97,7 @@ public sealed class NhConversationsRepositoryShould : InfrastructureTestCase
     public async Task find_nothing_for_a_conversation_that_was_never_saved()
     {
         await this._repository.Save(ConversationMother.Random(), CancellationToken.None);
+        await this.Persist();
 
         Conversation? found = await this._repository.FindById(ConversationMother.RandomId(), CancellationToken.None);
 

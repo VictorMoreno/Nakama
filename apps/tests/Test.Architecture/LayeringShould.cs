@@ -65,6 +65,17 @@ public sealed class LayeringShould
 
     [Test]
     [TestCaseSource(typeof(NakamaCode), nameof(NakamaCode.ModuleNames))]
+    public void keep_the_application_of_a_module_independent_of_the_nhibernate_unit_of_work(string module)
+    {
+        NakamaCode.CoreTypes()
+            .ResideInNamespaceStartingWith($"Nakama.{module}.Application")
+            .ShouldNot().HaveDependencyOn("Nakama.Shared.Infrastructure.Persistence")
+            .GetResult()
+            .ShouldHaveNoViolations();
+    }
+
+    [Test]
+    [TestCaseSource(typeof(NakamaCode), nameof(NakamaCode.ModuleNames))]
     public void keep_the_application_of_a_module_free_of_persistence_web_and_provider_sdks(string module)
     {
         NakamaCode.CoreTypes()

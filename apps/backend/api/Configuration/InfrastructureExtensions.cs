@@ -126,8 +126,11 @@ public static class InfrastructureExtensions
             return new DiskFormationIconStorage(basePath, iconsOptions);
         });
 
-        services.AddSingleton<IWriteSessionFactory, NhWriteSessionFactory>();
-        services.AddSingleton<IReadSessionFactory, NhReadSessionFactory>();
+        services.AddSingleton<ISessionFactory, NhSessionFactory>();
+        services.AddSingleton<INhUnitOfWorkFactory, NhUnitOfWorkFactory>();
+        services.AddScoped<NhUnitOfWork>();
+        services.AddScoped<INhUnitOfWork>(sp => sp.GetRequiredService<NhUnitOfWork>());
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<NhUnitOfWork>());
 
         services.AddIdentityCore<User>()
             .AddUserStore<NhUserRepository>();

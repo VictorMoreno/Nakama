@@ -15,8 +15,8 @@ public static class EndpointExtensions
 
     public static WebApplication MapEndpoints(this WebApplication app)
     {
-        RouteGroupBuilder apiGroup = app.MapGroup("api");
-        
+        RouteGroupBuilder apiGroup = app.MapGroup("api").AddEndpointFilter<UnitOfWorkEndpointFilter>();
+
         using (IServiceScope scope = app.Services.CreateScope())
         {
             IEnumerable<IEndpoint> modules = scope.ServiceProvider.GetServices<IEndpoint>();

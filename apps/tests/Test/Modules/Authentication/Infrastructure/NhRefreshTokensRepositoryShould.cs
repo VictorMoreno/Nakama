@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Nakama.Authentication.Domain;
 using Nakama.Authentication.Infrastructure;
+using Nakama.Shared.Infrastructure.Persistence;
 using Test.Modules.Authentication.Domain;
 using Test.Modules.Shared.Infrastructure;
 
@@ -16,7 +17,7 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
     [SetUp]
     public void SetUp()
     {
-        this._repository = new NhRefreshTokensRepository(this.WriteSessions);
+        this._repository = new NhRefreshTokensRepository(this.UnitOfWork, this.UnitOfWorkFactory);
     }
 
     [Test]
@@ -24,6 +25,7 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
     {
         RefreshToken token = RefreshTokenMother.Random();
         await this._repository.Save(token, CancellationToken.None);
+        await this.Persist();
 
         IReadOnlyList<RefreshToken> matching = await this._repository.Search(
             new RefreshTokenByValueSpecification(token.Value!),
@@ -42,6 +44,7 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
     public async Task find_nothing_when_no_refresh_token_has_that_value()
     {
         await this._repository.Save(RefreshTokenMother.Random(), CancellationToken.None);
+        await this.Persist();
 
         IReadOnlyList<RefreshToken> found = await this._repository.Search(
             new RefreshTokenByValueSpecification(RefreshTokenMother.RandomValue()),
@@ -57,8 +60,10 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
         RefreshToken current = RefreshTokenMother.Random();
         RefreshToken replacement = RefreshTokenMother.With(userId: current.UserId);
         await this._repository.Save(current, CancellationToken.None);
+        await this.Persist();
 
         bool rotated = await this._repository.Rotate(current, replacement, now, CancellationToken.None);
+        await this.Persist();
 
         rotated.Should().BeTrue();
         RefreshToken? storedCurrent = await this._repository.FindById(current.Id, CancellationToken.None);
@@ -78,9 +83,12 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
         RefreshToken firstReplacement = RefreshTokenMother.With(userId: current.UserId);
         RefreshToken secondReplacement = RefreshTokenMother.With(userId: current.UserId);
         await this._repository.Save(current, CancellationToken.None);
+        await this.Persist();
         await this._repository.Rotate(current, firstReplacement, DateTime.UtcNow, CancellationToken.None);
+        await this.Persist();
 
         bool rotated = await this._repository.Rotate(current, secondReplacement, DateTime.UtcNow, CancellationToken.None);
+        await this.Persist();
 
         rotated.Should().BeFalse();
         RefreshToken? storedCurrent = await this._repository.FindById(current.Id, CancellationToken.None);
@@ -95,29 +103,44 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
         RefreshToken current = RefreshTokenMother.Revoked();
         RefreshToken replacement = RefreshTokenMother.With(userId: current.UserId);
         await this._repository.Save(current, CancellationToken.None);
+        await this.Persist();
 
         bool rotated = await this._repository.Rotate(current, replacement, DateTime.UtcNow, CancellationToken.None);
+        await this.Persist();
 
         rotated.Should().BeFalse();
         (await this._repository.FindById(replacement.Id, CancellationToken.None)).Should().BeNull();
     }
 
     [Test]
-    public async Task let_only_one_of_several_concurrent_rotations_win()
+    public async Task let_only_one_of_several_concurrent_requests_rotate_the_same_token()
     {
         RefreshToken current = RefreshTokenMother.Random();
         List<RefreshToken> replacements = Enumerable.Range(0, 5)
             .Select(_ => RefreshTokenMother.With(userId: current.UserId))
             .ToList();
         await this._repository.Save(current, CancellationToken.None);
+        await this.Persist();
 
-        bool[] results = await Task.WhenAll(replacements.Select(replacement =>
-            this._repository.Rotate(current, replacement, DateTime.UtcNow, CancellationToken.None)));
+        bool[] results = await Task.WhenAll(replacements.Select(async replacement =>
+        {
+            INhUnitOfWork request = this.NewUnitOfWork();
+            NhRefreshTokensRepository repository = new(request, this.UnitOfWorkFactory);
+            bool rotated = await repository.Rotate(current, replacement, DateTime.UtcNow, CancellationToken.None);
+            await request.SaveChanges(CancellationToken.None);
+
+            return rotated;
+        }));
 
         results.Count(rotated => rotated).Should().Be(1);
-        RefreshToken?[] stored = await Task.WhenAll(replacements.Select(replacement =>
-            this._repository.FindById(replacement.Id, CancellationToken.None)));
-        stored.Count(token => token is not null).Should().Be(1);
+        NhRefreshTokensRepository reader = new(this.NewUnitOfWork(), this.UnitOfWorkFactory);
+        int stored = 0;
+        foreach (RefreshToken replacement in replacements)
+        {
+            stored += await reader.FindById(replacement.Id, CancellationToken.None) is null ? 0 : 1;
+        }
+
+        stored.Should().Be(1);
     }
 
     [Test]
@@ -134,6 +157,8 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
             await this._repository.Save(token, CancellationToken.None);
         }
 
+        await this.Persist();
+
         await this._repository.RevokeAllOf(userId, now, CancellationToken.None);
 
         (await this._repository.FindById(first.Id, CancellationToken.None))!.RevokedAt.Should().BeCloseTo(now, DatabasePrecision);
@@ -141,5 +166,20 @@ public sealed class NhRefreshTokensRepositoryShould : InfrastructureTestCase
         (await this._repository.FindById(alreadyRevoked.Id, CancellationToken.None))!.RevokedAt
             .Should().BeCloseTo(alreadyRevoked.RevokedAt!.Value, DatabasePrecision);
         (await this._repository.FindById(ofAnotherUser.Id, CancellationToken.None))!.RevokedAt.Should().BeNull();
+    }
+
+    [Test]
+    public async Task keep_the_revocation_of_all_the_tokens_even_when_the_request_unit_of_work_is_never_committed()
+    {
+        DateTime now = DateTime.UtcNow;
+        RefreshToken token = RefreshTokenMother.Random();
+        await this._repository.Save(token, CancellationToken.None);
+        await this.Persist();
+
+        await this._repository.RevokeAllOf(token.UserId, now, CancellationToken.None);
+        await this.UnitOfWork.DisposeAsync();
+
+        NhRefreshTokensRepository reader = new(this.NewUnitOfWork(), this.UnitOfWorkFactory);
+        (await reader.FindById(token.Id, CancellationToken.None))!.RevokedAt.Should().BeCloseTo(now, DatabasePrecision);
     }
 }

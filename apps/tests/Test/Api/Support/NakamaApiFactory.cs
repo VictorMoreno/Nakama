@@ -9,7 +9,7 @@ using Test.Modules.Shared.Infrastructure;
 
 namespace Test.Api.Support;
 
-public sealed class NakamaApiFactory(TestDatabase database) : WebApplicationFactory<Program>
+public sealed class NakamaApiFactory(TestDatabase database, Action<IServiceCollection>? configureServices = null) : WebApplicationFactory<Program>
 {
     private readonly string _storageRoot = Path.Combine(Path.GetTempPath(), $"nakama-e2e-{Guid.NewGuid():N}");
 
@@ -38,6 +38,7 @@ public sealed class NakamaApiFactory(TestDatabase database) : WebApplicationFact
             }
 
             services.AddKeyedSingleton<ILlmClient>(provider, this.Llm);
+            configureServices?.Invoke(services);
         });
     }
 

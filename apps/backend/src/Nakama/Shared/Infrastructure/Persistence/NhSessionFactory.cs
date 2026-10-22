@@ -3,7 +3,7 @@ using NHibernate;
 
 namespace Nakama.Shared.Infrastructure.Persistence;
 
-public sealed class NhReadSessionFactory(IConfiguration configuration) : IReadSessionFactory, IDisposable
+public sealed class NhSessionFactory(IConfiguration configuration) : ISessionFactory, IDisposable
 {
     private readonly Lazy<NHibernate.ISessionFactory> _sessionFactory =
         new(() => NhSessionFactoryBuilder.Build(configuration, "Nakama"));

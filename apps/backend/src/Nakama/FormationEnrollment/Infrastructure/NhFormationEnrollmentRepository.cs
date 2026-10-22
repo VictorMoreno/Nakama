@@ -6,5 +6,5 @@ namespace Nakama.FormationEnrollment.Infrastructure;
 
 using FormationEnrollment = Nakama.FormationEnrollment.Domain.FormationEnrollment;
 
-public sealed class NhFormationEnrollmentRepository(IWriteSessionFactory writeSessions)
-    : NhRepositoryBase<FormationEnrollment, FormationEnrollmentId>(writeSessions), IFormationEnrollmentRepository;
+public sealed class NhFormationEnrollmentRepository(INhUnitOfWork unitOfWork)
+    : NhRepositoryBase<FormationEnrollment, FormationEnrollmentId>(unitOfWork), IFormationEnrollmentRepository;

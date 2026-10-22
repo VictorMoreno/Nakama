@@ -6,5 +6,5 @@ namespace Nakama.ChatbotDetail.Infrastructure;
 
 using ChatbotDetail = Nakama.ChatbotDetail.Domain.ChatbotDetail;
 
-public sealed class NhChatbotDetailRepository(IReadSessionFactory readSessions)
-    : NhRepositoryBase<ChatbotDetail, Guid>(readSessions), IChatbotDetailRepository;
+public sealed class NhChatbotDetailRepository(INhUnitOfWork unitOfWork)
+    : NhRepositoryBase<ChatbotDetail, Guid>(unitOfWork), IChatbotDetailRepository;
