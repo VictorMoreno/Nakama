@@ -10,7 +10,7 @@
         <!-- MediatR Community Edition (RPL-1.5, free under $5M/year revenue) -->
         <PackageReference Include="Anthropic" />
         <PackageReference Include="FluentMigrator" />
-        <PackageReference Include="FluentMigrator.Runner" />
+        <PackageReference Include="FluentMigrator.Runner.Core" />
         <PackageReference Include="FluentMigrator.Runner.Postgres" />
         <PackageReference Include="MediatR" />
         <PackageReference Include="NHibernate" />

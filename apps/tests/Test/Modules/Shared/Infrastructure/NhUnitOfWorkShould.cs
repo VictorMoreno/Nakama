@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Nakama.Authentication.Domain;
 using Nakama.Authentication.Infrastructure;
 using Nakama.Shared.Infrastructure.Persistence;
+using NHibernate;
 using Test.Modules.Authentication.Domain;
 
 namespace Test.Modules.Shared.Infrastructure;
@@ -75,7 +76,10 @@ public sealed class NhUnitOfWorkShould : InfrastructureTestCase
     {
         await this._repository.Save(RefreshTokenMother.Random(), CancellationToken.None);
 
-        this.UnitOfWork.Session.Transaction.IsActive.Should().BeTrue();
+        ITransaction? transaction = this.UnitOfWork.Session.GetCurrentTransaction();
+
+        transaction.Should().NotBeNull();
+        transaction.IsActive.Should().BeTrue();
     }
 
     [Test]

@@ -10,7 +10,7 @@
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
     <PackageVersion Include="FluentMigrator" Version="8.0.1" />
-    <PackageVersion Include="FluentMigrator.Runner" Version="8.0.1" />
+    <PackageVersion Include="FluentMigrator.Runner.Core" Version="8.0.1" />
     <PackageVersion Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
     <PackageVersion Include="MediatR" Version="13.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
