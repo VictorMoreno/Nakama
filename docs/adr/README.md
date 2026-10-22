@@ -18,7 +18,7 @@ code in the backend; the ADRs document *why* certain decisions were made.
 
 | ADR | Decision | Area | Status |
 |---|---|---|---|
-| [ADR-1](0001-session-factories-are-lazy-shared-singletons.md) | Session factories are lazy, shared singletons | Persistence | Accepted |
+| [ADR-1](0001-session-factories-are-lazy-shared-singletons.md) | The session factory is a lazy, shared singleton | Persistence | Accepted |
 | [ADR-2](0002-nhrepositorybase-shared-crud-via-inheritance-not-delegation.md) | `NhRepositoryBase` — shared CRUD via inheritance, not delegation | Persistence | Accepted |
 | [ADR-3](0003-generic-value-object-persistence-via-reflection.md) | Generic value-object persistence via reflection | Persistence | Accepted |
 | [ADR-4](0004-complex-nested-values-persist-as-a-single-json-column.md) | Complex nested values persist as a single JSON column | Persistence | Accepted |
@@ -45,3 +45,4 @@ code in the backend; the ADRs document *why* certain decisions were made.
 | [ADR-23](0023-useractivity-records-every-login-as-its-own-row.md) | `UserActivity` records every login as its own row | Users | Accepted |
 | [ADR-25](0025-seed-data-is-a-manual-script-docs-db-demo-data-sql.md) | seed data is a manual script (`docs/db/demo-data.sql`), not a migration | Persistence — schema | Accepted |
 | [ADR-26](0026-list-pages-use-a-separate-paged-endpoint-the-unpaged-list-stays.md) | List pages use a separate `GET /{resource}/paged` endpoint; the unpaged list stays | Application layer — queries / API | Accepted |
+| [ADR-27](0027-one-unit-of-work-per-request-committed-by-an-endpoint-filter.md) | One unit of work per request, committed by an endpoint filter | Persistence — transactions | Accepted |

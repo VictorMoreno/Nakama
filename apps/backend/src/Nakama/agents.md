@@ -262,7 +262,8 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
 - Firmas de interfaces de repositorio: devolver tipos del mismo bounded context (o `Task/Task<T>/List<T>` coherentes).
 - En infraestructura, mapear DTOs externos a entidades/value objects de dominio.
 - **Toda implementación `Nh...Repository` extiende `NhRepositoryBase<TEntity, TId>`** (§5) —
-  no repite `OpenSession()`/`BeginTransaction()`/`SaveOrUpdateAsync()` a mano. Toda entidad
+  no repite `OpenSession()`/`BeginTransaction()`/`SaveOrUpdateAsync()` a mano: recibe el
+  `INhUnitOfWork` de la petición y trabaja sobre su sesión (ver §6 y ADR-27). Toda entidad
   identificable por su propia primary key (la mayoría) tiene esa PK modelada como `Id` — nunca
   `Key`/`BotKey`/otro nombre de dominio — precisamente para que la interfaz declare
   `FindById(TId, CancellationToken)` con el mismo nombre/firma que el `FindById` `public` del
@@ -274,17 +275,16 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   porque ahí sí hay una forma real (no solo un nombre) que no calza con `FindById`. El
   one-liner `FindAllEntities(ct)` del base sirve cuando el listado no necesita más que "todas
   las filas" — en cuanto hace falta un orden explícito (listados de cara al usuario:
-  chatbots/formaciones por título, usuarios por nombre, todos ascendente), se abre sesión
-  propia y se usa `OrderBy` en vez del helper, igual que cualquier otro query a medida:
+  chatbots/formaciones por título, usuarios por nombre, todos ascendente), se hace la consulta
+  a medida con `OrderBy` en vez del helper, siempre a través de `this.UnitOfWork.Read(...)`
+  (nunca abriendo una sesión propia):
   ```csharp
-  public sealed class NhChatbotSummaryRepository(IReadSessionFactory readSessions)
-      : NhRepositoryBase<ChatbotSummary, Guid>(readSessions), IChatbotSummaryRepository
+  public sealed class NhChatbotSummaryRepository(INhUnitOfWork unitOfWork)
+      : NhRepositoryBase<ChatbotSummary, Guid>(unitOfWork), IChatbotSummaryRepository
   {
-      public async Task<IReadOnlyCollection<ChatbotSummary>> FindAll(CancellationToken ct)
-      {
-          using var session = this.Sessions.OpenSession();
-          return await session.Query<ChatbotSummary>().OrderBy(c => c.Label).ToListAsync(ct);
-      }
+      public Task<IReadOnlyCollection<ChatbotSummary>> FindAll(CancellationToken ct) =>
+          this.UnitOfWork.Read<IReadOnlyCollection<ChatbotSummary>>(async session =>
+              await session.Query<ChatbotSummary>().OrderBy(c => c.Label).ToListAsync(ct));
       // FindById, Save se heredan directo del base, sin redeclarar
   }
   ```
@@ -302,9 +302,10 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
   interfaz cuya PK-lookup se declara como `FindById(TId, CancellationToken)` la hereda gratis,
   sin one-liner por repo (§4). `FindAllEntities` sigue `protected`, porque un listado sí
   necesita un nombre propio por caso de uso (`FindAll`, `FindPending`...) hacia su interfaz.
-  Recibe un `ISessionFactory` común — `IWriteSessionFactory`/`IReadSessionFactory` extienden
-  esa interfaz compartida (mismo `OpenSession(): ISession`, distinto token de DI), así el mismo
-  base sirve para repos de escritura y de lectura sin duplicarlo.
+  Recibe el `INhUnitOfWork` de la petición (una única sesión por petición, sin factorías
+  separadas de lectura y escritura): `Save`/`Update`/`Remove` abren la transacción en la primera
+  escritura y las lecturas pasan por `Read`, que devuelve la conexión al pool cuando no hay
+  transacción. Un repositorio **nunca** hace commit ni abre una sesión propia.
 
 ## 6) Persistencia y migraciones
 
@@ -320,13 +321,22 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
 - Las proyecciones de ReadModels **no** viven aquí: cada una vive en la `Application` de su
   propio módulo de lectura, no centralizadas en `Persistence` — ver §7.
 - `NhRepositoryBase<TEntity, TId>` centraliza la mecánica de sesión/transacción — ver §4/§5.
+- **Unidad de trabajo por petición** (ADR-27): `IUnitOfWork` (`Shared.Domain`) tiene ámbito de
+  petición. La confirma `UnitOfWorkEndpointFilter` al terminar el handler sin excepción y sin
+  un status >= 400; los casos de uso y los comandos **no la conocen** (los tests de
+  arquitectura lo exigen). Los handlers de proyección comparten la unidad: el agregado y sus
+  read models se confirman o se revierten juntos. Dos excepciones, ambas deliberadas:
+  `/ask` confirma antes del `done` y hace `Rollback` si captura una excepción (porque el
+  filtro la vería como éxito), y `RefreshTokens.RevokeAllOf` usa una unidad independiente
+  (`INhUnitOfWorkFactory.Create()`) para que sobreviva al rollback de la petición. Código que
+  escribe fuera de una petición HTTP debe llamar a `SaveChanges` él mismo.
 - **Pendiente, no resuelto todavía**: database-per-tenant (una base Postgres completa por
-  departamento, ya decidido a nivel de producto) implica que `IWriteSessionFactory`/
-  `IReadSessionFactory` no pueden ser una única instancia global con connection string fija —
-  hace falta resolverlas por tenant. La wiring actual construye la `ISessionFactory` de forma
-  lazy (primer `OpenSession()`, nunca al armar el contenedor DI) precisamente para no bloquear
-  esa resolución más adelante, pero el mecanismo de resolución por tenant en sí **no está
-  construido** — no asumir que ya existe.
+  departamento, ya decidido a nivel de producto) implica que `ISessionFactory` no puede ser
+  una única instancia global con connection string fija — hace falta resolverla por tenant, y
+  la unidad de trabajo es el sitio natural para hacerlo. La wiring actual construye la
+  `ISessionFactory` de forma lazy (primer `OpenSession()`, nunca al armar el contenedor DI)
+  precisamente para no bloquear esa resolución más adelante, pero el mecanismo de resolución
+  por tenant en sí **no está construido** — no asumir que ya existe.
 
 ## 7) Modelos de lectura (CQRS)
 

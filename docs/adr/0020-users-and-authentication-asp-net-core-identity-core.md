@@ -23,7 +23,7 @@ wire a default cookie scheme and `SignInManager`.
 (`NhUsersRepository`) wraps `UserManager<User>` to verify passwords, and `UserManager<User>` needs an `IUserStore<User>` to be
 built. If the store depended on `IUsersRepository` the container would have a cycle
 (`IUserStore<User>` → `IUsersRepository` → `UserManager<User>` → `IUserStore<User>`) and refuse to build the service tree.
-So the store takes `IWriteSessionFactory` and does its own minimal session work for find-by-id, save and
+So the store takes the request's `INhUnitOfWork` (ADR-27) and does its own minimal session work for find-by-id, save and
 find-by-normalized-email. That small duplication of what `NhUsersRepository` also does is the accepted cost, not an
 oversight.
 
