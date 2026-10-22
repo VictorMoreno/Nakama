@@ -9,8 +9,6 @@ namespace Nakama.Shared.Infrastructure.Persistence.Nh.UserTypes;
 
 public sealed class JsonUserType<T> : IUserType
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
-
     public SqlType[] SqlTypes { get; } = [new(DbType.String)];
 
     public Type ReturnedType => typeof(T);
@@ -26,17 +24,17 @@ public sealed class JsonUserType<T> : IUserType
         }
 
         string json = rs.GetString(index);
-        return JsonSerializer.Deserialize<T>(json, SerializerOptions);
+        return JsonSerializer.Deserialize<T>(json, JsonUserTypeOptions.Serializer);
     }
 
     public void NullSafeSet(DbCommand cmd, object? value, int index, ISessionImplementor session)
     {
         DbParameter parameter = cmd.Parameters[index];
-        parameter.Value = value is null ? DBNull.Value : JsonSerializer.Serialize((T)value, SerializerOptions);
+        parameter.Value = value is null ? DBNull.Value : JsonSerializer.Serialize((T)value, JsonUserTypeOptions.Serializer);
     }
 
     public object? DeepCopy(object? value) =>
-        value is null ? default(T) : JsonSerializer.Deserialize<T>(JsonSerializer.Serialize((T)value, SerializerOptions), SerializerOptions);
+        value is null ? default(T) : JsonSerializer.Deserialize<T>(JsonSerializer.Serialize((T)value, JsonUserTypeOptions.Serializer), JsonUserTypeOptions.Serializer);
 
     public object? Replace(object? original, object? target, object owner) => this.DeepCopy(original);
 
@@ -56,8 +54,8 @@ public sealed class JsonUserType<T> : IUserType
             return false;
         }
 
-        return JsonSerializer.Serialize(x, SerializerOptions) == JsonSerializer.Serialize(y, SerializerOptions);
+        return JsonSerializer.Serialize(x, JsonUserTypeOptions.Serializer) == JsonSerializer.Serialize(y, JsonUserTypeOptions.Serializer);
     }
 
-    public int GetHashCode(object x) => JsonSerializer.Serialize(x, SerializerOptions).GetHashCode();
+    public int GetHashCode(object x) => JsonSerializer.Serialize(x, JsonUserTypeOptions.Serializer).GetHashCode();
 }

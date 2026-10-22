@@ -10,6 +10,11 @@ WebApplication app = builder.Build();
 app.Configure();
 
 app.UseHttpsRedirection();
-app.Run();
+await app.RunAsync();
 
-public partial class Program;
+public partial class Program
+{
+    protected Program()
+    {
+    }
+}

@@ -32,11 +32,8 @@ public sealed class NhUserRepository(INhUnitOfWork unitOfWork) : IUserPasswordSt
         return IdentityResult.Success;
     }
 
-    public async Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
-    {
-        await this.Save(user, cancellationToken);
-        return IdentityResult.Success;
-    }
+    public Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken) =>
+        this.CreateAsync(user, cancellationToken);
 
     public Task<IdentityResult> DeleteAsync(User user, CancellationToken cancellationToken) =>
         throw new NotSupportedException("User deletion is not supported yet.");
