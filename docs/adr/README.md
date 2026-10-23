@@ -46,3 +46,4 @@ code in the backend; the ADRs document *why* certain decisions were made.
 | [ADR-25](0025-seed-data-is-a-manual-script-docs-db-demo-data-sql.md) | seed data is a manual script (`docs/db/demo-data.sql`), not a migration | Persistence — schema | Accepted |
 | [ADR-26](0026-list-pages-use-a-separate-paged-endpoint-the-unpaged-list-stays.md) | List pages use a separate `GET /{resource}/paged` endpoint; the unpaged list stays | Application layer — queries / API | Accepted |
 | [ADR-27](0027-one-unit-of-work-per-request-committed-by-an-endpoint-filter.md) | One unit of work per request, committed by an endpoint filter | Persistence — transactions | Accepted |
+| [ADR-28](0028-user-activity-is-login-plus-session-renewal-throttled-per-hour.md) | User activity is login plus session renewal, throttled to one entry per hour; shown in Analytics | Users — analytics | Accepted |

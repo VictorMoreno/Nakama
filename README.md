@@ -108,7 +108,7 @@ proyecto_master/
 │   │       ├── FormationDetail/  #   proyección de lectura del detalle de una formación
 │   │       ├── FormationsList/   #   proyección de lectura del listado de formaciones (escopeado por usuario)
 │   │       ├── Users/            #   usuarios y autenticación
-│   │       ├── UserActivity/     #   actividad de usuario para analítica
+│   │       ├── UserActivity/     #   actividad de usuario (logins y renovaciones) para analítica
 │   │       ├── Analytics/        #   agregación de métricas de uso
 │   │       └── Shared/           #   infraestructura común (persistencia NHibernate, eventos, migraciones)
 │   ├── frontend/nakama.web/
@@ -135,7 +135,7 @@ Cada módulo relevante tiene su propio `agents.md` con las convenciones de imple
 - **Asignación y progreso por persona**: solo quien está asignado a una formación puede cursarla; el progreso (módulos completados, notas de examen) es individual por persona, no compartido entre quienes cursan la misma formación. El listado de `/formacion` se carga en función del usuario: una persona no-admin solo ve las formaciones a las que fue asignada; un admin ve todas, pero "Abrir" solo aparece en las que él mismo cursa.
 - **Vistas separadas Abrir / Gestionar**: la persona que cursa una formación usa `/formacion/:id` (progreso, módulos bloqueados, exámenes respondibles); un admin la configura en `/formacion/:id/gestionar` (alta/edición inline de módulos sin diálogo, equipo asignado) — son páginas y hooks independientes, no una sola vista condicionada por rol.
 - **Listados paginados**: `/chatbots` y `/formacion` paginan, buscan y filtran por estado en el servidor (`GET /api/chatbots/paged` y `/api/formations/paged`); la página, el tamaño, la búsqueda y el estado viven en la URL (`?page=&size=&q=&status=`). El tamaño por defecto y el máximo se configuran en `Pagination` de `appsettings.json`; el frontend ofrece sus tamaños con `VITE_PAGINATION_PAGE_SIZE_OPTIONS` y `VITE_PAGINATION_DEFAULT_PAGE_SIZE` (ninguno puede superar el máximo del backend). Los endpoints sin paginar siguen existiendo para el resto de pantallas (ADR-26).
-- **Analítica global**: chatbots activos, preguntas respondidas, uso por bot, tasa de respuestas útiles.
+- **Analítica global**: chatbots activos, preguntas respondidas, uso por bot, tasa de respuestas útiles y actividad de usuarios (personas activas hoy, en 7 y en 30 días, y un gráfico diario de personas activas e inicios de sesión a 7, 30 o 90 días). Se alimenta de `UserActivity`, que registra cada login y cada renovación de sesión (como máximo una por persona y hora). Los días se cuentan en la zona horaria `UserActivity:TimeZone`; el frontend ofrece los rangos con `VITE_USER_ACTIVITY_DAY_OPTIONS` y `VITE_USER_ACTIVITY_DEFAULT_DAYS` (ninguno puede superar `UserActivity:MaxDays`) (ADR-28).
 - **Autenticación propia**: login por email/contraseña contra la base de usuarios propia. Devuelve un JWT de acceso de 15 minutos, que se exige en todos los endpoints salvo login, refresh y logout; los de administración requieren además el rol de administrador. La sesión sobrevive a las recargas con un refresh token de 1 día en una cookie `HttpOnly` que se rota en cada uso (reutilizar uno ya rotado cierra todas las sesiones del usuario). Sin SSO todavía — ver nota de stack planificado más arriba.
 
 ## 🔑 Datos y cuentas de prueba
