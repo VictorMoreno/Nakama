@@ -40,6 +40,11 @@ public abstract class AnalyticsUnitTestCase : UnitTestCase
             .Setup(bus => bus.Ask(It.IsAny<QuestionActivityFinder.Query>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new QuestionActivityResponse([], count));
 
+    protected void ShouldFindQuestionsByChatbot(params ChatbotQuestionsRow[] rows) =>
+        this.QueryBus
+            .Setup(bus => bus.Ask(It.IsAny<QuestionsByChatbotFinder.Query>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new QuestionsByChatbotResponse(rows));
+
     protected void ShouldHaveAskedForTheQuestionsOfTheCurrentWeek() =>
         this.QueryBus.Verify(
             bus => bus.Ask(

@@ -68,6 +68,21 @@ public sealed class QuestionActivityShould : ApiTestCase
         analytics!.AnsweredThisWeek.Should().Be(1);
     }
 
+    [Test]
+    public async Task list_in_the_global_analytics_only_the_chatbots_asked_this_month_with_their_questions()
+    {
+        string admin = await this.SignIn(isAdmin: true);
+        ChatbotCreator.Command asked = await this.CreateChatbotWithMember(admin);
+        await this.CreateChatbotWithMember(admin);
+        await this.Ask(asked, admin);
+        await this.Ask(asked, admin);
+
+        HttpResponseMessage response = await this.Client.Get("/api/analytics", admin);
+
+        AnalyticsResponse? analytics = await response.Content.ReadFromJsonAsync<AnalyticsResponse>();
+        analytics!.UsageByBot.Should().ContainSingle().Which.Should().Be(new UsageByBotRow(asked.Id, 2));
+    }
+
     [TestCase(0)]
     [TestCase(27)]
     public async Task reject_a_number_of_weeks_out_of_range(int weeks)

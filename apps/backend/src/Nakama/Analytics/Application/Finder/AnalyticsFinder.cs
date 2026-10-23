@@ -33,9 +33,10 @@ public static class AnalyticsFinder
             Domain.Analytics analytics = await repository.Find(cancellationToken) ?? throw AnalyticsErrors.NotFound;
             UserActivityResponse activity = await queryBus.Ask(new UserActivityFinder.Query(ActiveUsersWindowDays), cancellationToken);
             QuestionActivityResponse questions = await queryBus.Ask(new QuestionActivityFinder.Query(CurrentWeekOnly), cancellationToken);
+            QuestionsByChatbotResponse byChatbot = await queryBus.Ask(new QuestionsByChatbotFinder.Query(), cancellationToken);
             int totalUsersCount = await usersRepository.Count(new UserListingSpecification(), cancellationToken);
 
-            return analytics.ToResponse(activity.ActiveLast7Days, totalUsersCount, questions.QuestionsThisWeek);
+            return analytics.ToResponse(activity.ActiveLast7Days, totalUsersCount, questions.QuestionsThisWeek, byChatbot);
         }
     }
 }

@@ -27,42 +27,21 @@ public sealed class AnalyticsCreatedOnChatbotCreatedShould : AnalyticsUnitTestCa
 
         await this._handler.Handle(new DomainEventNotification<ChatbotCreated>(@event), CancellationToken.None);
 
-        this.ShouldHaveSavedAnalyticsMatching(analytics =>
-            analytics.ActiveBotsCount == 1
-            && analytics.UsageByBot.Count == 1
-            && analytics.UsageByBot[0].BotKey == @event.Id.Value
-            && analytics.UsageByBot[0].Value == 0);
+        this.ShouldHaveSavedAnalyticsMatching(analytics => analytics.ActiveBotsCount == 1);
         this.ShouldNotHaveUpdatedAnyAnalytics();
     }
 
     [Test]
-    public async Task count_the_chatbot_and_add_its_usage_row_in_the_existing_analytics()
+    public async Task count_the_chatbot_in_the_existing_analytics()
     {
-        AnalyticsEntity analytics = AnalyticsMother.WithUsageRow(activeBotsCount: 2);
+        AnalyticsEntity analytics = AnalyticsMother.With(activeBotsCount: 2);
         ChatbotCreated @event = ChatbotCreatedMother.Random();
         this.ShouldFindAnalytics(analytics);
 
         await this._handler.Handle(new DomainEventNotification<ChatbotCreated>(@event), CancellationToken.None);
 
         analytics.ActiveBotsCount.Should().Be(3);
-        analytics.UsageByBot.Should().HaveCount(2);
-        analytics.UsageByBot.Should().Contain(row => row.BotKey == @event.Id.Value && row.Value == 0);
         this.ShouldHaveUpdatedAnalytics(analytics);
         this.ShouldNotHaveSavedAnyAnalytics();
-    }
-
-    [Test]
-    public async Task not_duplicate_the_usage_row_when_the_chatbot_already_has_one()
-    {
-        ChatbotCreated @event = ChatbotCreatedMother.Random();
-        AnalyticsEntity analytics = AnalyticsMother.With(
-            activeBotsCount: 1,
-            usageByBot: [UsageByBotRowMother.With(@event.Id.Value, 9)]);
-        this.ShouldFindAnalytics(analytics);
-
-        await this._handler.Handle(new DomainEventNotification<ChatbotCreated>(@event), CancellationToken.None);
-
-        analytics.ActiveBotsCount.Should().Be(2);
-        analytics.UsageByBot.Should().ContainSingle().Which.Value.Should().Be(9);
     }
 }

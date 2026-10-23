@@ -1,8 +1,10 @@
-using Nakama.Analytics.Domain;
+using Nakama.QuestionActivity.Application;
 
 namespace Nakama.Analytics.Application;
 
 using Analytics = Nakama.Analytics.Domain.Analytics;
+
+public sealed record UsageByBotRow(Guid BotKey, int Value);
 
 public sealed record AnalyticsResponse(
     string Id,
@@ -16,11 +18,16 @@ public sealed record AnalyticsResponse(
 
 public static class AnalyticsExtensions
 {
-    public static AnalyticsResponse ToResponse(this Analytics entity, int activeUsersCount, int totalUsersCount, int answeredThisWeek) => new(
+    public static AnalyticsResponse ToResponse(
+        this Analytics entity,
+        int activeUsersCount,
+        int totalUsersCount,
+        int answeredThisWeek,
+        QuestionsByChatbotResponse byChatbot) => new(
         entity.Id,
         entity.ActiveBotsCount,
         answeredThisWeek,
-        entity.UsageByBot,
+        byChatbot.Chatbots.Select(row => new UsageByBotRow(row.BotKey, row.Questions)).ToList(),
         activeUsersCount,
         totalUsersCount,
         entity.UsefulFeedbackCount,

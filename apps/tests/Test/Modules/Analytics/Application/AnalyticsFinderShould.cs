@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Nakama.Analytics.Application;
 using Nakama.Analytics.Application.Finder;
 using Nakama.Analytics.Domain.Errors;
+using Nakama.QuestionActivity.Application;
 using Test.Modules.Analytics.Domain;
 using AnalyticsEntity = Nakama.Analytics.Domain.Analytics;
 
@@ -18,21 +19,28 @@ public sealed class AnalyticsFinderShould : AnalyticsUnitTestCase
         this._handler = new AnalyticsFinder.Handler(
             new(this.AnalyticsRepository.Object, this.UsersRepository.Object, this.QueryBus.Object));
         this.ShouldFindQuestionsOfTheCurrentWeek(0);
+        this.ShouldFindQuestionsByChatbot();
     }
 
     [Test]
     public async Task return_the_analytics_together_with_the_user_and_question_counts()
     {
-        AnalyticsEntity analytics = AnalyticsMother.WithUsageRow();
+        Guid firstBot = Guid.NewGuid();
+        Guid secondBot = Guid.NewGuid();
+        AnalyticsEntity analytics = AnalyticsMother.Random();
         this.ShouldFindAnalytics(analytics);
         this.ShouldFindActiveUsersOfTheLastWeek(7);
         this.ShouldFindQuestionsOfTheCurrentWeek(12);
+        this.ShouldFindQuestionsByChatbot(new ChatbotQuestionsRow(firstBot, 9), new ChatbotQuestionsRow(secondBot, 3));
         this.ShouldCountUsers(20);
 
         AnalyticsResponse response = await this._handler.Handle(new AnalyticsFinder.Query(), CancellationToken.None);
 
-        response.Should().BeEquivalentTo(analytics, options => options.Excluding(row => row.AnsweredThisWeek));
+        response.ActiveBotsCount.Should().Be(analytics.ActiveBotsCount);
+        response.UsefulFeedbackCount.Should().Be(analytics.UsefulFeedbackCount);
+        response.TotalFeedbackCount.Should().Be(analytics.TotalFeedbackCount);
         response.AnsweredThisWeek.Should().Be(12);
+        response.UsageByBot.Should().Equal(new UsageByBotRow(firstBot, 9), new UsageByBotRow(secondBot, 3));
         response.ActiveUsersCount.Should().Be(7);
         response.TotalUsersCount.Should().Be(20);
     }

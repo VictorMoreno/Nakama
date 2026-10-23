@@ -14,10 +14,6 @@ public partial class Analytics : IEntity
 
     public int ActiveBotsCount { get; protected set; }
 
-    public int AnsweredThisWeek { get; protected set; }
-
-    public List<UsageByBotRow> UsageByBot { get; protected set; } = [];
-
     public int UsefulFeedbackCount { get; protected set; }
 
     public int TotalFeedbackCount { get; protected set; }

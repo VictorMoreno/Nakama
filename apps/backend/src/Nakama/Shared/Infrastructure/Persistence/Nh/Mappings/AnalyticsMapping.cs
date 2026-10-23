@@ -1,5 +1,3 @@
-using Nakama.Analytics.Domain;
-using Nakama.Shared.Infrastructure.Persistence.Nh.UserTypes;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
 
@@ -21,8 +19,6 @@ public sealed class AnalyticsMapping : ClassMapping<Analytics>
         });
 
         this.Property(x => x.ActiveBotsCount);
-        this.Property(x => x.AnsweredThisWeek);
-        this.Property(x => x.UsageByBot, m => { m.Column(c => { c.Name("usage_by_bot_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<UsageByBotRow>>>(); });
         this.Property(x => x.UsefulFeedbackCount);
         this.Property(x => x.TotalFeedbackCount);
     }

@@ -11,16 +11,15 @@ public sealed class AnalyticsCreatedOnChatbotCreated(IAnalyticsRepository analyt
 {
     protected override async Task Handle(ChatbotCreated chatbotCreated, CancellationToken cancellationToken)
     {
-        Guid botKey = chatbotCreated.Id.Value;
         Analytics? analytics = await analyticsRepository.Find(cancellationToken);
         if (analytics is null)
         {
-            analytics = Analytics.CreateFromChatbotCreated(botKey);
+            analytics = Analytics.CreateFromChatbotCreated();
             await analyticsRepository.Save(analytics, cancellationToken);
         }
         else
         {
-            analytics.ApplyChatbotCreated(botKey);
+            analytics.ApplyChatbotCreated();
             await analyticsRepository.Update(analytics, cancellationToken);
         }
     }
