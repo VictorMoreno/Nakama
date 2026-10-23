@@ -21,6 +21,10 @@ interface ImportMetaEnv {
   readonly VITE_PAGINATION_DEFAULT_PAGE_SIZE: string;
   /** Comma-separated page sizes offered on the list pages; none may exceed Pagination:MaxPageSize. */
   readonly VITE_PAGINATION_PAGE_SIZE_OPTIONS: string;
+  /** Days shown by default in the user-activity chart; must be one of the options. Mirrors UserActivity:DefaultDays. */
+  readonly VITE_USER_ACTIVITY_DEFAULT_DAYS: string;
+  /** Comma-separated day ranges offered in the user-activity chart; none may exceed UserActivity:MaxDays. */
+  readonly VITE_USER_ACTIVITY_DAY_OPTIONS: string;
 }
 
 interface ImportMeta {

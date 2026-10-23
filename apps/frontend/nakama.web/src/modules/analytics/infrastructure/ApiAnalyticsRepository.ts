@@ -1,5 +1,5 @@
-import type { AnalyticsResponse, GeneratedNakamaClient } from "../../../shared/infrastructure/GeneratedNakamaClient";
-import type { AnalyticsSnapshot } from "../domain/Analytics";
+import type { AnalyticsResponse, GeneratedNakamaClient, UserActivityResponse } from "../../../shared/infrastructure/GeneratedNakamaClient";
+import type { AnalyticsSnapshot, UserActivity } from "../domain/Analytics";
 import type { IAnalyticsRepository } from "../domain/IAnalyticsRepository";
 
 function toSnapshot(response: AnalyticsResponse): AnalyticsSnapshot {
@@ -14,6 +14,15 @@ function toSnapshot(response: AnalyticsResponse): AnalyticsSnapshot {
   };
 }
 
+function toUserActivity(response: UserActivityResponse): UserActivity {
+  return {
+    days: (response.days ?? []).map((row) => ({ date: row.date ?? "", logins: row.logins ?? 0, activeUsers: row.activeUsers ?? 0 })),
+    activeToday: response.activeToday ?? 0,
+    activeLast7Days: response.activeLast7Days ?? 0,
+    activeLast30Days: response.activeLast30Days ?? 0
+  };
+}
+
 export class ApiAnalyticsRepository implements IAnalyticsRepository {
   private readonly client: GeneratedNakamaClient;
 
@@ -24,6 +33,11 @@ export class ApiAnalyticsRepository implements IAnalyticsRepository {
   async Find(): Promise<AnalyticsSnapshot> {
     const response = await this.client.analytics();
     return toSnapshot(response);
+  }
+
+  async FindUserActivity(days: number): Promise<UserActivity> {
+    const response = await this.client.userActivity(days);
+    return toUserActivity(response);
   }
 
   async SubmitFeedback(useful: boolean): Promise<void> {

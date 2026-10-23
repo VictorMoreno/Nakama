@@ -1,5 +1,8 @@
 import { useAnalytics } from "./hooks/useAnalytics";
 import { costByBot, enpsByMilestone, escalatedToSenior, overviewStats, resolvedByBot, weeklyLabels } from "./analyticsData";
+import ActivityChart from "./ActivityChart";
+import Select from "../../components/shared/Select";
+import { DAY_RANGE_OPTIONS, useUserActivity } from "./hooks/useUserActivity";
 import TrendChart from "./TrendChart";
 import UsageChart from "./UsageChart";
 import styles from "./AnalyticsPage.module.scss";
@@ -8,6 +11,7 @@ const ENPS_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"];
 
 export default function AnalyticsPage() {
   const { chatbots, globalGaps, snapshot } = useAnalytics();
+  const { activity, days, setDays } = useUserActivity();
   const usageByBot = snapshot.usageByBot.map((u) => ({ key: u.botKey, value: u.value }));
   const activeUsersPct = snapshot.totalUsersCount > 0 ? Math.round((snapshot.activeUsersCount / snapshot.totalUsersCount) * 100) : 0;
   const hasFeedback = snapshot.totalFeedbackCount > 0;
@@ -77,6 +81,28 @@ export default function AnalyticsPage() {
           </div>
           <UsageChart usage={usageByBot} />
         </div>
+      </div>
+
+      <div className={`${styles.chartCard} glass`} style={{ marginTop: 14 }}>
+        <div className="panel-head">
+          <h2>Actividad de usuarios</h2>
+          <Select value={days} onChange={setDays} options={DAY_RANGE_OPTIONS} ariaLabel="Rango de días de actividad" />
+        </div>
+        <div className={styles.statGrid} style={{ gridTemplateColumns: "repeat(3, 1fr)", margin: "10px 0 6px" }}>
+          <div className={`${styles.statCard} glass`}>
+            <div className={styles.label}>Activos hoy</div>
+            <div className={styles.value}>{activity.activeToday}</div>
+          </div>
+          <div className={`${styles.statCard} glass`}>
+            <div className={styles.label}>Activos en 7 días</div>
+            <div className={styles.value}>{activity.activeLast7Days}</div>
+          </div>
+          <div className={`${styles.statCard} glass`}>
+            <div className={styles.label}>Activos en 30 días</div>
+            <div className={styles.value}>{activity.activeLast30Days}</div>
+          </div>
+        </div>
+        <ActivityChart days={activity.days} />
       </div>
 
       <div className={styles.analyticsGrid} style={{ marginTop: 14 }}>
