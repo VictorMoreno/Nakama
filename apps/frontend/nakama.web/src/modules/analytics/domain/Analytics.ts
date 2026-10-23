@@ -25,3 +25,13 @@ export interface UserActivity {
   activeLast7Days: number;
   activeLast30Days: number;
 }
+
+export interface WeeklyQuestions {
+  weekStart: string;
+  questions: number;
+}
+
+export interface QuestionActivity {
+  weeks: WeeklyQuestions[];
+  questionsThisWeek: number;
+}

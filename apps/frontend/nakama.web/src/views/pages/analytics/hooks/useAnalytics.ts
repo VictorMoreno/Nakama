@@ -35,5 +35,5 @@ export function useAnalytics() {
     .flatMap((bot) => bot.gaps.map((g) => ({ ...g, dept: bot.label })))
     .sort((a, b) => b.count - a.count);
 
-  return { chatbots, globalGaps, snapshot };
+  return { globalGaps, snapshot };
 }

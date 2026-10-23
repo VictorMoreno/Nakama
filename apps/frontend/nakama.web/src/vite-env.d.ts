@@ -25,6 +25,10 @@ interface ImportMetaEnv {
   readonly VITE_USER_ACTIVITY_DEFAULT_DAYS: string;
   /** Comma-separated day ranges offered in the user-activity chart; none may exceed UserActivity:MaxDays. */
   readonly VITE_USER_ACTIVITY_DAY_OPTIONS: string;
+  /** Weeks shown by default in the questions-per-week chart; must be one of the options. Mirrors QuestionActivity:DefaultWeeks. */
+  readonly VITE_QUESTION_ACTIVITY_DEFAULT_WEEKS: string;
+  /** Comma-separated week ranges offered in the questions-per-week chart; none may exceed QuestionActivity:MaxWeeks. */
+  readonly VITE_QUESTION_ACTIVITY_WEEK_OPTIONS: string;
 }
 
 interface ImportMeta {

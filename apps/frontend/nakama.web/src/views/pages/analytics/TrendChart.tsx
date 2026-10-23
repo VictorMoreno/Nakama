@@ -1,10 +1,9 @@
 import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
+import type { WeeklyQuestions } from "../../../modules/analytics/domain/Analytics";
 import styles from "./TrendChart.module.scss";
 
 interface TrendChartProps {
-  weeks: string[];
-  resolved: number[];
-  escalated: number[];
+  weeks: WeeklyQuestions[];
 }
 
 const W = 620;
@@ -15,11 +14,21 @@ const PAD_T = 10;
 const PAD_B = 26;
 const PLOT_W = W - PAD_L - PAD_R;
 const PLOT_H = H - PAD_T - PAD_B;
+const MAX_LABELS = 8;
 
-export default function TrendChart({ weeks, resolved, escalated }: TrendChartProps) {
-  const maxV = 75;
+function shortDate(date: string) {
+  const [, month, day] = date.split("-");
+  return `${day}/${month}`;
+}
+
+export default function TrendChart({ weeks }: TrendChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  if (weeks.length < 2) return null;
+
+  const maxV = Math.max(1, ...weeks.map((w) => w.questions));
+  const labelStep = Math.ceil(weeks.length / MAX_LABELS);
 
   function xFor(i: number) {
     return PAD_L + (i / (weeks.length - 1)) * PLOT_W;
@@ -27,9 +36,7 @@ export default function TrendChart({ weeks, resolved, escalated }: TrendChartPro
   function yFor(v: number) {
     return PAD_T + PLOT_H - (v / maxV) * PLOT_H;
   }
-  function pathFor(values: number[]) {
-    return values.map((v, i) => `${i === 0 ? "M" : "L"}${xFor(i).toFixed(1)},${yFor(v).toFixed(1)}`).join(" ");
-  }
+  const path = weeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i).toFixed(1)},${yFor(w.questions).toFixed(1)}`).join(" ");
 
   function indexFromClientX(clientX: number) {
     const rect = svgRef.current?.getBoundingClientRect();
@@ -47,20 +54,16 @@ export default function TrendChart({ weeks, resolved, escalated }: TrendChartPro
     if (touch) setHoverIndex(indexFromClientX(touch.clientX));
   }
 
-  const gridFractions = [0.25, 0.5, 0.75];
+  const hovered = hoverIndex != null ? weeks[hoverIndex] : null;
   const tooltipX = hoverIndex != null ? (xFor(hoverIndex) / W) * 100 : 0;
-  const tooltipY = hoverIndex != null ? (yFor(Math.max(resolved[hoverIndex], escalated[hoverIndex])) / H) * 100 : 0;
+  const tooltipY = hovered ? (yFor(hovered.questions) / H) * 100 : 0;
 
   return (
     <>
       <div className={styles.chartLegend}>
         <span className={styles.legendItem}>
           <span className={styles.legendDot} style={{ background: "var(--accent)" }} />
-          Resueltas por el bot
-        </span>
-        <span className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: "var(--cyan)" }} />
-          Escaladas a un senior
+          Preguntas a los chatbots
         </span>
       </div>
 
@@ -69,47 +72,41 @@ export default function TrendChart({ weeks, resolved, escalated }: TrendChartPro
           ref={svgRef}
           viewBox={`0 0 ${W} ${H}`}
           role="img"
-          aria-label="Preguntas por semana: resueltas por el bot frente a escaladas a un senior"
+          aria-label="Preguntas hechas a los chatbots por semana"
           onMouseMove={handleMouseMove}
           onMouseLeave={() => setHoverIndex(null)}
           onTouchMove={handleTouchMove}
         >
-          {gridFractions.map((f) => {
+          {[0.25, 0.5, 0.75].map((f) => {
             const gy = (PAD_T + PLOT_H * f).toFixed(1);
             return <line key={f} x1={PAD_L} y1={gy} x2={W - PAD_R} y2={gy} stroke="var(--border)" strokeWidth="1" />;
           })}
 
-          <path d={pathFor(resolved)} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d={pathFor(escalated)} fill="none" stroke="var(--cyan)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={path} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 
-          {resolved.map((v, i) => (
-            <circle key={`r-${i}`} cx={xFor(i).toFixed(1)} cy={yFor(v).toFixed(1)} r={3} fill="var(--accent)" />
-          ))}
-          {escalated.map((v, i) => (
-            <circle key={`e-${i}`} cx={xFor(i).toFixed(1)} cy={yFor(v).toFixed(1)} r={3} fill="var(--cyan)" />
+          {weeks.map((w, i) => (
+            <circle key={w.weekStart} cx={xFor(i).toFixed(1)} cy={yFor(w.questions).toFixed(1)} r={3} fill="var(--accent)" />
           ))}
 
           {hoverIndex != null && (
             <line x1={xFor(hoverIndex)} y1={PAD_T} x2={xFor(hoverIndex)} y2={PAD_T + PLOT_H} stroke="var(--ink-faint)" strokeWidth="1" strokeDasharray="3 3" />
           )}
 
-          {weeks.map((w, i) => (
-            <text key={w} x={xFor(i).toFixed(1)} y={H - 6} fontSize="9" fill="var(--ink-faint)" textAnchor="middle">
-              {w}
-            </text>
-          ))}
+          {weeks.map((w, i) =>
+            i % labelStep === 0 ? (
+              <text key={w.weekStart} x={xFor(i).toFixed(1)} y={H - 6} fontSize="9" fill="var(--ink-faint)" textAnchor="middle">
+                {shortDate(w.weekStart)}
+              </text>
+            ) : null
+          )}
         </svg>
 
-        {hoverIndex != null && (
+        {hovered && (
           <div className={`${styles.chartTooltip} ${styles.show}`} style={{ left: `${tooltipX}%`, top: `${tooltipY}%` }}>
-            <div className={styles.row}>Semana {weeks[hoverIndex]}</div>
+            <div className={styles.row}>Semana del {shortDate(hovered.weekStart)}</div>
             <div className={styles.row}>
               <span className={styles.legendDot} style={{ background: "var(--accent)" }} />
-              Resueltas: {resolved[hoverIndex]}
-            </div>
-            <div className={styles.row}>
-              <span className={styles.legendDot} style={{ background: "var(--cyan)" }} />
-              Escaladas: {escalated[hoverIndex]}
+              Preguntas: {hovered.questions}
             </div>
           </div>
         )}

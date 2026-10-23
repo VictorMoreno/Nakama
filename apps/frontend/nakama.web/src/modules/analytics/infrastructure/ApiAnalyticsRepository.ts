@@ -1,5 +1,5 @@
-import type { AnalyticsResponse, GeneratedNakamaClient, UserActivityResponse } from "../../../shared/infrastructure/GeneratedNakamaClient";
-import type { AnalyticsSnapshot, UserActivity } from "../domain/Analytics";
+import type { AnalyticsResponse, GeneratedNakamaClient, QuestionActivityResponse, UserActivityResponse } from "../../../shared/infrastructure/GeneratedNakamaClient";
+import type { AnalyticsSnapshot, QuestionActivity, UserActivity } from "../domain/Analytics";
 import type { IAnalyticsRepository } from "../domain/IAnalyticsRepository";
 
 function toSnapshot(response: AnalyticsResponse): AnalyticsSnapshot {
@@ -23,6 +23,13 @@ function toUserActivity(response: UserActivityResponse): UserActivity {
   };
 }
 
+function toQuestionActivity(response: QuestionActivityResponse): QuestionActivity {
+  return {
+    weeks: (response.weeks ?? []).map((row) => ({ weekStart: row.weekStart ?? "", questions: row.questions ?? 0 })),
+    questionsThisWeek: response.questionsThisWeek ?? 0
+  };
+}
+
 export class ApiAnalyticsRepository implements IAnalyticsRepository {
   private readonly client: GeneratedNakamaClient;
 
@@ -38,6 +45,11 @@ export class ApiAnalyticsRepository implements IAnalyticsRepository {
   async FindUserActivity(days: number): Promise<UserActivity> {
     const response = await this.client.userActivity(days);
     return toUserActivity(response);
+  }
+
+  async FindQuestionActivity(weeks: number): Promise<QuestionActivity> {
+    const response = await this.client.questionActivity(weeks);
+    return toQuestionActivity(response);
   }
 
   async SubmitFeedback(useful: boolean): Promise<void> {

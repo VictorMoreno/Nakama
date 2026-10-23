@@ -25,6 +25,8 @@
   gap: 14px;
 }
 
+.statGridOverview { grid-template-columns: repeat(3, 1fr); }
+
 .statCard {
   padding: 18px 20px;
 
@@ -50,13 +52,6 @@
   }
 }
 
-.statDelta {
-  margin-top: 10px;
-  font-size: 0.72rem;
-  color: var(--positive);
-  font-weight: 600;
-}
-
 .barTrack {
   margin-top: 10px;
   height: 5px;
@@ -70,22 +65,6 @@
   border-radius: 999px;
   background: var(--accent);
 }
-
-.hbarList { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
-
-.hbarRowLabel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  margin-bottom: 5px;
-
-  .name { display: flex; align-items: center; gap: 7px; color: var(--ink); }
-  .value { font-family: var(--font-display); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
-}
-
-.hbarTrack { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
-.hbarFill { height: 100%; border-radius: 999px; }
 
 .gapsList { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px; }
 
@@ -107,4 +86,5 @@
 @media (width <= 920px) {
   .analyticsGrid { grid-template-columns: 1fr; }
   .statGrid { grid-template-columns: repeat(2, 1fr); }
+  .statGridOverview { grid-template-columns: repeat(2, 1fr); }
 }
