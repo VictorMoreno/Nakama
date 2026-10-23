@@ -41,6 +41,20 @@ public sealed class ChatbotCreatorShould : ChatbotsUnitTestCase
         this.ShouldHavePublished<ChatbotCreated>(@event => @event.Id.Value == command.Id);
     }
 
+    [TestCase("")]
+    [TestCase("   ")]
+    public async Task fail_without_saving_anything_when_the_chatbot_has_no_model(string model)
+    {
+        ChatbotCreator.Command command = ChatbotCreatorCommandMother.With(model: model);
+        this.ShouldNotFindChatbot();
+
+        Func<Task> act = async () => await this._handler.Handle(command, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ChatbotModelRequiredError>();
+        this.ShouldNotHaveSavedAnyChatbot();
+        this.ShouldNotHavePublishedAnything();
+    }
+
     [Test]
     public async Task fail_without_saving_anything_when_the_chatbot_already_exists()
     {

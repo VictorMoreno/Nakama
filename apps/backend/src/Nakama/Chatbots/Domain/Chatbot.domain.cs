@@ -34,6 +34,8 @@ public partial class Chatbot
         ChatbotStatus status,
         ChatbotSettings settings)
     {
+        EnsureHasModel(settings);
+
         Chatbot chatbot = new(key, label, description, status, settings, null, false, [], []);
         chatbot.Record(new ChatbotCreated(key, label, description, status, settings));
         return chatbot;
@@ -52,8 +54,18 @@ public partial class Chatbot
 
     public void UpdateSettings(ChatbotSettings settings)
     {
+        EnsureHasModel(settings);
+
         this.Settings = settings;
         this.Record(new ChatbotSettingsUpdated(this.Id, settings));
+    }
+
+    private static void EnsureHasModel(ChatbotSettings settings)
+    {
+        if (string.IsNullOrWhiteSpace(settings.Model))
+        {
+            throw ChatbotErrors.ModelRequired;
+        }
     }
 
     public void UpdateIcon(string? iconUrl)

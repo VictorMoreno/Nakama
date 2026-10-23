@@ -14,6 +14,9 @@ public sealed class ChatbotAlreadyExistsError(string id)
 public sealed class ChatbotProviderNotConnectedError(string provider)
     : DomainError("nakama.chatbots.provider_not_connected", $"El proveedor '{provider}' todavía no tiene un adaptador conectado.");
 
+public sealed class ChatbotModelRequiredError()
+    : DomainError("nakama.chatbots.model_required", "El chatbot necesita un modelo de lenguaje.");
+
 public sealed class ChatbotDocumentUnsupportedTypeError()
     : DomainError("nakama.chatbots.document_unsupported_type", "Unsupported document type. Only PDF, Markdown, and plain text files are allowed.");
 
@@ -57,6 +60,8 @@ public static class ChatbotErrors
     public static DomainError TeamMemberAlreadyExists(Guid userId) => new ChatbotTeamMemberAlreadyExistsError(userId.ToString());
 
     public static DomainError ProviderNotConnected(string provider) => new ChatbotProviderNotConnectedError(provider);
+
+    public static DomainError ModelRequired { get; } = new ChatbotModelRequiredError();
 
     public static DomainError DocumentTooLarge(long maxBytes) => new ChatbotDocumentTooLargeError(maxBytes);
 

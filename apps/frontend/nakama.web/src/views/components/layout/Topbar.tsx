@@ -9,7 +9,7 @@ function headingFor(pathname: string): { title: string; subtitle: string } {
     return { title: "Formación", subtitle: "Formaciones independientes de los chatbots" };
   }
   if (pathname.startsWith("/analytics")) {
-    return { title: "Analítica", subtitle: "Uso de la plataforma — solo administradores" };
+    return { title: "Analítica", subtitle: "Actividad de las personas, preguntas a los chatbots y valoración de sus respuestas" };
   }
   if (pathname.startsWith("/proveedores")) {
     return { title: "Proveedores de IA", subtitle: "Claves de API y catálogo de modelos por proveedor" };

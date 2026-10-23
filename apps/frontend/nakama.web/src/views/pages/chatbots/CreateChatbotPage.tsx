@@ -29,7 +29,10 @@ export default function CreateChatbotPage() {
     explicaMas,
     setExplicaMas,
     provider,
-    setProvider,
+    handleProviderChange,
+    modelOptions,
+    selectedModel,
+    setModel,
     iconUrl,
     setIconUrl,
     nameError,
@@ -98,50 +101,59 @@ export default function CreateChatbotPage() {
           </div>
         </div>
 
-        <div className="glass" style={{ marginTop: 14 }}>
-          <div className="panel-head">
+        <div style={{ marginTop: 14 }}>
+          <div className="group-head">
             <h2>Comportamiento</h2>
+            <p>Esto se configura una vez para todo el equipo — quien use el chatbot no puede cambiarlo desde el propio chat.</p>
           </div>
-          <p style={{ padding: "0 20px 14px", fontSize: "0.8rem", color: "var(--ink-soft)", maxWidth: "60ch" }}>
-            Esto se configura una vez para todo el equipo — quien use el chatbot no puede cambiarlo desde el propio chat.
-          </p>
-          <div className={styles.configRows}>
-            <div className={styles.configRow}>
-              <div className={styles.configRowText}>
-                <div className="title">Modo Socrático</div>
-                <div className="desc">El bot guía con preguntas en vez de dar la respuesta directa.</div>
+          <div className="glass">
+            <div className={styles.configRows}>
+              <div className={styles.configRow}>
+                <div className={styles.configRowText}>
+                  <div className="title">Modo Socrático</div>
+                  <div className="desc">El bot guía con preguntas en vez de dar la respuesta directa.</div>
+                </div>
+                <button
+                  className="switch"
+                  role="switch"
+                  aria-checked={socratic}
+                  aria-label="Modo Socrático"
+                  type="button"
+                  onClick={() => setSocratic((s) => !s)}
+                />
               </div>
-              <button
-                className="switch"
-                role="switch"
-                aria-checked={socratic}
-                aria-label="Modo Socrático"
-                type="button"
-                onClick={() => setSocratic((s) => !s)}
-              />
-            </div>
-
-            <div className={styles.configRow}>
-              <div className={styles.configRowText}>
-                <div className="title">Explícame más</div>
-                <div className="desc">Permite pedir una capa extra de profundidad técnica en cada respuesta.</div>
+  
+              <div className={styles.configRow}>
+                <div className={styles.configRowText}>
+                  <div className="title">Explícame más</div>
+                  <div className="desc">Permite pedir una capa extra de profundidad técnica en cada respuesta.</div>
+                </div>
+                <button
+                  className="switch"
+                  role="switch"
+                  aria-checked={explicaMas}
+                  aria-label="Explícame más"
+                  type="button"
+                  onClick={() => setExplicaMas((e) => !e)}
+                />
               </div>
-              <button
-                className="switch"
-                role="switch"
-                aria-checked={explicaMas}
-                aria-label="Explícame más"
-                type="button"
-                onClick={() => setExplicaMas((e) => !e)}
-              />
-            </div>
-
-            <div className={styles.configRow}>
-              <div className={styles.configRowText}>
-                <div className="title">Modelo de lenguaje</div>
-                <div className="desc">Proveedor que responde las preguntas de este chatbot.</div>
+  
+              <div className={styles.configRow}>
+                <div className={styles.configRowText}>
+                  <div className="title">Modelo de lenguaje</div>
+                  <div className="desc">Proveedor y modelo que responde las preguntas de este chatbot.</div>
+                </div>
+                <div className={styles.configRowControls}>
+                  <Select value={provider} onChange={handleProviderChange} options={PROVIDER_OPTIONS} ariaLabel="Proveedor" />
+                  {modelOptions.length > 0 ? (
+                    <Select value={selectedModel} onChange={setModel} options={modelOptions} ariaLabel="Modelo" />
+                  ) : (
+                    <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
+                      Sin modelos registrados — configúralo en Proveedores de IA.
+                    </span>
+                  )}
+                </div>
               </div>
-              <Select value={provider} onChange={setProvider} options={PROVIDER_OPTIONS} ariaLabel="Modelo de lenguaje" />
             </div>
           </div>
         </div>

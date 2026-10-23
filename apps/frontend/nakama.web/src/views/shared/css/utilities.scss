@@ -297,6 +297,10 @@
 .panel-head h2 { font-size: 0.95rem; font-family: var(--font-display); }
 .panel-head .count { font-size: 0.72rem; color: var(--ink-faint); }
 
+.group-head { padding: 0 4px; margin-bottom: 10px; }
+.group-head h2 { font-size: 0.95rem; font-family: var(--font-display); }
+.group-head p { font-size: 0.78rem; color: var(--ink-soft); margin-top: 3px; max-width: 60ch; line-height: 1.5; }
+
 // ---------- Config rows (settings-style list, reused by chatbot/formation create+detail pages) ----------
 
 .config-rows { display: flex; flex-direction: column; }
