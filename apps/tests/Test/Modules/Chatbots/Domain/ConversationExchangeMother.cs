@@ -13,12 +13,14 @@ public static class ConversationExchangeMother
         string? citation = null,
         string? moreExplanation = null,
         string? socraticVariant = null,
-        IReadOnlyList<ExchangeAttachment>? attachments = null) =>
+        IReadOnlyList<ExchangeAttachment>? attachments = null,
+        bool? useful = null) =>
         new(
             question ?? WordMother.Random(),
             answer ?? WordMother.Random(),
             citation ?? WordMother.Random(),
             moreExplanation ?? WordMother.Random(),
             socraticVariant ?? WordMother.Random(),
-            attachments);
+            attachments,
+            useful);
 }

@@ -1,3 +1,5 @@
+using Nakama.AnswerFeedback.Application;
+using Nakama.AnswerFeedback.Application.Finder;
 using Nakama.Analytics.Domain;
 using Nakama.Analytics.Domain.Errors;
 using Nakama.QuestionActivity.Application;
@@ -34,9 +36,10 @@ public static class AnalyticsFinder
             UserActivityResponse activity = await queryBus.Ask(new UserActivityFinder.Query(ActiveUsersWindowDays), cancellationToken);
             QuestionActivityResponse questions = await queryBus.Ask(new QuestionActivityFinder.Query(CurrentWeekOnly), cancellationToken);
             QuestionsByChatbotResponse byChatbot = await queryBus.Ask(new QuestionsByChatbotFinder.Query(), cancellationToken);
+            AnswerFeedbackSummaryResponse feedback = await queryBus.Ask(new AnswerFeedbackSummaryFinder.Query(), cancellationToken);
             int totalUsersCount = await usersRepository.Count(new UserListingSpecification(), cancellationToken);
 
-            return analytics.ToResponse(activity.ActiveLast7Days, totalUsersCount, questions.QuestionsThisWeek, byChatbot);
+            return analytics.ToResponse(activity.ActiveLast7Days, totalUsersCount, questions.QuestionsThisWeek, byChatbot, feedback);
         }
     }
 }

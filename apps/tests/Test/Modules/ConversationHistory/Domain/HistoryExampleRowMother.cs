@@ -5,6 +5,8 @@ namespace Test.Modules.ConversationHistory.Domain;
 
 public static class HistoryExampleRowMother
 {
+    public static HistoryExampleRow Random() => With();
+
     public static HistoryExampleRow With(
         string? question = null,
         string? answer = null,

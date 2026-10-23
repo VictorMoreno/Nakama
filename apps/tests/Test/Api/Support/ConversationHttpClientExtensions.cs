@@ -27,6 +27,19 @@ public static class ConversationHttpClientExtensions
         return client.SendContent(HttpMethod.Post, $"/api/chatbots/{botKey}/conversations/{conversationId}/ask", accessToken, content);
     }
 
+    public static Task<HttpResponseMessage> RateExchange(
+        this HttpClient client,
+        Guid botKey,
+        Guid conversationId,
+        int exchangeIndex,
+        bool useful,
+        string accessToken) =>
+        client.SendJson(
+            HttpMethod.Put,
+            $"/api/chatbots/{botKey}/conversations/{conversationId}/exchanges/{exchangeIndex}/feedback",
+            new { Useful = useful },
+            accessToken);
+
     public static Task<HttpResponseMessage> GetConversationHistory(this HttpClient client, Guid botKey, string accessToken) =>
         client.Send(HttpMethod.Get, $"/api/chatbots/{botKey}/conversation-history", accessToken);
 

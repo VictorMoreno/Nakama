@@ -1,3 +1,4 @@
+using Nakama.AnswerFeedback.Application;
 using Nakama.QuestionActivity.Application;
 
 namespace Nakama.Analytics.Application;
@@ -23,13 +24,14 @@ public static class AnalyticsExtensions
         int activeUsersCount,
         int totalUsersCount,
         int answeredThisWeek,
-        QuestionsByChatbotResponse byChatbot) => new(
+        QuestionsByChatbotResponse byChatbot,
+        AnswerFeedbackSummaryResponse feedback) => new(
         entity.Id,
         entity.ActiveBotsCount,
         answeredThisWeek,
         byChatbot.Chatbots.Select(row => new UsageByBotRow(row.BotKey, row.Questions)).ToList(),
         activeUsersCount,
         totalUsersCount,
-        entity.UsefulFeedbackCount,
-        entity.TotalFeedbackCount);
+        feedback.Useful,
+        feedback.Total);
 }

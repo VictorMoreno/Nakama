@@ -1,7 +1,8 @@
 using Api.Configuration;
 using Nakama.Analytics.Application;
-using Nakama.Analytics.Application.FeedbackSubmitter;
 using Nakama.Analytics.Application.Finder;
+using Nakama.AnswerFeedback.Application;
+using Nakama.AnswerFeedback.Application.Finder;
 using Nakama.QuestionActivity.Application;
 using Nakama.QuestionActivity.Application.Finder;
 using Nakama.Shared.Domain;
@@ -38,9 +39,12 @@ public sealed class AnalyticsEndpoints : IEndpoint
             .Produces<QuestionActivityResponse>()
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
-        group.MapPost("feedback", SubmitFeedback)
-            .WithSummary("Records whether a chat answer was useful, towards the global useful-answer rate.")
-            .Produces(StatusCodes.Status204NoContent);
+        group.MapGet("unhelpful-questions", FindUnhelpfulQuestions)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Gets the questions whose answer was rated as not useful this week, grouped by chatbot and question, most repeated first.")
+            .WithDescription(
+                "The week starts on Monday in the configured time zone. Questions are grouped ignoring case and surrounding spaces, no person is identified, and at most Reporting:AnswerFeedback:UnhelpfulQuestionsLimit rows are returned.")
+            .Produces<UnhelpfulQuestionsResponse>();
     }
 
     private static async Task<IResult> FindAnalytics(IQueryBus queryBus, CancellationToken ct) =>
@@ -52,11 +56,6 @@ public sealed class AnalyticsEndpoints : IEndpoint
     private static async Task<IResult> FindQuestionActivity(IQueryBus queryBus, CancellationToken ct, int? weeks = null) =>
         Results.Ok(await queryBus.Ask(new QuestionActivityFinder.Query(weeks), ct));
 
-    private static async Task<IResult> SubmitFeedback(SubmitFeedbackRequest body, ICommandBus commandBus, CancellationToken ct)
-    {
-        await commandBus.Send(new AnalyticsFeedbackSubmitter.Command(body.Useful), ct);
-        return Results.NoContent();
-    }
-
-    private sealed record SubmitFeedbackRequest(bool Useful);
+    private static async Task<IResult> FindUnhelpfulQuestions(IQueryBus queryBus, CancellationToken ct) =>
+        Results.Ok(await queryBus.Ask(new UnhelpfulQuestionsFinder.Query(), ct));
 }

@@ -1,3 +1,4 @@
+using Nakama.Chatbots.Domain.Errors;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.Shared.Domain;
 
@@ -35,6 +36,18 @@ public partial class Conversation
     {
         this._exchanges.Add(exchange);
         this.Record(new ConversationExchangeAppended(this.Id, this.BotKey, this.UserId, exchange, systemClock.UtcNow));
+    }
+
+    public void RateExchange(int index, bool useful, ISystemClock systemClock)
+    {
+        if (index < 0 || index >= this._exchanges.Count)
+        {
+            throw ConversationErrors.ExchangeNotFound(this.Id, index);
+        }
+
+        ConversationExchange rated = this._exchanges[index] with { Useful = useful };
+        this._exchanges[index] = rated;
+        this.Record(new ConversationExchangeRated(this.Id, this.BotKey, this.UserId, index, rated.Question, useful, systemClock.UtcNow));
     }
 
     public void Delete() => this.Record(new ConversationDeleted(

@@ -23,6 +23,7 @@ internal static class NhMappings
         mapper.AddMapping<Mappings.UserMapping>();
         mapper.AddMapping<Mappings.UserActivityEntryMapping>();
         mapper.AddMapping<Mappings.QuestionActivityEntryMapping>();
+        mapper.AddMapping<Mappings.AnswerFeedbackEntryMapping>();
         mapper.AddMapping<Mappings.ConversationAuditLogMapping>();
         mapper.AddMapping<Mappings.ConversationHistoryMapping>();
         mapper.AddMapping<Mappings.FormationEnrollmentMapping>();

@@ -1,6 +1,8 @@
 using System.Linq.Expressions;
 using Moq;
 using Nakama.Analytics.Domain;
+using Nakama.AnswerFeedback.Application;
+using Nakama.AnswerFeedback.Application.Finder;
 using Nakama.QuestionActivity.Application;
 using Nakama.QuestionActivity.Application.Finder;
 using Nakama.Shared.Domain.Specification;
@@ -39,6 +41,11 @@ public abstract class AnalyticsUnitTestCase : UnitTestCase
         this.QueryBus
             .Setup(bus => bus.Ask(It.IsAny<QuestionActivityFinder.Query>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new QuestionActivityResponse([], count));
+
+    protected void ShouldFindAnswerFeedback(int useful, int total) =>
+        this.QueryBus
+            .Setup(bus => bus.Ask(It.IsAny<AnswerFeedbackSummaryFinder.Query>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AnswerFeedbackSummaryResponse(useful, total));
 
     protected void ShouldFindQuestionsByChatbot(params ChatbotQuestionsRow[] rows) =>
         this.QueryBus

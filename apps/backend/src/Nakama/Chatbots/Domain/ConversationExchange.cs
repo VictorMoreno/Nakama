@@ -8,4 +8,5 @@ public sealed record ConversationExchange(
     string Citation,
     string MoreExplanation,
     string SocraticVariant,
-    IReadOnlyList<ExchangeAttachment>? Attachments = null);
+    IReadOnlyList<ExchangeAttachment>? Attachments = null,
+    bool? Useful = null);

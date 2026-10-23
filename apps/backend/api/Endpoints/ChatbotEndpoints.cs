@@ -8,6 +8,7 @@ using Nakama.Chatbots.Application.Creator;
 using Nakama.Chatbots.Application.DocumentAdder;
 using Nakama.Chatbots.Application.DocumentFileFinder;
 using Nakama.Chatbots.Application.DocumentRemover;
+using Nakama.Chatbots.Application.ExchangeRater;
 using Nakama.Chatbots.Application.IconUpdater;
 using Nakama.Chatbots.Application.QuestionAsker;
 using Nakama.Chatbots.Application.Remover;
@@ -119,6 +120,14 @@ public sealed class ChatbotEndpoints : IEndpoint
                 "`event: error` SSE frame instead, since the HTTP status is already committed by then.")
             .DisableAntiforgery()
             .ExcludeFromDescription();
+
+        group.MapPut("/{botKey:guid}/conversations/{conversationId:guid}/exchanges/{exchangeIndex:int}/feedback", RateConversationExchange)
+            .RequireAuthorization(AuthPolicies.ChatbotMember)
+            .WithSummary("Rates one answer of the caller's own conversation as useful or not useful. Sending it again replaces the previous rating.")
+            .WithDescription(
+                "`exchangeIndex` is the zero-based position of the question and answer inside the conversation. The rating is kept with the exchange, so it survives reloading the chat, and it feeds the useful-answer rate and the list of questions without a good answer in the global analytics.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/conversations/{conversationId:guid}", DeleteConversation)
             .WithSummary("Deletes the caller's own conversation (hard delete). The immutable conversation audit log is untouched.")
@@ -339,6 +348,21 @@ public sealed class ChatbotEndpoints : IEndpoint
         await response.Body.FlushAsync(ct);
     }
 
+    private static async Task<IResult> RateConversationExchange(
+        Guid botKey,
+        Guid conversationId,
+        int exchangeIndex,
+        RateConversationExchangeRequest body,
+        ICurrentUser currentUser,
+        ICommandBus commandBus,
+        CancellationToken ct)
+    {
+        await commandBus.Send(
+            new ConversationExchangeRater.Command(botKey, conversationId, exchangeIndex, body.Useful, currentUser.Id),
+            ct);
+        return Results.NoContent();
+    }
+
     private static async Task<IResult> DeleteConversation(
         Guid conversationId,
         ICurrentUser currentUser,
@@ -394,6 +418,8 @@ public sealed class ChatbotEndpoints : IEndpoint
     private sealed record UpdateChatbotStatusRequest(int Status);
 
     private sealed record UpdateChatbotSettingsRequest(bool Socratic, bool ExplicaMas, int Provider, string Model);
+
+    private sealed record RateConversationExchangeRequest(bool Useful);
 
     private sealed record AddChatbotTeamMemberRequest(Guid UserId, int Role);
 }

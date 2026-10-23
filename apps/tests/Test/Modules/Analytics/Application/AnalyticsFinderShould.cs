@@ -20,6 +20,7 @@ public sealed class AnalyticsFinderShould : AnalyticsUnitTestCase
             new(this.AnalyticsRepository.Object, this.UsersRepository.Object, this.QueryBus.Object));
         this.ShouldFindQuestionsOfTheCurrentWeek(0);
         this.ShouldFindQuestionsByChatbot();
+        this.ShouldFindAnswerFeedback(0, 0);
     }
 
     [Test]
@@ -32,13 +33,14 @@ public sealed class AnalyticsFinderShould : AnalyticsUnitTestCase
         this.ShouldFindActiveUsersOfTheLastWeek(7);
         this.ShouldFindQuestionsOfTheCurrentWeek(12);
         this.ShouldFindQuestionsByChatbot(new ChatbotQuestionsRow(firstBot, 9), new ChatbotQuestionsRow(secondBot, 3));
+        this.ShouldFindAnswerFeedback(6, 8);
         this.ShouldCountUsers(20);
 
         AnalyticsResponse response = await this._handler.Handle(new AnalyticsFinder.Query(), CancellationToken.None);
 
         response.ActiveBotsCount.Should().Be(analytics.ActiveBotsCount);
-        response.UsefulFeedbackCount.Should().Be(analytics.UsefulFeedbackCount);
-        response.TotalFeedbackCount.Should().Be(analytics.TotalFeedbackCount);
+        response.UsefulFeedbackCount.Should().Be(6);
+        response.TotalFeedbackCount.Should().Be(8);
         response.AnsweredThisWeek.Should().Be(12);
         response.UsageByBot.Should().Equal(new UsageByBotRow(firstBot, 9), new UsageByBotRow(secondBot, 3));
         response.ActiveUsersCount.Should().Be(7);

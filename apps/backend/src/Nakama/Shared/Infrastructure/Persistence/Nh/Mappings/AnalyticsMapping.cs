@@ -19,7 +19,5 @@ public sealed class AnalyticsMapping : ClassMapping<Analytics>
         });
 
         this.Property(x => x.ActiveBotsCount);
-        this.Property(x => x.UsefulFeedbackCount);
-        this.Property(x => x.TotalFeedbackCount);
     }
 }

@@ -8,6 +8,7 @@ public sealed class HistoryExampleRow
     public string MoreExplanation { get; set; } = string.Empty;
     public string SocraticVariant { get; set; } = string.Empty;
     public List<string> Attachments { get; set; } = [];
+    public bool? Useful { get; set; }
 }
 
 public sealed class ConversationSummaryRow

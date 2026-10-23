@@ -29,6 +29,15 @@ public partial class ConversationHistory
         this.Entries.AddRange(ordered);
     }
 
+    public void RateExchange(Guid conversationId, int exchangeIndex, bool useful)
+    {
+        ConversationSummaryRow? conversation = this.Entries.FirstOrDefault(c => c.Id == conversationId);
+        if (conversation is not null && exchangeIndex >= 0 && exchangeIndex < conversation.Exchanges.Count)
+        {
+            conversation.Exchanges[exchangeIndex].Useful = useful;
+        }
+    }
+
     public void AppendExchange(Guid conversationId, string question, string answer, string citation, string moreExplanation, string socraticVariant, IEnumerable<string> attachments)
     {
         ConversationSummaryRow? conversation = this.Entries.FirstOrDefault(c => c.Id == conversationId);

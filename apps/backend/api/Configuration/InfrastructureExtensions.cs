@@ -20,6 +20,7 @@ using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
 using Nakama.Shared.Infrastructure.Queries;
 using Nakama.Shared.Infrastructure.Storage;
+using Nakama.Shared.Infrastructure.AnswerFeedback;
 using Nakama.Shared.Infrastructure.QuestionActivity;
 using Nakama.Shared.Infrastructure.Reporting;
 using Nakama.Shared.Infrastructure.UserActivity;
@@ -89,6 +90,11 @@ public static class InfrastructureExtensions
             .BindConfiguration(QuestionActivityOptions.SectionName)
             .Validate(options => options.MaxWeeks >= 4, "Reporting:QuestionActivity:MaxWeeks must be at least 4.")
             .Validate(options => options.DefaultWeeks >= 1 && options.DefaultWeeks <= options.MaxWeeks, "Reporting:QuestionActivity:DefaultWeeks must be between 1 and Reporting:QuestionActivity:MaxWeeks.")
+            .ValidateOnStart();
+
+        services.AddOptions<AnswerFeedbackOptions>()
+            .BindConfiguration(AnswerFeedbackOptions.SectionName)
+            .Validate(options => options.UnhelpfulQuestionsLimit >= 1, "Reporting:AnswerFeedback:UnhelpfulQuestionsLimit must be at least 1.")
             .ValidateOnStart();
 
         services.AddOptions<IconsOptions>()
