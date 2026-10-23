@@ -17,7 +17,7 @@ public sealed class QuestionsByChatbotFinderShould : QuestionActivityUnitTestCas
     public void SetUp()
     {
         this._handler = new QuestionsByChatbotFinder.Handler(
-            new(this.QuestionRepository.Object, this.Clock.Object, this.QuestionOptions));
+            new(this.QuestionRepository.Object, this.Calendar));
         this.ShouldBeNow(Now);
         this.ShouldFindQuestions([]);
     }

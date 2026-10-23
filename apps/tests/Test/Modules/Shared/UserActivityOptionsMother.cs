@@ -9,13 +9,11 @@ public static class UserActivityOptionsMother
     public static UserActivityOptions With(
         int? defaultDays = null,
         int? maxDays = null,
-        int? sessionIntervalMinutes = null,
-        string? timeZone = null) =>
+        int? sessionIntervalMinutes = null) =>
         new()
         {
             DefaultDays = defaultDays ?? 30,
             MaxDays = maxDays ?? 90,
-            SessionIntervalMinutes = sessionIntervalMinutes ?? 60,
-            TimeZone = timeZone ?? "Europe/Madrid"
+            SessionIntervalMinutes = sessionIntervalMinutes ?? 60
         };
 }

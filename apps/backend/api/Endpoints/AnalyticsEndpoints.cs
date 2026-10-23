@@ -26,7 +26,7 @@ public sealed class AnalyticsEndpoints : IEndpoint
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Gets the daily user activity (logins and active people) of the last N days, plus the people active today, in 7 days and in 30 days.")
             .WithDescription(
-                "An activity is a login or a session renewal, at most one renewal per person per configured interval. Days are bucketed in the configured time zone. `days` defaults to UserActivity:DefaultDays and cannot exceed UserActivity:MaxDays.")
+                "An activity is a login or a session renewal, at most one renewal per person per configured interval. Days are bucketed in the configured time zone. `days` defaults to Reporting:UserActivity:DefaultDays and cannot exceed Reporting:UserActivity:MaxDays.")
             .Produces<UserActivityResponse>()
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
@@ -34,7 +34,7 @@ public sealed class AnalyticsEndpoints : IEndpoint
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Gets the number of questions asked to the chatbots per week, for the last N weeks, plus the ones asked this week.")
             .WithDescription(
-                "Weeks start on Monday and are bucketed in the configured time zone; the last row is the current week. `weeks` defaults to QuestionActivity:DefaultWeeks and cannot exceed QuestionActivity:MaxWeeks.")
+                "Weeks start on Monday and are bucketed in the configured time zone; the last row is the current week. `weeks` defaults to Reporting:QuestionActivity:DefaultWeeks and cannot exceed Reporting:QuestionActivity:MaxWeeks.")
             .Produces<QuestionActivityResponse>()
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 

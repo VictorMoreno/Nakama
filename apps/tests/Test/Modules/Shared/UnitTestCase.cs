@@ -1,12 +1,16 @@
+using Microsoft.Extensions.Options;
 using Moq;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Events;
+using Nakama.Shared.Infrastructure.Reporting;
 
 namespace Test.Modules.Shared;
 
 public abstract class UnitTestCase
 {
     protected Mock<ISystemClock> Clock { get; } = new();
+
+    protected IReportingCalendar Calendar => new ReportingCalendar(this.Clock.Object, Options.Create(ReportingOptionsMother.Random()));
 
     protected Mock<IEventBus> EventBus { get; } = new();
 

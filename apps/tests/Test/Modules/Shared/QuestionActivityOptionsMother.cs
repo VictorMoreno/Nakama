@@ -6,14 +6,10 @@ public static class QuestionActivityOptionsMother
 {
     public static QuestionActivityOptions Random() => With();
 
-    public static QuestionActivityOptions With(
-        int? defaultWeeks = null,
-        int? maxWeeks = null,
-        string? timeZone = null) =>
-        new()
+    public static QuestionActivityOptions With(int? defaultWeeks = null, int? maxWeeks = null)
+        => new()
         {
             DefaultWeeks = defaultWeeks ?? 8,
-            MaxWeeks = maxWeeks ?? 26,
-            TimeZone = timeZone ?? "Europe/Madrid"
+            MaxWeeks = maxWeeks ?? 26
         };
 }

@@ -1,8 +1,6 @@
-using Microsoft.Extensions.Options;
 using Nakama.QuestionActivity.Domain;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
-using Nakama.Shared.Infrastructure.QuestionActivity;
 
 namespace Nakama.QuestionActivity.Application.Finder;
 
@@ -16,19 +14,15 @@ public static class QuestionsByChatbotFinder
             await finder.Execute(ct);
     }
 
-    public sealed class Finder(
-        IQuestionActivityRepository repository,
-        ISystemClock systemClock,
-        IOptions<QuestionActivityOptions> options) : IService
+    public sealed class Finder(IQuestionActivityRepository repository, IReportingCalendar calendar) : IService
     {
         public async Task<QuestionsByChatbotResponse> Execute(CancellationToken cancellationToken)
         {
-            TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(options.Value.TimeZone);
-            DateOnly today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(systemClock.UtcNow, zone));
+            DateOnly today = calendar.Today();
             DateOnly firstDayOfMonth = new(today.Year, today.Month, 1);
 
             IReadOnlyList<QuestionActivityEntry> entries = await repository.Search(
-                new QuestionActivityBetweenSpecification(StartOfDayUtc(firstDayOfMonth, zone), StartOfDayUtc(today.AddDays(1), zone)),
+                new QuestionActivityBetweenSpecification(calendar.StartOfDayUtc(firstDayOfMonth), calendar.StartOfDayUtc(today.AddDays(1))),
                 cancellationToken);
 
             List<ChatbotQuestionsRow> rows = entries
@@ -40,8 +34,5 @@ public static class QuestionsByChatbotFinder
 
             return new QuestionsByChatbotResponse(rows);
         }
-
-        private static DateTime StartOfDayUtc(DateOnly day, TimeZoneInfo zone) =>
-            TimeZoneInfo.ConvertTimeToUtc(day.ToDateTime(TimeOnly.MinValue), zone);
     }
 }

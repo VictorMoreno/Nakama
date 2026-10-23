@@ -18,7 +18,7 @@ public sealed class UserActivityFinderShould : UserActivityUnitTestCase
     public void SetUp()
     {
         this._handler = new UserActivityFinder.Handler(
-            new(this.ActivityRepository.Object, this.Clock.Object, this.ActivityOptions));
+            new(this.ActivityRepository.Object, this.Calendar, this.ActivityOptions));
         this.ShouldBeNow(Now);
         this.ShouldFindActivity([]);
     }

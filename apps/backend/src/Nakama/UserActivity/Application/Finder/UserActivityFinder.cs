@@ -19,7 +19,7 @@ public static class UserActivityFinder
 
     public sealed class Finder(
         IUserActivityRepository repository,
-        ISystemClock systemClock,
+        IReportingCalendar calendar,
         IOptions<UserActivityOptions> options) : IService
     {
         private const int WeekDays = 7;
@@ -36,15 +36,14 @@ public static class UserActivityFinder
                 throw UserActivityErrors.InvalidDays(settings.MaxDays);
             }
 
-            TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(settings.TimeZone);
-            DateOnly today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(systemClock.UtcNow, zone));
+            DateOnly today = calendar.Today();
             DateOnly firstDay = today.AddDays(-(Math.Max(days, MonthDays) - 1));
 
             IReadOnlyList<UserActivityEntry> entries = await repository.Search(
-                new UserActivityBetweenSpecification(StartOfDayUtc(firstDay, zone), StartOfDayUtc(today.AddDays(1), zone)),
+                new UserActivityBetweenSpecification(calendar.StartOfDayUtc(firstDay), calendar.StartOfDayUtc(today.AddDays(1))),
                 cancellationToken);
             List<LocalEntry> local = entries
-                .Select(entry => new LocalEntry(LocalDay(entry.OccurredAt, zone), entry.UserId, entry.Type))
+                .Select(entry => new LocalEntry(calendar.LocalDay(entry.OccurredAt), entry.UserId, entry.Type))
                 .ToList();
 
             List<DailyUserActivityRow> rows = Enumerable.Range(0, days)
@@ -71,12 +70,6 @@ public static class UserActivityFinder
 
         private static int ActiveUsersFrom(DateOnly firstDay, List<LocalEntry> entries) =>
             entries.Where(entry => entry.Day >= firstDay).Select(entry => entry.UserId).Distinct().Count();
-
-        private static DateOnly LocalDay(DateTime occurredAtUtc, TimeZoneInfo zone) =>
-            DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(occurredAtUtc, DateTimeKind.Utc), zone));
-
-        private static DateTime StartOfDayUtc(DateOnly day, TimeZoneInfo zone) =>
-            TimeZoneInfo.ConvertTimeToUtc(day.ToDateTime(TimeOnly.MinValue), zone);
 
         private sealed record LocalEntry(DateOnly Day, Guid UserId, string Type);
     }

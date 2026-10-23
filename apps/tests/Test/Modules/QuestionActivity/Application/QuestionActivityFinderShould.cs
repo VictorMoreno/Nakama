@@ -18,7 +18,7 @@ public sealed class QuestionActivityFinderShould : QuestionActivityUnitTestCase
     public void SetUp()
     {
         this._handler = new QuestionActivityFinder.Handler(
-            new(this.QuestionRepository.Object, this.Clock.Object, this.QuestionOptions));
+            new(this.QuestionRepository.Object, this.Calendar, this.QuestionOptions));
         this.ShouldBeNow(Now);
         this.ShouldFindQuestions([]);
     }
