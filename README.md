@@ -146,14 +146,14 @@ Las migraciones solo crean el esquema: una base nueva está **vacía y no hay ni
 docker exec -i nakama-postgres psql -U nakama -d nakama < docs/db/demo-data.sql
 ```
 
-El script se puede lanzar más de una vez (omite las filas que ya existen). Crea dos cuentas de acceso, otros 20 usuarios, 15 chatbots, 10 formaciones y 72 conversaciones con sus proyecciones de lectura:
+El script se puede lanzar más de una vez (omite las filas que ya existen). Es un conjunto mínimo a propósito, para que la analítica parta de cero y refleje lo que hagas tú: dos cuentas de acceso y 3 personas más, 2 chatbots (uno activo y otro en borrador), 2 formaciones (una activa con un cuestionario y otra en borrador) y el proveedor Anthropic con el catálogo de modelos de Claude, desactivado y sin API key (pégala en «Proveedores de IA»). No trae conversaciones, valoraciones ni actividad de usuarios:
 
 | Rol | Email | Contraseña |
 |---|---|---|
 | Administrador | `admin@nakama.com` | `Admin123.` |
 | Persona de equipo | `user@nakama.com` | `Admin123.` |
 
-El resto de usuarios son `@seed.nakama.test` con la contraseña `Seed1234.`.
+Las otras 3 personas son `@seed.nakama.test` con la contraseña `Seed1234.`.
 
 ## 📦 Despliegue
 
