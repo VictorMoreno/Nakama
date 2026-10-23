@@ -74,29 +74,38 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <div className={`${styles.chartCard} glass`} style={{ marginTop: 14 }}>
-        <div className="panel-head">
-          <h2>Actividad de usuarios</h2>
-          <Select value={days} onChange={setDays} options={DAY_RANGE_OPTIONS} ariaLabel="Rango de días de actividad" />
+      <div className={styles.analyticsGrid}>
+        <div className={`${styles.chartCard} glass`}>
+          <div className="panel-head">
+            <h2>Actividad de usuarios</h2>
+            <Select value={days} onChange={setDays} options={DAY_RANGE_OPTIONS} ariaLabel="Rango de días de actividad" />
+          </div>
+          <ActivityChart days={activity.days} />
         </div>
-        <div className={styles.statGrid} style={{ gridTemplateColumns: "repeat(3, 1fr)", margin: "10px 0 6px" }}>
-          <div className={`${styles.statCard} glass`}>
-            <div className={styles.label}>Activos hoy</div>
-            <div className={styles.value}>{activity.activeToday}</div>
+
+        <div className={`${styles.chartCard} glass`}>
+          <div className="panel-head">
+            <h2>Personas activas</h2>
+            <span className="count">Distintas por periodo</span>
           </div>
-          <div className={`${styles.statCard} glass`}>
-            <div className={styles.label}>Activos en 7 días</div>
-            <div className={styles.value}>{activity.activeLast7Days}</div>
-          </div>
-          <div className={`${styles.statCard} glass`}>
-            <div className={styles.label}>Activos en 30 días</div>
-            <div className={styles.value}>{activity.activeLast30Days}</div>
+          <div className={styles.kpiList}>
+            <div className={styles.kpiRow}>
+              <span className={styles.kpiLabel}>Hoy</span>
+              <span className={styles.kpiValue}>{activity.activeToday}</span>
+            </div>
+            <div className={styles.kpiRow}>
+              <span className={styles.kpiLabel}>Últimos 7 días</span>
+              <span className={styles.kpiValue}>{activity.activeLast7Days}</span>
+            </div>
+            <div className={styles.kpiRow}>
+              <span className={styles.kpiLabel}>Últimos 30 días</span>
+              <span className={styles.kpiValue}>{activity.activeLast30Days}</span>
+            </div>
           </div>
         </div>
-        <ActivityChart days={activity.days} />
       </div>
 
-      <div className="glass" style={{ marginTop: 14 }}>
+      <div className="glass">
         <div className="panel-head">
           <h2>Preguntas sin buena respuesta</h2>
           <span className="count">Todos los chatbots · esta semana</span>

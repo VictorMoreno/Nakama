@@ -8,8 +8,8 @@
 .analyticsGrid {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
-  gap: 18px;
-  align-items: start;
+  gap: 20px;
+  align-items: stretch;
 }
 
 .chartCard {
@@ -19,13 +19,37 @@
   :global(.panel-head) { padding: 0 0 4px; }
 }
 
+.kpiList { display: flex; flex-direction: column; height: calc(100% - 40px); margin-top: 8px; }
+
+.kpiRow {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child { border-bottom: none; }
+}
+
+.kpiLabel { font-size: 0.82rem; color: var(--ink-soft); }
+
+.kpiValue {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
 .statGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 
-.statGridOverview { grid-template-columns: repeat(3, 1fr); }
+.statGridOverview {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
 
 .statCard {
   padding: 18px 20px;
