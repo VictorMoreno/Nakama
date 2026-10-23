@@ -11,6 +11,7 @@ function toChatExample(row: {
   moreExplanation?: string;
   socraticVariant?: string;
   attachments?: string[];
+  useful?: boolean | null;
 }): ChatExample {
   return {
     q: row.question ?? "",
@@ -18,7 +19,8 @@ function toChatExample(row: {
     cite: row.citation ?? "",
     more: row.moreExplanation ?? "",
     socratic: row.socraticVariant ?? "",
-    attachments: row.attachments ?? []
+    attachments: row.attachments ?? [],
+    useful: row.useful ?? null
   };
 }
 
@@ -108,6 +110,10 @@ export class ApiConversationsRepository implements IConversationsRepository {
     }
 
     return answer;
+  }
+
+  async RateExchange(botKey: string, conversationId: string, exchangeIndex: number, useful: boolean): Promise<void> {
+    await this.client.feedback(botKey, conversationId, exchangeIndex, { useful });
   }
 
   async Delete(conversationId: string): Promise<void> {

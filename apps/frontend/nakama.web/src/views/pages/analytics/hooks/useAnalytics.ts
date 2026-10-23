@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { AnalyticsSnapshot } from "../../../../modules/analytics/domain/Analytics";
+import type { AnalyticsSnapshot, UnhelpfulQuestion } from "../../../../modules/analytics/domain/Analytics";
 import type { IAnalyticsRepository } from "../../../../modules/analytics/domain/IAnalyticsRepository";
 import { Services } from "../../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
@@ -19,21 +19,22 @@ export function useAnalytics() {
   const { chatbots } = useChatbots();
   const repo = useInjection<IAnalyticsRepository>(Services.AnalyticsRepository.id);
   const [snapshot, setSnapshot] = useState<AnalyticsSnapshot>(EMPTY_SNAPSHOT);
+  const [unhelpful, setUnhelpful] = useState<UnhelpfulQuestion[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     repo.Find().then((data) => {
       if (!cancelled) setSnapshot(data);
     });
+    repo.FindUnhelpfulQuestions().then((data) => {
+      if (!cancelled) setUnhelpful(data);
+    });
     return () => {
       cancelled = true;
     };
   }, [repo]);
 
-  const globalGaps = Object.values(chatbots)
-    .filter((bot) => !bot.archived)
-    .flatMap((bot) => bot.gaps.map((g) => ({ ...g, dept: bot.label })))
-    .sort((a, b) => b.count - a.count);
+  const unhelpfulQuestions = unhelpful.map((row) => ({ ...row, dept: chatbots[row.botKey]?.label ?? row.botKey }));
 
-  return { globalGaps, snapshot };
+  return { unhelpfulQuestions, snapshot };
 }

@@ -10,6 +10,9 @@ export interface BotMessageState {
   example: ChatExample;
   useSocratic: boolean;
   revealed: boolean;
+  conversationId: string;
+  exchangeIndex: number;
+  complete: boolean;
 }
 
 interface UserBubbleProps {
@@ -75,21 +78,18 @@ interface BotBubbleProps {
   state: BotMessageState;
   settings: ChatbotSettings;
   onReveal: (id: string) => void;
-  onFeedback: (useful: boolean) => void;
+  onFeedback: (id: string, useful: boolean) => void;
 }
-
-type Feedback = "up" | "down" | null;
 
 export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubbleProps) {
   const [moreOpen, setMoreOpen] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback>(null);
   const { showToast } = useToast();
+  const rated = state.example.useful ?? null;
 
-  function handleFeedback(choice: "up" | "down") {
-    if (feedback) return;
-    setFeedback(choice);
-    onFeedback(choice === "up");
-    showToast(choice === "up" ? "Gracias por tu valoración" : "Gracias, lo tendremos en cuenta");
+  function handleFeedback(useful: boolean) {
+    if (rated === useful) return;
+    onFeedback(state.id, useful);
+    showToast(useful ? "Gracias por tu valoración" : "Gracias, lo tendremos en cuenta");
   }
 
   const showSocratic = state.useSocratic && !state.revealed && state.example.socratic !== "";
@@ -137,22 +137,22 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
               <button
                 className={styles.feedbackBtn}
                 data-fb="up"
-                aria-pressed={feedback === "up"}
+                aria-pressed={rated === true}
                 aria-label="Respuesta útil"
                 type="button"
-                disabled={feedback !== null}
-                onClick={() => handleFeedback("up")}
+                disabled={!state.complete}
+                onClick={() => handleFeedback(true)}
               >
                 <ThumbUpIcon />
               </button>
               <button
                 className={styles.feedbackBtn}
                 data-fb="down"
-                aria-pressed={feedback === "down"}
+                aria-pressed={rated === false}
                 aria-label="Respuesta no útil"
                 type="button"
-                disabled={feedback !== null}
-                onClick={() => handleFeedback("down")}
+                disabled={!state.complete}
+                onClick={() => handleFeedback(false)}
               >
                 <ThumbDownIcon />
               </button>

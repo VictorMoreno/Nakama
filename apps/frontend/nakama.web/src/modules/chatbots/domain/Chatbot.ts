@@ -57,6 +57,7 @@ export interface ChatExample {
   more: string;
   socratic: string;
   attachments?: string[];
+  useful?: boolean | null;
 }
 
 export interface ConversationSummary {

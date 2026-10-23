@@ -12,5 +12,7 @@ export interface IConversationsRepository {
     onChunk: (textSoFar: string) => void
   ): Promise<string>;
 
+  RateExchange(botKey: string, conversationId: string, exchangeIndex: number, useful: boolean): Promise<void>;
+
   Delete(conversationId: string): Promise<void>;
 }

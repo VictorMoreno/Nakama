@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { IAnalyticsRepository } from "../../../../modules/analytics/domain/IAnalyticsRepository";
 import type { ChatExample, ConversationSummary } from "../../../../modules/chatbots/domain/Chatbot";
 import type { IConversationsRepository } from "../../../../modules/chatbots/domain/IConversationsRepository";
 import { chatConfig } from "../../../../shared/infrastructure/config/ChatConfig";
@@ -23,10 +22,14 @@ function nextId() {
   return `m${uidCounter}`;
 }
 
-function exchangesToThread(exchanges: ChatExample[], useSocratic: boolean): ThreadItem[] {
-  return exchanges.flatMap((example) => [
+function exchangesToThread(exchanges: ChatExample[], useSocratic: boolean, conversationId: string): ThreadItem[] {
+  return exchanges.flatMap((example, exchangeIndex) => [
     { kind: "user" as const, id: nextId(), text: example.q, attachments: example.attachments ?? [] },
-    { kind: "bot" as const, id: nextId(), bot: { id: nextId(), example, useSocratic, revealed: false } }
+    {
+      kind: "bot" as const,
+      id: nextId(),
+      bot: { id: nextId(), example, useSocratic, revealed: false, conversationId, exchangeIndex, complete: true }
+    }
   ]);
 }
 
@@ -41,7 +44,6 @@ export function useChat() {
   const { chatbots, currentBotKey } = useChatbots();
   const { isAdmin, currentUser } = useUser();
   const conversationsRepo = useInjection<IConversationsRepository>(Services.ConversationsRepository.id);
-  const analyticsRepo = useInjection<IAnalyticsRepository>(Services.AnalyticsRepository.id);
   const navigate = useNavigate();
   const { showToast } = useToast();
   const bot = chatbots[currentBotKey];
@@ -91,7 +93,7 @@ export function useChat() {
   }, [input]);
 
   function openConversation(conv: ConversationSummary) {
-    setThread(exchangesToThread(conv.exchanges, bot!.settings.socratic));
+    setThread(exchangesToThread(conv.exchanges, bot!.settings.socratic, conv.id));
     setActiveConversationId(conv.id);
   }
 
@@ -127,6 +129,7 @@ export function useChat() {
     const title = val.length > MAX_TITLE_LENGTH ? `${val.slice(0, MAX_TITLE_LENGTH)}…` : val;
 
     const botMsgId = nextId();
+    const exchangeIndex = conversations.find((c) => c.id === conversationId)?.exchanges.length ?? 0;
 
     try {
       const answer = await conversationsRepo.Ask(conversationId, bot.id, title, val, files, (textSoFar) => {
@@ -136,7 +139,19 @@ export function useChat() {
           if (!alreadyStarted) {
             return [
               ...prev.filter((item) => item.id !== pendingId),
-              { kind: "bot", id: botMsgId, bot: { id: botMsgId, example, useSocratic: bot.settings.socratic, revealed: false } }
+              {
+                kind: "bot",
+                id: botMsgId,
+                bot: {
+                  id: botMsgId,
+                  example,
+                  useSocratic: bot.settings.socratic,
+                  revealed: false,
+                  conversationId,
+                  exchangeIndex,
+                  complete: false
+                }
+              }
             ];
           }
           return prev.map((item) =>
@@ -150,6 +165,9 @@ export function useChat() {
 
       if (isNewConversation) setActiveConversationId(conversationId);
 
+      setThread((prev) =>
+        prev.map((item) => (item.kind === "bot" && item.id === botMsgId ? { ...item, bot: { ...item.bot, complete: true } } : item))
+      );
       setConversations((prev) =>
         isNewConversation
           ? [{ id: conversationId, botKey: bot.id, title, dateLabel: formatDateTime(new Date()), exchanges: [example] }, ...prev]
@@ -189,8 +207,30 @@ export function useChat() {
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function submitFeedback(useful: boolean) {
-    void analyticsRepo.SubmitFeedback(useful);
+  function applyRating(botMsgId: string, conversationId: string, exchangeIndex: number, useful: boolean | null) {
+    setThread((prev) =>
+      prev.map((item) =>
+        item.kind === "bot" && item.bot.id === botMsgId ? { ...item, bot: { ...item.bot, example: { ...item.bot.example, useful } } } : item
+      )
+    );
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === conversationId ? { ...c, exchanges: c.exchanges.map((e, i) => (i === exchangeIndex ? { ...e, useful } : e)) } : c
+      )
+    );
+  }
+
+  function submitFeedback(botMsgId: string, useful: boolean) {
+    const item = thread.find((candidate) => candidate.kind === "bot" && candidate.bot.id === botMsgId);
+    if (!bot || !item || item.kind !== "bot") return;
+
+    const { conversationId, exchangeIndex } = item.bot;
+    const previous = item.bot.example.useful ?? null;
+    applyRating(botMsgId, conversationId, exchangeIndex, useful);
+    conversationsRepo.RateExchange(bot.id, conversationId, exchangeIndex, useful).catch(() => {
+      applyRating(botMsgId, conversationId, exchangeIndex, previous);
+      showToast("No se pudo guardar tu valoración.");
+    });
   }
 
   async function deleteConversation(id: string) {

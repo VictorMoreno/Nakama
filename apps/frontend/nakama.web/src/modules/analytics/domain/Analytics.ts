@@ -35,3 +35,9 @@ export interface QuestionActivity {
   weeks: WeeklyQuestions[];
   questionsThisWeek: number;
 }
+
+export interface UnhelpfulQuestion {
+  botKey: string;
+  question: string;
+  count: number;
+}

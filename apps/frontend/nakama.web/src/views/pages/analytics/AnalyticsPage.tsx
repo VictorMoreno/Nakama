@@ -8,7 +8,7 @@ import UsageChart from "./UsageChart";
 import styles from "./AnalyticsPage.module.scss";
 
 export default function AnalyticsPage() {
-  const { globalGaps, snapshot } = useAnalytics();
+  const { unhelpfulQuestions, snapshot } = useAnalytics();
   const { activity, days, setDays } = useUserActivity();
   const { activity: questions, weeks, setWeeks } = useQuestionActivity();
   const usageByBot = snapshot.usageByBot.map((u) => ({ key: u.botKey, value: u.value }));
@@ -111,12 +111,15 @@ export default function AnalyticsPage() {
           <span className="count">Todos los chatbots · esta semana</span>
         </div>
         <div className={styles.gapsList}>
-          {globalGaps.map((g) => (
-            <div className={styles.gapItem} key={`${g.dept}-${g.q}`}>
+          {unhelpfulQuestions.length === 0 && (
+            <p className={styles.emptyNote}>Ninguna respuesta se ha valorado como no útil esta semana.</p>
+          )}
+          {unhelpfulQuestions.map((g) => (
+            <div className={styles.gapItem} key={`${g.botKey}-${g.question}`}>
               <div>
-                <div className={styles.q}>&ldquo;{g.q}&rdquo;</div>
+                <div className={styles.q}>&ldquo;{g.question}&rdquo;</div>
                 <div className={styles.meta}>
-                  {g.dept} · preguntada {g.count} {g.count === 1 ? "vez" : "veces"} esta semana
+                  {g.dept} · valorada como no útil {g.count} {g.count === 1 ? "vez" : "veces"} esta semana
                 </div>
               </div>
             </div>

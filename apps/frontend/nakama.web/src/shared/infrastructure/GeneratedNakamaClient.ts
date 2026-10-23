@@ -41,10 +41,10 @@ export interface IGeneratedNakamaClient {
     questionActivity(weeks: number | undefined): Promise<QuestionActivityResponse>;
 
     /**
-     * Records whether a chat answer was useful, towards the global useful-answer rate.
-     * @return No Content
+     * Gets the questions whose answer was rated as not useful this week, grouped by chatbot and question, most repeated first.
+     * @return OK
      */
-    feedback(body: SubmitFeedbackRequest): Promise<void>;
+    unhelpfulQuestions(): Promise<UnhelpfulQuestionsResponse>;
 
     /**
      * Verifies email/password credentials, records real activity and issues an access token.
@@ -139,6 +139,12 @@ export interface IGeneratedNakamaClient {
      * @return No Content
      */
     iconDELETE(id: string): Promise<void>;
+
+    /**
+     * Rates one answer of the caller's own conversation as useful or not useful. Sending it again replaces the previous rating.
+     * @return No Content
+     */
+    feedback(botKey: string, conversationId: string, exchangeIndex: number, body: RateConversationExchangeRequest): Promise<void>;
 
     /**
      * Deletes the caller's own conversation (hard delete). The immutable conversation audit log is untouched.
@@ -445,43 +451,42 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Records whether a chat answer was useful, towards the global useful-answer rate.
-     * @return No Content
+     * Gets the questions whose answer was rated as not useful this week, grouped by chatbot and question, most repeated first.
+     * @return OK
      */
-    feedback(body: SubmitFeedbackRequest): Promise<void> {
-        let url_ = this.baseUrl + "/api/analytics/feedback";
+    unhelpfulQuestions(): Promise<UnhelpfulQuestionsResponse> {
+        let url_ = this.baseUrl + "/api/analytics/unhelpful-questions";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_: RequestInit = {
-            body: content_,
-            method: "POST",
+            method: "GET",
             headers: {
-                "Content-Type": "application/json",
+                "Accept": "application/json"
             }
         };
 
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processFeedback(_response));
+            return this.transformResult(url_, _response, (_response: Response) => this.processUnhelpfulQuestions(_response));
         });
     }
 
-    protected processFeedback(response: Response): Promise<void> {
+    protected processUnhelpfulQuestions(response: Response): Promise<UnhelpfulQuestionsResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 204) {
+        if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as UnhelpfulQuestionsResponse;
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<UnhelpfulQuestionsResponse>(null as any);
     }
 
     /**
@@ -1229,6 +1234,61 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     protected processIconDELETE(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Rates one answer of the caller's own conversation as useful or not useful. Sending it again replaces the previous rating.
+     * @return No Content
+     */
+    feedback(botKey: string, conversationId: string, exchangeIndex: number, body: RateConversationExchangeRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{botKey}/conversations/{conversationId}/exchanges/{exchangeIndex}/feedback";
+        if (botKey === undefined || botKey === null)
+            throw new globalThis.Error("The parameter 'botKey' must be defined.");
+        url_ = url_.replace("{botKey}", encodeURIComponent("" + botKey));
+        if (conversationId === undefined || conversationId === null)
+            throw new globalThis.Error("The parameter 'conversationId' must be defined.");
+        url_ = url_.replace("{conversationId}", encodeURIComponent("" + conversationId));
+        if (exchangeIndex === undefined || exchangeIndex === null)
+            throw new globalThis.Error("The parameter 'exchangeIndex' must be defined.");
+        url_ = url_.replace("{exchangeIndex}", encodeURIComponent("" + exchangeIndex));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processFeedback(_response));
+        });
+    }
+
+    protected processFeedback(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -2567,6 +2627,7 @@ export interface HistoryExampleRow {
     moreExplanation?: string | undefined;
     socraticVariant?: string | undefined;
     attachments?: string[] | undefined;
+    useful?: boolean | undefined;
 }
 
 export interface LlmModelOptionResponse {
@@ -2619,6 +2680,10 @@ export interface QuizQuestionRow {
     correctIndex?: number;
 }
 
+export interface RateConversationExchangeRequest {
+    useful?: boolean;
+}
+
 export interface RegisterLlmProviderRequest {
     apiKey?: string | undefined;
     enabled?: boolean;
@@ -2632,10 +2697,6 @@ export interface StatTileRow {
     bar?: number;
 }
 
-export interface SubmitFeedbackRequest {
-    useful?: boolean;
-}
-
 export interface TeamMemberRow {
     userId?: string;
     role?: string | undefined;
@@ -2645,6 +2706,16 @@ export interface TokenResponse {
     accessToken?: string | undefined;
     expiresAt?: Date;
     user?: UserResponse;
+}
+
+export interface UnhelpfulQuestionRow {
+    botKey?: string;
+    question?: string | undefined;
+    count?: number;
+}
+
+export interface UnhelpfulQuestionsResponse {
+    questions?: UnhelpfulQuestionRow[] | undefined;
 }
 
 export interface UpdateChatbotSettingsRequest {

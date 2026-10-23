@@ -92,6 +92,8 @@
 
 .gapsList { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px; }
 
+.emptyNote { margin: 0; font-size: 0.82rem; color: var(--ink-faint); }
+
 .gapItem {
   background: var(--bg);
   border-radius: var(--radius-md);

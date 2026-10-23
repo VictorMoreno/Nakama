@@ -1,5 +1,5 @@
 import type { AnalyticsResponse, GeneratedNakamaClient, QuestionActivityResponse, UserActivityResponse } from "../../../shared/infrastructure/GeneratedNakamaClient";
-import type { AnalyticsSnapshot, QuestionActivity, UserActivity } from "../domain/Analytics";
+import type { AnalyticsSnapshot, QuestionActivity, UnhelpfulQuestion, UserActivity } from "../domain/Analytics";
 import type { IAnalyticsRepository } from "../domain/IAnalyticsRepository";
 
 function toSnapshot(response: AnalyticsResponse): AnalyticsSnapshot {
@@ -52,7 +52,8 @@ export class ApiAnalyticsRepository implements IAnalyticsRepository {
     return toQuestionActivity(response);
   }
 
-  async SubmitFeedback(useful: boolean): Promise<void> {
-    await this.client.feedback({ useful });
+  async FindUnhelpfulQuestions(): Promise<UnhelpfulQuestion[]> {
+    const response = await this.client.unhelpfulQuestions();
+    return (response.questions ?? []).map((row) => ({ botKey: row.botKey ?? "", question: row.question ?? "", count: row.count ?? 0 }));
   }
 }
