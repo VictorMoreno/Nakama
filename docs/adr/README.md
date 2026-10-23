@@ -47,3 +47,4 @@ code in the backend; the ADRs document *why* certain decisions were made.
 | [ADR-26](0026-list-pages-use-a-separate-paged-endpoint-the-unpaged-list-stays.md) | List pages use a separate `GET /{resource}/paged` endpoint; the unpaged list stays | Application layer — queries / API | Accepted |
 | [ADR-27](0027-one-unit-of-work-per-request-committed-by-an-endpoint-filter.md) | One unit of work per request, committed by an endpoint filter | Persistence — transactions | Accepted |
 | [ADR-28](0028-user-activity-is-login-plus-session-renewal-throttled-per-hour.md) | User activity is login plus session renewal, throttled to one entry per hour; shown in Analytics | Users — analytics | Accepted |
+| [ADR-29](0029-questions-per-week-come-from-one-row-per-question.md) | Questions per week come from one row per question (`QuestionActivity`); "answered this week" uses the same source | Analytics — read models | Accepted |
