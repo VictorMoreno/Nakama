@@ -25,8 +25,16 @@ one in UTC. Empty weeks are zero-filled. `QuestionActivity:DefaultWeeks` (8) and
 
 **One figure, one source.** "Preguntas respondidas" in `GET /api/analytics` now comes from the same table (the current week),
 as the active users already come from `UserActivity` (ADR-28), so the card and the chart cannot disagree. The card says
-"esta semana" instead of "en total". The old counter in the `Analytics` aggregate is no longer read; dropping it needs a
-schema migration and is left as a follow-up.
+"esta semana" instead of "en total".
+
+"Preguntas resueltas por chatbot" (`usageByBot` of the same response) is read from this table too: the questions of the
+current calendar month in `QuestionActivity:TimeZone`, grouped by `botkey`, from the most to the least asked, with ties broken by
+chatbot so the order is stable. Only chatbots with a question that month appear; the chart already has an empty state. The
+JSON contract (`botKey`, `value`) is unchanged, so the generated client is too. Migration 4 drops the old
+`answeredthisweek` and `usage_by_bot_json` columns of `read_analytics` and the aggregate no longer reacts to
+`ConversationExchangeAppended`: `Analytics` keeps only the chatbot count and the feedback counters. The totals accumulated
+before the table existed are lost, as with the weekly series. A deleted or archived chatbot keeps its rows, so its key
+may show instead of its name until the month changes.
 
 **Not included.** The chart had a second series, "escaladas a un senior". Nothing in the application models an escalation
 and the useful/not-useful feedback is global, not tied to a question, so there is no honest way to compute it and it was
