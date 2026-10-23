@@ -2,6 +2,7 @@ using System.Buffers.Text;
 using System.Security.Cryptography;
 using System.Text;
 using Nakama.Authentication.Domain.Errors;
+using Nakama.Authentication.Domain.Events;
 using Nakama.Shared.Domain;
 
 namespace Nakama.Authentication.Domain;
@@ -59,6 +60,8 @@ public partial class RefreshToken
     }
 
     public void Revoke(DateTime now) => this.RevokedAt ??= now;
+
+    public void MarkRefreshed(DateTime now) => this.Record(new SessionRefreshed(this.Id, this.UserId, now));
 
     private bool Matches(string value) =>
         CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(this.TokenHash), Encoding.UTF8.GetBytes(HashOf(value)));

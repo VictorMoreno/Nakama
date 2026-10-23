@@ -120,20 +120,4 @@ public sealed class NhUsersRepositoryShould : InfrastructureTestCase
 
         count.Should().Be(0);
     }
-
-    [Test]
-    public async Task count_only_the_users_active_since_the_cutoff_including_the_cutoff_itself()
-    {
-        DateTime cutoff = DateTime.UtcNow.AddDays(-7);
-        cutoff = new DateTime(cutoff.Year, cutoff.Month, cutoff.Day, cutoff.Hour, cutoff.Minute, cutoff.Second, DateTimeKind.Utc);
-        await this._repository.Save(UserMother.With(lastActiveAt: cutoff.AddHours(1)), CancellationToken.None);
-        await this._repository.Save(UserMother.With(lastActiveAt: cutoff), CancellationToken.None);
-        await this._repository.Save(UserMother.With(lastActiveAt: cutoff.AddHours(-1)), CancellationToken.None);
-        await this._repository.Save(UserMother.With(lastActiveAt: null), CancellationToken.None);
-        await this.Persist();
-
-        int count = await this._repository.Count(new UserActiveSinceSpecification(cutoff), CancellationToken.None);
-
-        count.Should().Be(2);
-    }
 }

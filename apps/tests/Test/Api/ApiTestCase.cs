@@ -22,6 +22,8 @@ public abstract class ApiTestCase
 
     protected FakeLlmClient Llm => this._factory.Llm;
 
+    protected IServiceProvider Services => this._factory.Services;
+
     protected virtual void ConfigureServices(IServiceCollection services)
     {
     }

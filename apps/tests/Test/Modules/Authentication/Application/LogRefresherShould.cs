@@ -3,6 +3,7 @@ using Nakama.Authentication.Application;
 using Nakama.Authentication.Application.Refresher;
 using Nakama.Authentication.Domain;
 using Nakama.Authentication.Domain.Errors;
+using Nakama.Authentication.Domain.Events;
 using Nakama.Users.Application;
 using Test.Modules.Authentication.Domain;
 using Test.Modules.Users.Application;
@@ -22,7 +23,8 @@ public sealed class LogRefresherShould : AuthenticationUnitTestCase
             this.RefreshTokens.Object,
             this.Clock.Object,
             this.TokenGenerator.Object,
-            this.Jwt));
+            this.Jwt,
+            this.EventBus.Object));
     }
 
     [Test]
@@ -178,5 +180,41 @@ public sealed class LogRefresherShould : AuthenticationUnitTestCase
 
         await act.Should().ThrowAsync<AuthInvalidRefreshTokenError>();
         this.ShouldHaveRevokedAllTokensOf(current.UserId, now);
+    }
+
+    [Test]
+    public async Task publish_that_the_session_was_refreshed_by_the_new_token_once_it_has_rotated()
+    {
+        DateTime now = DateTime.UtcNow;
+        RefreshToken current = RefreshTokenMother.Random();
+        UserResponse user = UserResponseMother.With(id: current.UserId);
+        this.ShouldBeNow(now);
+        this.ShouldFindRefreshToken(current);
+        this.ShouldFindUser(user);
+        this.ShouldGenerateAccessToken(user, TokenMother.Random());
+        this.ShouldRotate(current, true, now);
+
+        await this._handler.Handle(LogRefresherQueryMother.With(current.Value), CancellationToken.None);
+
+        this.ShouldHavePublished<SessionRefreshed>(refreshed => refreshed.UserId == current.UserId && refreshed.OccurredAt == now);
+    }
+
+    [Test]
+    public async Task publish_nothing_when_the_rotation_loses_the_race()
+    {
+        DateTime now = DateTime.UtcNow;
+        RefreshToken current = RefreshTokenMother.Random();
+        UserResponse user = UserResponseMother.With(id: current.UserId);
+        this.ShouldBeNow(now);
+        this.ShouldFindRefreshToken(current);
+        this.ShouldFindUser(user);
+        this.ShouldGenerateAccessToken(user, TokenMother.Random());
+        this.ShouldRotate(current, false, now);
+
+        Func<Task> act = async () =>
+            await this._handler.Handle(LogRefresherQueryMother.With(current.Value), CancellationToken.None);
+
+        await act.Should().ThrowAsync<AuthInvalidRefreshTokenError>();
+        this.ShouldNotHavePublishedAnything();
     }
 }

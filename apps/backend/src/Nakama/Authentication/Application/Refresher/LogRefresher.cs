@@ -4,6 +4,7 @@ using Nakama.Authentication.Domain.Errors;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.Shared.Infrastructure.Auth;
+using Nakama.Shared.Infrastructure.Events;
 using Nakama.Users.Application;
 using Nakama.Users.Application.Finder;
 
@@ -24,7 +25,8 @@ public static class LogRefresher
         IRefreshTokensRepository refreshTokens,
         ISystemClock systemClock,
         ITokenGenerator tokenGenerator,
-        IOptions<JwtOptions> jwtOptions) : IService
+        IOptions<JwtOptions> jwtOptions,
+        IEventBus eventBus) : IService
     {
         public async Task<AuthenticationResponse> Execute(string? refreshToken, CancellationToken ct)
         {
@@ -50,6 +52,9 @@ public static class LogRefresher
                 await refreshTokens.RevokeAllOf(current.UserId, now, ct);
                 throw AuthErrors.InvalidRefreshToken;
             }
+
+            replacement.MarkRefreshed(now);
+            await eventBus.Publish(replacement, ct);
 
             return AuthenticationResponse.From(user, token, replacement);
         }

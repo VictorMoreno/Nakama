@@ -20,6 +20,7 @@ using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
 using Nakama.Shared.Infrastructure.Queries;
 using Nakama.Shared.Infrastructure.Storage;
+using Nakama.Shared.Infrastructure.UserActivity;
 using Nakama.Users.Domain;
 using Nakama.Users.Infrastructure;
 
@@ -68,6 +69,14 @@ public static class InfrastructureExtensions
             .BindConfiguration(PaginationOptions.SectionName)
             .Validate(options => options.DefaultPageSize > 0, "Pagination:DefaultPageSize must be greater than zero.")
             .Validate(options => options.MaxPageSize >= options.DefaultPageSize, "Pagination:MaxPageSize must not be lower than Pagination:DefaultPageSize.")
+            .ValidateOnStart();
+
+        services.AddOptions<UserActivityOptions>()
+            .BindConfiguration(UserActivityOptions.SectionName)
+            .Validate(options => options.MaxDays >= 7, "UserActivity:MaxDays must be at least 7.")
+            .Validate(options => options.DefaultDays >= 1 && options.DefaultDays <= options.MaxDays, "UserActivity:DefaultDays must be between 1 and UserActivity:MaxDays.")
+            .Validate(options => options.SessionIntervalMinutes > 0, "UserActivity:SessionIntervalMinutes must be greater than zero.")
+            .Validate(options => TimeZoneInfo.TryFindSystemTimeZoneById(options.TimeZone, out _), "UserActivity:TimeZone must be a time zone known to the system.")
             .ValidateOnStart();
 
         services.AddOptions<IconsOptions>()
