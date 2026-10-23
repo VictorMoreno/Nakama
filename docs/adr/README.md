@@ -48,3 +48,4 @@ code in the backend; the ADRs document *why* certain decisions were made.
 | [ADR-27](0027-one-unit-of-work-per-request-committed-by-an-endpoint-filter.md) | One unit of work per request, committed by an endpoint filter | Persistence — transactions | Accepted |
 | [ADR-28](0028-user-activity-is-login-plus-session-renewal-throttled-per-hour.md) | User activity is login plus session renewal, throttled to one entry per hour; shown in Analytics | Users — analytics | Accepted |
 | [ADR-29](0029-questions-per-week-come-from-one-row-per-question.md) | Questions per week come from one row per question (`QuestionActivity`); "answered this week" uses the same source | Analytics — read models | Accepted |
+| [ADR-30](0030-answer-feedback-is-kept-per-exchange.md) | The rating of an answer is kept per exchange; the useful rate and the unhelpful questions are read from it | Chatbots / Analytics — feedback | Accepted |

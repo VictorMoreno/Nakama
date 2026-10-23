@@ -17,18 +17,22 @@ so what is recorded is the moment the exchange was added.
 
 **Reading it.** `GET /api/analytics/question-activity?weeks=` (administrators only) returns one row per week, oldest first,
 with the last row being the current week, plus the questions of the current week. Weeks start on Monday and are bucketed in
-`QuestionActivity:TimeZone` (`Europe/Madrid`), so a question at 23:30 on a Sunday belongs to that week and not to the next
-one in UTC. Empty weeks are zero-filled. `QuestionActivity:DefaultWeeks` (8) and `MaxWeeks` (26) bound the request (422
+`Reporting:TimeZone` (`Europe/Madrid`, the one shared with the other analytics, see below), so a question at 23:30 on a Sunday belongs to that week and not to the next
+one in UTC. Empty weeks are zero-filled. `Reporting:QuestionActivity:DefaultWeeks` (8) and `MaxWeeks` (26) bound the request (422
 `nakama.question_activity.invalid_weeks` outside `1..MaxWeeks`) and are mirrored in the frontend as
-`VITE_QUESTION_ACTIVITY_DEFAULT_WEEKS` and `VITE_QUESTION_ACTIVITY_WEEK_OPTIONS`. The time zone is configured here and under
-`UserActivity` separately on purpose: the two contexts do not depend on each other, at the price of one repeated value.
+`VITE_QUESTION_ACTIVITY_DEFAULT_WEEKS` and `VITE_QUESTION_ACTIVITY_WEEK_OPTIONS`.
+
+**One time zone.** Every analytics read (user activity, questions per week, per chatbot and unhelpful questions) takes
+"today", the start of a local day and the Monday of a week from `IReportingCalendar`, whose only setting is
+`Reporting:TimeZone`. Each module used to carry its own copy of the time zone and of the date arithmetic; with one value
+the cards of the page cannot disagree on what "this week" means.
 
 **One figure, one source.** "Preguntas respondidas" in `GET /api/analytics` now comes from the same table (the current week),
 as the active users already come from `UserActivity` (ADR-28), so the card and the chart cannot disagree. The card says
 "esta semana" instead of "en total".
 
 "Preguntas resueltas por chatbot" (`usageByBot` of the same response) is read from this table too: the questions of the
-current calendar month in `QuestionActivity:TimeZone`, grouped by `botkey`, from the most to the least asked, with ties broken by
+current calendar month in `Reporting:TimeZone`, grouped by `botkey`, from the most to the least asked, with ties broken by
 chatbot so the order is stable. Only chatbots with a question that month appear; the chart already has an empty state. The
 JSON contract (`botKey`, `value`) is unchanged, so the generated client is too. Migration 4 drops the old
 `answeredthisweek` and `usage_by_bot_json` columns of `read_analytics` and the aggregate no longer reacts to

@@ -12,12 +12,13 @@ for that.
 **What counts as activity.** A login alone undercounts: the session lives on a rotating refresh token, so a person who keeps
 the app open for days never logs in again. `Authentication` therefore publishes `SessionRefreshed` after each successful
 rotation, and `UserActivity` records a `Session` entry from it — but at most one per person per
-`UserActivity:SessionIntervalMinutes` (60). The access token lasts 15 minutes, so without the throttle an open tab would
+`Reporting:UserActivity:SessionIntervalMinutes` (60). The access token lasts 15 minutes, so without the throttle an open tab would
 write four rows an hour. The handler counts the person's entries since `occurredAt - interval` and saves only when there are
 none. Logins are never throttled.
 
-**Days are counted in a configured time zone.** `UserActivity:TimeZone` (`Europe/Madrid`) decides where a day starts, not
-UTC, so a login at 23:30 local time does not land on tomorrow's bar. Entries are bucketed in memory with `TimeZoneInfo`;
+**Days are counted in a configured time zone.** `Reporting:TimeZone` (`Europe/Madrid`), one setting shared by every
+analytics read behind `IReportingCalendar` (ADR-29, ADR-30), decides where a day starts, not UTC, so a login at 23:30
+local time does not land on tomorrow's bar. Entries are bucketed in memory with `TimeZoneInfo`;
 rows are zero-filled so the chart has one point per day, and daylight-saving changes are covered by a test. IANA ids on
 Windows are resolved through the operating system's ICU; on Linux they need the `tzdata` package, so a slim or Alpine image
 must include it (and not run with `InvariantGlobalization` on).
@@ -29,7 +30,7 @@ month of entries makes reasonable. Migration 2 adds indexes on `occurredat` and 
 query and the throttle check. ADR-19 allows editing the baseline until the first deployment, but a development environment
 already exists in Azure, so this is a numbered migration.
 
-**Limits.** `UserActivity:DefaultDays` and `MaxDays` are mirrored in the frontend as `VITE_USER_ACTIVITY_DEFAULT_DAYS` and
+**Limits.** `Reporting:UserActivity:DefaultDays` and `MaxDays` are mirrored in the frontend as `VITE_USER_ACTIVITY_DEFAULT_DAYS` and
 `VITE_USER_ACTIVITY_DAY_OPTIONS`, and the endpoint answers 422 `nakama.user_activity.invalid_days` outside `1..MaxDays`.
 A per-person "last access" list was left out on purpose: it is personal data and the page is meant for aggregate usage.
 
