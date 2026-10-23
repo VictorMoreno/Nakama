@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Infrastructure;
+using Nakama.Shared.Infrastructure;
 using Test.Modules.Chatbots.Domain;
 using Test.Modules.Shared.Infrastructure;
 
@@ -47,7 +48,7 @@ public sealed class NhConversationsRepositoryShould : InfrastructureTestCase
         await this._repository.Save(conversation, CancellationToken.None);
         await this.Persist();
         Conversation? stored = await this._repository.FindById(conversation.Id, CancellationToken.None);
-        stored!.AppendExchange(second);
+        stored!.AppendExchange(second, new SystemClock());
 
         await this._repository.Save(stored, CancellationToken.None);
         await this.Persist();

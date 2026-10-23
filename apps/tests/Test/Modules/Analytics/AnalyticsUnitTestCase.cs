@@ -1,6 +1,8 @@
 using System.Linq.Expressions;
 using Moq;
 using Nakama.Analytics.Domain;
+using Nakama.QuestionActivity.Application;
+using Nakama.QuestionActivity.Application.Finder;
 using Nakama.Shared.Domain.Specification;
 using Nakama.UserActivity.Application;
 using Nakama.UserActivity.Application.Finder;
@@ -32,6 +34,18 @@ public abstract class AnalyticsUnitTestCase : UnitTestCase
         this.QueryBus
             .Setup(bus => bus.Ask(It.IsAny<UserActivityFinder.Query>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserActivityResponse([], 0, count, count));
+
+    protected void ShouldFindQuestionsOfTheCurrentWeek(int count) =>
+        this.QueryBus
+            .Setup(bus => bus.Ask(It.IsAny<QuestionActivityFinder.Query>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new QuestionActivityResponse([], count));
+
+    protected void ShouldHaveAskedForTheQuestionsOfTheCurrentWeek() =>
+        this.QueryBus.Verify(
+            bus => bus.Ask(
+                It.Is<QuestionActivityFinder.Query>(query => query.Weeks == 1),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
 
     protected void ShouldHaveAskedForTheActivityOfTheLastDays(int days) =>
         this.QueryBus.Verify(

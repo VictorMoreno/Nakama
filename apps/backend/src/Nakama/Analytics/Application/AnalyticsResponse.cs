@@ -16,10 +16,10 @@ public sealed record AnalyticsResponse(
 
 public static class AnalyticsExtensions
 {
-    public static AnalyticsResponse ToResponse(this Analytics entity, int activeUsersCount, int totalUsersCount) => new(
+    public static AnalyticsResponse ToResponse(this Analytics entity, int activeUsersCount, int totalUsersCount, int answeredThisWeek) => new(
         entity.Id,
         entity.ActiveBotsCount,
-        entity.AnsweredThisWeek,
+        answeredThisWeek,
         entity.UsageByBot,
         activeUsersCount,
         totalUsersCount,

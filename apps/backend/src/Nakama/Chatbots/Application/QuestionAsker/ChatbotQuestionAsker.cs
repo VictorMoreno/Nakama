@@ -75,7 +75,7 @@ public static class ChatbotQuestionAsker
 
                 string answer = answerBuilder.ToString();
                 conversation.AppendExchange(new ConversationExchange(cmd.Question, answer, string.Empty, string.Empty,
-                    string.Empty, savedAttachments));
+                    string.Empty, savedAttachments), systemClock);
 
                 await conversationsRepository.Save(conversation, cancellationToken);
                 await eventBus.Publish(conversation, cancellationToken);

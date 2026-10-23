@@ -20,6 +20,7 @@ using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Shared.Infrastructure.Persistence.Nh;
 using Nakama.Shared.Infrastructure.Queries;
 using Nakama.Shared.Infrastructure.Storage;
+using Nakama.Shared.Infrastructure.QuestionActivity;
 using Nakama.Shared.Infrastructure.UserActivity;
 using Nakama.Users.Domain;
 using Nakama.Users.Infrastructure;
@@ -77,6 +78,13 @@ public static class InfrastructureExtensions
             .Validate(options => options.DefaultDays >= 1 && options.DefaultDays <= options.MaxDays, "UserActivity:DefaultDays must be between 1 and UserActivity:MaxDays.")
             .Validate(options => options.SessionIntervalMinutes > 0, "UserActivity:SessionIntervalMinutes must be greater than zero.")
             .Validate(options => TimeZoneInfo.TryFindSystemTimeZoneById(options.TimeZone, out _), "UserActivity:TimeZone must be a time zone known to the system.")
+            .ValidateOnStart();
+
+        services.AddOptions<QuestionActivityOptions>()
+            .BindConfiguration(QuestionActivityOptions.SectionName)
+            .Validate(options => options.MaxWeeks >= 4, "QuestionActivity:MaxWeeks must be at least 4.")
+            .Validate(options => options.DefaultWeeks >= 1 && options.DefaultWeeks <= options.MaxWeeks, "QuestionActivity:DefaultWeeks must be between 1 and QuestionActivity:MaxWeeks.")
+            .Validate(options => TimeZoneInfo.TryFindSystemTimeZoneById(options.TimeZone, out _), "QuestionActivity:TimeZone must be a time zone known to the system.")
             .ValidateOnStart();
 
         services.AddOptions<IconsOptions>()

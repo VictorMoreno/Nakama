@@ -11,10 +11,12 @@ public static class ConversationExchangeAppendedMother
         ConversationId? id = null,
         ChatbotId? botKey = null,
         Guid? userId = null,
-        ConversationExchange? exchange = null) =>
+        ConversationExchange? exchange = null,
+        DateTime? occurredAt = null) =>
         new(
             id ?? ConversationMother.RandomId(),
             botKey ?? ChatbotMother.RandomId(),
             userId ?? Guid.NewGuid(),
-            exchange ?? ConversationExchangeMother.Random());
+            exchange ?? ConversationExchangeMother.Random(),
+            occurredAt ?? DateTime.UtcNow);
 }

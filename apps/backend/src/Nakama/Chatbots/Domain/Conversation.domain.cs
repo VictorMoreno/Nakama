@@ -31,10 +31,10 @@ public partial class Conversation
         return conversation;
     }
 
-    public void AppendExchange(ConversationExchange exchange)
+    public void AppendExchange(ConversationExchange exchange, ISystemClock systemClock)
     {
         this._exchanges.Add(exchange);
-        this.Record(new ConversationExchangeAppended(this.Id, this.BotKey, this.UserId, exchange));
+        this.Record(new ConversationExchangeAppended(this.Id, this.BotKey, this.UserId, exchange, systemClock.UtcNow));
     }
 
     public void Delete() => this.Record(new ConversationDeleted(

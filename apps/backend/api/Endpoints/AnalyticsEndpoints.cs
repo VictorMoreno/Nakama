@@ -2,6 +2,8 @@ using Api.Configuration;
 using Nakama.Analytics.Application;
 using Nakama.Analytics.Application.FeedbackSubmitter;
 using Nakama.Analytics.Application.Finder;
+using Nakama.QuestionActivity.Application;
+using Nakama.QuestionActivity.Application.Finder;
 using Nakama.Shared.Domain;
 using Nakama.UserActivity.Application;
 using Nakama.UserActivity.Application.Finder;
@@ -28,6 +30,14 @@ public sealed class AnalyticsEndpoints : IEndpoint
             .Produces<UserActivityResponse>()
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
+        group.MapGet("question-activity", FindQuestionActivity)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Gets the number of questions asked to the chatbots per week, for the last N weeks, plus the ones asked this week.")
+            .WithDescription(
+                "Weeks start on Monday and are bucketed in the configured time zone; the last row is the current week. `weeks` defaults to QuestionActivity:DefaultWeeks and cannot exceed QuestionActivity:MaxWeeks.")
+            .Produces<QuestionActivityResponse>()
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
         group.MapPost("feedback", SubmitFeedback)
             .WithSummary("Records whether a chat answer was useful, towards the global useful-answer rate.")
             .Produces(StatusCodes.Status204NoContent);
@@ -38,6 +48,9 @@ public sealed class AnalyticsEndpoints : IEndpoint
 
     private static async Task<IResult> FindUserActivity(IQueryBus queryBus, CancellationToken ct, int? days = null) =>
         Results.Ok(await queryBus.Ask(new UserActivityFinder.Query(days), ct));
+
+    private static async Task<IResult> FindQuestionActivity(IQueryBus queryBus, CancellationToken ct, int? weeks = null) =>
+        Results.Ok(await queryBus.Ask(new QuestionActivityFinder.Query(weeks), ct));
 
     private static async Task<IResult> SubmitFeedback(SubmitFeedbackRequest body, ICommandBus commandBus, CancellationToken ct)
     {

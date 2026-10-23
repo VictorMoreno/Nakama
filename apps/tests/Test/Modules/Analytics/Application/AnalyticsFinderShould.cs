@@ -17,19 +17,22 @@ public sealed class AnalyticsFinderShould : AnalyticsUnitTestCase
     {
         this._handler = new AnalyticsFinder.Handler(
             new(this.AnalyticsRepository.Object, this.UsersRepository.Object, this.QueryBus.Object));
+        this.ShouldFindQuestionsOfTheCurrentWeek(0);
     }
 
     [Test]
-    public async Task return_the_analytics_together_with_the_user_counts()
+    public async Task return_the_analytics_together_with_the_user_and_question_counts()
     {
         AnalyticsEntity analytics = AnalyticsMother.WithUsageRow();
         this.ShouldFindAnalytics(analytics);
         this.ShouldFindActiveUsersOfTheLastWeek(7);
+        this.ShouldFindQuestionsOfTheCurrentWeek(12);
         this.ShouldCountUsers(20);
 
         AnalyticsResponse response = await this._handler.Handle(new AnalyticsFinder.Query(), CancellationToken.None);
 
-        response.Should().BeEquivalentTo(analytics);
+        response.Should().BeEquivalentTo(analytics, options => options.Excluding(row => row.AnsweredThisWeek));
+        response.AnsweredThisWeek.Should().Be(12);
         response.ActiveUsersCount.Should().Be(7);
         response.TotalUsersCount.Should().Be(20);
     }
@@ -43,6 +46,17 @@ public sealed class AnalyticsFinderShould : AnalyticsUnitTestCase
         await this._handler.Handle(new AnalyticsFinder.Query(), CancellationToken.None);
 
         this.ShouldHaveAskedForTheActivityOfTheLastDays(7);
+    }
+
+    [Test]
+    public async Task take_the_questions_answered_this_week_from_the_question_activity_of_the_current_week()
+    {
+        this.ShouldFindAnalytics(AnalyticsMother.Random());
+        this.ShouldFindActiveUsersOfTheLastWeek(3);
+
+        await this._handler.Handle(new AnalyticsFinder.Query(), CancellationToken.None);
+
+        this.ShouldHaveAskedForTheQuestionsOfTheCurrentWeek();
     }
 
     [Test]

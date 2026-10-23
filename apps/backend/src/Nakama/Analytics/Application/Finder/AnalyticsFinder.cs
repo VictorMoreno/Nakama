@@ -1,5 +1,7 @@
 using Nakama.Analytics.Domain;
 using Nakama.Analytics.Domain.Errors;
+using Nakama.QuestionActivity.Application;
+using Nakama.QuestionActivity.Application.Finder;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
 using Nakama.UserActivity.Application;
@@ -24,13 +26,16 @@ public static class AnalyticsFinder
     {
         private const int ActiveUsersWindowDays = 7;
 
+        private const int CurrentWeekOnly = 1;
+
         public async Task<AnalyticsResponse> Execute(CancellationToken cancellationToken)
         {
             Domain.Analytics analytics = await repository.Find(cancellationToken) ?? throw AnalyticsErrors.NotFound;
             UserActivityResponse activity = await queryBus.Ask(new UserActivityFinder.Query(ActiveUsersWindowDays), cancellationToken);
+            QuestionActivityResponse questions = await queryBus.Ask(new QuestionActivityFinder.Query(CurrentWeekOnly), cancellationToken);
             int totalUsersCount = await usersRepository.Count(new UserListingSpecification(), cancellationToken);
 
-            return analytics.ToResponse(activity.ActiveLast7Days, totalUsersCount);
+            return analytics.ToResponse(activity.ActiveLast7Days, totalUsersCount, questions.QuestionsThisWeek);
         }
     }
 }

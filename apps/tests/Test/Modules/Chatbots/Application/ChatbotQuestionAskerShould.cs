@@ -56,7 +56,7 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
             && conversation.Exchanges.First().Question == command.Question
             && conversation.Exchanges.First().Answer == "Hello");
         this.ShouldHavePublished<ConversationStarted>(@event => @event.Id.Value == command.ConversationId);
-        this.ShouldHavePublished<ConversationExchangeAppended>(@event => @event.Exchange.Answer == "Hello");
+        this.ShouldHavePublished<ConversationExchangeAppended>(@event => @event.Exchange.Answer == "Hello" && @event.OccurredAt == now);
     }
 
     [Test]
