@@ -11,7 +11,6 @@ import type {
 
 export interface CreateChatbotInput {
   name: string;
-  dept: string;
   description: string;
   status: ChatbotLifecycleStatus;
   settings: ChatbotSettings;

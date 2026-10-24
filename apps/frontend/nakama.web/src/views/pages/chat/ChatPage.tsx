@@ -163,7 +163,7 @@ export default function ChatPage() {
         <div className={styles.sideCol}>
           <div className={`${styles.contextCard} glass`}>
             <span className="eyebrow">Sobre este bot</span>
-            {bot.context !== "" && <p>{bot.context}</p>}
+            {bot.description !== "" && <p>{bot.description}</p>}
             {isAdmin && (
               <button className="config-link" type="button" onClick={() => navigate(`/chatbots/${bot.id}?tab=config`)}>
                 Ver configuración del chatbot →

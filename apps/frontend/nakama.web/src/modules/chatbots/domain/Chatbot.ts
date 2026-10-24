@@ -49,7 +49,6 @@ export interface Chatbot {
   label: string;
   description: string;
   status: ChatbotLifecycleStatus;
-  context: string;
   settings: ChatbotSettings;
   docs: ChatbotDocument[];
   team: TeamMember[];

@@ -18,8 +18,6 @@ export default function CreateChatbotPage() {
     navigate,
     name,
     setName,
-    dept,
-    setDept,
     description,
     setDescription,
     status,
@@ -37,6 +35,8 @@ export default function CreateChatbotPage() {
     setIconUrl,
     nameError,
     setNameError,
+    descriptionError,
+    setDescriptionError,
     handleConfirm
   } = useCreateChatbot();
 
@@ -76,26 +76,18 @@ export default function CreateChatbotPage() {
                 autoFocus
               />
             </div>
-            <div className="form-field">
-              <label htmlFor="new-bot-dept">Departamento o equipo</label>
-              <input
-                id="new-bot-dept"
-                type="text"
-                className="form-input"
-                placeholder="p. ej. Finanzas"
-                value={dept}
-                onChange={(e) => setDept(e.target.value)}
-              />
-            </div>
             <div className="form-field" style={{ marginBottom: 0 }}>
               <label htmlFor="new-bot-desc">Descripción breve</label>
               <textarea
                 id="new-bot-desc"
-                className="form-input"
+                className={`form-input${descriptionError ? " field-error" : ""}`}
                 rows={2}
                 placeholder="Se mostrará en la card del listado para ayudar a encontrar este chatbot."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  if (descriptionError) setDescriptionError(false);
+                }}
               />
             </div>
           </div>

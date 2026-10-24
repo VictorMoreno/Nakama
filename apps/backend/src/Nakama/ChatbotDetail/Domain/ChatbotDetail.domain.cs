@@ -7,7 +7,6 @@ public partial class ChatbotDetail
         string label,
         string description,
         string status,
-        string context,
         bool archived,
         string? iconUrl,
         bool socratic,
@@ -21,7 +20,6 @@ public partial class ChatbotDetail
         this.Label = label;
         this.Description = description;
         this.Status = status;
-        this.Context = context;
         this.Archived = archived;
         this.IconUrl = iconUrl;
         this.Socratic = socratic;
@@ -45,7 +43,6 @@ public partial class ChatbotDetail
             label,
             description,
             status,
-            string.Empty,
             false,
             null,
             socratic,

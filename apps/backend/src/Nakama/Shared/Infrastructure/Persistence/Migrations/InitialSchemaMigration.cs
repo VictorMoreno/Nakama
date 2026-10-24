@@ -88,7 +88,6 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("label").AsString(255).NotNullable()
             .WithColumn("description").AsCustom("text").NotNullable()
             .WithColumn("status").AsString(255).NotNullable()
-            .WithColumn("context").AsCustom("text").NotNullable()
             .WithColumn("archived").AsBoolean().NotNullable()
             .WithColumn("iconurl").AsString(255).Nullable()
             .WithColumn("socratic").AsBoolean().NotNullable()

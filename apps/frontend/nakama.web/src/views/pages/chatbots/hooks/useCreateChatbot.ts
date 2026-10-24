@@ -17,7 +17,6 @@ export function useCreateChatbot() {
   const [model, setModel] = useState("");
 
   const [name, setName] = useState("");
-  const [dept, setDept] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<ChatbotLifecycleStatus>("borrador");
   const [socratic, setSocratic] = useState(false);
@@ -25,6 +24,7 @@ export function useCreateChatbot() {
   const [provider, setProvider] = useState<LlmProvider>("anthropic");
   const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
   const [nameError, setNameError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,8 +49,9 @@ export function useCreateChatbot() {
 
   async function handleConfirm() {
     const trimmed = name.trim();
-    if (!trimmed) {
-      setNameError(true);
+    if (!trimmed || !description.trim()) {
+      setNameError(!trimmed);
+      setDescriptionError(!description.trim());
       return;
     }
     if (!selectedModel) {
@@ -59,7 +60,6 @@ export function useCreateChatbot() {
     }
     const key = await createChatbot({
       name: trimmed,
-      dept: dept.trim(),
       description,
       status,
       settings: { socratic, explicaMas, provider, model: selectedModel },
@@ -73,8 +73,6 @@ export function useCreateChatbot() {
     navigate,
     name,
     setName,
-    dept,
-    setDept,
     description,
     setDescription,
     status,
@@ -92,6 +90,8 @@ export function useCreateChatbot() {
     setIconUrl,
     nameError,
     setNameError,
+    descriptionError,
+    setDescriptionError,
     handleConfirm
   };
 }

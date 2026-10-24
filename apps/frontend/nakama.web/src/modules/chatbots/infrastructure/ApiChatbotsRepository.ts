@@ -75,7 +75,6 @@ function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailRespons
     label: summary.label ?? "",
     description: summary.description ?? "",
     status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
-    context: detail.context ?? "",
     settings: {
       socratic: detail.socratic ?? false,
       explicaMas: detail.explicaMas ?? false,
@@ -138,17 +137,13 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
   }
 
   async Create(input: CreateChatbotInput): Promise<Chatbot> {
-    const { name, dept, description, status, settings, iconUrl } = input;
+    const { name, description, status, settings, iconUrl } = input;
     const id = crypto.randomUUID();
     const trimmedDescription = description.trim();
-    const fallbackDescription = dept
-      ? `Chatbot de equipo para ${dept}. Todavía sin documentos.`
-      : "Chatbot recién creado. Todavía sin documentos.";
-    const finalDescription = trimmedDescription || fallbackDescription;
 
     await this.client.chatbotsPUT(id, {
       label: name,
-      description: finalDescription,
+      description: trimmedDescription,
       status: STATUS_TO_ORDINAL[status],
       ...toApiSettings(settings)
     } satisfies CreateChatbotRequest);
@@ -162,12 +157,8 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
     return {
       id,
       label: name,
-      description: finalDescription,
+      description: trimmedDescription,
       status,
-      context:
-        "Chatbot recién creado" +
-        (dept ? ` para el equipo de ${dept}` : "") +
-        ". Todavía no tiene documentos — añade contenido en la pestaña Documentos para que pueda empezar a responder.",
       settings,
       iconUrl,
       docs: [],

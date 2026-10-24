@@ -22,7 +22,6 @@ public static class ChatbotDetailResponseMother
             label ?? WordMother.Random(),
             description ?? WordMother.Random(),
             "Active",
-            WordMother.Random(),
             archived ?? false,
             null,
             socratic ?? false,

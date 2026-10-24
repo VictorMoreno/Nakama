@@ -2902,7 +2902,6 @@ export interface ChatbotDetailResponse {
     label?: string | undefined;
     description?: string | undefined;
     status?: string | undefined;
-    context?: string | undefined;
     archived?: boolean;
     iconUrl?: string | undefined;
     socratic?: boolean;
