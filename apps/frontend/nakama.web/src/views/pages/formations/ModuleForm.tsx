@@ -3,7 +3,13 @@ import Select from "../../components/shared/Select";
 import { CheckIcon, CloseIcon, PlusIcon, RecycleBinIcon } from "../../components/shared/icons";
 import { useFormations } from "../../shared/contexts/FormationsContext";
 import { useToast } from "../../shared/contexts/ToastContext";
-import type { FormationModule, ModuleType, QuizQuestion } from "../../../modules/formations/domain/Formation";
+import {
+  MAX_PASSING_SCORE,
+  MIN_PASSING_SCORE,
+  type FormationModule,
+  type ModuleType,
+  type QuizQuestion
+} from "../../../modules/formations/domain/Formation";
 import GenerateQuizDialog from "./GenerateQuizDialog";
 import styles from "./FormationManagePage.module.scss";
 
@@ -49,7 +55,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
   const [summary, setSummary] = useState(module?.summary ?? "");
   const [resourceUrl, setResourceUrl] = useState(module?.resourceUrl ?? "");
   const [durationMin, setDurationMin] = useState(module?.durationMin != null ? String(module.durationMin) : "10");
-  const [passingScore, setPassingScore] = useState(module?.passingScore != null ? String(module.passingScore) : "70");
+  const [passingScore, setPassingScore] = useState(module?.passingScore != null ? String(module.passingScore) : "");
   const [gated, setGated] = useState(module?.gated ?? true);
   const [quiz, setQuiz] = useState<QuizDraftQuestion[]>(
     module?.type === "examen" && module.quiz && module.quiz.length > 0
@@ -60,6 +66,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
   const [summaryError, setSummaryError] = useState(false);
   const [urlError, setUrlError] = useState(false);
   const [quizError, setQuizError] = useState(false);
+  const [scoreError, setScoreError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
   const [generated, setGenerated] = useState(false);
@@ -128,11 +135,16 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
       (quiz.length > 0 &&
         quiz.every((q) => q.question.trim().length > 0 && q.options.length >= 2 && q.options.every((o) => o.trim().length > 0)));
 
+    const score = Number(passingScore);
+    const scoreValid =
+      !needsQuiz || (passingScore.trim() !== "" && Number.isInteger(score) && score >= MIN_PASSING_SCORE && score <= MAX_PASSING_SCORE);
+
     setTitleError(!trimmedTitle);
     setSummaryError(!trimmedSummary);
     setUrlError(needsUrl && !trimmedUrl);
     setQuizError(needsQuiz && !quizValid);
-    if (!trimmedTitle || !trimmedSummary || (needsUrl && !trimmedUrl) || (needsQuiz && !quizValid)) return;
+    setScoreError(!scoreValid);
+    if (!trimmedTitle || !trimmedSummary || (needsUrl && !trimmedUrl) || (needsQuiz && !quizValid) || !scoreValid) return;
 
     const payload =
       type === "examen"
@@ -142,7 +154,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
             summary: trimmedSummary,
             gated,
             aiDraft: generated,
-            passingScore: Number(passingScore) || 70,
+            passingScore: score,
             quiz: quiz.map((q) => ({
               question: q.question.trim(),
               options: q.options.map((o) => o.trim()),
@@ -255,11 +267,15 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
             <input
               id="module-score"
               type="number"
-              min={0}
-              max={100}
-              className="form-input"
+              placeholder="p. ej. 70"
+              min={MIN_PASSING_SCORE}
+              max={MAX_PASSING_SCORE}
+              className={`form-input${scoreError ? " field-error" : ""}`}
               value={passingScore}
-              onChange={(e) => setPassingScore(e.target.value)}
+              onChange={(e) => {
+                setPassingScore(e.target.value);
+                if (scoreError) setScoreError(false);
+              }}
             />
           </div>
 

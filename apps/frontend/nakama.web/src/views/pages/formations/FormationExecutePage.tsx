@@ -48,16 +48,17 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
   const [submitted, setSubmitted] = useState(false);
 
   function submitExam() {
-    if (!m.quiz || m.quiz.length === 0) return;
+    const passingScore = m.passingScore;
+    if (!m.quiz || m.quiz.length === 0 || passingScore === undefined) return;
     const correct = answers.filter((a, i) => a === m.quiz![i].correctIndex).length;
     const score = Math.round((correct / m.quiz.length) * 100);
-    const passed = score >= (m.passingScore ?? 70);
+    const passed = score >= passingScore;
     setSubmitted(true);
     if (passed) {
       completeModule(formationKey, m.id, score);
       showToast(`Examen aprobado con ${score}%`);
     } else {
-      showToast(`No has alcanzado la nota mínima (${score}% de ${m.passingScore ?? 70}% requerido) — puedes reintentarlo`);
+      showToast(`No has alcanzado la nota mínima (${score}% de ${passingScore}% requerido) — puedes reintentarlo`);
     }
   }
 

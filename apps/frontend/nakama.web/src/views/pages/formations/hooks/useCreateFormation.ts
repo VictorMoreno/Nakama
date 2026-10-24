@@ -15,17 +15,23 @@ export function useCreateFormation() {
   const [status, setStatus] = useState<FormationLifecycleStatus>("borrador");
   const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
   const [titleError, setTitleError] = useState(false);
+  const [audienceError, setAudienceError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
 
   async function handleConfirm() {
     const trimmed = title.trim();
-    if (!trimmed) {
-      setTitleError(true);
+    const trimmedAudience = audience.trim();
+    const trimmedDescription = description.trim();
+    if (!trimmed || !trimmedAudience || !trimmedDescription) {
+      setTitleError(!trimmed);
+      setAudienceError(!trimmedAudience);
+      setDescriptionError(!trimmedDescription);
       return;
     }
     const key = await createFormation({
       title: trimmed,
-      audience: audience.trim(),
-      description,
+      audience: trimmedAudience,
+      description: trimmedDescription,
       status,
       iconUrl
     });
@@ -48,6 +54,10 @@ export function useCreateFormation() {
     setIconUrl,
     titleError,
     setTitleError,
+    audienceError,
+    setAudienceError,
+    descriptionError,
+    setDescriptionError,
     handleConfirm
   };
 }

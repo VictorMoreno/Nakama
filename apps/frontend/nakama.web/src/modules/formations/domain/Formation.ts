@@ -5,6 +5,9 @@ export type FormationLifecycleStatus = "activo" | "inactivo" | "borrador";
 
 export const MAX_GENERATED_QUESTIONS = 4;
 
+export const MIN_PASSING_SCORE = 1;
+export const MAX_PASSING_SCORE = 100;
+
 export interface QuizQuestion {
   question: string;
   options: string[];

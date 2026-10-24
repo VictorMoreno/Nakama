@@ -32,7 +32,7 @@ public sealed class FormationModuleUpdaterShould : FormationsUnitTestCase
             aiDraft: true,
             resourceUrl: WordMother.Random(),
             durationMin: 30,
-            passingScore: 70);
+            passingScore: null);
         this.ShouldFindFormation(formation);
 
         await this._handler.Handle(command, CancellationToken.None);
@@ -47,7 +47,7 @@ public sealed class FormationModuleUpdaterShould : FormationsUnitTestCase
             command.ResourceUrl,
             30,
             null,
-            70));
+            null));
         this.ShouldHaveSavedFormation(formation);
         this.ShouldHavePublished<FormationModuleUpdated>(@event => @event.Id == formation.Id && @event.Module.Id == module.Id);
     }
@@ -82,13 +82,15 @@ public sealed class FormationModuleUpdaterShould : FormationsUnitTestCase
             formation.Id.Value,
             module.Id.Value,
             type: ModuleType.Exam,
-            quiz: [new FormationModuleUpdater.QuizQuestionInput(question, [firstOption, secondOption], 0)]);
+            quiz: [new FormationModuleUpdater.QuizQuestionInput(question, [firstOption, secondOption], 0)],
+            passingScore: 80);
         this.ShouldFindFormation(formation);
 
         await this._handler.Handle(command, CancellationToken.None);
 
         formation.Modules.Should().ContainSingle().Which.Quiz.Should().BeEquivalentTo(
             new[] { new QuizQuestion(question, [firstOption, secondOption], 0) });
+        formation.Modules.Should().ContainSingle().Which.PassingScore.Should().Be(80);
     }
 
     [Test]
@@ -134,4 +136,76 @@ public sealed class FormationModuleUpdaterShould : FormationsUnitTestCase
         this.ShouldNotHaveSavedAnyFormation();
         this.ShouldNotHavePublishedAnything();
     }
+
+    [Test]
+    public async Task fail_without_saving_anything_when_an_exam_has_no_questions()
+    {
+        Formation formation = FormationMother.With(modules: [FormationModuleMother.Random()]);
+        this.ShouldFindFormation(formation);
+
+        Func<Task> act = async () => await this._handler.Handle(
+            CommandOf(formation, ModuleType.Exam, quiz: null, passingScore: 70),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FormationExamQuizRequiredError>();
+        this.ShouldNotHaveSavedAnyFormation();
+        this.ShouldNotHavePublishedAnything();
+    }
+
+    [TestCase(null)]
+    [TestCase(0)]
+    [TestCase(101)]
+    public async Task fail_without_saving_anything_when_the_exam_passing_score_is_missing_or_out_of_range(int? passingScore)
+    {
+        Formation formation = FormationMother.With(modules: [FormationModuleMother.Random()]);
+        this.ShouldFindFormation(formation);
+
+        Func<Task> act = async () => await this._handler.Handle(
+            CommandOf(formation, ModuleType.Exam, quiz: [ValidQuestion()], passingScore: passingScore),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FormationExamPassingScoreInvalidError>();
+        this.ShouldNotHaveSavedAnyFormation();
+        this.ShouldNotHavePublishedAnything();
+    }
+
+    [TestCase(1)]
+    [TestCase(100)]
+    public async Task accept_an_exam_with_a_passing_score_at_the_limits(int passingScore)
+    {
+        Formation formation = FormationMother.With(modules: [FormationModuleMother.Random()]);
+        this.ShouldFindFormation(formation);
+
+        await this._handler.Handle(
+            CommandOf(formation, ModuleType.Exam, quiz: [ValidQuestion()], passingScore: passingScore),
+            CancellationToken.None);
+
+        formation.Modules.Should().ContainSingle(m => m.Type == ModuleType.Exam).Which.PassingScore.Should().Be(passingScore);
+    }
+
+    [TestCase(ModuleType.Video)]
+    [TestCase(ModuleType.Document)]
+    [TestCase(ModuleType.Exercise)]
+    public async Task fail_without_saving_anything_when_a_module_that_is_not_an_exam_carries_exam_data(ModuleType type)
+    {
+        Formation formation = FormationMother.With(modules: [FormationModuleMother.Random()]);
+        this.ShouldFindFormation(formation);
+
+        Func<Task> act = async () => await this._handler.Handle(
+            CommandOf(formation, type, quiz: null, passingScore: 70),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FormationExamDataOnNonExamModuleError>();
+        this.ShouldNotHaveSavedAnyFormation();
+        this.ShouldNotHavePublishedAnything();
+    }
+
+    private static FormationModuleUpdater.QuizQuestionInput ValidQuestion() => new(WordMother.Random(), [WordMother.Random(), WordMother.Random()], 0);
+
+    private static FormationModuleUpdater.Command CommandOf(
+        Formation formation,
+        ModuleType type,
+        IReadOnlyList<FormationModuleUpdater.QuizQuestionInput>? quiz,
+        int? passingScore) =>
+        FormationModuleUpdaterCommandMother.With(formation.Id.Value, formation.Modules.First().Id.Value, type: type, quiz: quiz, passingScore: passingScore);
 }

@@ -41,6 +41,15 @@ public sealed class FormationQuizNoDocumentsSelectedError()
 public sealed class FormationQuizDocumentNotInFormationError(string documentId)
     : DomainError("nakama.formations.quiz_document_not_in_formation", $"El documento '{documentId}' no pertenece a la formación.");
 
+public sealed class FormationExamQuizRequiredError()
+    : DomainError("nakama.formations.exam_quiz_required", "Un examen necesita al menos una pregunta.");
+
+public sealed class FormationExamPassingScoreInvalidError(int min, int max)
+    : DomainError("nakama.formations.exam_passing_score_invalid", $"La nota mínima del examen debe estar entre {min} y {max}.");
+
+public sealed class FormationExamDataOnNonExamModuleError()
+    : DomainError("nakama.formations.exam_data_on_non_exam_module", "Solo los módulos de tipo examen llevan preguntas y nota mínima.");
+
 public sealed class FormationArchivedError(string key)
     : DomainError("nakama.formations.archived", $"La formación '{key}' está dada de baja.");
 
@@ -79,6 +88,12 @@ public static class FormationErrors
     public static DomainError QuizDocumentNotInFormation(Guid documentId) => new FormationQuizDocumentNotInFormationError(documentId.ToString());
 
     public static DomainError DocumentNotFound(Guid id) => new FormationDocumentNotFoundError(id.ToString());
+
+    public static DomainError ExamQuizRequired { get; } = new FormationExamQuizRequiredError();
+
+    public static DomainError ExamPassingScoreInvalid(int min, int max) => new FormationExamPassingScoreInvalidError(min, max);
+
+    public static DomainError ExamDataOnNonExamModule { get; } = new FormationExamDataOnNonExamModuleError();
 
     public static DomainError Archived(FormationId id) => new FormationArchivedError(id.ToString());
 

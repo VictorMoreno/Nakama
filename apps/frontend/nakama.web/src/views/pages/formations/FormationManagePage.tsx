@@ -99,7 +99,7 @@ function ManageModuleRow({ formationKey, module: m, index, expanded, onToggleExp
                       </div>
                     </div>
                   ))}
-                  <div className={styles.moduleItemDesc}>Nota mínima para aprobar: {m.passingScore ?? 70}%</div>
+                  {m.passingScore !== undefined && <div className={styles.moduleItemDesc}>Nota mínima para aprobar: {m.passingScore}%</div>}
                 </div>
               )}
             </>

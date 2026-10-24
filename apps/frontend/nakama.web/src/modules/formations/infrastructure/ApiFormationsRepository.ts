@@ -146,13 +146,11 @@ export class ApiFormationsRepository implements IFormationsRepository {
     const { title, audience, description, status, iconUrl } = input;
     const id = crypto.randomUUID();
     const trimmedDescription = description.trim();
-    const finalAudience = audience || "Sin definir";
-    const finalDescription = trimmedDescription || "Formación recién creada. Añade módulos para que el equipo pueda empezar a formarse.";
 
     await this.client.formationsPUT(id, {
       title,
-      audience: finalAudience,
-      description: finalDescription,
+      audience,
+      description: trimmedDescription,
       status: STATUS_TO_ORDINAL[status]
     } satisfies CreateFormationRequest);
 
@@ -164,8 +162,8 @@ export class ApiFormationsRepository implements IFormationsRepository {
     return {
       id,
       title,
-      audience: finalAudience,
-      description: finalDescription,
+      audience,
+      description: trimmedDescription,
       status,
       iconUrl,
       modules: [],

@@ -26,6 +26,10 @@ export default function CreateFormationPage() {
     setIconUrl,
     titleError,
     setTitleError,
+    audienceError,
+    setAudienceError,
+    descriptionError,
+    setDescriptionError,
     handleConfirm
   } = useCreateFormation();
 
@@ -70,21 +74,27 @@ export default function CreateFormationPage() {
               <input
                 id="new-formation-audience"
                 type="text"
-                className="form-input"
+                className={`form-input${audienceError ? " field-error" : ""}`}
                 placeholder="p. ej. Plataforma Pagos, o Toda la empresa"
                 value={audience}
-                onChange={(e) => setAudience(e.target.value)}
+                onChange={(e) => {
+                  setAudience(e.target.value);
+                  if (audienceError) setAudienceError(false);
+                }}
               />
             </div>
             <div className="form-field" style={{ marginBottom: 0 }}>
               <label htmlFor="new-formation-desc">Descripción breve</label>
               <textarea
                 id="new-formation-desc"
-                className="form-input"
+                className={`form-input${descriptionError ? " field-error" : ""}`}
                 rows={2}
                 placeholder="Se mostrará en la card del listado para ayudar a encontrar esta formación."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  if (descriptionError) setDescriptionError(false);
+                }}
               />
             </div>
           </div>

@@ -5,6 +5,9 @@ namespace Nakama.Formations.Domain;
 
 public partial class Formation
 {
+    public const int MinPassingScore = 1;
+    public const int MaxPassingScore = 100;
+
     public Formation(
         FormationId key,
         string title,
@@ -63,6 +66,7 @@ public partial class Formation
     public void AddModule(FormationModule module)
     {
         this.EnsureNotArchived();
+        EnsureValidExamData(module.Type, module.Quiz, module.PassingScore);
 
         this._modules.Add(module);
         this.Record(new FormationModuleAdded(this.Id, module));
@@ -81,6 +85,7 @@ public partial class Formation
         int? passingScore)
     {
         this.EnsureNotArchived();
+        EnsureValidExamData(type, quiz, passingScore);
 
         int index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
@@ -177,6 +182,29 @@ public partial class Formation
 
         this.Archived = false;
         this.Record(new FormationUnarchived(this.Id));
+    }
+
+    private static void EnsureValidExamData(ModuleType type, IReadOnlyList<QuizQuestion>? quiz, int? passingScore)
+    {
+        if (type != ModuleType.Exam)
+        {
+            if (quiz is not null || passingScore is not null)
+            {
+                throw FormationErrors.ExamDataOnNonExamModule;
+            }
+
+            return;
+        }
+
+        if (quiz is null || quiz.Count == 0)
+        {
+            throw FormationErrors.ExamQuizRequired;
+        }
+
+        if (passingScore is null || passingScore < MinPassingScore || passingScore > MaxPassingScore)
+        {
+            throw FormationErrors.ExamPassingScoreInvalid(MinPassingScore, MaxPassingScore);
+        }
     }
 
     private void EnsureNotArchived()
