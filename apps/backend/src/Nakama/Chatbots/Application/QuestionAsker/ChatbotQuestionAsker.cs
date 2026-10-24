@@ -42,6 +42,11 @@ public static class ChatbotQuestionAsker
         {
             ChatbotDetailResponse chatbot = await queryBus.Ask(new ChatbotDetailFinder.Query(cmd.BotKey), cancellationToken);
 
+            if (chatbot.Archived)
+            {
+                throw ChatbotErrors.Archived(ChatbotId.From(cmd.BotKey));
+            }
+
             ILlmClient llmClient = serviceProvider.GetKeyedService<ILlmClient>(chatbot.Provider)
                                    ?? throw ChatbotErrors.ProviderNotConnected(chatbot.Provider);
 

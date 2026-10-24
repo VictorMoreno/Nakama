@@ -43,6 +43,8 @@ public partial class Chatbot
 
     public void UpdateStatus(ChatbotStatus status)
     {
+        this.EnsureNotArchived();
+
         if (this.Status == status)
         {
             return;
@@ -54,6 +56,8 @@ public partial class Chatbot
 
     public void UpdateSettings(ChatbotSettings settings)
     {
+        this.EnsureNotArchived();
+
         EnsureHasModel(settings);
 
         this.Settings = settings;
@@ -70,19 +74,25 @@ public partial class Chatbot
 
     public void UpdateIcon(string? iconUrl)
     {
+        this.EnsureNotArchived();
+
         this.IconUrl = iconUrl;
         this.Record(new ChatbotIconUpdated(this.Id, iconUrl));
     }
 
     public void AddDocument(ChatbotDocument document)
     {
+        this.EnsureNotArchived();
+
         this._documents.Add(document);
         this.Record(new ChatbotDocumentAdded(this.Id, document));
     }
 
     public void RemoveDocument(Guid documentId)
     {
-        if (!this._documents.Any(existing => existing.Id == documentId))
+        this.EnsureNotArchived();
+
+        if (this._documents.All(existing => existing.Id != documentId))
         {
             throw ChatbotErrors.DocumentNotFound(documentId);
         }
@@ -93,6 +103,8 @@ public partial class Chatbot
 
     public void AddTeamMember(TeamMember member)
     {
+        this.EnsureNotArchived();
+
         if (this._team.Any(existing => existing.UserId == member.UserId))
         {
             throw ChatbotErrors.TeamMemberAlreadyExists(member.UserId);
@@ -104,6 +116,8 @@ public partial class Chatbot
 
     public void RemoveTeamMember(Guid userId)
     {
+        this.EnsureNotArchived();
+
         TeamMember member = this._team.FirstOrDefault(existing => existing.UserId == userId)
                             ?? throw ChatbotErrors.TeamMemberNotFound(userId);
 
@@ -125,5 +139,24 @@ public partial class Chatbot
 
         this.Archived = true;
         this.Record(new ChatbotArchived(this.Id));
+    }
+
+    public void Unarchive()
+    {
+        if (!this.Archived)
+        {
+            return;
+        }
+
+        this.Archived = false;
+        this.Record(new ChatbotUnarchived(this.Id));
+    }
+
+    private void EnsureNotArchived()
+    {
+        if (this.Archived)
+        {
+            throw ChatbotErrors.Archived(this.Id);
+        }
     }
 }

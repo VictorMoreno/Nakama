@@ -60,4 +60,18 @@ public sealed class ChatbotStatusUpdaterShould : ChatbotsUnitTestCase
         this.ShouldNotHaveSavedAnyChatbot();
         this.ShouldNotHavePublishedAnything();
     }
+
+    [Test]
+    public async Task fail_without_saving_anything_when_the_chatbot_is_archived()
+    {
+        Chatbot chatbot = ChatbotMother.Archived();
+        this.ShouldFindChatbot(chatbot);
+
+        Func<Task> act = async () =>
+            await this._handler.Handle(ChatbotStatusUpdaterCommandMother.With(chatbot.Id.Value, ChatbotStatus.Draft), CancellationToken.None);
+
+        await act.Should().ThrowAsync<ChatbotArchivedError>();
+        this.ShouldNotHaveSavedAnyChatbot();
+        this.ShouldNotHavePublishedAnything();
+    }
 }

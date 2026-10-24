@@ -62,13 +62,17 @@ public static class FormationHttpClientExtensions
     public static Task<HttpResponseMessage> ArchiveFormation(this HttpClient client, Guid id, string accessToken) =>
         client.Send(HttpMethod.Post, $"/api/formations/{id}/archive", accessToken);
 
+    public static Task<HttpResponseMessage> UnarchiveFormation(this HttpClient client, Guid id, string accessToken) =>
+        client.Send(HttpMethod.Post, $"/api/formations/{id}/unarchive", accessToken);
+
     public static Task<HttpResponseMessage> ListFormationsPage(
         this HttpClient client,
         string accessToken,
         int? page = null,
         int? pageSize = null,
         string? search = null,
-        string? status = null)
+        string? status = null,
+        bool? archived = null)
     {
         List<string> parameters = [];
 
@@ -90,6 +94,11 @@ public static class FormationHttpClientExtensions
         if (status is not null)
         {
             parameters.Add($"status={Uri.EscapeDataString(status)}");
+        }
+
+        if (archived is not null)
+        {
+            parameters.Add($"archived={archived.Value.ToString().ToLowerInvariant()}");
         }
 
         string query = parameters.Count == 0 ? string.Empty : $"?{string.Join("&", parameters)}";

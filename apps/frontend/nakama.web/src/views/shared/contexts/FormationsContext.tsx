@@ -17,6 +17,7 @@ interface FormationsContextValue {
 
   createFormation: (input: CreateFormationInput) => Promise<string>;
   archiveFormation: (key: string) => Promise<void>;
+  unarchiveFormation: (key: string) => Promise<void>;
   updateStatus: (key: string, status: Formation["status"]) => Promise<void>;
   updateIcon: (key: string, iconUrl: string | undefined) => Promise<void>;
   addModule: (key: string, module: Omit<FormationModule, "id">) => Promise<void>;
@@ -77,6 +78,11 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
   async function archiveFormation(key: string) {
     await repo.Archive(key);
     setFormations((prev) => (prev[key] ? { ...prev, [key]: { ...prev[key], archived: true } } : prev));
+  }
+
+  async function unarchiveFormation(key: string) {
+    await repo.Unarchive(key);
+    setFormations((prev) => (prev[key] ? { ...prev, [key]: { ...prev[key], archived: false } } : prev));
   }
 
   async function updateStatus(key: string, status: Formation["status"]) {
@@ -141,6 +147,7 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     isLoading,
     createFormation,
     archiveFormation,
+    unarchiveFormation,
     updateStatus,
     updateIcon,
     addModule,

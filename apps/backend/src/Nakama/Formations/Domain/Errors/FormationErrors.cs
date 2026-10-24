@@ -41,6 +41,9 @@ public sealed class FormationQuizNoDocumentsSelectedError()
 public sealed class FormationQuizDocumentNotInFormationError(string documentId)
     : DomainError("nakama.formations.quiz_document_not_in_formation", $"El documento '{documentId}' no pertenece a la formación.");
 
+public sealed class FormationArchivedError(string key)
+    : DomainError("nakama.formations.archived", $"La formación '{key}' está dada de baja.");
+
 public sealed class FormationDocumentNotFoundError(string id)
     : DomainError("nakama.formation_documents.not_found", $"Document '{id}' not found.");
 
@@ -76,6 +79,8 @@ public static class FormationErrors
     public static DomainError QuizDocumentNotInFormation(Guid documentId) => new FormationQuizDocumentNotInFormationError(documentId.ToString());
 
     public static DomainError DocumentNotFound(Guid id) => new FormationDocumentNotFoundError(id.ToString());
+
+    public static DomainError Archived(FormationId id) => new FormationArchivedError(id.ToString());
 
     public static DomainError DocumentTooLarge(long maxBytes) => new FormationDocumentTooLargeError(maxBytes);
 

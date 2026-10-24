@@ -1,6 +1,5 @@
 using AwesomeAssertions;
 using Nakama.ChatbotDetail.Application.Handlers;
-using Nakama.ChatbotDetail.Domain;
 using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.Shared.Infrastructure.Events;

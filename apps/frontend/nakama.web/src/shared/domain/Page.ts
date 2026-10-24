@@ -11,4 +11,5 @@ export interface PageQuery<TStatus extends string> {
   pageSize: number;
   search: string;
   status?: TStatus;
+  archived?: boolean;
 }

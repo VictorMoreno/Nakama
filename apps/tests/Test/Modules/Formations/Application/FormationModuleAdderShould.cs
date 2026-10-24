@@ -115,4 +115,18 @@ public sealed class FormationModuleAdderShould : FormationsUnitTestCase
         this.ShouldNotHaveSavedAnyFormation();
         this.ShouldNotHavePublishedAnything();
     }
+
+    [Test]
+    public async Task fail_without_saving_anything_when_the_formation_is_archived()
+    {
+        Formation formation = FormationMother.Archived();
+        this.ShouldFindFormation(formation);
+
+        Func<Task> act = async () =>
+            await this._handler.Handle(FormationModuleAdderCommandMother.With(formation.Id.Value), CancellationToken.None);
+
+        await act.Should().ThrowAsync<FormationArchivedError>();
+        this.ShouldNotHaveSavedAnyFormation();
+        this.ShouldNotHavePublishedAnything();
+    }
 }

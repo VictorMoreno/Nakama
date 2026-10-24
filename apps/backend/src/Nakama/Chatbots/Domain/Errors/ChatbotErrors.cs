@@ -8,6 +8,9 @@ public sealed class ChatbotOwnerCannotBeRemovedError()
 public sealed class ChatbotNotFoundError(string key)
     : DomainError("nakama.chatbots.not_found", $"Chatbot '{key}' not found.");
 
+public sealed class ChatbotArchivedError(string key)
+    : DomainError("nakama.chatbots.archived", $"El chatbot '{key}' está dado de baja.");
+
 public sealed class ChatbotAlreadyExistsError(string id)
     : DomainError("nakama.chatbots.already_exists", $"Chatbot '{id}' already exists.");
 
@@ -50,6 +53,8 @@ public static class ChatbotErrors
     public static DomainError IconUnsupportedType { get; } = new ChatbotIconUnsupportedTypeError();
 
     public static DomainError NotFound(ChatbotId id) => new ChatbotNotFoundError(id.ToString());
+
+    public static DomainError Archived(ChatbotId id) => new ChatbotArchivedError(id.ToString());
 
     public static DomainError DocumentNotFound(Guid id) => new ChatbotDocumentNotFoundError(id.ToString());
 

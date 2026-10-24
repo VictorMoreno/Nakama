@@ -90,6 +90,34 @@ public sealed class ChatbotPagingShould : ApiTestCase
     }
 
     [Test]
+    public async Task let_an_administrator_list_only_the_archived_chatbots()
+    {
+        string token = await this.SignIn(isAdmin: true);
+        ChatbotCreator.Command archived = await this.CreateChatbot(token, "Archivado", "x");
+        await this.CreateChatbot(token, "Vigente", "x");
+        await this.Client.ArchiveChatbot(archived.Id, token);
+
+        PagedResponse<ChatbotSummaryResponse> response = await this.ReadPage(token, archived: true);
+
+        response.Items.Select(item => item.Label).Should().Equal("Archivado");
+        response.TotalCount.Should().Be(1);
+    }
+
+    [Test]
+    public async Task ignore_the_archived_filter_for_a_regular_user()
+    {
+        string adminToken = await this.SignIn(isAdmin: true);
+        SignedInUser member = await this.SignInAs(isAdmin: false);
+        ChatbotCreator.Command archived = await this.CreateChatbot(adminToken, "Archivado", "x");
+        await this.Client.AddChatbotTeamMember(archived.Id, member.Id, TeamRole.Reader, adminToken);
+        await this.Client.ArchiveChatbot(archived.Id, adminToken);
+
+        PagedResponse<ChatbotSummaryResponse> response = await this.ReadPage(member.Token, archived: true);
+
+        response.Items.Should().BeEmpty();
+    }
+
+    [Test]
     public async Task show_a_regular_user_only_the_chatbots_they_belong_to()
     {
         string adminToken = await this.SignIn(isAdmin: true);
@@ -162,9 +190,10 @@ public sealed class ChatbotPagingShould : ApiTestCase
         int? page = null,
         int? pageSize = null,
         string? search = null,
-        string? status = null)
+        string? status = null,
+        bool? archived = null)
     {
-        HttpResponseMessage response = await this.Client.ListChatbotsPage(token, page, pageSize, search, status);
+        HttpResponseMessage response = await this.Client.ListChatbotsPage(token, page, pageSize, search, status, archived);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         return (await response.Content.ReadFromJsonAsync<PagedResponse<ChatbotSummaryResponse>>())!;

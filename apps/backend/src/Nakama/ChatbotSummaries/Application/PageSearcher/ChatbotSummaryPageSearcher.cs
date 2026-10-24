@@ -11,7 +11,7 @@ namespace Nakama.ChatbotSummaries.Application.PageSearcher;
 
 public static class ChatbotSummaryPageSearcher
 {
-    public sealed record Query(Guid UserId, bool IsAdmin, int Page, int? PageSize, string? Search, string? Status)
+    public sealed record Query(Guid UserId, bool IsAdmin, int Page, int? PageSize, string? Search, string? Status, bool Archived = false)
         : IQuery<PagedResponse<ChatbotSummaryResponse>>;
 
     public sealed class Handler(Searcher searcher, IOptions<StorageOptions> storage, IOptions<PaginationOptions> pagination)
@@ -53,7 +53,8 @@ public static class ChatbotSummaryPageSearcher
                     query.Search,
                     query.Status,
                     pageRequest.Skip,
-                    pageRequest.PageSize),
+                    pageRequest.PageSize,
+                    query.IsAdmin && query.Archived),
                 cancellationToken);
         }
     }

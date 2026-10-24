@@ -1,6 +1,5 @@
 using Nakama.Formations.Domain;
 using Nakama.Formations.Domain.Events;
-using Test.Modules.Shared;
 
 namespace Test.Modules.Formations.Domain;
 

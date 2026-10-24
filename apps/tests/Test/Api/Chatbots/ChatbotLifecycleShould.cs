@@ -119,4 +119,49 @@ public sealed class ChatbotLifecycleShould : ApiTestCase
         list.StatusCode.Should().Be(HttpStatusCode.OK);
         create.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Test]
+    public async Task unarchive_an_archived_chatbot_and_see_it_active_again()
+    {
+        string token = await this.SignIn(isAdmin: true);
+        ChatbotCreator.Command command = ChatbotCreatorCommandMother.Random();
+        await this.Client.CreateChatbot(command, token);
+        await this.Client.ArchiveChatbot(command.Id, token);
+
+        HttpResponseMessage restored = await this.Client.UnarchiveChatbot(command.Id, token);
+
+        restored.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        ChatbotDetailResponse? detail = await (await this.Client.GetChatbot(command.Id, token))
+            .Content.ReadFromJsonAsync<ChatbotDetailResponse>();
+        detail!.Archived.Should().BeFalse();
+        List<ChatbotSummaryResponse>? chatbots = await (await this.Client.ListChatbots(token))
+            .Content.ReadFromJsonAsync<List<ChatbotSummaryResponse>>();
+        chatbots.Should().ContainSingle(item => item.Id == command.Id).Which.Archived.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task reject_changing_an_archived_chatbot_until_it_is_unarchived()
+    {
+        string token = await this.SignIn(isAdmin: true);
+        ChatbotCreator.Command command = ChatbotCreatorCommandMother.Random();
+        await this.Client.CreateChatbot(command, token);
+        await this.Client.ArchiveChatbot(command.Id, token);
+
+        HttpResponseMessage rejected = await this.Client.UpdateChatbotStatus(command.Id, (int)ChatbotStatus.Draft, token);
+
+        rejected.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        (await rejected.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.chatbots.archived");
+        await this.Client.UnarchiveChatbot(command.Id, token);
+        (await this.Client.UpdateChatbotStatus(command.Id, (int)ChatbotStatus.Draft, token)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Test]
+    public async Task return_not_found_when_unarchiving_a_chatbot_that_does_not_exist()
+    {
+        string token = await this.SignIn(isAdmin: true);
+
+        HttpResponseMessage response = await this.Client.UnarchiveChatbot(Guid.NewGuid(), token);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

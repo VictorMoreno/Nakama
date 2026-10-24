@@ -41,6 +41,8 @@ public partial class Formation
 
     public void UpdateStatus(FormationStatus status)
     {
+        this.EnsureNotArchived();
+
         if (this.Status == status)
         {
             return;
@@ -52,12 +54,16 @@ public partial class Formation
 
     public void UpdateIcon(string? iconUrl)
     {
+        this.EnsureNotArchived();
+
         this.IconUrl = iconUrl;
         this.Record(new FormationIconUpdated(this.Id, iconUrl));
     }
 
     public void AddModule(FormationModule module)
     {
+        this.EnsureNotArchived();
+
         this._modules.Add(module);
         this.Record(new FormationModuleAdded(this.Id, module));
     }
@@ -74,6 +80,8 @@ public partial class Formation
         IReadOnlyList<QuizQuestion>? quiz,
         int? passingScore)
     {
+        this.EnsureNotArchived();
+
         int index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
@@ -99,6 +107,8 @@ public partial class Formation
 
     public void RemoveModule(ModuleId moduleId)
     {
+        this.EnsureNotArchived();
+
         int index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
@@ -112,6 +122,8 @@ public partial class Formation
 
     public void ToggleModuleGating(ModuleId moduleId)
     {
+        this.EnsureNotArchived();
+
         int index = this._modules.FindIndex(m => m.Id == moduleId);
         if (index < 0)
         {
@@ -126,12 +138,16 @@ public partial class Formation
 
     public void AddDocument(FormationDocument document)
     {
+        this.EnsureNotArchived();
+
         this._documents.Add(document);
         this.Record(new FormationDocumentAdded(this.Id, document));
     }
 
     public void RemoveDocument(Guid documentId)
     {
+        this.EnsureNotArchived();
+
         if (this._documents.All(existing => existing.Id != documentId))
         {
             throw FormationErrors.DocumentNotFound(documentId);
@@ -150,5 +166,24 @@ public partial class Formation
 
         this.Archived = true;
         this.Record(new FormationArchived(this.Id));
+    }
+
+    public void Unarchive()
+    {
+        if (!this.Archived)
+        {
+            return;
+        }
+
+        this.Archived = false;
+        this.Record(new FormationUnarchived(this.Id));
+    }
+
+    private void EnsureNotArchived()
+    {
+        if (this.Archived)
+        {
+            throw FormationErrors.Archived(this.Id);
+        }
     }
 }

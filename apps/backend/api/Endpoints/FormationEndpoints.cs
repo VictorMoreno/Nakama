@@ -9,6 +9,7 @@ using Nakama.FormationEnrollment.Application.TeamMemberAdder;
 using Nakama.FormationEnrollment.Application.TeamMemberRemover;
 using Nakama.Formations.Application;
 using Nakama.Formations.Application.Archiver;
+using Nakama.Formations.Application.Unarchiver;
 using Nakama.Formations.Application.Creator;
 using Nakama.Formations.Application.DocumentAdder;
 using Nakama.Formations.Application.DocumentFileFinder;
@@ -43,6 +44,12 @@ public sealed class FormationEndpoints : IEndpoint
         group.MapPost("/{id:guid}/archive", ArchiveFormation)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Marks a formation as archived.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/{id:guid}/unarchive", UnarchiveFormation)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Restores an archived formation so it can be used again.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -149,11 +156,12 @@ public sealed class FormationEndpoints : IEndpoint
             .Produces<IReadOnlyCollection<FormationSummaryResponse>>();
 
         group.MapGet("/paged", SearchFormationSummariesPage)
-            .WithSummary("Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded.")
+            .WithSummary("Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded unless an administrator asks for them.")
             .WithDescription(
                 "Administrators see every formation, anyone else only the ones they're assigned to. `search` matches the " +
                 "title, audience and description case-insensitively, `status` is an exact match, results are ordered by " +
-                "title. `pageSize` defaults to the configured Pagination:DefaultPageSize and cannot exceed " +
+                "title. `archived=true` returns only the archived formations and is honored for administrators only. " +
+                "`pageSize` defaults to the configured Pagination:DefaultPageSize and cannot exceed " +
                 "Pagination:MaxPageSize.")
             .Produces<PagedResponse<FormationSummaryResponse>>()
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
@@ -234,6 +242,12 @@ public sealed class FormationEndpoints : IEndpoint
     private static async Task<IResult> ArchiveFormation(Guid id, ICommandBus commandBus, CancellationToken ct)
     {
         await commandBus.Send(new FormationArchiver.Command(id), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> UnarchiveFormation(Guid id, ICommandBus commandBus, CancellationToken ct)
+    {
+        await commandBus.Send(new FormationUnarchiver.Command(id), ct);
         return Results.NoContent();
     }
 
@@ -354,10 +368,11 @@ public sealed class FormationEndpoints : IEndpoint
         int page = 1,
         int? pageSize = null,
         string? search = null,
-        string? status = null)
+        string? status = null,
+        bool archived = false)
     {
         PagedResponse<FormationSummaryResponse> response = await queryBus.Ask(
-            new FormationSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status), ct);
+            new FormationSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status, archived), ct);
         return Results.Ok(response);
     }
 

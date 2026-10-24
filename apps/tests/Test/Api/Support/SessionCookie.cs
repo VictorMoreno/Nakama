@@ -1,5 +1,3 @@
-using System.Net.Http.Headers;
-
 namespace Test.Api.Support;
 
 public sealed record SessionCookie(string Value, string Raw)

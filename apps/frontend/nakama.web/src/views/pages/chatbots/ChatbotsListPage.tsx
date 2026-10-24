@@ -1,16 +1,21 @@
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import Pagination from "../../components/shared/Pagination";
 import Select from "../../components/shared/Select";
-import { ArrowRightIcon, LockIcon, PlusIcon, RecycleBinIcon } from "../../components/shared/icons";
+import { ArrowRightIcon, LockIcon, PlusIcon, RecycleBinIcon, RefreshIcon } from "../../components/shared/icons";
 import { CHATBOT_STATUS_META } from "../../../lib/status";
 import { pluralWord } from "../../../lib/text";
 import { paginationConfig } from "../../../shared/infrastructure/config/PaginationConfig";
+import { ARCHIVE_VIEW_OPTIONS } from "../../shared/hooks/usePagedList";
 import { STATUS_OPTIONS, useChatbotsList } from "./hooks/useChatbotsList";
 import styles from "./ChatbotsListPage.module.scss";
 
 export default function ChatbotsListPage() {
   const {
     navigate,
+    isAdmin,
+    showingArchived,
+    setShowingArchived,
+    handleRestore,
     chatbots,
     slide,
     displayedPage,
@@ -48,11 +53,23 @@ export default function ChatbotsListPage() {
             aria-label="Buscar chatbots"
           />
           <Select value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} ariaLabel="Filtrar por estado" />
+          {isAdmin && (
+            <Select
+              value={showingArchived ? "archived" : "active"}
+              onChange={(view) => setShowingArchived(view === "archived")}
+              options={ARCHIVE_VIEW_OPTIONS}
+              ariaLabel="Ver chatbots en uso o eliminados"
+            />
+          )}
         </div>
 
         {chatbots.length === 0 ? (
           <p className="list-empty">
-            {isLoading ? "Cargando chatbots…" : "No hay chatbots que coincidan con la búsqueda o el filtro."}
+            {isLoading
+              ? "Cargando chatbots…"
+              : showingArchived
+                ? "No hay chatbots eliminados."
+                : "No hay chatbots que coincidan con la búsqueda o el filtro."}
           </p>
         ) : (
         <div
@@ -81,17 +98,25 @@ export default function ChatbotsListPage() {
                 <span>{pluralWord(bot.teamCount, "persona", "personas")}</span>
               </div>
               <div className={styles.botCardActions}>
-                <div className={styles.botCardActionsMain}>
-                  <button className="btn-primary" type="button" onClick={() => navigate(`/chatbots/${bot.id}`)}>
-                    <ArrowRightIcon /> Abrir
+                {showingArchived ? (
+                  <button className="btn-primary" type="button" onClick={() => handleRestore(bot.id)}>
+                    <RefreshIcon /> Reactivar
                   </button>
-                  <button className="btn-ghost" type="button" onClick={() => navigate(`/chatbots/${bot.id}?tab=permisos`)}>
-                    <LockIcon /> Permisos
-                  </button>
-                </div>
-                <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(bot.id)}>
-                  <RecycleBinIcon /> Eliminar
-                </button>
+                ) : (
+                  <>
+                    <div className={styles.botCardActionsMain}>
+                      <button className="btn-primary" type="button" onClick={() => navigate(`/chatbots/${bot.id}`)}>
+                        <ArrowRightIcon /> Abrir
+                      </button>
+                      <button className="btn-ghost" type="button" onClick={() => navigate(`/chatbots/${bot.id}?tab=permisos`)}>
+                        <LockIcon /> Permisos
+                      </button>
+                    </div>
+                    <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(bot.id)}>
+                      <RecycleBinIcon /> Eliminar
+                    </button>
+                  </>
+                )}
               </div>
             </div>
             );
@@ -105,7 +130,7 @@ export default function ChatbotsListPage() {
       <ConfirmDialog
         open={deleteTarget != null}
         title={`Eliminar ${deleteTarget?.label ?? ""}`}
-        message="¿Seguro que quieres eliminar este chatbot? Se perderá su configuración y el acceso para todo el equipo. Esta acción no se puede deshacer."
+        message="El chatbot dejará de estar disponible para todo el equipo. Un administrador podrá reactivarlo más adelante."
         confirmLabel="Eliminar"
         danger
         onCancel={() => setDeleteKey(null)}

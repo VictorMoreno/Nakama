@@ -34,6 +34,9 @@ public static class ChatbotHttpClientExtensions
     public static Task<HttpResponseMessage> ArchiveChatbot(this HttpClient client, Guid id, string accessToken) =>
         client.Send(HttpMethod.Post, $"/api/chatbots/{id}/archive", accessToken);
 
+    public static Task<HttpResponseMessage> UnarchiveChatbot(this HttpClient client, Guid id, string accessToken) =>
+        client.Send(HttpMethod.Post, $"/api/chatbots/{id}/unarchive", accessToken);
+
     public static Task<HttpResponseMessage> AddChatbotTeamMember(
         this HttpClient client,
         Guid id,
@@ -58,7 +61,8 @@ public static class ChatbotHttpClientExtensions
         int? page = null,
         int? pageSize = null,
         string? search = null,
-        string? status = null)
+        string? status = null,
+        bool? archived = null)
     {
         List<string> parameters = [];
 
@@ -80,6 +84,11 @@ public static class ChatbotHttpClientExtensions
         if (status is not null)
         {
             parameters.Add($"status={Uri.EscapeDataString(status)}");
+        }
+
+        if (archived is not null)
+        {
+            parameters.Add($"archived={archived.Value.ToString().ToLowerInvariant()}");
         }
 
         string query = parameters.Count == 0 ? string.Empty : $"?{string.Join("&", parameters)}";

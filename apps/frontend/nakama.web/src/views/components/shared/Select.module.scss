@@ -36,6 +36,24 @@
 
 .select.open .selectTrigger { outline: 2px solid var(--accent); outline-offset: 1px; }
 
+// Every option's label is laid out (invisibly) in the same grid cell as the visible one, so the
+// trigger is always as wide as the longest label and does not resize when the selection changes.
+.selectValueBox {
+  display: inline-grid;
+  min-width: 0;
+
+  > * { grid-area: 1 / 1; }
+}
+
+.selectFull .selectValueBox { flex: 1; }
+
+.selectSizer {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
 .selectValue {
   overflow: hidden;
   text-overflow: ellipsis;

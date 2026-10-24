@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Nakama.Analytics.Application;
-using Nakama.ChatbotDetail.Application;
 using Nakama.Chatbots.Application.Creator;
 using Nakama.Chatbots.Domain;
 using Nakama.ConversationHistory.Application;

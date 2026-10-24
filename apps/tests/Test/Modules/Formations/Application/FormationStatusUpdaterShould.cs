@@ -60,4 +60,18 @@ public sealed class FormationStatusUpdaterShould : FormationsUnitTestCase
         this.ShouldNotHaveSavedAnyFormation();
         this.ShouldNotHavePublishedAnything();
     }
+
+    [Test]
+    public async Task fail_without_saving_anything_when_the_formation_is_archived()
+    {
+        Formation formation = FormationMother.Archived();
+        this.ShouldFindFormation(formation);
+
+        Func<Task> act = async () =>
+            await this._handler.Handle(FormationStatusUpdaterCommandMother.With(formation.Id.Value, FormationStatus.Draft), CancellationToken.None);
+
+        await act.Should().ThrowAsync<FormationArchivedError>();
+        this.ShouldNotHaveSavedAnyFormation();
+        this.ShouldNotHavePublishedAnything();
+    }
 }

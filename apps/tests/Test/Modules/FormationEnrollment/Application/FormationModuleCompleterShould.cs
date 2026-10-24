@@ -7,7 +7,6 @@ using Nakama.FormationEnrollment.Domain.Errors;
 using Nakama.FormationEnrollment.Domain.Events;
 using Nakama.Formations.Domain.Errors;
 using Test.Modules.FormationDetail.Application;
-using Test.Modules.FormationDetail.Domain;
 using Test.Modules.FormationEnrollment.Domain;
 using Enrollment = Nakama.FormationEnrollment.Domain.FormationEnrollment;
 

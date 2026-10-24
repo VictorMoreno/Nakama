@@ -25,6 +25,7 @@ export interface IFormationsRepository {
   FindPage(query: PageQuery<FormationLifecycleStatus>): Promise<Page<FormationListItem>>;
   Create(input: CreateFormationInput): Promise<Formation>;
   Archive(id: string): Promise<void>;
+  Unarchive(id: string): Promise<void>;
   UpdateStatus(id: string, status: FormationLifecycleStatus): Promise<void>;
   UpdateIcon(id: string, iconUrl: string | undefined): Promise<void>;
   AddModule(id: string, module: Omit<FormationModule, "id">): Promise<void>;

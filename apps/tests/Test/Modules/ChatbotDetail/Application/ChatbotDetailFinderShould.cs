@@ -1,7 +1,6 @@
 using AwesomeAssertions;
 using Nakama.ChatbotDetail.Application;
 using Nakama.ChatbotDetail.Application.Finder;
-using Nakama.ChatbotDetail.Domain;
 using Nakama.ChatbotDetail.Domain.Errors;
 using Test.Modules.ChatbotDetail.Domain;
 using ChatbotDetailEntity = Nakama.ChatbotDetail.Domain.ChatbotDetail;

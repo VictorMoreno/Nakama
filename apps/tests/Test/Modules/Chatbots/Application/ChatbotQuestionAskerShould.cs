@@ -408,4 +408,21 @@ public sealed class ChatbotQuestionAskerShould : ChatbotsUnitTestCase
 
         this.AskedRequest.SystemPrompt.Should().Contain("explícame más").And.NotContain("Socrático");
     }
+
+    [Test]
+    public async Task fail_without_touching_anything_when_the_chatbot_is_archived()
+    {
+        ChatbotDetailResponse chatbot = ChatbotDetailResponseMother.With(archived: true);
+        ChatbotQuestionAsker.Command command = ChatbotQuestionAskerCommandMother.With(botKey: chatbot.Id);
+        this.ShouldFindChatbotDetail(chatbot);
+        this.ShouldAnswer(chatbot.Provider, "no debería llegar");
+
+        Func<Task> act = async () => await this._asker.Execute(command, CancellationToken.None).ToListAsync();
+
+        await act.Should().ThrowAsync<ChatbotArchivedError>();
+        this.ShouldNotHaveAskedTheModel();
+        this.ShouldNotHaveStoredAnyAttachment();
+        this.ShouldNotHaveSavedAnyConversation();
+        this.ShouldNotHavePublishedAnything();
+    }
 }

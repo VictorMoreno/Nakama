@@ -1,12 +1,7 @@
-using AwesomeAssertions;
-using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.ConversationHistory.Application.Handlers;
-using Nakama.ConversationHistory.Domain;
 using Nakama.Shared.Infrastructure.Events;
 using Test.Modules.Chatbots.Domain;
-using Test.Modules.ConversationHistory.Domain;
-using ConversationHistoryEntity = Nakama.ConversationHistory.Domain.ConversationHistory;
 
 namespace Test.Modules.ConversationHistory.Application;
 

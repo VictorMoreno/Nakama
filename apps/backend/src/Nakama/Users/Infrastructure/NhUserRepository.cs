@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Nakama.Shared.Infrastructure.Persistence;
 using Nakama.Users.Domain;
-using NHibernate;
 using NHibernate.Linq;
 
 namespace Nakama.Users.Infrastructure;

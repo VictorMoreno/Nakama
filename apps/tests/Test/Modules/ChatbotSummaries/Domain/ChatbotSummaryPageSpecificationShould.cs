@@ -89,4 +89,13 @@ public sealed class ChatbotSummaryPageSpecificationShould
         paged.Skip.Should().Be(20);
         paged.Take.Should().Be(10);
     }
+
+    [Test]
+    public void return_only_the_archived_chatbots_when_asked_for_them()
+    {
+        ChatbotSummaryPageSpecification specification = new(null, null, null, archived: true);
+
+        specification.IsSatisfiedBy(ChatbotSummaryMother.With(archived: false)).Should().BeFalse();
+        specification.IsSatisfiedBy(ChatbotSummaryMother.With(archived: true)).Should().BeTrue();
+    }
 }

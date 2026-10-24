@@ -9,6 +9,13 @@ type StatusFilter<TStatus extends string> = "all" | TStatus;
 
 export type PageSlide = "next" | "prev" | "none";
 
+export type ArchiveView = "active" | "archived";
+
+export const ARCHIVE_VIEW_OPTIONS: { value: ArchiveView; label: string }[] = [
+  { value: "active", label: "En uso" },
+  { value: "archived", label: "Eliminados" }
+];
+
 interface LoadedPage<T> {
   key: string;
   filters: string;
@@ -24,7 +31,7 @@ function parsePositiveInt(raw: string | null): number | null {
 
 /**
  * Server-side paginated list whose page, page size, search text and status filter live in the URL
- * (`?page=&size=&q=&status=`), so reloading or going back restores the same view. The previous page
+ * (`?page=&size=&q=&status=&baja=`), so reloading or going back restores the same view. The previous page
  * stays on screen while the next one loads.
  */
 export function usePagedList<T, TStatus extends string>(
@@ -44,7 +51,9 @@ export function usePagedList<T, TStatus extends string>(
   const requestedStatus = params.get("status");
   const status: StatusFilter<TStatus> = statuses.find((candidate) => candidate === requestedStatus) ?? "all";
 
-  const filters = `${pageSize}|${search}|${status}`;
+  const archived = params.get("baja") === "1";
+
+  const filters = `${pageSize}|${search}|${status}|${archived}`;
   const key = `${page}|${filters}|${reloadToken}`;
   const isLoading = loaded?.key !== key;
   const data = loaded?.data;
@@ -64,7 +73,7 @@ export function usePagedList<T, TStatus extends string>(
 
   useEffect(() => {
     let cancelled = false;
-    fetchPage({ page, pageSize, search, status: status === "all" ? undefined : status }).then((result) => {
+    fetchPage({ page, pageSize, search, status: status === "all" ? undefined : status, archived }).then((result) => {
       if (cancelled) return;
       if (result.items.length === 0 && result.totalCount > 0 && page > 1) {
         const lastPage = result.totalPages;
@@ -90,7 +99,7 @@ export function usePagedList<T, TStatus extends string>(
     return () => {
       cancelled = true;
     };
-  }, [fetchPage, page, pageSize, search, status, key, filters, setParams]);
+  }, [fetchPage, page, pageSize, search, status, archived, key, filters, setParams]);
 
   useEffect(() => {
     if (searchDraft === null) return;
@@ -125,6 +134,8 @@ export function usePagedList<T, TStatus extends string>(
     setSearch: setSearchDraft,
     status,
     setStatus: (value: StatusFilter<TStatus>) => updateParams({ status: value === "all" ? null : value, page: null }),
+    archived,
+    setArchived: (value: boolean) => updateParams({ baja: value ? "1" : null, page: null }),
     setPage: (value: number) => updateParams({ page: value <= 1 ? null : String(value) }),
     setPageSize: (value: number) =>
       updateParams({ size: value === paginationConfig.defaultPageSize ? null : String(value), page: null }),

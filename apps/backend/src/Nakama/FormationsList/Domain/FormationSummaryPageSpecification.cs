@@ -10,8 +10,10 @@ public sealed class FormationSummaryPageSpecification : BaseSpecification<Format
         string? search,
         string? status,
         int skip = 0,
-        int? take = null)
+        int? take = null,
+        bool archived = false)
     {
+        this.Archived = archived;
         this.Ids = ids;
         this.Search = string.IsNullOrWhiteSpace(search) ? null : search.Trim().ToLowerInvariant();
         this.Status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
@@ -29,9 +31,12 @@ public sealed class FormationSummaryPageSpecification : BaseSpecification<Format
 
     public string? Status { get; }
 
+    public bool Archived { get; }
+
     protected override Expression<Func<FormationSummary, bool>> CreateExpression()
     {
-        Expression<Func<FormationSummary, bool>> criteria = formation => !formation.Archived;
+        bool archived = this.Archived;
+        Expression<Func<FormationSummary, bool>> criteria = formation => formation.Archived == archived;
 
         if (this.Ids is not null)
         {

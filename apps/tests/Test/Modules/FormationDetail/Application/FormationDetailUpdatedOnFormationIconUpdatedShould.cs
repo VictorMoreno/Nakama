@@ -1,6 +1,5 @@
 using AwesomeAssertions;
 using Nakama.FormationDetail.Application.Handlers;
-using Nakama.FormationDetail.Domain;
 using Nakama.Formations.Domain;
 using Nakama.Formations.Domain.Events;
 using Nakama.Shared.Infrastructure.Events;

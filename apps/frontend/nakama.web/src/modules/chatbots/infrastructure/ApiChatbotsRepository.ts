@@ -125,7 +125,8 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       query.page,
       query.pageSize,
       query.search || undefined,
-      query.status ? STATUS_TO_API[query.status] : undefined
+      query.status ? STATUS_TO_API[query.status] : undefined,
+      query.archived
     );
     return {
       items: (response.items ?? []).map(toChatbotListItem),
@@ -176,6 +177,10 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
 
   async Archive(id: string): Promise<void> {
     await this.client.archive(id);
+  }
+
+  async Unarchive(id: string): Promise<void> {
+    await this.client.unarchive(id);
   }
 
   async UpdateSettings(id: string, patch: Partial<ChatbotSettings>): Promise<void> {

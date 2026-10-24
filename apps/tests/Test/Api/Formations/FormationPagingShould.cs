@@ -73,6 +73,20 @@ public sealed class FormationPagingShould : ApiTestCase
     }
 
     [Test]
+    public async Task let_an_administrator_list_only_the_archived_formations()
+    {
+        string token = await this.SignIn(isAdmin: true);
+        Guid archived = await this.CreateFormation(token, "Archivada");
+        await this.CreateFormation(token, "Vigente");
+        await this.Client.ArchiveFormation(archived, token);
+
+        PagedResponse<FormationSummaryResponse> response = await this.ReadPage(token, archived: true);
+
+        response.Items.Select(item => item.Title).Should().Equal("Archivada");
+        response.TotalCount.Should().Be(1);
+    }
+
+    [Test]
     public async Task show_a_regular_user_an_empty_page_when_they_are_not_assigned_to_any_formation()
     {
         string adminToken = await this.SignIn(isAdmin: true);
@@ -115,9 +129,10 @@ public sealed class FormationPagingShould : ApiTestCase
         int? page = null,
         int? pageSize = null,
         string? search = null,
-        string? status = null)
+        string? status = null,
+        bool? archived = null)
     {
-        HttpResponseMessage response = await this.Client.ListFormationsPage(token, page, pageSize, search, status);
+        HttpResponseMessage response = await this.Client.ListFormationsPage(token, page, pageSize, search, status, archived);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         return (await response.Content.ReadFromJsonAsync<PagedResponse<FormationSummaryResponse>>())!;

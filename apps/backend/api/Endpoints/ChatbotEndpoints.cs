@@ -18,6 +18,7 @@ using Nakama.Chatbots.Application.SettingsUpdater;
 using Nakama.Chatbots.Application.StatusUpdater;
 using Nakama.Chatbots.Application.TeamMemberAdder;
 using Nakama.Chatbots.Application.TeamMemberRemover;
+using Nakama.Chatbots.Application.Unarchiver;
 using Nakama.ChatbotSummaries.Application;
 using Nakama.ChatbotSummaries.Application.PageSearcher;
 using Nakama.ChatbotSummaries.Application.Searcher;
@@ -43,6 +44,12 @@ public sealed class ChatbotEndpoints : IEndpoint
         group.MapPost("/{id:guid}/archive", ArchiveChatbot)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Marks a chatbot as archived.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/{id:guid}/unarchive", UnarchiveChatbot)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Restores an archived chatbot so it can be used again.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -139,10 +146,11 @@ public sealed class ChatbotEndpoints : IEndpoint
             .Produces<IReadOnlyCollection<ChatbotSummaryResponse>>();
 
         group.MapGet("/paged", SearchChatbotSummariesPage)
-            .WithSummary("Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded.")
+            .WithSummary("Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded unless an administrator asks for them.")
             .WithDescription(
                 "Administrators see every chatbot, anyone else only the ones they belong to. `search` matches the label " +
                 "and description case-insensitively, `status` is an exact match, results are ordered by label. " +
+                "`archived=true` returns only the archived chatbots and is honored for administrators only. " +
                 "`pageSize` defaults to the configured Pagination:DefaultPageSize and cannot exceed Pagination:MaxPageSize.")
             .Produces<PagedResponse<ChatbotSummaryResponse>>()
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
@@ -189,6 +197,12 @@ public sealed class ChatbotEndpoints : IEndpoint
     private static async Task<IResult> ArchiveChatbot(Guid id, ICommandBus commandBus, CancellationToken ct)
     {
         await commandBus.Send(new ChatbotArchiver.Command(id), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> UnarchiveChatbot(Guid id, ICommandBus commandBus, CancellationToken ct)
+    {
+        await commandBus.Send(new ChatbotUnarchiver.Command(id), ct);
         return Results.NoContent();
     }
 
@@ -395,10 +409,11 @@ public sealed class ChatbotEndpoints : IEndpoint
         int page = 1,
         int? pageSize = null,
         string? search = null,
-        string? status = null)
+        string? status = null,
+        bool archived = false)
     {
         PagedResponse<ChatbotSummaryResponse> response = await queryBus.Ask(
-            new ChatbotSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status), ct);
+            new ChatbotSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status, archived), ct);
         return Results.Ok(response);
     }
 

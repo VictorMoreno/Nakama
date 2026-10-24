@@ -1,7 +1,5 @@
-using AwesomeAssertions;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.ConversationAudit.Application.Handlers;
-using Nakama.ConversationAudit.Domain;
 using Nakama.Shared.Infrastructure.Events;
 using Test.Modules.Chatbots.Domain;
 using Test.Modules.ConversationAudit.Domain;

@@ -73,4 +73,13 @@ public sealed class FormationSummaryPageSpecificationShould
         paged.Skip.Should().Be(12);
         paged.Take.Should().Be(12);
     }
+
+    [Test]
+    public void return_only_the_archived_formations_when_asked_for_them()
+    {
+        FormationSummaryPageSpecification specification = new(null, null, null, archived: true);
+
+        specification.IsSatisfiedBy(FormationSummaryMother.With(archived: false)).Should().BeFalse();
+        specification.IsSatisfiedBy(FormationSummaryMother.With(archived: true)).Should().BeTrue();
+    }
 }

@@ -10,8 +10,10 @@ public sealed class ChatbotSummaryPageSpecification : BaseSpecification<ChatbotS
         string? search,
         string? status,
         int skip = 0,
-        int? take = null)
+        int? take = null,
+        bool archived = false)
     {
+        this.Archived = archived;
         this.Ids = ids;
         this.Search = string.IsNullOrWhiteSpace(search) ? null : search.Trim().ToLowerInvariant();
         this.Status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
@@ -29,9 +31,12 @@ public sealed class ChatbotSummaryPageSpecification : BaseSpecification<ChatbotS
 
     public string? Status { get; }
 
+    public bool Archived { get; }
+
     protected override Expression<Func<ChatbotSummary, bool>> CreateExpression()
     {
-        Expression<Func<ChatbotSummary, bool>> criteria = chatbot => !chatbot.Archived;
+        bool archived = this.Archived;
+        Expression<Func<ChatbotSummary, bool>> criteria = chatbot => chatbot.Archived == archived;
 
         if (this.Ids is not null)
         {

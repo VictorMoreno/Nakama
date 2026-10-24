@@ -24,7 +24,7 @@ export const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
 
 export function useFormationsList() {
   const repo = useInjection<IFormationsRepository>(Services.FormationsRepository.id);
-  const { archiveFormation } = useFormations();
+  const { archiveFormation, unarchiveFormation } = useFormations();
   const { isAdmin } = useUser();
   const { showToast } = useToast();
 
@@ -39,12 +39,21 @@ export function useFormationsList() {
     setDeleteKey(null);
     if (!key) return;
     await archiveFormation(key);
-    showToast("Formación eliminada (demo)");
+    showToast("Formación eliminada");
+    list.reload();
+  }
+
+  async function handleRestore(key: string) {
+    await unarchiveFormation(key);
+    showToast("Formación reactivada");
     list.reload();
   }
 
   return {
     isAdmin,
+    showingArchived: isAdmin && list.archived,
+    setShowingArchived: list.setArchived,
+    handleRestore,
     formations: list.items,
     slide: list.slide,
     displayedPage: list.displayedPage,

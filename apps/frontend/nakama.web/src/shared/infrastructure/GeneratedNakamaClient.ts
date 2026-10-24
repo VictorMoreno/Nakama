@@ -83,6 +83,12 @@ export interface IGeneratedNakamaClient {
     archive(id: string): Promise<void>;
 
     /**
+     * Restores an archived chatbot so it can be used again.
+     * @return No Content
+     */
+    unarchive(id: string): Promise<void>;
+
+    /**
      * Updates a chatbot's status.
      * @return No Content
      */
@@ -159,14 +165,15 @@ export interface IGeneratedNakamaClient {
     chatbotsAll(): Promise<ChatbotSummaryResponse[]>;
 
     /**
-     * Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded.
+     * Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded unless an administrator asks for them.
      * @param page (optional) 
      * @param pageSize (optional) 
      * @param search (optional) 
      * @param status (optional) 
+     * @param archived (optional) 
      * @return OK
      */
-    paged(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<ChatbotSummaryResponsePagedResponse>;
+    paged(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined, archived: boolean | undefined): Promise<ChatbotSummaryResponsePagedResponse>;
 
     /**
      * Gets the questions of one chatbot whose answer was rated as not useful this week, most repeated first.
@@ -197,6 +204,12 @@ export interface IGeneratedNakamaClient {
      * @return No Content
      */
     archive2(id: string): Promise<void>;
+
+    /**
+     * Restores an archived formation so it can be used again.
+     * @return No Content
+     */
+    unarchive2(id: string): Promise<void>;
 
     /**
      * Updates a formation's status.
@@ -293,14 +306,15 @@ export interface IGeneratedNakamaClient {
     formationsAll(): Promise<FormationSummaryResponse[]>;
 
     /**
-     * Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded.
+     * Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded unless an administrator asks for them.
      * @param page (optional) 
      * @param pageSize (optional) 
      * @param search (optional) 
      * @param status (optional) 
+     * @param archived (optional) 
      * @return OK
      */
-    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<FormationSummaryResponsePagedResponse>;
+    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined, archived: boolean | undefined): Promise<FormationSummaryResponsePagedResponse>;
 
     /**
      * Gets one user's own progress in a formation. 404 if they're not assigned.
@@ -780,6 +794,51 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     protected processArchive(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Restores an archived chatbot so it can be used again.
+     * @return No Content
+     */
+    unarchive(id: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{id}/unarchive";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processUnarchive(_response));
+        });
+    }
+
+    protected processUnarchive(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -1427,14 +1486,15 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded.
+     * Lists one page of chatbots (summary view), scoped to the caller. Archived chatbots are excluded unless an administrator asks for them.
      * @param page (optional) 
      * @param pageSize (optional) 
      * @param search (optional) 
      * @param status (optional) 
+     * @param archived (optional) 
      * @return OK
      */
-    paged(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<ChatbotSummaryResponsePagedResponse> {
+    paged(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined, archived: boolean | undefined): Promise<ChatbotSummaryResponsePagedResponse> {
         let url_ = this.baseUrl + "/api/chatbots/paged?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -1452,6 +1512,10 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             throw new globalThis.Error("The parameter 'status' cannot be null.");
         else if (status !== undefined)
             url_ += "status=" + encodeURIComponent("" + status) + "&";
+        if (archived === null)
+            throw new globalThis.Error("The parameter 'archived' cannot be null.");
+        else if (archived !== undefined)
+            url_ += "archived=" + encodeURIComponent("" + archived) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1709,6 +1773,51 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     protected processArchive2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Restores an archived formation so it can be used again.
+     * @return No Content
+     */
+    unarchive2(id: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/unarchive";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processUnarchive2(_response));
+        });
+    }
+
+    protected processUnarchive2(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -2517,14 +2626,15 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded.
+     * Lists one page of formations (summary view), scoped to the caller. Archived formations are excluded unless an administrator asks for them.
      * @param page (optional) 
      * @param pageSize (optional) 
      * @param search (optional) 
      * @param status (optional) 
+     * @param archived (optional) 
      * @return OK
      */
-    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<FormationSummaryResponsePagedResponse> {
+    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined, archived: boolean | undefined): Promise<FormationSummaryResponsePagedResponse> {
         let url_ = this.baseUrl + "/api/formations/paged?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -2542,6 +2652,10 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             throw new globalThis.Error("The parameter 'status' cannot be null.");
         else if (status !== undefined)
             url_ += "status=" + encodeURIComponent("" + status) + "&";
+        if (archived === null)
+            throw new globalThis.Error("The parameter 'archived' cannot be null.");
+        else if (archived !== undefined)
+            url_ += "archived=" + encodeURIComponent("" + archived) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {

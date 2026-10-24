@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
+import { useUser } from "../../../shared/contexts/UserContext";
 import { usePagedList } from "../../../shared/hooks/usePagedList";
 import { CHATBOT_STATUS_META } from "../../../../lib/status";
 import type { ChatbotLifecycleStatus } from "../../../../modules/chatbots/domain/Chatbot";
@@ -24,7 +25,8 @@ export const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
 
 export function useChatbotsList() {
   const repo = useInjection<IChatbotsRepository>(Services.ChatbotsRepository.id);
-  const { archiveChatbot } = useChatbots();
+  const { archiveChatbot, unarchiveChatbot } = useChatbots();
+  const { isAdmin } = useUser();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -39,12 +41,22 @@ export function useChatbotsList() {
     setDeleteKey(null);
     if (!key) return;
     await archiveChatbot(key);
-    showToast("Chatbot eliminado (demo)");
+    showToast("Chatbot eliminado");
+    list.reload();
+  }
+
+  async function handleRestore(key: string) {
+    await unarchiveChatbot(key);
+    showToast("Chatbot reactivado");
     list.reload();
   }
 
   return {
     navigate,
+    isAdmin,
+    showingArchived: isAdmin && list.archived,
+    setShowingArchived: list.setArchived,
+    handleRestore,
     chatbots: list.items,
     slide: list.slide,
     displayedPage: list.displayedPage,

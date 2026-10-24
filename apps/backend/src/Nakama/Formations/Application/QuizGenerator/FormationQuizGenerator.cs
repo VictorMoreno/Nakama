@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Application.Finder;
 using Nakama.Formations.Application.DocumentFileFinder;
+using Nakama.Formations.Domain;
 using Nakama.Formations.Domain.Errors;
 using Nakama.LlmProviders.Domain;
 using Nakama.Shared.Application;
@@ -63,6 +64,11 @@ public static class FormationQuizGenerator
                                    ?? throw FormationErrors.QuizProviderNotConnected(provider.ToString());
 
             FormationDetailResponse formation = await queryBus.Ask(new FormationDetailFinder.Query(formationId), cancellationToken);
+            if (formation.Archived)
+            {
+                throw FormationErrors.Archived(FormationId.From(formationId));
+            }
+
             if (formation.Docs.Count == 0)
             {
                 throw FormationErrors.QuizFormationWithoutDocuments;

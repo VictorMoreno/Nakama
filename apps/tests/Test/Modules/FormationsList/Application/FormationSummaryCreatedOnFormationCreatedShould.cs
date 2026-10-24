@@ -1,10 +1,6 @@
-using AwesomeAssertions;
 using Nakama.FormationsList.Application.Handlers;
-using Nakama.FormationsList.Domain;
-using Nakama.Formations.Domain;
 using Nakama.Formations.Domain.Events;
 using Nakama.Shared.Infrastructure.Events;
-using Test.Modules.FormationsList.Domain;
 using Test.Modules.Formations.Domain;
 
 namespace Test.Modules.FormationsList.Application;

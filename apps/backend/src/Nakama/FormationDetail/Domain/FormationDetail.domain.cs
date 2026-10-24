@@ -48,6 +48,8 @@ public partial class FormationDetail
 
     public void MarkArchived() => this.Archived = true;
 
+    public void MarkUnarchived() => this.Archived = false;
+
     public void UpdateIcon(string? iconUrl) => this.IconUrl = iconUrl;
 
     public void AddModule(

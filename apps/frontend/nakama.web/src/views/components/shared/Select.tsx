@@ -54,7 +54,14 @@ export default function Select<T extends string>({ id, value, onChange, options,
         aria-label={ariaLabel}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className={styles.selectValue}>{current?.label ?? ""}</span>
+        <span className={styles.selectValueBox}>
+          <span className={styles.selectValue}>{current?.label ?? ""}</span>
+          {options.map((opt) => (
+            <span key={opt.value} className={styles.selectSizer} aria-hidden="true">
+              {opt.label}
+            </span>
+          ))}
+        </span>
         <ChevronDownIcon className={styles.chevron} />
       </button>
 

@@ -10,7 +10,7 @@ namespace Nakama.FormationsList.Application.PageSearcher;
 
 public static class FormationSummaryPageSearcher
 {
-    public sealed record Query(Guid UserId, bool IsAdmin, int Page, int? PageSize, string? Search, string? Status)
+    public sealed record Query(Guid UserId, bool IsAdmin, int Page, int? PageSize, string? Search, string? Status, bool Archived = false)
         : IQuery<PagedResponse<FormationSummaryResponse>>;
 
     public sealed class Handler(Searcher searcher, IOptions<PaginationOptions> pagination)
@@ -49,7 +49,8 @@ public static class FormationSummaryPageSearcher
                     query.Search,
                     query.Status,
                     pageRequest.Skip,
-                    pageRequest.PageSize),
+                    pageRequest.PageSize,
+                    query.IsAdmin && query.Archived),
                 cancellationToken);
 
             List<FormationSummaryResponse> items = result.Items.Select(f =>

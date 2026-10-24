@@ -15,14 +15,15 @@ public static class ChatbotDetailResponseMother
         string? model = null,
         bool? socratic = null,
         bool? explicaMas = null,
-        List<ChatbotDocumentResponse>? docs = null) =>
+        List<ChatbotDocumentResponse>? docs = null,
+        bool? archived = null) =>
         new(
             id ?? Guid.NewGuid(),
             label ?? WordMother.Random(),
             description ?? WordMother.Random(),
             "Active",
             WordMother.Random(),
-            false,
+            archived ?? false,
             null,
             socratic ?? false,
             explicaMas ?? false,

@@ -1,10 +1,6 @@
-using AwesomeAssertions;
 using Nakama.ChatbotSummaries.Application.Handlers;
-using Nakama.ChatbotSummaries.Domain;
-using Nakama.Chatbots.Domain;
 using Nakama.Chatbots.Domain.Events;
 using Nakama.Shared.Infrastructure.Events;
-using Test.Modules.ChatbotSummaries.Domain;
 using Test.Modules.Chatbots.Domain;
 
 namespace Test.Modules.ChatbotSummaries.Application;

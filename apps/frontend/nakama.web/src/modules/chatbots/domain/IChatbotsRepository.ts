@@ -23,6 +23,7 @@ export interface IChatbotsRepository {
   FindPage(query: PageQuery<ChatbotLifecycleStatus>): Promise<Page<ChatbotListItem>>;
   Create(input: CreateChatbotInput): Promise<Chatbot>;
   Archive(id: string): Promise<void>;
+  Unarchive(id: string): Promise<void>;
   UpdateSettings(id: string, patch: Partial<ChatbotSettings>): Promise<void>;
   UpdateStatus(id: string, status: ChatbotLifecycleStatus): Promise<void>;
   UpdateIcon(id: string, iconUrl: string | undefined): Promise<void>;
