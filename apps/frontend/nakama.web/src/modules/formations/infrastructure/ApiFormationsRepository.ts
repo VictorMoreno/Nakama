@@ -132,7 +132,8 @@ export class ApiFormationsRepository implements IFormationsRepository {
       query.pageSize,
       query.search || undefined,
       query.status ? STATUS_TO_API[query.status] : undefined,
-      query.archived
+      query.archived,
+      query.progress
     );
     return {
       items: (response.items ?? []).map(toFormationListItem),

@@ -29,7 +29,7 @@ export function useFormationsList() {
   const { showToast } = useToast();
 
   const fetchPage = useCallback((query: PageQuery<FormationLifecycleStatus>) => repo.FindPage(query), [repo]);
-  const list = usePagedList(fetchPage, STATUSES);
+  const list = usePagedList(fetchPage, STATUSES, isAdmin ? undefined : "in_progress");
 
   const [deleteKey, setDeleteKey] = useState<string | null>(null);
   const deleteTarget = list.items.find((c) => c.id === deleteKey);
@@ -70,6 +70,8 @@ export function useFormationsList() {
     setSearch: list.setSearch,
     statusFilter: list.status,
     setStatusFilter: list.setStatus,
+    progressFilter: list.progress ?? "in_progress",
+    setProgressFilter: list.setProgress,
     pagination: {
       page: list.page,
       pageSize: list.pageSize,

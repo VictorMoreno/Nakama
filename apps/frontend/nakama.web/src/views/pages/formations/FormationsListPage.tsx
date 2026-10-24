@@ -5,7 +5,7 @@ import Select from "../../components/shared/Select";
 import { ArrowRightIcon, LockIcon, PlusIcon, TrashIcon, RefreshIcon } from "../../components/shared/icons";
 import { FORMATION_STATUS_META } from "../../../lib/status";
 import { paginationConfig } from "../../../shared/infrastructure/config/PaginationConfig";
-import { ARCHIVE_VIEW_OPTIONS } from "../../shared/hooks/usePagedList";
+import { ARCHIVE_VIEW_OPTIONS, PROGRESS_VIEW_OPTIONS } from "../../shared/hooks/usePagedList";
 import { STATUS_OPTIONS, useFormationsList } from "./hooks/useFormationsList";
 import styles from "./FormationsListPage.module.scss";
 
@@ -24,6 +24,8 @@ export default function FormationsListPage() {
     setSearch,
     statusFilter,
     setStatusFilter,
+    progressFilter,
+    setProgressFilter,
     pagination,
     deleteTarget,
     setDeleteKey,
@@ -54,7 +56,16 @@ export default function FormationsListPage() {
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Buscar formaciones"
           />
-          <Select value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} ariaLabel="Filtrar por estado" />
+          {isAdmin ? (
+            <Select value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} ariaLabel="Filtrar por estado" />
+          ) : (
+            <Select
+              value={progressFilter}
+              onChange={setProgressFilter}
+              options={PROGRESS_VIEW_OPTIONS}
+              ariaLabel="Filtrar por estado de tu curso"
+            />
+          )}
           {isAdmin && (
             <Select
               value={showingArchived ? "archived" : "active"}
@@ -71,7 +82,11 @@ export default function FormationsListPage() {
               ? "Cargando formaciones…"
               : showingArchived
                 ? "No hay formaciones eliminadas."
-                : "No hay formaciones que coincidan con la búsqueda o el filtro."}
+                : !isAdmin && progressFilter === "in_progress" && !search
+                  ? "No tienes formaciones en curso."
+                  : !isAdmin && progressFilter === "completed" && !search
+                    ? "Todavía no has completado ninguna formación."
+                    : "No hay formaciones que coincidan con la búsqueda o el filtro."}
           </p>
         ) : (
         <div
@@ -89,11 +104,12 @@ export default function FormationsListPage() {
                     className={styles.botCardIcon}
                     style={c.iconUrl ? { backgroundImage: `url(${c.iconUrl})` } : undefined}
                   >
-                    <span className={`led ${status.level}`} title={status.label} />
+                    {isAdmin && <span className={`led ${status.level}`} title={status.label} />}
                   </div>
                   <div className={styles.botCardTitles}>
                     <div className={styles.botCardName}>{c.title}</div>
                     <div className={styles.botCardDept}>{c.audience}</div>
+                    {!isAdmin && pct === 100 && <span className={styles.completedTag}>Completada</span>}
                   </div>
                 </div>
                 <p className={styles.botCardDesc}>{c.description}</p>

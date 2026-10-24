@@ -172,7 +172,9 @@ public sealed class FormationEndpoints : IEndpoint
                 "title, audience and description case-insensitively, `status` is an exact match, results are ordered by " +
                 "title. `archived=true` returns only the archived formations and is honored for administrators only. " +
                 "`pageSize` defaults to the configured Pagination:DefaultPageSize and cannot exceed " +
-                "Pagination:MaxPageSize.")
+                "Pagination:MaxPageSize. Anyone who is not an administrator only gets active formations, and can narrow " +
+                "them with `progress` (`in_progress` or `completed`, based on how many modules they have completed); " +
+                "`status` is ignored for them.")
             .Produces<PagedResponse<FormationSummaryResponse>>()
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
@@ -394,10 +396,11 @@ public sealed class FormationEndpoints : IEndpoint
         int? pageSize = null,
         string? search = null,
         string? status = null,
-        bool archived = false)
+        bool archived = false,
+        string? progress = null)
     {
         PagedResponse<FormationSummaryResponse> response = await queryBus.Ask(
-            new FormationSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status, archived), ct);
+            new FormationSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status, archived, progress), ct);
         return Results.Ok(response);
     }
 

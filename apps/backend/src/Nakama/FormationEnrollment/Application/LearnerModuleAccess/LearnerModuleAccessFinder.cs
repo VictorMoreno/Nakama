@@ -21,6 +21,11 @@ public sealed class LearnerModuleAccessFinder(IQueryBus queryBus, IFormationEnro
             throw FormationErrors.Archived(id);
         }
 
+        if (detail.Status != FormationStatus.Active.ToString())
+        {
+            throw FormationErrors.NotActive(id);
+        }
+
         IReadOnlyList<Domain.FormationEnrollment> found = await repository.Search(
             new FormationEnrollmentByFormationAndUserSpecification(id.Value, userId),
             cancellationToken);

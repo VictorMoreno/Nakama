@@ -11,6 +11,16 @@ export type PageSlide = "next" | "prev" | "none";
 
 export type ArchiveView = "active" | "archived";
 
+export type ProgressView = "in_progress" | "completed" | "all";
+
+export const PROGRESS_VIEW_OPTIONS: { value: ProgressView; label: string }[] = [
+  { value: "in_progress", label: "En curso" },
+  { value: "completed", label: "Completadas" },
+  { value: "all", label: "Todas" }
+];
+
+const PROGRESS_VIEWS: readonly ProgressView[] = PROGRESS_VIEW_OPTIONS.map((option) => option.value);
+
 export const ARCHIVE_VIEW_OPTIONS: { value: ArchiveView; label: string }[] = [
   { value: "active", label: "En uso" },
   { value: "archived", label: "Eliminados" }
@@ -36,7 +46,8 @@ function parsePositiveInt(raw: string | null): number | null {
  */
 export function usePagedList<T, TStatus extends string>(
   fetchPage: (query: PageQuery<TStatus>) => Promise<Page<T>>,
-  statuses: readonly TStatus[]
+  statuses: readonly TStatus[],
+  defaultProgress?: ProgressView
 ) {
   const [params, setParams] = useSearchParams();
   const [searchDraft, setSearchDraft] = useState<string | null>(null);
@@ -53,7 +64,11 @@ export function usePagedList<T, TStatus extends string>(
 
   const archived = params.get("baja") === "1";
 
-  const filters = `${pageSize}|${search}|${status}|${archived}`;
+  const requestedProgress = params.get("progreso");
+  const progress: ProgressView | undefined =
+    defaultProgress === undefined ? undefined : (PROGRESS_VIEWS.find((candidate) => candidate === requestedProgress) ?? defaultProgress);
+
+  const filters = `${pageSize}|${search}|${status}|${archived}|${progress}`;
   const key = `${page}|${filters}|${reloadToken}`;
   const isLoading = loaded?.key !== key;
   const data = loaded?.data;
@@ -73,7 +88,14 @@ export function usePagedList<T, TStatus extends string>(
 
   useEffect(() => {
     let cancelled = false;
-    fetchPage({ page, pageSize, search, status: status === "all" ? undefined : status, archived }).then((result) => {
+    fetchPage({
+      page,
+      pageSize,
+      search,
+      status: status === "all" ? undefined : status,
+      archived,
+      progress: progress === undefined || progress === "all" ? undefined : progress
+    }).then((result) => {
       if (cancelled) return;
       if (result.items.length === 0 && result.totalCount > 0 && page > 1) {
         const lastPage = result.totalPages;
@@ -99,7 +121,7 @@ export function usePagedList<T, TStatus extends string>(
     return () => {
       cancelled = true;
     };
-  }, [fetchPage, page, pageSize, search, status, archived, key, filters, setParams]);
+  }, [fetchPage, page, pageSize, search, status, archived, progress, key, filters, setParams]);
 
   useEffect(() => {
     if (searchDraft === null) return;
@@ -136,6 +158,8 @@ export function usePagedList<T, TStatus extends string>(
     setStatus: (value: StatusFilter<TStatus>) => updateParams({ status: value === "all" ? null : value, page: null }),
     archived,
     setArchived: (value: boolean) => updateParams({ baja: value ? "1" : null, page: null }),
+    progress,
+    setProgress: (value: ProgressView) => updateParams({ progreso: value === defaultProgress ? null : value, page: null }),
     setPage: (value: number) => updateParams({ page: value <= 1 ? null : String(value) }),
     setPageSize: (value: number) =>
       updateParams({ size: value === paginationConfig.defaultPageSize ? null : String(value), page: null }),

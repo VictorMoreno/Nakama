@@ -12,4 +12,5 @@ export interface PageQuery<TStatus extends string> {
   search: string;
   status?: TStatus;
   archived?: boolean;
+  progress?: "in_progress" | "completed";
 }

@@ -14,6 +14,7 @@ public static class FormationSummaryPageSearcherQueryMother
         int? page = null,
         int? pageSize = null,
         string? search = null,
-        string? status = null) =>
-        new(userId ?? Guid.NewGuid(), isAdmin ?? false, page ?? 1, pageSize, search, status);
+        string? status = null,
+        string? progress = null) =>
+        new(userId ?? Guid.NewGuid(), isAdmin ?? false, page ?? 1, pageSize, search, status, Progress: progress);
 }

@@ -122,6 +122,14 @@ public abstract class FormationsListUnitTestCase : UnitTestCase
                 It.IsAny<CancellationToken>()),
             Times.Once);
 
+    protected void ShouldHaveSearchedFormationSummariesPageWithStatus(string? status) =>
+        this.SummariesRepository.Verify(
+            repository => repository.SearchPage(
+                It.Is<ISpecification<FormationSummary>>(specification =>
+                    specification is FormationSummaryPageSpecification && ((FormationSummaryPageSpecification)specification).Status == status),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
     protected void ShouldNotHaveSearchedFormationSummariesPage() =>
         this.SummariesRepository.Verify(
             repository => repository.SearchPage(

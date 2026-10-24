@@ -53,6 +53,9 @@ public sealed class FormationExamDataOnNonExamModuleError()
 public sealed class FormationArchivedError(string key)
     : DomainError("nakama.formations.archived", $"La formación '{key}' está dada de baja.");
 
+public sealed class FormationNotActiveError(string key)
+    : DomainError("nakama.formations.not_active", $"La formación '{key}' no está activa, así que no se puede cursar.");
+
 public sealed class FormationDocumentNotFoundError(string id)
     : DomainError("nakama.formation_documents.not_found", $"Document '{id}' not found.");
 
@@ -96,6 +99,8 @@ public static class FormationErrors
     public static DomainError ExamDataOnNonExamModule { get; } = new FormationExamDataOnNonExamModuleError();
 
     public static DomainError Archived(FormationId id) => new FormationArchivedError(id.ToString());
+
+    public static DomainError NotActive(FormationId id) => new FormationNotActiveError(id.ToString());
 
     public static DomainError DocumentTooLarge(long maxBytes) => new FormationDocumentTooLargeError(maxBytes);
 

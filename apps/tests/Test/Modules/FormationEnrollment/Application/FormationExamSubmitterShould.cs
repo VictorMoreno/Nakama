@@ -258,4 +258,24 @@ public sealed class FormationExamSubmitterShould : FormationEnrollmentUnitTestCa
         this.ShouldNotHaveSavedAnyEnrollment();
         this.ShouldNotHavePublishedAnything();
     }
+
+    [TestCase("Draft")]
+    [TestCase("Inactive")]
+    public async Task fail_without_saving_anything_when_the_formation_is_not_active(string status)
+    {
+        FormationDetailResponse detail = FormationDetailResponseMother.With(
+            status: status,
+            modules: [FormationModuleResponseMother.Exam(70, 0)]);
+        Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
+        this.ShouldFindFormationDetail(detail);
+        this.ShouldFindEnrollment(enrollment);
+
+        Func<Task> act = async () => await this._handler.Handle(
+            FormationExamSubmitterCommandMother.With(detail.Id, detail.Modules.Single().Id, enrollment.UserId, 0),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FormationNotActiveError>();
+        this.ShouldNotHaveSavedAnyEnrollment();
+        this.ShouldNotHavePublishedAnything();
+    }
 }

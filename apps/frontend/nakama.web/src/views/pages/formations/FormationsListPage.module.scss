@@ -99,6 +99,17 @@
   :global(.bar-track) { flex: 1; margin-top: 0; }
 }
 
+.completedTag {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--positive-soft);
+  color: var(--positive);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
 .progressPct {
   font-size: 0.78rem;
   font-weight: 700;

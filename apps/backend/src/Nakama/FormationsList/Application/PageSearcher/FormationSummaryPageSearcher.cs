@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using Nakama.FormationEnrollment.Domain;
+using Nakama.Formations.Domain;
 using Nakama.FormationsList.Domain;
 using Nakama.Shared.Application;
 using Nakama.Shared.Domain;
@@ -8,10 +9,23 @@ using Nakama.Shared.Infrastructure.Storage;
 
 namespace Nakama.FormationsList.Application.PageSearcher;
 
+public static class FormationProgressFilter
+{
+    public const string InProgress = "in_progress";
+    public const string Completed = "completed";
+}
+
 public static class FormationSummaryPageSearcher
 {
-    public sealed record Query(Guid UserId, bool IsAdmin, int Page, int? PageSize, string? Search, string? Status, bool Archived = false)
-        : IQuery<PagedResponse<FormationSummaryResponse>>;
+    public sealed record Query(
+        Guid UserId,
+        bool IsAdmin,
+        int Page,
+        int? PageSize,
+        string? Search,
+        string? Status,
+        bool Archived = false,
+        string? Progress = null) : IQuery<PagedResponse<FormationSummaryResponse>>;
 
     public sealed class Handler(Searcher searcher, IOptions<PaginationOptions> pagination)
         : IQueryHandler<Query, PagedResponse<FormationSummaryResponse>>
@@ -41,13 +55,16 @@ public static class FormationSummaryPageSearcher
             IReadOnlyList<FormationEnrollment.Domain.FormationEnrollment> enrollments = await enrollmentRepository.Search(
                 new FormationEnrollmentByUserSpecification(query.UserId), cancellationToken);
             Dictionary<Guid, FormationEnrollment.Domain.FormationEnrollment> enrollmentsByFormation = enrollments.ToDictionary(e => e.FormationId);
-            IReadOnlyCollection<Guid>? formationIds = query.IsAdmin ? null : enrollmentsByFormation.Keys.ToList();
+            IReadOnlyCollection<Guid>? formationIds = query.IsAdmin
+                ? null
+                : await this.FindLearnerFormationIds(query.Progress, enrollmentsByFormation, cancellationToken);
+            string? status = query.IsAdmin ? query.Status : FormationStatus.Active.ToString();
 
             PagedResult<FormationSummary> result = await summaryRepository.SearchPage(
                 new FormationSummaryPageSpecification(
                     formationIds,
                     query.Search,
-                    query.Status,
+                    status,
                     pageRequest.Skip,
                     pageRequest.PageSize,
                     query.IsAdmin && query.Archived),
@@ -74,6 +91,30 @@ public static class FormationSummaryPageSearcher
             }).ToList();
 
             return PagedResponse<FormationSummaryResponse>.From(items, result.TotalCount, pageRequest);
+        }
+
+        private async Task<IReadOnlyCollection<Guid>> FindLearnerFormationIds(
+            string? progress,
+            Dictionary<Guid, FormationEnrollment.Domain.FormationEnrollment> enrollmentsByFormation,
+            CancellationToken cancellationToken)
+        {
+            List<Guid> enrolledIds = enrollmentsByFormation.Keys.ToList();
+            if (progress is not (FormationProgressFilter.InProgress or FormationProgressFilter.Completed) || enrolledIds.Count == 0)
+            {
+                return enrolledIds;
+            }
+
+            IReadOnlyList<FormationSummary> summaries = await summaryRepository.Search(
+                new FormationSummaryByIdsSpecification(enrolledIds), cancellationToken);
+            HashSet<Guid> completedIds = summaries
+                .Where(summary => summary.ModulesCount > 0
+                                  && enrollmentsByFormation[summary.Id].Progress.CompletedModuleIds.Count >= summary.ModulesCount)
+                .Select(summary => summary.Id)
+                .ToHashSet();
+
+            return progress == FormationProgressFilter.Completed
+                ? completedIds.ToList()
+                : enrolledIds.Where(id => !completedIds.Contains(id)).ToList();
         }
     }
 }

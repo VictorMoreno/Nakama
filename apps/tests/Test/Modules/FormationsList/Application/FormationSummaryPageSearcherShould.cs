@@ -113,6 +113,96 @@ public sealed class FormationSummaryPageSearcherShould : FormationsListUnitTestC
         item.ProgressPct.Should().Be(enrollment.Progress.CompletedModuleIds.Count * 100 / 4);
     }
 
+    [Test]
+    public async Task restrict_a_regular_user_to_active_formations_whatever_status_is_asked()
+    {
+        FormationSummaryPageSearcher.Query query = FormationSummaryPageSearcherQueryMother.With(status: "Draft");
+        this.ShouldFindEnrollmentsOfTheUser(query.UserId, []);
+        this.ShouldFindFormationSummariesPage([], totalCount: 0);
+
+        await this._handler.Handle(query, CancellationToken.None);
+
+        this.ShouldHaveSearchedFormationSummariesPageWithStatus("Active");
+    }
+
+    [Test]
+    public async Task keep_the_requested_status_for_an_administrator()
+    {
+        FormationSummaryPageSearcher.Query query = FormationSummaryPageSearcherQueryMother.Admin() with { Status = "Draft" };
+        this.ShouldFindEnrollmentsOfTheUser(query.UserId, []);
+        this.ShouldFindFormationSummariesPage([], totalCount: 0);
+
+        await this._handler.Handle(query, CancellationToken.None);
+
+        this.ShouldHaveSearchedFormationSummariesPageWithStatus("Draft");
+    }
+
+    [Test]
+    public async Task search_only_the_completed_formations_of_a_regular_user()
+    {
+        FormationSummary completed = FormationSummaryMother.With(modulesCount: 1);
+        FormationSummary pending = FormationSummaryMother.With(modulesCount: 2);
+        Enrollment completedEnrollment = FormationEnrollmentMother.With(
+            formationId: completed.Id,
+            progress: LearnerProgressMother.With(completedModuleIds: [Guid.NewGuid()]));
+        Enrollment pendingEnrollment = FormationEnrollmentMother.With(
+            formationId: pending.Id,
+            userId: completedEnrollment.UserId,
+            progress: LearnerProgressMother.With(completedModuleIds: [Guid.NewGuid()]));
+        this.ShouldFindEnrollmentsOfTheUser(completedEnrollment.UserId, [completedEnrollment, pendingEnrollment]);
+        this.ShouldFindFormationSummariesByIds([completed, pending]);
+        this.ShouldFindFormationSummariesPage([completed], totalCount: 1);
+
+        await this._handler.Handle(
+            FormationSummaryPageSearcherQueryMother.With(completedEnrollment.UserId, progress: FormationProgressFilter.Completed),
+            CancellationToken.None);
+
+        this.ShouldHaveSearchedFormationSummariesPage(skip: 0, take: this.Pagination.Value.DefaultPageSize, ids: [completed.Id]);
+    }
+
+    [Test]
+    public async Task search_the_formations_in_progress_of_a_regular_user_including_the_ones_without_modules()
+    {
+        FormationSummary completed = FormationSummaryMother.With(modulesCount: 1);
+        FormationSummary started = FormationSummaryMother.With(modulesCount: 2);
+        FormationSummary empty = FormationSummaryMother.With(modulesCount: 0);
+        Enrollment completedEnrollment = FormationEnrollmentMother.With(
+            formationId: completed.Id,
+            progress: LearnerProgressMother.With(completedModuleIds: [Guid.NewGuid()]));
+        Enrollment startedEnrollment = FormationEnrollmentMother.With(
+            formationId: started.Id,
+            userId: completedEnrollment.UserId,
+            progress: LearnerProgressMother.With(completedModuleIds: [Guid.NewGuid()]));
+        Enrollment emptyEnrollment = FormationEnrollmentMother.With(formationId: empty.Id, userId: completedEnrollment.UserId);
+        this.ShouldFindEnrollmentsOfTheUser(
+            completedEnrollment.UserId,
+            [completedEnrollment, startedEnrollment, emptyEnrollment]);
+        this.ShouldFindFormationSummariesByIds([completed, started, empty]);
+        this.ShouldFindFormationSummariesPage([started, empty], totalCount: 2);
+
+        await this._handler.Handle(
+            FormationSummaryPageSearcherQueryMother.With(completedEnrollment.UserId, progress: FormationProgressFilter.InProgress),
+            CancellationToken.None);
+
+        this.ShouldHaveSearchedFormationSummariesPage(skip: 0, take: this.Pagination.Value.DefaultPageSize, ids: [started.Id, empty.Id]);
+    }
+
+    [Test]
+    public async Task ignore_the_progress_filter_for_an_administrator()
+    {
+        FormationSummaryPageSearcher.Query query = FormationSummaryPageSearcherQueryMother.Admin() with
+        {
+            Progress = FormationProgressFilter.Completed
+        };
+        this.ShouldFindEnrollmentsOfTheUser(query.UserId, []);
+        this.ShouldFindFormationSummariesPage([], totalCount: 0);
+
+        await this._handler.Handle(query, CancellationToken.None);
+
+        this.ShouldHaveSearchedFormationSummariesPage(skip: 0, take: this.Pagination.Value.DefaultPageSize, ids: null);
+        this.ShouldNotHaveSearchedFormationSummariesByIds();
+    }
+
     [TestCase(0)]
     [TestCase(-1)]
     public async Task reject_a_page_number_lower_than_one(int page)

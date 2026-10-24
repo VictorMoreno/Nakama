@@ -318,9 +318,10 @@ export interface IGeneratedNakamaClient {
      * @param search (optional) 
      * @param status (optional) 
      * @param archived (optional) 
+     * @param progress (optional) 
      * @return OK
      */
-    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined, archived: boolean | undefined): Promise<FormationSummaryResponsePagedResponse>;
+    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined, archived: boolean | undefined, progress: string | undefined): Promise<FormationSummaryResponsePagedResponse>;
 
     /**
      * Gets one user's own progress in a formation. 404 if they're not assigned.
@@ -2698,9 +2699,10 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
      * @param search (optional) 
      * @param status (optional) 
      * @param archived (optional) 
+     * @param progress (optional) 
      * @return OK
      */
-    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined, archived: boolean | undefined): Promise<FormationSummaryResponsePagedResponse> {
+    paged2(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined, archived: boolean | undefined, progress: string | undefined): Promise<FormationSummaryResponsePagedResponse> {
         let url_ = this.baseUrl + "/api/formations/paged?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -2722,6 +2724,10 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             throw new globalThis.Error("The parameter 'archived' cannot be null.");
         else if (archived !== undefined)
             url_ += "archived=" + encodeURIComponent("" + archived) + "&";
+        if (progress === null)
+            throw new globalThis.Error("The parameter 'progress' cannot be null.");
+        else if (progress !== undefined)
+            url_ += "progress=" + encodeURIComponent("" + progress) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
