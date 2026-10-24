@@ -2947,8 +2947,6 @@ export interface AddFormationTeamMemberRequest {
 }
 
 export interface AnalyticsResponse {
-    id?: string | undefined;
-    activeBotsCount?: number;
     answeredThisWeek?: number;
     usageByBot?: UsageByBotRow[] | undefined;
     activeUsersCount?: number;

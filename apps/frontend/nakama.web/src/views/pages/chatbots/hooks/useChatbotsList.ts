@@ -40,15 +40,23 @@ export function useChatbotsList() {
     const key = deleteKey;
     setDeleteKey(null);
     if (!key) return;
-    await archiveChatbot(key);
-    showToast("Chatbot eliminado");
-    list.reload();
+    try {
+      await archiveChatbot(key);
+      showToast("Chatbot eliminado");
+      list.reload();
+    } catch {
+      showToast("No se pudo eliminar el chatbot — inténtalo de nuevo");
+    }
   }
 
   async function handleRestore(key: string) {
-    await unarchiveChatbot(key);
-    showToast("Chatbot reactivado");
-    list.reload();
+    try {
+      await unarchiveChatbot(key);
+      showToast("Chatbot reactivado");
+      list.reload();
+    } catch {
+      showToast("No se pudo reactivar el chatbot — inténtalo de nuevo");
+    }
   }
 
   return {

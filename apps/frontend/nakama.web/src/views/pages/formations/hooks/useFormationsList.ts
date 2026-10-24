@@ -38,15 +38,23 @@ export function useFormationsList() {
     const key = deleteKey;
     setDeleteKey(null);
     if (!key) return;
-    await archiveFormation(key);
-    showToast("Formación eliminada");
-    list.reload();
+    try {
+      await archiveFormation(key);
+      showToast("Formación eliminada");
+      list.reload();
+    } catch {
+      showToast("No se pudo eliminar la formación — inténtalo de nuevo");
+    }
   }
 
   async function handleRestore(key: string) {
-    await unarchiveFormation(key);
-    showToast("Formación reactivada");
-    list.reload();
+    try {
+      await unarchiveFormation(key);
+      showToast("Formación reactivada");
+      list.reload();
+    } catch {
+      showToast("No se pudo reactivar la formación — inténtalo de nuevo");
+    }
   }
 
   return {

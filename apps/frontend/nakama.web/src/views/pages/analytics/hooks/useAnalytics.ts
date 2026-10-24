@@ -6,7 +6,6 @@ import { useInjection } from "../../../../shared/infrastructure/injection/useInj
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
 
 const EMPTY_SNAPSHOT: AnalyticsSnapshot = {
-  activeBotsCount: 0,
   answeredThisWeek: 0,
   usageByBot: [],
   activeUsersCount: 0,

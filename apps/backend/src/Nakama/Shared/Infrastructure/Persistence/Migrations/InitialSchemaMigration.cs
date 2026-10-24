@@ -119,10 +119,6 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("team_json").AsCustom("text").NotNullable()
             .WithColumn("docs_json").AsCustom("text").NotNullable();
 
-        this.Create.Table("read_analytics")
-            .WithColumn("id").AsString(255).PrimaryKey()
-            .WithColumn("activebotscount").AsInt32().NotNullable();
-
         this.Create.Table("users")
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("email").AsString(255).NotNullable()

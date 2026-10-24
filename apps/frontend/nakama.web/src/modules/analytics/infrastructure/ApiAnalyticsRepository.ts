@@ -4,7 +4,6 @@ import type { IAnalyticsRepository } from "../domain/IAnalyticsRepository";
 
 function toSnapshot(response: AnalyticsResponse): AnalyticsSnapshot {
   return {
-    activeBotsCount: response.activeBotsCount ?? 0,
     answeredThisWeek: response.answeredThisWeek ?? 0,
     usageByBot: (response.usageByBot ?? []).map((row) => ({ botKey: row.botKey ?? "", value: row.value ?? 0 })),
     activeUsersCount: response.activeUsersCount ?? 0,

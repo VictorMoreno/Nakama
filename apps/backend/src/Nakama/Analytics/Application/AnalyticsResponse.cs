@@ -3,31 +3,22 @@ using Nakama.QuestionActivity.Application;
 
 namespace Nakama.Analytics.Application;
 
-using Analytics = Nakama.Analytics.Domain.Analytics;
-
 public sealed record UsageByBotRow(Guid BotKey, int Value);
 
 public sealed record AnalyticsResponse(
-    string Id,
-    int ActiveBotsCount,
     int AnsweredThisWeek,
     List<UsageByBotRow> UsageByBot,
     int ActiveUsersCount,
     int TotalUsersCount,
     int UsefulFeedbackCount,
-    int TotalFeedbackCount);
-
-public static class AnalyticsExtensions
+    int TotalFeedbackCount)
 {
-    public static AnalyticsResponse ToResponse(
-        this Analytics entity,
+    public static AnalyticsResponse From(
         int activeUsersCount,
         int totalUsersCount,
         int answeredThisWeek,
         QuestionsByChatbotResponse byChatbot,
         AnswerFeedbackSummaryResponse feedback) => new(
-        entity.Id,
-        entity.ActiveBotsCount,
         answeredThisWeek,
         byChatbot.Chatbots.Select(row => new UsageByBotRow(row.BotKey, row.Questions)).ToList(),
         activeUsersCount,
