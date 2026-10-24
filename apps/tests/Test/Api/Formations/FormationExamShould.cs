@@ -16,7 +16,7 @@ public sealed class FormationExamShould : ApiTestCase
     [Test]
     public async Task hide_the_correct_answers_from_a_learner_and_show_them_to_an_administrator()
     {
-        (string admin, SignedInUser learner, Guid formation, Guid module) = await this.CreateFormationWithExam(passingScore: 60, correctIndexes: [1, 2]);
+        (string admin, SignedInUser learner, Guid formation, Guid _) = await this.CreateFormationWithExam(passingScore: 60, correctIndexes: [1, 2]);
 
         FormationDetailResponse? asLearner = await (await this.Client.GetFormation(formation, learner.Token))
             .Content.ReadFromJsonAsync<FormationDetailResponse>();
@@ -113,5 +113,31 @@ public sealed class FormationExamShould : ApiTestCase
         (await this.Client.AddFormationTeamMember(formation, learner.Id, admin)).StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         return (admin, learner, formation, module);
+    }
+
+    [Test]
+    public async Task let_an_administrator_see_the_exam_attempts_of_everyone_in_the_formation()
+    {
+        (string admin, SignedInUser learner, Guid formation, Guid module) = await this.CreateFormationWithExam(passingScore: 60, correctIndexes: [1]);
+        await this.Client.SubmitFormationExam(formation, module, [0], learner.Token);
+        await this.Client.SubmitFormationExam(formation, module, [1], learner.Token);
+
+        HttpResponseMessage response = await this.Client.GetFormationEnrollments(formation, admin);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        List<FormationEnrollmentResponse>? enrollments = await response.Content.ReadFromJsonAsync<List<FormationEnrollmentResponse>>();
+        FormationEnrollmentResponse enrollment = enrollments.Should().ContainSingle(item => item.UserId == learner.Id).Which;
+        enrollment.ExamAttempts.Select(attempt => (attempt.Score, attempt.Passed)).Should().Equal((0, false), (100, true));
+        enrollment.CompletedModuleIds.Should().Equal(module);
+    }
+
+    [Test]
+    public async Task forbid_a_regular_user_from_listing_the_progress_of_the_formation()
+    {
+        (_, SignedInUser learner, Guid formation, _) = await this.CreateFormationWithExam(passingScore: 60, correctIndexes: [1]);
+
+        HttpResponseMessage response = await this.Client.GetFormationEnrollments(formation, learner.Token);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }

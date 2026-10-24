@@ -16,9 +16,9 @@ public sealed class FormationDetailResponseShould
 
         FormationModuleResponse exam = masked.Modules[0];
         exam.Quiz.Should().HaveCount(2);
-        exam.Quiz!.Select(question => question.CorrectIndex).Should().OnlyContain(correctIndex => correctIndex == null);
-        exam.Quiz!.Select(question => question.Question).Should().Equal(detail.Modules[0].Quiz!.Select(question => question.Question));
-        exam.Quiz!.Select(question => question.Options).Should().Equal(detail.Modules[0].Quiz!.Select(question => question.Options));
+        exam.Quiz.Select(question => question.CorrectIndex).Should().OnlyContain(correctIndex => correctIndex == null);
+        exam.Quiz.Select(question => question.Question).Should().Equal(detail.Modules[0].Quiz!.Select(question => question.Question));
+        exam.Quiz.Select(question => question.Options).Should().Equal(detail.Modules[0].Quiz!.Select(question => question.Options));
         exam.PassingScore.Should().Be(70);
         masked.Modules[1].Should().Be(detail.Modules[1]);
     }

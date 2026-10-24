@@ -95,6 +95,26 @@
 .ejercicio { background: var(--gold-soft); color: var(--gold); }
 .examen { background: var(--border); color: var(--ink-soft); }
 
+.passingScoreBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+
+.examStatusBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.examPassed { background: var(--positive-soft); color: var(--positive); }
+
+.examFailed { background: var(--danger-soft); color: var(--danger); }
+
 .moduleDraftBadge {
   font-size: 0.62rem;
   font-weight: 600;

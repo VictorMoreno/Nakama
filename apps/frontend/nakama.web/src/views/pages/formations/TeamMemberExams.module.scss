@@ -1,0 +1,22 @@
+.panel {
+  margin: 2px 0 6px;
+  padding: 6px 0 4px 14px;
+  border-left: 2px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.exam { margin-bottom: 10px; }
+
+.exam:last-child { margin-bottom: 0; }
+
+.examHead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.examTitle { color: var(--ink); font-weight: 600; }
+
+.examSummary { color: var(--ink-soft); }

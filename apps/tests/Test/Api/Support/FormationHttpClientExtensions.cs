@@ -87,6 +87,9 @@ public static class FormationHttpClientExtensions
     public static Task<HttpResponseMessage> GetFormationEnrollment(this HttpClient client, Guid formationId, string accessToken) =>
         client.Get($"/api/formations/{formationId}/enrollment", accessToken);
 
+    public static Task<HttpResponseMessage> GetFormationEnrollments(this HttpClient client, Guid formationId, string accessToken) =>
+        client.Get($"/api/formations/{formationId}/enrollments", accessToken);
+
     public static Task<HttpResponseMessage> CompleteFormationModule(this HttpClient client, Guid formationId, Guid moduleId, string accessToken) =>
         client.Send(HttpMethod.Post, $"/api/formations/{formationId}/modules/{moduleId}/complete", accessToken);
 

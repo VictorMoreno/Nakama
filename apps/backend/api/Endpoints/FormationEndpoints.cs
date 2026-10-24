@@ -6,6 +6,7 @@ using Nakama.FormationEnrollment.Application;
 using Nakama.FormationEnrollment.Application.Finder;
 using Nakama.FormationEnrollment.Application.ExamSubmitter;
 using Nakama.FormationEnrollment.Application.ModuleCompleter;
+using Nakama.FormationEnrollment.Application.Searcher;
 using Nakama.FormationEnrollment.Application.TeamMemberAdder;
 using Nakama.FormationEnrollment.Application.TeamMemberRemover;
 using Nakama.Formations.Application;
@@ -185,6 +186,13 @@ public sealed class FormationEndpoints : IEndpoint
             .WithSummary("Gets one user's own progress in a formation. 404 if they're not assigned.")
             .Produces<FormationEnrollmentResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet("/{id:guid}/enrollments", SearchFormationEnrollments)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Lists the progress of everyone assigned to a formation, exam attempts included.")
+            .WithDescription("Admin only. Each item has the same shape as the caller's own progress, plus the id of the person it belongs to.")
+            .Produces<IReadOnlyCollection<FormationEnrollmentResponse>>()
+            .ProducesProblem(StatusCodes.Status403Forbidden);
     }
 
     private static async Task<IResult> AddFormationDocument(
@@ -398,6 +406,9 @@ public sealed class FormationEndpoints : IEndpoint
         FormationDetailResponse response = await queryBus.Ask(new FormationDetailFinder.Query(id), ct);
         return Results.Ok(currentUser.IsAdmin ? response : response.WithoutAnswers());
     }
+
+    private static async Task<IResult> SearchFormationEnrollments(Guid id, IQueryBus queryBus, CancellationToken ct) =>
+        Results.Ok(await queryBus.Ask(new FormationEnrollmentSearcher.Query(id), ct));
 
     private static async Task<IResult> FindFormationEnrollment(Guid id,
         ICurrentUser currentUser,

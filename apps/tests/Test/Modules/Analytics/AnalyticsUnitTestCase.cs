@@ -16,6 +16,7 @@ public abstract class AnalyticsUnitTestCase : UnitTestCase
     [SetUp]
     public void AnalyticsSetUp()
     {
+        // Method intentionally left empty.
     }
 
     protected void ShouldFindActiveUsersOfTheLastWeek(int count) =>

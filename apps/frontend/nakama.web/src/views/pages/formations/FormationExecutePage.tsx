@@ -11,10 +11,12 @@ import {
   VideoIcon
 } from "../../components/shared/icons";
 import { useFormations } from "../../shared/contexts/FormationsContext";
+import Dialog from "../../components/shared/Dialog";
 import { useToast } from "../../shared/contexts/ToastContext";
 import { FORMATION_STATUS_META } from "../../../lib/status";
-import { pluralWord } from "../../../lib/text";
 import type { ExamAttempt, FormationModule, ModuleType } from "../../../modules/formations/domain/Formation";
+import CourseCompletedDialog from "./CourseCompletedDialog";
+import ExamAttemptsList from "./ExamAttemptsList";
 import styles from "./FormationExecutePage.module.scss";
 import { useFormationExecute } from "./hooks/useFormationExecute";
 
@@ -40,21 +42,26 @@ interface ExecuteModuleRowProps {
   done: boolean;
   examScore?: number;
   attempts: ExamAttempt[];
+  completesFormation: boolean;
+  onFormationCompleted: () => void;
 }
 
-function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examScore, attempts }: ExecuteModuleRowProps) {
+function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examScore, attempts, completesFormation, onFormationCompleted }: ExecuteModuleRowProps) {
   const { completeModule, submitExam } = useFormations();
   const { showToast } = useToast();
   const TypeIcon = TYPE_ICON[m.type];
   const [answers, setAnswers] = useState<number[]>(() => new Array(m.quiz?.length ?? 0).fill(-1));
   const [busy, setBusy] = useState(false);
+  const [examTab, setExamTab] = useState<"examen" | "historial">("examen");
+  const [examResult, setExamResult] = useState<{ score: number; passed: boolean } | null>(null);
   const lastAttempt = attempts[attempts.length - 1];
 
   async function handleComplete() {
     setBusy(true);
     try {
       await completeModule(formationKey, m.id);
-      showToast("Módulo completado");
+      if (completesFormation) onFormationCompleted();
+      else showToast("Módulo completado");
     } catch {
       showToast("No se pudo completar el módulo — inténtalo de nuevo");
     } finally {
@@ -66,9 +73,8 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
     setBusy(true);
     try {
       const result = await submitExam(formationKey, m.id, answers);
-      showToast(
-        result.passed ? `Examen aprobado con ${result.score}%` : `No has superado el examen (${result.score}%) — puedes reintentarlo`
-      );
+      if (result.passed && completesFormation) onFormationCompleted();
+      else setExamResult({ score: result.score, passed: result.passed });
     } catch {
       showToast("No se pudo entregar el examen — inténtalo de nuevo");
     } finally {
@@ -77,115 +83,160 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
   }
 
   return (
-    <div className={`${styles.moduleItem}${locked ? ` ${styles.locked}` : ""}`}>
-      <div className={styles.moduleItemMain}>
-        <div className={styles.moduleItemTitle}>
-          {locked ? <LockIcon width={14} height={14} /> : done ? <CheckIcon width={14} height={14} /> : `${index + 1}.`}{" "}
-          {m.title}
-          <span className={`${styles.moduleTypeBadge} ${styles[m.type]}`}>
-            <TypeIcon width={11} height={11} style={{ marginRight: 3, verticalAlign: -1 }} />
-            {TYPE_LABEL[m.type]}
-          </span>
-          {m.aiDraft && <span className={styles.moduleDraftBadge}>Borrador IA</span>}
+    <>
+      <Dialog
+        open={examResult !== null}
+        onClose={() => setExamResult(null)}
+        title={examResult?.passed ? "Examen aprobado" : "Examen no superado"}
+      >
+        <p>
+          {examResult?.passed
+            ? `Has aprobado "${m.title}" con un ${examResult.score}%.`
+            : `Has obtenido un ${examResult?.score}% en "${m.title}" y la nota mínima es ${m.passingScore}%. Puedes corregir tus respuestas y reintentarlo.`}
+        </p>
+        <div className="modal-actions">
+          <button className="btn-primary" type="button" onClick={() => setExamResult(null)}>
+            <CheckIcon /> Aceptar
+          </button>
         </div>
-        <div className={styles.moduleItemDesc}>{m.summary}</div>
+      </Dialog>
+      <div className={`${styles.moduleItem}${locked ? ` ${styles.locked}` : ""}`}>
+        <div className={styles.moduleItemMain}>
+          <div className={styles.moduleItemTitle}>
+            {locked ? <LockIcon width={14} height={14} /> : done ? <CheckIcon width={14} height={14} /> : `${index + 1}.`} {m.title}
+            <span className={`${styles.moduleTypeBadge} ${styles[m.type]}`}>
+              <TypeIcon width={11} height={11} style={{ marginRight: 3, verticalAlign: -1 }} />
+              {TYPE_LABEL[m.type]}
+            </span>
+            {m.type === "examen" && m.passingScore !== undefined && (
+              <span className={styles.passingScoreBadge}>Nota mínima para aprobar: {m.passingScore}%</span>
+            )}
+            {m.type === "examen" && (done || lastAttempt) && (
+              <span className={`${styles.examStatusBadge} ${done ? styles.examPassed : styles.examFailed}`}>
+                {done ? `Aprobado · ${examScore ?? lastAttempt?.score}%` : `No superado · ${lastAttempt?.score}%`}
+              </span>
+            )}
+            {m.aiDraft && <span className={styles.moduleDraftBadge}>Borrador IA</span>}
+          </div>
+          <div className={styles.moduleItemDesc}>{m.summary}</div>
 
-        {locked ? (
-          <div className={styles.moduleItemDesc}>Se desbloquea al completar el módulo anterior.</div>
-        ) : (
-          <>
-            {m.type === "video" && (
-              <div className={styles.moduleItemDesc}>
-                {m.durationMin} min
-                <a className={styles.resourceLink} href={m.resourceUrl} target="_blank" rel="noreferrer">
-                  <ArrowRightIcon width={12} height={12} /> Ver vídeo
-                </a>
-              </div>
-            )}
-            {(m.type === "documento" || m.type === "ejercicio") && (
-              <div className={styles.moduleItemDesc}>
-                <a className={styles.resourceLink} href={m.resourceUrl} target="_blank" rel="noreferrer">
-                  <ArrowRightIcon width={12} height={12} /> {m.type === "documento" ? "Abrir documento" : "Abrir ejercicio"}
-                </a>
-              </div>
-            )}
-            {m.type === "examen" && m.quiz && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
-                {m.quiz.map((q, qi) => (
-                  <div key={q.question}>
-                    <div style={{ fontSize: "0.8rem", color: "var(--ink)", fontWeight: 500, marginBottom: 6 }}>{q.question}</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      {q.options.map((opt, oi) => (
-                        <label key={opt} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: "0.78rem", color: "var(--ink-soft)" }}>
-                          <input
-                            type="radio"
-                            name={`${m.id}-q${qi}`}
-                            disabled={done}
-                            checked={answers[qi] === oi}
-                            onChange={() =>
-                              setAnswers((prev) => {
-                                const next = [...prev];
-                                next[qi] = oi;
-                                return next;
-                              })
-                            }
-                          />
-                          {opt}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                {m.passingScore !== undefined && (
-                  <div className={styles.moduleItemDesc}>Nota mínima para aprobar: {m.passingScore}%</div>
-                )}
-                {lastAttempt && (
-                  <div className={styles.moduleItemDesc}>
-                    {done
-                      ? `Aprobado con ${examScore ?? lastAttempt.score}%`
-                      : `No superado todavía (último intento: ${lastAttempt.score}%) — puedes corregir tus respuestas y reintentar.`}{" "}
-                    · {pluralWord(attempts.length, "intento", "intentos")}
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, flex: "none" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {!locked && m.type !== "examen" && (
-            <button
-              className={`btn-ghost${done ? " done" : ""}`}
-              type="button"
-              disabled={done || busy}
-              onClick={handleComplete}
-            >
-              <CheckIcon /> {done ? "Completado ✓" : "Marcar como completado"}
-            </button>
-          )}
-          {!locked && m.type === "examen" && (
-            <button className={`btn-ghost${done ? " done" : ""}`} type="button" disabled={done || busy || answers.includes(-1)} onClick={handleSubmitExam}>
-              {done ? (
-                <>
-                  <CheckIcon /> Aprobado ✓
-                </>
-              ) : (
-                <>
-                  <SendIcon /> Enviar examen
-                </>
+          {locked ? (
+            <div className={styles.moduleItemDesc}>Se desbloquea al completar el módulo anterior.</div>
+          ) : (
+            <>
+              {m.type === "video" && (
+                <div className={styles.moduleItemDesc}>
+                  {m.durationMin} min
+                  <a className={styles.resourceLink} href={m.resourceUrl} target="_blank" rel="noreferrer">
+                    <ArrowRightIcon width={12} height={12} /> Ver vídeo
+                  </a>
+                </div>
               )}
-            </button>
+              {(m.type === "documento" || m.type === "ejercicio") && (
+                <div className={styles.moduleItemDesc}>
+                  <a className={styles.resourceLink} href={m.resourceUrl} target="_blank" rel="noreferrer">
+                    <ArrowRightIcon width={12} height={12} /> {m.type === "documento" ? "Abrir documento" : "Abrir ejercicio"}
+                  </a>
+                </div>
+              )}
+              {m.type === "examen" && m.quiz && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
+                  <div className="tabs" role="tablist" aria-label="Secciones del examen">
+                    <button
+                      className="tab-btn"
+                      type="button"
+                      role="tab"
+                      aria-selected={examTab === "examen"}
+                      onClick={() => setExamTab("examen")}
+                    >
+                      Examen
+                    </button>
+                    <button
+                      className="tab-btn"
+                      type="button"
+                      role="tab"
+                      aria-selected={examTab === "historial"}
+                      onClick={() => setExamTab("historial")}
+                    >
+                      Historial de intentos ({attempts.length})
+                    </button>
+                  </div>
+                  {examTab === "historial" &&
+                    (attempts.length === 0 ? (
+                      <div className={styles.moduleItemDesc}>Todavía no has hecho ningún intento de este examen.</div>
+                    ) : (
+                      <ExamAttemptsList attempts={attempts} />
+                    ))}
+                  {examTab === "examen" &&
+                    m.quiz.map((q, qi) => (
+                      <div key={q.question}>
+                        <div style={{ fontSize: "0.8rem", color: "var(--ink)", fontWeight: 500, marginBottom: 6 }}>{q.question}</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          {q.options.map((opt, oi) => (
+                            <label
+                              key={opt}
+                              style={{ display: "flex", alignItems: "center", gap: 7, fontSize: "0.78rem", color: "var(--ink-soft)" }}
+                            >
+                              <input
+                                type="radio"
+                                name={`${m.id}-q${qi}`}
+                                disabled={done}
+                                checked={answers[qi] === oi}
+                                onChange={() =>
+                                  setAnswers((prev) => {
+                                    const next = [...prev];
+                                    next[qi] = oi;
+                                    return next;
+                                  })
+                                }
+                              />
+                              {opt}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </>
           )}
         </div>
+
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, flex: "none" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {!locked && m.type !== "examen" && (
+              <button className={`btn-ghost${done ? " done" : ""}`} type="button" disabled={done || busy} onClick={handleComplete}>
+                <CheckIcon /> {done ? "Completado ✓" : "Marcar como completado"}
+              </button>
+            )}
+            {!locked && m.type === "examen" && (
+              <button
+                className={`btn-ghost${done ? " done" : ""}`}
+                type="button"
+                disabled={done || busy || answers.includes(-1)}
+                onClick={handleSubmitExam}
+              >
+                {done ? (
+                  <>
+                    <CheckIcon /> Aprobado ✓
+                  </>
+                ) : (
+                  <>
+                    <SendIcon /> Enviar examen
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
 export default function FormationExecutePage() {
   const { c, navigate, pct, isLocked, myProgress } = useFormationExecute();
+  const [celebrating, setCelebrating] = useState(false);
 
   if (!c) {
     return (
@@ -250,12 +301,15 @@ export default function FormationExecutePage() {
                   done={myProgress.completedModuleIds.includes(m.id)}
                   examScore={myProgress.examScores[m.id]}
                   attempts={myProgress.examAttempts.filter((attempt) => attempt.moduleId === m.id)}
+                  completesFormation={c.modules.every((other) => other.id === m.id || myProgress.completedModuleIds.includes(other.id))}
+                  onFormationCompleted={() => setCelebrating(true)}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+      <CourseCompletedDialog open={celebrating} formationTitle={c.title} onClose={() => setCelebrating(false)} />
     </section>
   );
 }

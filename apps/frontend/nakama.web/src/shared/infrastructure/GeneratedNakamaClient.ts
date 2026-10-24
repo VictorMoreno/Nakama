@@ -329,6 +329,12 @@ export interface IGeneratedNakamaClient {
     enrollment(id: string): Promise<FormationEnrollmentResponse>;
 
     /**
+     * Lists the progress of everyone assigned to a formation, exam attempts included.
+     * @return OK
+     */
+    enrollments(id: string): Promise<FormationEnrollmentResponse[]>;
+
+    /**
      * Lists every known LLM provider with its configuration status and model catalog.
      * @return OK
      */
@@ -2801,6 +2807,54 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
             });
         }
         return Promise.resolve<FormationEnrollmentResponse>(null as any);
+    }
+
+    /**
+     * Lists the progress of everyone assigned to a formation, exam attempts included.
+     * @return OK
+     */
+    enrollments(id: string): Promise<FormationEnrollmentResponse[]> {
+        let url_ = this.baseUrl + "/api/formations/{id}/enrollments";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processEnrollments(_response));
+        });
+    }
+
+    protected processEnrollments(response: Response): Promise<FormationEnrollmentResponse[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as FormationEnrollmentResponse[];
+            return result200;
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            let result403: any = null;
+            result403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Forbidden", status, _responseText, _headers, result403);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FormationEnrollmentResponse[]>(null as any);
     }
 
     /**

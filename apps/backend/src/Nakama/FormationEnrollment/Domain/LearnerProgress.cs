@@ -3,8 +3,10 @@ namespace Nakama.FormationEnrollment.Domain;
 public sealed record LearnerProgress(
     IReadOnlyList<Guid> CompletedModuleIds,
     IReadOnlyDictionary<Guid, int> ExamScores,
-    IReadOnlyList<ExamAttempt> ExamAttempts)
+    IReadOnlyList<ExamAttempt>? ExamAttempts = null)
 {
+    public IReadOnlyList<ExamAttempt> ExamAttempts { get; init; } = ExamAttempts ?? [];
+
     public static LearnerProgress Empty { get; } = new([], new Dictionary<Guid, int>(), []);
 
     public LearnerProgress WithExamAttempt(ExamAttempt attempt)

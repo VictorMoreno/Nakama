@@ -19,6 +19,7 @@ import AddTeamMemberDialog from "./AddTeamMemberDialog";
 import styles from "./FormationManagePage.module.scss";
 import FormationDocumentsSection from "./FormationDocumentsSection";
 import ModuleForm from "./ModuleForm";
+import TeamMemberExams from "./TeamMemberExams";
 import { FORMATION_TABS, useFormationManage } from "./hooks/useFormationManage";
 
 const TYPE_LABEL: Record<ModuleType, string> = {
@@ -141,6 +142,10 @@ export default function FormationManagePage() {
     deleteTarget,
     setDeleteId,
     avgTeamProgress,
+    expandedMemberId,
+    toggleMemberExpanded,
+    teamProgress,
+    teamProgressFailed,
     handleUpdateStatus,
     handleUpdateIcon,
     confirmDeleteModule,
@@ -260,15 +265,28 @@ export default function FormationManagePage() {
               ) : (
                 <div className={styles.progressList}>
                   {c.team.map((m, idx) => (
-                    <div className={styles.progressRow} key={`${m.userId}-${idx}`}>
-                      <span className={styles.name}>{findUser(m.userId)?.name ?? "Usuario eliminado"}</span>
-                      <div className="bar-track">
-                        <div className="bar-fill" style={{ width: `${m.progress}%` }} />
+                    <div key={`${m.userId}-${idx}`}>
+                      <div className={styles.progressRow}>
+                        <span className={styles.name}>{findUser(m.userId)?.name ?? "Usuario eliminado"}</span>
+                        <div className="bar-track">
+                          <div className="bar-fill" style={{ width: `${m.progress}%` }} />
+                        </div>
+                        <span className={styles.pct}>{m.progress}%</span>
+                        <button
+                          className="btn-ghost"
+                          type="button"
+                          aria-expanded={expandedMemberId === m.userId}
+                          onClick={() => toggleMemberExpanded(m.userId)}
+                        >
+                          <QuizIcon /> {expandedMemberId === m.userId ? "Ocultar exámenes" : "Ver exámenes"}
+                        </button>
+                        <button className="btn-ghost danger" type="button" onClick={() => setRemoveTeamMemberUserId(m.userId)}>
+                          <TrashIcon /> Quitar
+                        </button>
                       </div>
-                      <span className={styles.pct}>{m.progress}%</span>
-                      <button className="btn-ghost danger" type="button" onClick={() => setRemoveTeamMemberUserId(m.userId)}>
-                        <TrashIcon /> Quitar
-                      </button>
+                      {expandedMemberId === m.userId && (
+                        <TeamMemberExams modules={c.modules} progress={teamProgress?.[m.userId]} loading={teamProgress === null && !teamProgressFailed} failed={teamProgressFailed} />
+                      )}
                     </div>
                   ))}
                 </div>
