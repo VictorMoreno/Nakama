@@ -41,8 +41,8 @@ export default function AnalyticsPage() {
           {hasFeedback ? (
             <>
               <div className={styles.value}>
-                {usefulRatePct}
-                <span className={styles.target}>% · objetivo 80%</span>
+                {usefulRatePct}%
+                <span className={styles.target}>de las respuestas valoradas</span>
               </div>
               <div className={styles.barTrack}>
                 <div className={styles.barFill} style={{ width: `${usefulRatePct}%` }} />
