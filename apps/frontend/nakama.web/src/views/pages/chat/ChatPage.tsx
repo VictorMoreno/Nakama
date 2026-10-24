@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import BotSwitcher from "../../components/layout/BotSwitcher";
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import { AttachIcon, PlusIcon, RecycleBinIcon, SendIcon } from "../../components/shared/icons";
+import { getChatbotStatus } from "../../../lib/status";
 import { useChat } from "./hooks/useChat";
 import { BotBubble, PendingBubble, UserBubble, WelcomeBubble } from "./MessageBubble";
 import styles from "./ChatPage.module.scss";
@@ -73,7 +74,10 @@ export default function ChatPage() {
               <div className={styles.botAvatar} />
               <div className={styles.botIdText}>
                 <div className={styles.name}>Bot · {bot.label}</div>
-                <div className={styles.status}>En línea</div>
+                <div className={styles.status}>
+                  <span className={`led ${getChatbotStatus(bot).level}`} />
+                  {getChatbotStatus(bot).label}
+                </div>
               </div>
             </div>
           </div>

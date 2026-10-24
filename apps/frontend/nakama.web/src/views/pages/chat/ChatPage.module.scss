@@ -56,18 +56,10 @@
 
   .status {
     font-size: 0.72rem;
-    color: var(--cyan);
+    color: var(--ink-soft);
     display: flex;
     align-items: center;
-    gap: 5px;
-
-    &::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--cyan);
-    }
+    gap: 6px;
   }
 }
 
