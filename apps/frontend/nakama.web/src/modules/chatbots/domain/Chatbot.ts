@@ -41,9 +41,6 @@ export function isOwnerRole(role: TeamRole): boolean {
 export interface ChatExample {
   q: string;
   a: string;
-  cite: string;
-  more: string;
-  socratic: string;
   attachments?: string[];
   useful?: boolean | null;
 }

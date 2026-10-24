@@ -21,14 +21,11 @@ public partial class ConversationAuditLog
     public static ConversationAuditLog CreateFromConversationStarted(Guid id, Guid userId, Guid botKey, string title, DateTime startedAt) =>
         new(id, userId, botKey, title, startedAt, []);
 
-    public void AppendMessage(string question, string answer, string citation, string moreExplanation, string socraticVariant, DateTime recordedAt) =>
+    public void AppendMessage(string question, string answer, DateTime recordedAt) =>
         this.Messages.Add(new AuditMessageRow
         {
             Question = question,
             Answer = answer,
-            Citation = citation,
-            MoreExplanation = moreExplanation,
-            SocraticVariant = socraticVariant,
-            RecordedAt = recordedAt,
+            RecordedAt = recordedAt
         });
 }

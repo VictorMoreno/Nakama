@@ -22,13 +22,13 @@ function nextId() {
   return `m${uidCounter}`;
 }
 
-function exchangesToThread(exchanges: ChatExample[], useSocratic: boolean, conversationId: string): ThreadItem[] {
+function exchangesToThread(exchanges: ChatExample[], conversationId: string): ThreadItem[] {
   return exchanges.flatMap((example, exchangeIndex) => [
     { kind: "user" as const, id: nextId(), text: example.q, attachments: example.attachments ?? [] },
     {
       kind: "bot" as const,
       id: nextId(),
-      bot: { id: nextId(), example, useSocratic, revealed: false, conversationId, exchangeIndex, complete: true }
+      bot: { id: nextId(), example, conversationId, exchangeIndex, complete: true }
     }
   ]);
 }
@@ -93,7 +93,7 @@ export function useChat() {
   }, [input]);
 
   function openConversation(conv: ConversationSummary) {
-    setThread(exchangesToThread(conv.exchanges, bot!.settings.socratic, conv.id));
+    setThread(exchangesToThread(conv.exchanges, conv.id));
     setActiveConversationId(conv.id);
   }
 
@@ -102,26 +102,17 @@ export function useChat() {
     resetThread();
   }
 
-  function handleReveal(botMsgId: string) {
-    setThread((prev) =>
-      prev.map((item) => (item.kind === "bot" && item.bot.id === botMsgId ? { ...item, bot: { ...item.bot, revealed: true } } : item))
-    );
-  }
-
-  async function handleSend() {
-    const val = input.trim();
+  async function sendMessage(text: string, files: File[]) {
+    const val = text.trim();
     if (!val || !bot || !currentUser) return;
 
     const pendingId = nextId();
-    const files = attachedFiles;
     const attachmentNames = files.map((file) => file.name);
     setThread((prev) => [
       ...prev,
       { kind: "user", id: nextId(), text: val, attachments: attachmentNames },
       { kind: "pending", id: pendingId }
     ]);
-    setInput("");
-    setAttachedFiles([]);
 
     const isNewConversation = !activeConversationId;
     const conversationId = activeConversationId ?? crypto.randomUUID();
@@ -135,7 +126,7 @@ export function useChat() {
       const answer = await conversationsRepo.Ask(conversationId, bot.id, title, val, files, (textSoFar) => {
         setThread((prev) => {
           const alreadyStarted = prev.some((item) => item.id === botMsgId);
-          const example: ChatExample = { q: val, a: textSoFar, cite: "", more: "", socratic: "", attachments: attachmentNames };
+          const example: ChatExample = { q: val, a: textSoFar, attachments: attachmentNames };
           if (!alreadyStarted) {
             return [
               ...prev.filter((item) => item.id !== pendingId),
@@ -145,8 +136,6 @@ export function useChat() {
                 bot: {
                   id: botMsgId,
                   example,
-                  useSocratic: bot.settings.socratic,
-                  revealed: false,
                   conversationId,
                   exchangeIndex,
                   complete: false
@@ -161,7 +150,7 @@ export function useChat() {
           );
         });
       });
-      const example: ChatExample = { q: val, a: answer, cite: "", more: "", socratic: "", attachments: attachmentNames };
+      const example: ChatExample = { q: val, a: answer, attachments: attachmentNames };
 
       if (isNewConversation) setActiveConversationId(conversationId);
 
@@ -178,6 +167,20 @@ export function useChat() {
       const detail = error && typeof error === "object" && "detail" in error ? String((error as { detail?: unknown }).detail) : null;
       showToast(detail ?? "No se pudo obtener una respuesta del chatbot.");
     }
+  }
+
+  async function handleSend() {
+    const files = attachedFiles;
+    const text = input;
+    if (!text.trim() || !bot || !currentUser) return;
+
+    setInput("");
+    setAttachedFiles([]);
+    await sendMessage(text, files);
+  }
+
+  async function sendFollowUp(text: string) {
+    await sendMessage(text, []);
   }
 
   function handleAttachFiles(files: FileList | null) {
@@ -261,7 +264,7 @@ export function useChat() {
     openConversation,
     startNewConversation,
     handleSend,
-    handleReveal,
+    sendFollowUp,
     submitFeedback,
     deleteConversation
   };

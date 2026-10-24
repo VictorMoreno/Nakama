@@ -21,9 +21,6 @@ public sealed class ConversationHistoryUpdatedOnConversationExchangeAppended(ICo
             conversationExchangeAppended.Id.Value,
             conversationExchangeAppended.Exchange.Question,
             conversationExchangeAppended.Exchange.Answer,
-            conversationExchangeAppended.Exchange.Citation,
-            conversationExchangeAppended.Exchange.MoreExplanation,
-            conversationExchangeAppended.Exchange.SocraticVariant,
             (conversationExchangeAppended.Exchange.Attachments ?? []).Select(a => a.Name));
         await conversationHistoryRepository.Update(history, cancellationToken);
     }

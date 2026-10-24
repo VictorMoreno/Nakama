@@ -39,9 +39,6 @@ public sealed class ConversationHistoryUpdatedOnConversationExchangeAppendedShou
         HistoryExampleRow row = entry.Exchanges.Should().ContainSingle().Which;
         row.Question.Should().Be(exchange.Question);
         row.Answer.Should().Be(exchange.Answer);
-        row.Citation.Should().Be(exchange.Citation);
-        row.MoreExplanation.Should().Be(exchange.MoreExplanation);
-        row.SocraticVariant.Should().Be(exchange.SocraticVariant);
         row.Attachments.Should().Equal(attachment.Name);
         this.ShouldHaveUpdatedConversationHistory(history);
     }

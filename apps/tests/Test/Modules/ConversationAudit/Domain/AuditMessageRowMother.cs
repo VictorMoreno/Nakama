@@ -12,9 +12,6 @@ public static class AuditMessageRowMother
         {
             Question = WordMother.Random(),
             Answer = WordMother.Random(),
-            Citation = WordMother.Random(),
-            MoreExplanation = WordMother.Random(),
-            SocraticVariant = WordMother.Random(),
             RecordedAt = recordedAt ?? DateTime.UtcNow
         };
 }

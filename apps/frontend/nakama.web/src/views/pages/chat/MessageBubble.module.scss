@@ -80,20 +80,6 @@
   :global(ol) { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
 }
 
-.citationChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 10px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: var(--gold-soft);
-  color: var(--gold);
-  font-family: var(--font-display);
-  font-size: 0.68rem;
-  border: none;
-}
-
 .msgActions {
   display: flex;
   gap: 6px;
@@ -110,17 +96,6 @@
   transition: all 0.3s ease;
 
   &:hover { background: var(--accent-soft); color: var(--accent); }
-}
-
-.layer {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--border-strong);
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-  display: none;
-
-  &.open { display: block; animation: reveal 0.25s ease; }
 }
 
 .msgFeedback {

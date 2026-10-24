@@ -39,9 +39,6 @@ public sealed class ConversationAuditLogUpdatedOnConversationExchangeAppendedSho
         AuditMessageRow message = log.Messages.Should().ContainSingle().Which;
         message.Question.Should().Be(exchange.Question);
         message.Answer.Should().Be(exchange.Answer);
-        message.Citation.Should().Be(exchange.Citation);
-        message.MoreExplanation.Should().Be(exchange.MoreExplanation);
-        message.SocraticVariant.Should().Be(exchange.SocraticVariant);
         message.RecordedAt.Should().Be(now);
         this.ShouldHaveUpdatedConversationAuditLog(log);
     }

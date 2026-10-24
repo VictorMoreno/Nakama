@@ -24,7 +24,7 @@ export default function ChatPage() {
     openConversation,
     startNewConversation,
     handleSend,
-    handleReveal,
+    sendFollowUp,
     submitFeedback,
     deleteConversation
   } = useChat();
@@ -80,13 +80,20 @@ export default function ChatPage() {
 
           <div className={styles.thread} ref={threadRef}>
             {thread.length === 0 && <WelcomeBubble />}
-            {thread.map((item) =>
+            {thread.map((item, index) =>
               item.kind === "user" ? (
                 <UserBubble key={item.id} text={item.text} attachments={item.attachments} />
               ) : item.kind === "pending" ? (
                 <PendingBubble key={item.id} />
               ) : (
-                <BotBubble key={item.id} state={item.bot} settings={bot.settings} onReveal={handleReveal} onFeedback={submitFeedback} />
+                <BotBubble
+                  key={item.id}
+                  state={item.bot}
+                  settings={bot.settings}
+                  isLast={index === thread.length - 1}
+                  onFollowUp={sendFollowUp}
+                  onFeedback={submitFeedback}
+                />
               )
             )}
           </div>

@@ -2669,9 +2669,6 @@ export interface FormationSummaryResponsePagedResponse {
 export interface HistoryExampleRow {
     question?: string | undefined;
     answer?: string | undefined;
-    citation?: string | undefined;
-    moreExplanation?: string | undefined;
-    socraticVariant?: string | undefined;
     attachments?: string[] | undefined;
     useful?: boolean | undefined;
 }

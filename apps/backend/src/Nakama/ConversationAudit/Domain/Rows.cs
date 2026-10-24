@@ -7,8 +7,5 @@ public sealed class AuditMessageRow
 {
     public string Question { get; set; } = string.Empty;
     public string Answer { get; set; } = string.Empty;
-    public string Citation { get; set; } = string.Empty;
-    public string MoreExplanation { get; set; } = string.Empty;
-    public string SocraticVariant { get; set; } = string.Empty;
     public DateTime RecordedAt { get; set; }
 }

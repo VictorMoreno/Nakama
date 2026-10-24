@@ -38,16 +38,13 @@ public partial class ConversationHistory
         }
     }
 
-    public void AppendExchange(Guid conversationId, string question, string answer, string citation, string moreExplanation, string socraticVariant, IEnumerable<string> attachments)
+    public void AppendExchange(Guid conversationId, string question, string answer, IEnumerable<string> attachments)
     {
         ConversationSummaryRow? conversation = this.Entries.FirstOrDefault(c => c.Id == conversationId);
         conversation?.Exchanges.Add(new HistoryExampleRow
         {
             Question = question,
             Answer = answer,
-            Citation = citation,
-            MoreExplanation = moreExplanation,
-            SocraticVariant = socraticVariant,
             Attachments = attachments.ToList(),
         });
     }

@@ -1,15 +1,15 @@
-import { useState } from "react";
 import { AttachIcon, BrandMarkIcon, ThumbDownIcon, ThumbUpIcon } from "../../components/shared/icons";
 import Markdown from "../../components/shared/Markdown";
 import { useToast } from "../../shared/contexts/ToastContext";
 import type { ChatExample, ChatbotSettings } from "../../../modules/chatbots/domain/Chatbot";
 import styles from "./MessageBubble.module.scss";
 
+const DIRECT_ANSWER_FOLLOW_UP = { label: "Ver respuesta directa", message: "Dame la respuesta directa." };
+const EXPLAIN_MORE_FOLLOW_UP = { label: "Explícame más", message: "Explícame más." };
+
 export interface BotMessageState {
   id: string;
   example: ChatExample;
-  useSocratic: boolean;
-  revealed: boolean;
   conversationId: string;
   exchangeIndex: number;
   complete: boolean;
@@ -77,12 +77,12 @@ export function PendingBubble() {
 interface BotBubbleProps {
   state: BotMessageState;
   settings: ChatbotSettings;
-  onReveal: (id: string) => void;
+  isLast: boolean;
+  onFollowUp: (text: string) => void;
   onFeedback: (id: string, useful: boolean) => void;
 }
 
-export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubbleProps) {
-  const [moreOpen, setMoreOpen] = useState(false);
+export function BotBubble({ state, settings, isLast, onFollowUp, onFeedback }: BotBubbleProps) {
   const { showToast } = useToast();
   const rated = state.example.useful ?? null;
 
@@ -92,7 +92,11 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
     showToast(useful ? "Gracias por tu valoración" : "Gracias, lo tendremos en cuenta");
   }
 
-  const showSocratic = state.useSocratic && !state.revealed && state.example.socratic !== "";
+  const followUps = [
+    ...(settings.socratic ? [DIRECT_ANSWER_FOLLOW_UP] : []),
+    ...(settings.explicaMas ? [EXPLAIN_MORE_FOLLOW_UP] : [])
+  ];
+  const showFollowUps = isLast && state.complete && followUps.length > 0;
 
   return (
     <div className={`${styles.msg} ${styles.bot}`}>
@@ -100,65 +104,45 @@ export function BotBubble({ state, settings, onReveal, onFeedback }: BotBubblePr
         <BrandMarkIcon />
       </div>
       <div className={styles.bubble}>
-        {showSocratic ? (
-          <div>
-            <Markdown>{state.example.socratic}</Markdown>
+        <div>
+          <Markdown>{state.example.a}</Markdown>
+
+          {showFollowUps && (
             <div className={styles.msgActions}>
-              <button className={styles.msgAction} type="button" onClick={() => onReveal(state.id)}>
-                Ver respuesta directa
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <Markdown>{state.example.a}</Markdown>
-            {state.example.cite !== "" && (
-              <button className={styles.citationChip} type="button">
-                ◆ {state.example.cite}
-              </button>
-            )}
-
-            {settings.explicaMas && state.example.more !== "" && (
-              <div className={styles.msgActions}>
-                <button className={styles.msgAction} type="button" onClick={() => setMoreOpen((o) => !o)}>
-                  {moreOpen ? "Ocultar detalle" : "Explícame más"}
+              {followUps.map((followUp) => (
+                <button key={followUp.label} className={styles.msgAction} type="button" onClick={() => onFollowUp(followUp.message)}>
+                  {followUp.label}
                 </button>
-              </div>
-            )}
-
-            {settings.explicaMas && state.example.more !== "" && (
-              <div className={`${styles.layer}${moreOpen ? ` ${styles.open}` : ""}`}>
-                <Markdown>{state.example.more}</Markdown>
-              </div>
-            )}
-
-            <div className={styles.msgFeedback}>
-              <span className={styles.fbLabel}>¿Te ha sido útil?</span>
-              <button
-                className={styles.feedbackBtn}
-                data-fb="up"
-                aria-pressed={rated === true}
-                aria-label="Respuesta útil"
-                type="button"
-                disabled={!state.complete}
-                onClick={() => handleFeedback(true)}
-              >
-                <ThumbUpIcon />
-              </button>
-              <button
-                className={styles.feedbackBtn}
-                data-fb="down"
-                aria-pressed={rated === false}
-                aria-label="Respuesta no útil"
-                type="button"
-                disabled={!state.complete}
-                onClick={() => handleFeedback(false)}
-              >
-                <ThumbDownIcon />
-              </button>
+              ))}
             </div>
+          )}
+
+          <div className={styles.msgFeedback}>
+            <span className={styles.fbLabel}>¿Te ha sido útil?</span>
+            <button
+              className={styles.feedbackBtn}
+              data-fb="up"
+              aria-pressed={rated === true}
+              aria-label="Respuesta útil"
+              type="button"
+              disabled={!state.complete}
+              onClick={() => handleFeedback(true)}
+            >
+              <ThumbUpIcon />
+            </button>
+            <button
+              className={styles.feedbackBtn}
+              data-fb="down"
+              aria-pressed={rated === false}
+              aria-label="Respuesta no útil"
+              type="button"
+              disabled={!state.complete}
+              onClick={() => handleFeedback(false)}
+            >
+              <ThumbDownIcon />
+            </button>
           </div>
-        )}
+          </div>
       </div>
     </div>
   );

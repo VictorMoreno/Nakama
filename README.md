@@ -131,7 +131,7 @@ Cada módulo relevante tiene su propio `agents.md` con las convenciones de imple
 
 ## ✨ Funcionalidades principales
 
-- **Chat con chatbots por equipo**: conversaciones con citación de fuente, modo socrático y explicación ampliada opcionales; historial de conversaciones por persona, retomable y borrable. Cada persona solo ve, consulta y pregunta a los chatbots de cuyo equipo forma parte; el administrador los ve todos.
+- **Chat con chatbots por equipo**: conversaciones con modo socrático y explicación ampliada opcionales (el modelo cambia de estilo según el chatbot, y bajo la última respuesta aparecen los botones «Ver respuesta directa» y «Explícame más», que envían ese seguimiento a la misma conversación); historial de conversaciones por persona, retomable y borrable. Cada persona solo ve, consulta y pregunta a los chatbots de cuyo equipo forma parte; el administrador los ve todos.
 - **Gestión de chatbots** (admin): alta/baja, estado (borrador/activo/inactivo), icono, ingesta de documentos, equipo con roles (propietario/editor/lector), y, en la pestaña de analítica, las preguntas de ese chatbot cuya respuesta se valoró como no útil esta semana.
 - **Formaciones por módulos**: tipos vídeo, documento, ejercicio y examen (con editor de preguntas/opciones/respuesta correcta); bloqueo secuencial configurable entre módulos.
 - **Asignación y progreso por persona**: solo quien está asignado a una formación puede cursarla; el progreso (módulos completados, notas de examen) es individual por persona, no compartido entre quienes cursan la misma formación. El listado de `/formacion` se carga en función del usuario: una persona no-admin solo ve las formaciones a las que fue asignada; un admin ve todas, pero "Abrir" solo aparece en las que él mismo cursa.

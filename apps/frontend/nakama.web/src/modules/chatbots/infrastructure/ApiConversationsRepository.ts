@@ -7,18 +7,12 @@ import type { IConversationsRepository } from "../domain/IConversationsRepositor
 function toChatExample(row: {
   question?: string;
   answer?: string;
-  citation?: string;
-  moreExplanation?: string;
-  socraticVariant?: string;
   attachments?: string[];
   useful?: boolean | null;
 }): ChatExample {
   return {
     q: row.question ?? "",
     a: row.answer ?? "",
-    cite: row.citation ?? "",
-    more: row.moreExplanation ?? "",
-    socratic: row.socraticVariant ?? "",
     attachments: row.attachments ?? [],
     useful: row.useful ?? null
   };

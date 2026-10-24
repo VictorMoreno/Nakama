@@ -20,9 +20,6 @@ public sealed class ConversationAuditLogUpdatedOnConversationExchangeAppended(
         log.AppendMessage(
             conversationExchangeAppended.Exchange.Question,
             conversationExchangeAppended.Exchange.Answer,
-            conversationExchangeAppended.Exchange.Citation,
-            conversationExchangeAppended.Exchange.MoreExplanation,
-            conversationExchangeAppended.Exchange.SocraticVariant,
             systemClock.UtcNow);
 
         await auditRepository.Update(log, cancellationToken);
