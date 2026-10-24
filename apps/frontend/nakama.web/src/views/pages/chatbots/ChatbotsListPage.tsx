@@ -1,7 +1,7 @@
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import Pagination from "../../components/shared/Pagination";
 import Select from "../../components/shared/Select";
-import { ArrowRightIcon, PlusIcon, TrashIcon, RefreshIcon } from "../../components/shared/icons";
+import { LockIcon, PlusIcon, TrashIcon, RefreshIcon } from "../../components/shared/icons";
 import { CHATBOT_STATUS_META } from "../../../lib/status";
 import { pluralWord } from "../../../lib/text";
 import { paginationConfig } from "../../../shared/infrastructure/config/PaginationConfig";
@@ -105,8 +105,8 @@ export default function ChatbotsListPage() {
                 ) : (
                   <>
                     <div className={styles.botCardActionsMain}>
-                      <button className="btn-primary" type="button" onClick={() => navigate(`/chatbots/${bot.id}`)}>
-                        <ArrowRightIcon /> Gestionar
+                      <button className="btn-ghost" type="button" onClick={() => navigate(`/chatbots/${bot.id}`)}>
+                        <LockIcon /> Gestionar
                       </button>
                     </div>
                     <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(bot.id)}>
