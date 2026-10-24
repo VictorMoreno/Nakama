@@ -8,6 +8,7 @@ public static class LearnerProgressMother
 
     public static LearnerProgress With(
         IReadOnlyList<Guid>? completedModuleIds = null,
-        IReadOnlyDictionary<Guid, int>? examScores = null) =>
-        new(completedModuleIds ?? [], examScores ?? new Dictionary<Guid, int>());
+        IReadOnlyDictionary<Guid, int>? examScores = null,
+        IReadOnlyList<ExamAttempt>? examAttempts = null) =>
+        new(completedModuleIds ?? [], examScores ?? new Dictionary<Guid, int>(), examAttempts ?? []);
 }

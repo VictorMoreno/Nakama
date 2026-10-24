@@ -1,16 +1,16 @@
 import type {
   AddFormationModuleRequest,
   AddFormationTeamMemberRequest,
-  CompleteFormationModuleRequest,
   CreateFormationRequest,
   FormationDetailResponse,
   FormationDocumentResponse,
   FormationMemberRow,
-  FormationModuleRow,
+  FormationModuleResponse,
   FormationSummaryResponse,
   GenerateQuizQuestionsRequest,
   GeneratedNakamaClient,
-  QuizQuestionRow,
+  QuizQuestionResponse,
+  SubmitFormationExamRequest,
   UpdateFormationModuleRequest,
   UpdateFormationStatusRequest
 } from "../../../shared/infrastructure/GeneratedNakamaClient";
@@ -19,6 +19,7 @@ import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlTo
 import { formatDate } from "../../../shared/infrastructure/formatDate";
 import type { Page, PageQuery } from "../../../shared/domain/Page";
 import type {
+  ExamResult,
   Formation,
   FormationLifecycleStatus,
   FormationDocument,
@@ -42,11 +43,11 @@ const STATUS_TO_API: Record<FormationLifecycleStatus, string> = { borrador: "Dra
 const MODULE_TYPE_TO_ORDINAL: Record<ModuleType, number> = { video: 0, documento: 1, ejercicio: 2, examen: 3 };
 const MODULE_TYPE_FROM_API: Record<string, ModuleType> = { Video: "video", Document: "documento", Exercise: "ejercicio", Exam: "examen" };
 
-function toQuizQuestion(row: QuizQuestionRow): QuizQuestion {
-  return { question: row.question ?? "", options: row.options ?? [], correctIndex: row.correctIndex ?? 0 };
+function toQuizQuestion(row: QuizQuestionResponse): QuizQuestion {
+  return { question: row.question ?? "", options: row.options ?? [], correctIndex: row.correctIndex };
 }
 
-function toFormationModule(row: FormationModuleRow): FormationModule {
+function toFormationModule(row: FormationModuleResponse): FormationModule {
   return {
     id: row.id ?? "",
     title: row.title ?? "",
@@ -261,8 +262,18 @@ export class ApiFormationsRepository implements IFormationsRepository {
     await this.client.toggleGating(id, moduleId);
   }
 
-  async CompleteModule(id: string, moduleId: string, score?: number): Promise<void> {
-    await this.client.complete(id, moduleId, { score } satisfies CompleteFormationModuleRequest);
+  async CompleteModule(id: string, moduleId: string): Promise<void> {
+    await this.client.complete(id, moduleId);
+  }
+
+  async SubmitExam(id: string, moduleId: string, answers: number[]): Promise<ExamResult> {
+    await this.client.exam(id, moduleId, { answers } satisfies SubmitFormationExamRequest);
+    // The submit endpoint answers 204 (it is a command); the server-side grade is read back from the progress.
+    const progress = await this.client.enrollment(id);
+    const attempts = (progress.examAttempts ?? []).filter((attempt) => attempt.moduleId === moduleId);
+    const last = attempts[attempts.length - 1];
+    if (!last) throw new Error("The exam attempt was not recorded.");
+    return { score: last.score ?? 0, passed: last.passed ?? false };
   }
 
   async AddTeamMember(id: string, userId: string): Promise<void> {

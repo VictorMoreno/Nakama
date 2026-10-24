@@ -12,7 +12,16 @@ export class ApiFormationEnrollmentRepository implements IFormationEnrollmentRep
   async FindMyProgress(formationId: string): Promise<LearnerProgress | null> {
     try {
       const response = await this.client.enrollment(formationId);
-      return { completedModuleIds: response.completedModuleIds ?? [], examScores: response.examScores ?? {} };
+      return {
+        completedModuleIds: response.completedModuleIds ?? [],
+        examScores: response.examScores ?? {},
+        examAttempts: (response.examAttempts ?? []).map((attempt) => ({
+          moduleId: attempt.moduleId ?? "",
+          score: attempt.score ?? 0,
+          passed: attempt.passed ?? false,
+          attemptedAt: attempt.attemptedAt ? attempt.attemptedAt.toISOString() : ""
+        }))
+      };
     } catch (error) {
       if (error instanceof GeneratedApiException && error.status === 404) {
         return null;

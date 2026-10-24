@@ -1,5 +1,5 @@
 import ConfirmDialog from "../../../components/shared/ConfirmDialog";
-import { MailIcon, RecycleBinIcon } from "../../../components/shared/icons";
+import { MailIcon, TrashIcon } from "../../../components/shared/icons";
 import { isOwnerRole } from "../../../../modules/chatbots/domain/Chatbot";
 import type { Chatbot } from "../../../../modules/chatbots/domain/Chatbot";
 import { useUsers } from "../../../shared/contexts/UsersContext";
@@ -39,7 +39,7 @@ export default function PermissionsTab({ bot }: PermissionsTabProps) {
               </div>
               {!isOwnerRole(person.role) && (
                 <button className="btn-ghost danger" type="button" onClick={() => setRemoveUserId(person.userId)}>
-                  <RecycleBinIcon /> Quitar acceso
+                  <TrashIcon /> Quitar acceso
                 </button>
               )}
             </div>

@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Nakama.FormationEnrollment.Application;
 using Nakama.FormationEnrollment.Application.Finder;
+using Nakama.FormationEnrollment.Domain;
 using Nakama.FormationEnrollment.Domain.Errors;
 using Test.Modules.FormationEnrollment.Domain;
 using Enrollment = Nakama.FormationEnrollment.Domain.FormationEnrollment;
@@ -61,5 +62,25 @@ public sealed class FormationEnrollmentFinderShould : FormationEnrollmentUnitTes
             await this._handler.Handle(FormationEnrollmentFinderQueryMother.Random(), CancellationToken.None);
 
         await act.Should().ThrowAsync<FormationEnrollmentNotFoundError>();
+    }
+
+    [Test]
+    public async Task return_every_exam_attempt_passed_or_not()
+    {
+        Guid module = Guid.NewGuid();
+        DateTime first = DateTime.UtcNow.AddHours(-2);
+        DateTime second = DateTime.UtcNow;
+        Enrollment enrollment = FormationEnrollmentMother.With(
+            progress: LearnerProgressMother.With(
+                examAttempts: [new ExamAttempt(module, 40, false, first), new ExamAttempt(module, 80, true, second)]));
+        this.ShouldFindEnrollment(enrollment);
+
+        FormationEnrollmentResponse response = await this._handler.Handle(
+            FormationEnrollmentFinderQueryMother.With(enrollment.FormationId, enrollment.UserId),
+            CancellationToken.None);
+
+        response.ExamAttempts.Should().Equal(
+            new ExamAttemptResponse(module, 40, false, first),
+            new ExamAttemptResponse(module, 80, true, second));
     }
 }

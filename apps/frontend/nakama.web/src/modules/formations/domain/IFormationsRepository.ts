@@ -1,7 +1,15 @@
 import type { Page, PageQuery } from "../../../shared/domain/Page";
 import type { DocumentFile } from "../../../shared/domain/DocumentFile";
 import type { LlmProviderKind } from "../../llmProviders/domain/LlmProviderConfig";
-import type { Formation, FormationLifecycleStatus, FormationListItem, FormationMap, FormationModule, QuizQuestion } from "./Formation";
+import type {
+  ExamResult,
+  Formation,
+  FormationLifecycleStatus,
+  FormationListItem,
+  FormationMap,
+  FormationModule,
+  QuizQuestion
+} from "./Formation";
 
 export interface CreateFormationInput {
   title: string;
@@ -36,7 +44,8 @@ export interface IFormationsRepository {
   DownloadDocument(id: string, documentId: string): Promise<DocumentFile>;
   GenerateQuizQuestions(input: GenerateQuizInput): Promise<QuizQuestion[]>;
   ToggleModuleGating(id: string, moduleId: string): Promise<void>;
-  CompleteModule(id: string, moduleId: string, score?: number): Promise<void>;
+  CompleteModule(id: string, moduleId: string): Promise<void>;
+  SubmitExam(id: string, moduleId: string, answers: number[]): Promise<ExamResult>;
   AddTeamMember(id: string, userId: string): Promise<void>;
   RemoveTeamMember(id: string, userId: string): Promise<void>;
 }

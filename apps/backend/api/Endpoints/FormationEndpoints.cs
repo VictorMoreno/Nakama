@@ -4,6 +4,7 @@ using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Application.Finder;
 using Nakama.FormationEnrollment.Application;
 using Nakama.FormationEnrollment.Application.Finder;
+using Nakama.FormationEnrollment.Application.ExamSubmitter;
 using Nakama.FormationEnrollment.Application.ModuleCompleter;
 using Nakama.FormationEnrollment.Application.TeamMemberAdder;
 using Nakama.FormationEnrollment.Application.TeamMemberRemover;
@@ -124,9 +125,17 @@ public sealed class FormationEndpoints : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/modules/{moduleId:guid}/complete", CompleteFormationModule)
-            .WithSummary("Marks a module complete, with an optional score.")
+            .WithSummary("Marks a module that is not an exam as complete.")
             .WithDescription(
-                "Enforces sequential gating: fails if the previous module is gated and hasn't been completed yet.")
+                "Enforces sequential gating: fails if the previous module is gated and has not been completed yet. Exam modules are completed by submitting the exam, not with this endpoint.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
+        group.MapPost("/{id:guid}/modules/{moduleId:guid}/exam", SubmitFormationExam)
+            .WithSummary("Submits the caller's answers to an exam module.")
+            .WithDescription(
+                "The server grades the exam: `answers` holds the chosen option index of each question, in order. Every attempt is recorded in the caller's progress, passed or not, and a passed attempt completes the module with its score. A passed exam cannot be submitted again; a failed one can be retried. Enforces sequential gating.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
@@ -168,6 +177,7 @@ public sealed class FormationEndpoints : IEndpoint
 
         group.MapGet("/{id:guid}", FindFormationDetail)
             .WithSummary("Gets the full detail page projection for one formation.")
+            .WithDescription("The correct answer of each exam question is only included for administrators.")
             .Produces<FormationDetailResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -319,9 +329,16 @@ public sealed class FormationEndpoints : IEndpoint
     }
 
     private static async Task<IResult> CompleteFormationModule(
-        Guid id, Guid moduleId, CompleteFormationModuleRequest body, ICurrentUser currentUser, ICommandBus commandBus, CancellationToken ct)
+        Guid id, Guid moduleId, ICurrentUser currentUser, ICommandBus commandBus, CancellationToken ct)
     {
-        await commandBus.Send(new FormationModuleCompleter.Command(id, moduleId, currentUser.Id, body.Score), ct);
+        await commandBus.Send(new FormationModuleCompleter.Command(id, moduleId, currentUser.Id), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> SubmitFormationExam(
+        Guid id, Guid moduleId, SubmitFormationExamRequest body, ICurrentUser currentUser, ICommandBus commandBus, CancellationToken ct)
+    {
+        await commandBus.Send(new FormationExamSubmitter.Command(id, moduleId, currentUser.Id, body.Answers), ct);
         return Results.NoContent();
     }
 
@@ -376,10 +393,10 @@ public sealed class FormationEndpoints : IEndpoint
         return Results.Ok(response);
     }
 
-    private static async Task<IResult> FindFormationDetail(Guid id, IQueryBus queryBus, CancellationToken ct)
+    private static async Task<IResult> FindFormationDetail(Guid id, ICurrentUser currentUser, IQueryBus queryBus, CancellationToken ct)
     {
         FormationDetailResponse response = await queryBus.Ask(new FormationDetailFinder.Query(id), ct);
-        return Results.Ok(response);
+        return Results.Ok(currentUser.IsAdmin ? response : response.WithoutAnswers());
     }
 
     private static async Task<IResult> FindFormationEnrollment(Guid id,
@@ -430,7 +447,7 @@ public sealed class FormationEndpoints : IEndpoint
         IReadOnlyList<QuizQuestionRequest>? Quiz,
         int? PassingScore);
 
-    private sealed record CompleteFormationModuleRequest(int? Score);
+    private sealed record SubmitFormationExamRequest(IReadOnlyList<int> Answers);
 
     private sealed record AddFormationTeamMemberRequest(Guid UserId);
 }

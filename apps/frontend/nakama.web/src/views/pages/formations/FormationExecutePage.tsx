@@ -13,7 +13,8 @@ import {
 import { useFormations } from "../../shared/contexts/FormationsContext";
 import { useToast } from "../../shared/contexts/ToastContext";
 import { FORMATION_STATUS_META } from "../../../lib/status";
-import type { FormationModule, ModuleType } from "../../../modules/formations/domain/Formation";
+import { pluralWord } from "../../../lib/text";
+import type { ExamAttempt, FormationModule, ModuleType } from "../../../modules/formations/domain/Formation";
 import styles from "./FormationExecutePage.module.scss";
 import { useFormationExecute } from "./hooks/useFormationExecute";
 
@@ -38,27 +39,40 @@ interface ExecuteModuleRowProps {
   locked: boolean;
   done: boolean;
   examScore?: number;
+  attempts: ExamAttempt[];
 }
 
-function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examScore }: ExecuteModuleRowProps) {
-  const { completeModule } = useFormations();
+function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examScore, attempts }: ExecuteModuleRowProps) {
+  const { completeModule, submitExam } = useFormations();
   const { showToast } = useToast();
   const TypeIcon = TYPE_ICON[m.type];
   const [answers, setAnswers] = useState<number[]>(() => new Array(m.quiz?.length ?? 0).fill(-1));
-  const [submitted, setSubmitted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const lastAttempt = attempts[attempts.length - 1];
 
-  function submitExam() {
-    const passingScore = m.passingScore;
-    if (!m.quiz || m.quiz.length === 0 || passingScore === undefined) return;
-    const correct = answers.filter((a, i) => a === m.quiz![i].correctIndex).length;
-    const score = Math.round((correct / m.quiz.length) * 100);
-    const passed = score >= passingScore;
-    setSubmitted(true);
-    if (passed) {
-      completeModule(formationKey, m.id, score);
-      showToast(`Examen aprobado con ${score}%`);
-    } else {
-      showToast(`No has alcanzado la nota mínima (${score}% de ${passingScore}% requerido) — puedes reintentarlo`);
+  async function handleComplete() {
+    setBusy(true);
+    try {
+      await completeModule(formationKey, m.id);
+      showToast("Módulo completado");
+    } catch {
+      showToast("No se pudo completar el módulo — inténtalo de nuevo");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSubmitExam() {
+    setBusy(true);
+    try {
+      const result = await submitExam(formationKey, m.id, answers);
+      showToast(
+        result.passed ? `Examen aprobado con ${result.score}%` : `No has superado el examen (${result.score}%) — puedes reintentarlo`
+      );
+    } catch {
+      showToast("No se pudo entregar el examen — inténtalo de nuevo");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -122,9 +136,15 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
                     </div>
                   </div>
                 ))}
-                {(examScore != null || (submitted && !done)) && (
+                {m.passingScore !== undefined && (
+                  <div className={styles.moduleItemDesc}>Nota mínima para aprobar: {m.passingScore}%</div>
+                )}
+                {lastAttempt && (
                   <div className={styles.moduleItemDesc}>
-                    {done ? `Aprobado con ${examScore}%` : "No superado todavía — puedes corregir tus respuestas y reintentar."}
+                    {done
+                      ? `Aprobado con ${examScore ?? lastAttempt.score}%`
+                      : `No superado todavía (último intento: ${lastAttempt.score}%) — puedes corregir tus respuestas y reintentar.`}{" "}
+                    · {pluralWord(attempts.length, "intento", "intentos")}
                   </div>
                 )}
               </div>
@@ -139,17 +159,14 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
             <button
               className={`btn-ghost${done ? " done" : ""}`}
               type="button"
-              disabled={done}
-              onClick={() => {
-                completeModule(formationKey, m.id);
-                showToast("Módulo completado");
-              }}
+              disabled={done || busy}
+              onClick={handleComplete}
             >
               <CheckIcon /> {done ? "Completado ✓" : "Marcar como completado"}
             </button>
           )}
           {!locked && m.type === "examen" && (
-            <button className={`btn-ghost${done ? " done" : ""}`} type="button" disabled={done || answers.includes(-1)} onClick={submitExam}>
+            <button className={`btn-ghost${done ? " done" : ""}`} type="button" disabled={done || busy || answers.includes(-1)} onClick={handleSubmitExam}>
               {done ? (
                 <>
                   <CheckIcon /> Aprobado ✓
@@ -232,6 +249,7 @@ export default function FormationExecutePage() {
                   locked={isLocked(idx)}
                   done={myProgress.completedModuleIds.includes(m.id)}
                   examScore={myProgress.examScores[m.id]}
+                  attempts={myProgress.examAttempts.filter((attempt) => attempt.moduleId === m.id)}
                 />
               ))}
             </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Select from "../../components/shared/Select";
-import { CheckIcon, CloseIcon, PlusIcon, RecycleBinIcon } from "../../components/shared/icons";
+import { CheckIcon, CloseIcon, PlusIcon, TrashIcon } from "../../components/shared/icons";
 import { useFormations } from "../../shared/contexts/FormationsContext";
 import { useToast } from "../../shared/contexts/ToastContext";
 import {
@@ -59,7 +59,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
   const [gated, setGated] = useState(module?.gated ?? true);
   const [quiz, setQuiz] = useState<QuizDraftQuestion[]>(
     module?.type === "examen" && module.quiz && module.quiz.length > 0
-      ? module.quiz.map((q) => ({ question: q.question, options: [...q.options], correctIndex: q.correctIndex }))
+      ? module.quiz.map((q) => ({ question: q.question, options: [...q.options], correctIndex: q.correctIndex ?? 0 }))
       : [emptyQuestion()]
   );
   const [titleError, setTitleError] = useState(false);
@@ -81,7 +81,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
   // it instead of appending alongside it - avoids leaving a stray empty question that would
   // fail validation for no reason the admin asked for.
   function addGeneratedQuestions(questions: QuizQuestion[]) {
-    const drafts: QuizDraftQuestion[] = questions.map((q) => ({ question: q.question, options: [...q.options], correctIndex: q.correctIndex }));
+    const drafts: QuizDraftQuestion[] = questions.map((q) => ({ question: q.question, options: [...q.options], correctIndex: q.correctIndex ?? 0 }));
     setQuiz((prev) => {
       const isSingleBlank = prev.length === 1 && !prev[0].question.trim() && prev[0].options.every((o) => !o.trim());
       return isSingleBlank ? drafts : [...prev, ...drafts];
@@ -295,7 +295,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
                     onClick={() => removeQuestion(qi)}
                     disabled={quiz.length <= 1}
                   >
-                    <RecycleBinIcon width={12} height={12} /> Quitar pregunta
+                    <TrashIcon width={12} height={12} /> Quitar pregunta
                   </button>
                 </div>
                 <input

@@ -11,7 +11,8 @@ export const MAX_PASSING_SCORE = 100;
 export interface QuizQuestion {
   question: string;
   options: string[];
-  correctIndex: number;
+  /** Solo la reciben los administradores: a quien cursa la formación el servidor no le envía la respuesta correcta */
+  correctIndex?: number;
 }
 
 /**
@@ -26,7 +27,7 @@ export interface FormationModule {
   summary: string;
   /** Si está activo, el siguiente módulo queda bloqueado hasta completar este (configurable por el admin) */
   gated: boolean;
-  /** Preguntas generadas por IA a partir de documentos de un chatbot, pendientes de revisión: se marca al guardar tras generarlas y se limpia al editar y guardar el módulo */
+  /** Preguntas generadas por IA a partir de los documentos de la formación, pendientes de revisión: se marca al guardar tras generarlas y se limpia al editar y guardar el módulo */
   aiDraft: boolean;
   /** Enlace al recurso — vídeo, documento o ejercicio, según el tipo */
   resourceUrl?: string;
@@ -34,7 +35,7 @@ export interface FormationModule {
   durationMin?: number;
   /** Solo para type "examen" */
   quiz?: QuizQuestion[];
-  /** Solo para type "examen": nota mínima (0-100) para aprobar */
+  /** Solo para type "examen": nota mínima (1-100) para aprobar */
   passingScore?: number;
 }
 
@@ -42,6 +43,21 @@ export interface FormationModule {
 export interface LearnerProgress {
   completedModuleIds: string[];
   examScores: Record<string, number>;
+  /** Todos los intentos de examen de la persona, aprobados o no, en orden cronológico */
+  examAttempts: ExamAttempt[];
+}
+
+export interface ExamAttempt {
+  moduleId: string;
+  score: number;
+  passed: boolean;
+  attemptedAt: string;
+}
+
+/** Resultado de entregar un examen, calculado por el servidor */
+export interface ExamResult {
+  score: number;
+  passed: boolean;
 }
 
 export interface FormationDocument {

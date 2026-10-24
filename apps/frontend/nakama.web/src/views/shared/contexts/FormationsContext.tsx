@@ -2,7 +2,7 @@
 // this only costs Fast Refresh a full remount of consumers on edit, not correctness.
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Formation, FormationMap, FormationModule } from "../../../modules/formations/domain/Formation";
+import type { ExamResult, Formation, FormationMap, FormationModule } from "../../../modules/formations/domain/Formation";
 import type { CreateFormationInput, IFormationsRepository } from "../../../modules/formations/domain/IFormationsRepository";
 import { Services } from "../../../shared/infrastructure/injection/Services";
 import { useInjection } from "../../../shared/infrastructure/injection/useInjection";
@@ -26,7 +26,8 @@ interface FormationsContextValue {
   addDocument: (key: string, file: File, name: string, origin: string) => Promise<void>;
   removeDocument: (key: string, documentId: string) => Promise<void>;
   toggleModuleGating: (key: string, moduleId: string) => Promise<void>;
-  completeModule: (key: string, moduleId: string, score?: number) => Promise<void>;
+  completeModule: (key: string, moduleId: string) => Promise<void>;
+  submitExam: (key: string, moduleId: string, answers: number[]) => Promise<ExamResult>;
   addTeamMember: (key: string, userId: string) => Promise<void>;
   removeTeamMember: (key: string, userId: string) => Promise<void>;
 }
@@ -125,10 +126,16 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     await refresh();
   }
 
-  async function completeModule(key: string, moduleId: string, score?: number) {
+  async function completeModule(key: string, moduleId: string) {
     if (!currentUser) return;
-    await repo.CompleteModule(key, moduleId, score);
+    await repo.CompleteModule(key, moduleId);
     await refresh();
+  }
+
+  async function submitExam(key: string, moduleId: string, answers: number[]): Promise<ExamResult> {
+    const result = await repo.SubmitExam(key, moduleId, answers);
+    await refresh();
+    return result;
   }
 
   async function addTeamMember(key: string, userId: string) {
@@ -157,6 +164,7 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     removeDocument,
     toggleModuleGating,
     completeModule,
+    submitExam,
     addTeamMember,
     removeTeamMember
   };

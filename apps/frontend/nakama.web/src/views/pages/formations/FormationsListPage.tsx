@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import Pagination from "../../components/shared/Pagination";
 import Select from "../../components/shared/Select";
-import { ArrowRightIcon, LockIcon, PlusIcon, RecycleBinIcon, RefreshIcon } from "../../components/shared/icons";
+import { ArrowRightIcon, LockIcon, PlusIcon, TrashIcon, RefreshIcon } from "../../components/shared/icons";
 import { FORMATION_STATUS_META } from "../../../lib/status";
 import { paginationConfig } from "../../../shared/infrastructure/config/PaginationConfig";
 import { ARCHIVE_VIEW_OPTIONS } from "../../shared/hooks/usePagedList";
@@ -124,7 +124,7 @@ export default function FormationsListPage() {
                       </div>
                       {isAdmin && (
                         <button className="btn-ghost danger" type="button" onClick={() => setDeleteKey(c.id)}>
-                          <RecycleBinIcon /> Eliminar
+                          <TrashIcon /> Eliminar
                         </button>
                       )}
                     </>

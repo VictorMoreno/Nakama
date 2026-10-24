@@ -1,7 +1,7 @@
 import { useId, type ChangeEvent } from "react";
 import { useToast } from "../../shared/contexts/ToastContext";
 import { iconsConfig } from "../../../shared/infrastructure/config/IconsConfig";
-import { RecycleBinIcon, UploadIcon } from "./icons";
+import { TrashIcon, UploadIcon } from "./icons";
 import styles from "./IconUploadField.module.scss";
 
 const FORMATS_LABEL = iconsConfig.allowedContentTypes.map((type) => type.split("/")[1].toUpperCase()).join(", ");
@@ -52,7 +52,7 @@ export default function IconUploadField({ value, onChange, placeholderLabel }: I
           <input id={inputId} type="file" accept={iconsConfig.allowedContentTypes.join(",")} onChange={handleFile} hidden />
           {value && (
             <button type="button" className="btn-ghost" onClick={() => onChange(undefined)}>
-              <RecycleBinIcon /> Quitar
+              <TrashIcon /> Quitar
             </button>
           )}
         </div>

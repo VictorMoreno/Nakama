@@ -7,7 +7,7 @@ import { useInjection } from "../../../../shared/infrastructure/injection/useInj
 import { useFormations } from "../../../shared/contexts/FormationsContext";
 import { useUser } from "../../../shared/contexts/UserContext";
 
-const EMPTY_PROGRESS: LearnerProgress = { completedModuleIds: [], examScores: {} };
+const EMPTY_PROGRESS: LearnerProgress = { completedModuleIds: [], examScores: {}, examAttempts: [] };
 
 /** /formacion/:key — the learner's execute/consume view, open to everyone (admins included). */
 export function useFormationExecute() {

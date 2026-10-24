@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import BotSwitcher from "../../components/layout/BotSwitcher";
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
-import { AttachIcon, PlusIcon, RecycleBinIcon, SendIcon } from "../../components/shared/icons";
+import { AttachIcon, PlusIcon, TrashIcon, SendIcon } from "../../components/shared/icons";
 import { getChatbotStatus } from "../../../lib/status";
 import { useChat } from "./hooks/useChat";
 import { BotBubble, PendingBubble, UserBubble, WelcomeBubble } from "./MessageBubble";
@@ -115,7 +115,7 @@ export default function ChatPage() {
                       aria-label={`Quitar ${file.name}`}
                       title="Quitar archivo"
                     >
-                      <RecycleBinIcon />
+                      <TrashIcon />
                     </button>
                   </span>
                 ))}
@@ -196,7 +196,7 @@ export default function ChatPage() {
                       title="Eliminar conversación"
                       onClick={() => setDeleteTargetId(conv.id)}
                     >
-                      <RecycleBinIcon />
+                      <TrashIcon />
                     </button>
                   </div>
                 ))

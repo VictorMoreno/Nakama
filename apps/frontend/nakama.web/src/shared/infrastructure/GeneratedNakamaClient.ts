@@ -276,10 +276,16 @@ export interface IGeneratedNakamaClient {
     modulesDELETE(id: string, moduleId: string): Promise<void>;
 
     /**
-     * Marks a module complete, with an optional score.
+     * Marks a module that is not an exam as complete.
      * @return No Content
      */
-    complete(id: string, moduleId: string, body: CompleteFormationModuleRequest): Promise<void>;
+    complete(id: string, moduleId: string): Promise<void>;
+
+    /**
+     * Submits the caller's answers to an exam module.
+     * @return No Content
+     */
+    exam(id: string, moduleId: string, body: SubmitFormationExamRequest): Promise<void>;
 
     /**
      * Flips a module's gated flag.
@@ -2384,11 +2390,65 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
-     * Marks a module complete, with an optional score.
+     * Marks a module that is not an exam as complete.
      * @return No Content
      */
-    complete(id: string, moduleId: string, body: CompleteFormationModuleRequest): Promise<void> {
+    complete(id: string, moduleId: string): Promise<void> {
         let url_ = this.baseUrl + "/api/formations/{id}/modules/{moduleId}/complete";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (moduleId === undefined || moduleId === null)
+            throw new globalThis.Error("The parameter 'moduleId' must be defined.");
+        url_ = url_.replace("{moduleId}", encodeURIComponent("" + moduleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processComplete(_response));
+        });
+    }
+
+    protected processComplete(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            result422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Unprocessable Content", status, _responseText, _headers, result422);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Submits the caller's answers to an exam module.
+     * @return No Content
+     */
+    exam(id: string, moduleId: string, body: SubmitFormationExamRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/modules/{moduleId}/exam";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -2410,11 +2470,11 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.transformResult(url_, _response, (_response: Response) => this.processComplete(_response));
+            return this.transformResult(url_, _response, (_response: Response) => this.processExam(_response));
         });
     }
 
-    protected processComplete(response: Response): Promise<void> {
+    protected processExam(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -2938,10 +2998,6 @@ export interface ChatbotSummaryResponsePagedResponse {
     readonly totalPages?: number;
 }
 
-export interface CompleteFormationModuleRequest {
-    score?: number | undefined;
-}
-
 export interface ConversationHistoryResponse {
     botKey?: string;
     entries?: ConversationSummaryRow[] | undefined;
@@ -2979,6 +3035,13 @@ export interface DailyUserActivityRow {
     activeUsers?: number;
 }
 
+export interface ExamAttemptResponse {
+    moduleId?: string;
+    score?: number;
+    passed?: boolean;
+    attemptedAt?: Date;
+}
+
 export interface FormationDetailResponse {
     id?: string;
     title?: string | undefined;
@@ -2987,7 +3050,7 @@ export interface FormationDetailResponse {
     status?: string | undefined;
     archived?: boolean;
     iconUrl?: string | undefined;
-    modules?: FormationModuleRow[] | undefined;
+    modules?: FormationModuleResponse[] | undefined;
     team?: FormationMemberRow[] | undefined;
     docs?: FormationDocumentResponse[] | undefined;
 }
@@ -3004,6 +3067,7 @@ export interface FormationEnrollmentResponse {
     userId?: string;
     completedModuleIds?: string[] | undefined;
     examScores?: { [key: string]: number; } | undefined;
+    examAttempts?: ExamAttemptResponse[] | undefined;
 }
 
 export interface FormationMemberRow {
@@ -3011,7 +3075,7 @@ export interface FormationMemberRow {
     progress?: number;
 }
 
-export interface FormationModuleRow {
+export interface FormationModuleResponse {
     id?: string;
     title?: string | undefined;
     type?: string | undefined;
@@ -3020,7 +3084,7 @@ export interface FormationModuleRow {
     aiDraft?: boolean;
     resourceUrl?: string | undefined;
     durationMin?: number | undefined;
-    quiz?: QuizQuestionRow[] | undefined;
+    quiz?: QuizQuestionResponse[] | undefined;
     passingScore?: number | undefined;
 }
 
@@ -3115,10 +3179,10 @@ export interface QuizQuestionRequest {
     correctIndex?: number;
 }
 
-export interface QuizQuestionRow {
+export interface QuizQuestionResponse {
     question?: string | undefined;
     options?: string[] | undefined;
-    correctIndex?: number;
+    correctIndex?: number | undefined;
 }
 
 export interface RateConversationExchangeRequest {
@@ -3129,6 +3193,10 @@ export interface RegisterLlmProviderRequest {
     apiKey?: string | undefined;
     enabled?: boolean;
     models?: ModelInput[] | undefined;
+}
+
+export interface SubmitFormationExamRequest {
+    answers?: number[] | undefined;
 }
 
 export interface TeamMemberRow {

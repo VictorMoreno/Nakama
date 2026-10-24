@@ -7,7 +7,7 @@ import {
   ExerciseIcon,
   PlusIcon,
   QuizIcon,
-  RecycleBinIcon,
+  TrashIcon,
   VideoIcon
 } from "../../components/shared/icons";
 import IconUploadField from "../../components/shared/IconUploadField";
@@ -108,7 +108,7 @@ function ManageModuleRow({ formationKey, module: m, index, expanded, onToggleExp
 
         <div className={styles.moduleItemActions}>
           <button className="btn-ghost danger" type="button" onClick={onDelete}>
-            <RecycleBinIcon /> Eliminar
+            <TrashIcon /> Eliminar
           </button>
           <button
             className={`btn-ghost ${styles.expandToggle}${expanded ? ` ${styles.expandToggleOpen}` : ""}`}
@@ -267,7 +267,7 @@ export default function FormationManagePage() {
                       </div>
                       <span className={styles.pct}>{m.progress}%</span>
                       <button className="btn-ghost danger" type="button" onClick={() => setRemoveTeamMemberUserId(m.userId)}>
-                        <RecycleBinIcon /> Quitar
+                        <TrashIcon /> Quitar
                       </button>
                     </div>
                   ))}

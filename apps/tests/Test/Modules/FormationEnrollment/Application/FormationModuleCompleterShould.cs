@@ -1,6 +1,5 @@
 using AwesomeAssertions;
 using Nakama.FormationDetail.Application;
-using Nakama.FormationDetail.Domain;
 using Nakama.FormationDetail.Domain.Errors;
 using Nakama.FormationEnrollment.Application.ModuleCompleter;
 using Nakama.FormationEnrollment.Domain.Errors;
@@ -25,56 +24,38 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     }
 
     [Test]
-    public async Task complete_the_module_record_the_score_and_publish_enrollment_module_completed()
+    public async Task complete_the_module_and_publish_enrollment_module_completed()
     {
         FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
-        FormationModuleRow module = detail.Modules.Single();
+        FormationModuleResponse module = detail.Modules.Single();
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         FormationModuleCompleter.Command command = FormationModuleCompleterCommandMother.With(
             detail.Id,
             module.Id,
-            enrollment.UserId,
-            85);
+            enrollment.UserId);
         this.ShouldFindFormationDetail(detail);
         this.ShouldFindEnrollment(enrollment);
 
         await this._handler.Handle(command, CancellationToken.None);
 
         enrollment.Progress.CompletedModuleIds.Should().Equal(module.Id);
-        enrollment.Progress.ExamScores.Should().ContainKey(module.Id).WhoseValue.Should().Be(85);
+        enrollment.Progress.ExamScores.Should().BeEmpty();
         this.ShouldHaveAskedForFormationDetail(detail.Id);
         this.ShouldHaveSavedEnrollment(enrollment);
         this.ShouldHavePublished<EnrollmentModuleCompleted>(@event =>
             @event.FormationId == detail.Id
             && @event.UserId == enrollment.UserId
             && @event.ModuleId == module.Id
-            && @event.Score == 85
+            && @event.Score == null
             && @event.CompletedModuleCount == 1);
-    }
-
-    [Test]
-    public async Task complete_the_module_without_recording_a_score_when_none_is_given()
-    {
-        FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
-        FormationModuleRow module = detail.Modules.Single();
-        Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
-        this.ShouldFindFormationDetail(detail);
-        this.ShouldFindEnrollment(enrollment);
-
-        await this._handler.Handle(
-            FormationModuleCompleterCommandMother.With(detail.Id, module.Id, enrollment.UserId),
-            CancellationToken.None);
-
-        enrollment.Progress.CompletedModuleIds.Should().Equal(module.Id);
-        enrollment.Progress.ExamScores.Should().BeEmpty();
     }
 
     [Test]
     public async Task count_every_completed_module_in_the_published_event()
     {
         FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: false);
-        FormationModuleRow first = detail.Modules[0];
-        FormationModuleRow second = detail.Modules[1];
+        FormationModuleResponse first = detail.Modules[0];
+        FormationModuleResponse second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(
             formationId: detail.Id,
             progress: LearnerProgressMother.With(completedModuleIds: [first.Id]));
@@ -89,32 +70,11 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     }
 
     [Test]
-    public async Task keep_the_module_once_and_update_the_score_when_it_is_completed_again()
-    {
-        FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
-        FormationModuleRow module = detail.Modules.Single();
-        Enrollment enrollment = FormationEnrollmentMother.With(
-            formationId: detail.Id,
-            progress: LearnerProgressMother.With(
-                completedModuleIds: [module.Id],
-                examScores: new Dictionary<Guid, int> { [module.Id] = 50 }));
-        this.ShouldFindFormationDetail(detail);
-        this.ShouldFindEnrollment(enrollment);
-
-        await this._handler.Handle(
-            FormationModuleCompleterCommandMother.With(detail.Id, module.Id, enrollment.UserId, 90),
-            CancellationToken.None);
-
-        enrollment.Progress.CompletedModuleIds.Should().Equal(module.Id);
-        enrollment.Progress.ExamScores.Should().ContainKey(module.Id).WhoseValue.Should().Be(90);
-    }
-
-    [Test]
     public async Task complete_the_module_when_the_previous_gated_module_is_already_completed()
     {
         FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: true);
-        FormationModuleRow first = detail.Modules[0];
-        FormationModuleRow second = detail.Modules[1];
+        FormationModuleResponse first = detail.Modules[0];
+        FormationModuleResponse second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(
             formationId: detail.Id,
             progress: LearnerProgressMother.With(completedModuleIds: [first.Id]));
@@ -133,7 +93,7 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     public async Task complete_the_module_when_the_previous_module_is_not_gated_even_if_it_is_not_completed()
     {
         FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: false);
-        FormationModuleRow second = detail.Modules[1];
+        FormationModuleResponse second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         this.ShouldFindFormationDetail(detail);
         this.ShouldFindEnrollment(enrollment);
@@ -149,7 +109,7 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     public async Task fail_without_saving_anything_when_the_previous_gated_module_is_not_completed()
     {
         FormationDetailResponse detail = FormationDetailResponseMother.WithTwoModules(firstGated: true);
-        FormationModuleRow second = detail.Modules[1];
+        FormationModuleResponse second = detail.Modules[1];
         Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
         this.ShouldFindFormationDetail(detail);
         this.ShouldFindEnrollment(enrollment);
@@ -185,7 +145,7 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
     public async Task fail_without_saving_anything_when_the_user_is_not_enrolled()
     {
         FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
-        FormationModuleRow module = detail.Modules.Single();
+        FormationModuleResponse module = detail.Modules.Single();
         this.ShouldFindFormationDetail(detail);
         this.ShouldNotFindEnrollment();
 
@@ -207,6 +167,61 @@ public sealed class FormationModuleCompleterShould : FormationEnrollmentUnitTest
         Func<Task> act = async () => await this._handler.Handle(command, CancellationToken.None);
 
         await act.Should().ThrowAsync<FormationDetailNotFoundError>();
+        this.ShouldNotHaveSavedAnyEnrollment();
+        this.ShouldNotHavePublishedAnything();
+    }
+
+    [Test]
+    public async Task keep_the_module_once_when_it_is_completed_again()
+    {
+        FormationDetailResponse detail = FormationDetailResponseMother.WithModule();
+        FormationModuleResponse module = detail.Modules.Single();
+        Enrollment enrollment = FormationEnrollmentMother.With(
+            formationId: detail.Id,
+            progress: LearnerProgressMother.With(completedModuleIds: [module.Id]));
+        this.ShouldFindFormationDetail(detail);
+        this.ShouldFindEnrollment(enrollment);
+
+        await this._handler.Handle(
+            FormationModuleCompleterCommandMother.With(detail.Id, module.Id, enrollment.UserId),
+            CancellationToken.None);
+
+        enrollment.Progress.CompletedModuleIds.Should().Equal(module.Id);
+    }
+
+    [Test]
+    public async Task fail_without_saving_anything_when_the_module_is_an_exam()
+    {
+        FormationDetailResponse detail = FormationDetailResponseMother.WithExam(70, 0, 1);
+        Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
+        this.ShouldFindFormationDetail(detail);
+        this.ShouldFindEnrollment(enrollment);
+
+        Func<Task> act = async () => await this._handler.Handle(
+            FormationModuleCompleterCommandMother.With(detail.Id, detail.Modules.Single().Id, enrollment.UserId),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FormationEnrollmentExamMustBeSubmittedError>();
+        enrollment.Progress.CompletedModuleIds.Should().BeEmpty();
+        this.ShouldNotHaveSavedAnyEnrollment();
+        this.ShouldNotHavePublishedAnything();
+    }
+
+    [Test]
+    public async Task fail_without_saving_anything_when_the_formation_is_archived()
+    {
+        FormationDetailResponse detail = FormationDetailResponseMother.With(
+            archived: true,
+            modules: [FormationModuleResponseMother.Random()]);
+        Enrollment enrollment = FormationEnrollmentMother.With(formationId: detail.Id);
+        this.ShouldFindFormationDetail(detail);
+        this.ShouldFindEnrollment(enrollment);
+
+        Func<Task> act = async () => await this._handler.Handle(
+            FormationModuleCompleterCommandMother.With(detail.Id, detail.Modules.Single().Id, enrollment.UserId),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FormationArchivedError>();
         this.ShouldNotHaveSavedAnyEnrollment();
         this.ShouldNotHavePublishedAnything();
     }

@@ -59,6 +59,45 @@ public static class FormationHttpClientExtensions
             new { DocumentIds = documentIds, Provider = provider, Model = model, QuestionCount = questionCount, Topic = topic },
             accessToken);
 
+    public static Task<HttpResponseMessage> AddFormationExamModule(
+        this HttpClient client,
+        Guid formationId,
+        Guid moduleId,
+        int passingScore,
+        IReadOnlyList<int> correctIndexes,
+        string accessToken) =>
+        client.SendJson(
+            HttpMethod.Put,
+            $"/api/formations/{formationId}/modules/{moduleId}",
+            new
+            {
+                Title = "Examen",
+                Type = (int)ModuleType.Exam,
+                Summary = "Comprueba lo aprendido",
+                Gated = false,
+                AiDraft = false,
+                Quiz = correctIndexes.Select(correctIndex => new { Question = "¿Cuál?", Options = new[] { "A", "B", "C" }, CorrectIndex = correctIndex }).ToList(),
+                PassingScore = passingScore
+            },
+            accessToken);
+
+    public static Task<HttpResponseMessage> AddFormationTeamMember(this HttpClient client, Guid formationId, Guid userId, string accessToken) =>
+        client.SendJson(HttpMethod.Post, $"/api/formations/{formationId}/team", new { UserId = userId }, accessToken);
+
+    public static Task<HttpResponseMessage> GetFormationEnrollment(this HttpClient client, Guid formationId, string accessToken) =>
+        client.Get($"/api/formations/{formationId}/enrollment", accessToken);
+
+    public static Task<HttpResponseMessage> CompleteFormationModule(this HttpClient client, Guid formationId, Guid moduleId, string accessToken) =>
+        client.Send(HttpMethod.Post, $"/api/formations/{formationId}/modules/{moduleId}/complete", accessToken);
+
+    public static Task<HttpResponseMessage> SubmitFormationExam(
+        this HttpClient client,
+        Guid formationId,
+        Guid moduleId,
+        IReadOnlyList<int> answers,
+        string accessToken) =>
+        client.SendJson(HttpMethod.Post, $"/api/formations/{formationId}/modules/{moduleId}/exam", new { Answers = answers }, accessToken);
+
     public static Task<HttpResponseMessage> ArchiveFormation(this HttpClient client, Guid id, string accessToken) =>
         client.Send(HttpMethod.Post, $"/api/formations/{id}/archive", accessToken);
 

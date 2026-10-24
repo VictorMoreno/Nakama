@@ -6,10 +6,6 @@ public static class FormationModuleCompleterCommandMother
 {
     public static FormationModuleCompleter.Command Random() => With();
 
-    public static FormationModuleCompleter.Command With(
-        Guid? id = null,
-        Guid? moduleId = null,
-        Guid? userId = null,
-        int? score = null) =>
-        new(id ?? Guid.NewGuid(), moduleId ?? Guid.NewGuid(), userId ?? Guid.NewGuid(), score);
+    public static FormationModuleCompleter.Command With(Guid? id = null, Guid? moduleId = null, Guid? userId = null) =>
+        new(id ?? Guid.NewGuid(), moduleId ?? Guid.NewGuid(), userId ?? Guid.NewGuid());
 }

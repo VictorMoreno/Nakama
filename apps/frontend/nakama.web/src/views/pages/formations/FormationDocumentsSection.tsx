@@ -1,6 +1,6 @@
 import ConfirmDialog from "../../components/shared/ConfirmDialog";
 import DocumentUploadDialog from "../../components/shared/DocumentUploadDialog";
-import { RecycleBinIcon, UploadIcon } from "../../components/shared/icons";
+import { TrashIcon, UploadIcon } from "../../components/shared/icons";
 import type { Formation } from "../../../modules/formations/domain/Formation";
 import { documentsConfig } from "../../../shared/infrastructure/config/DocumentsConfig";
 import { useFormationDocuments } from "./hooks/useFormationDocuments";
@@ -46,7 +46,7 @@ export default function FormationDocumentsSection({ formation }: FormationDocume
                     <td className={styles.td}>{doc.updated}</td>
                     <td className={styles.td}>
                       <button className="btn-ghost danger" type="button" onClick={() => setDeleteId(doc.id)}>
-                        <RecycleBinIcon /> Eliminar
+                        <TrashIcon /> Eliminar
                       </button>
                     </td>
                   </tr>

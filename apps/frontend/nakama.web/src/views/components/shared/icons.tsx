@@ -190,29 +190,11 @@ export function PlusIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-// The one delete/remove icon used everywhere in the app (documents, team members, formation
-// modules, conversations, etc.) - scaled down from an explicit user-provided reference
-// (Streamline "Recycle Bin 2 - Plump", 48x48/stroke-3) to this kit's 24x24/currentColor
-// convention so hover-to-danger color swaps still work wherever it's used.
-export function RecycleBinIcon(props: SVGProps<SVGSVGElement>) {
+export function TrashIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M3.09 7.92c0.44 6.91 0.87 10.5 1.12 12.21 0.13 0.87 0.7 1.57 1.55 1.77C6.92 22.19 8.91 22.5 12 22.5c3.09 0 5.09-0.32 6.24-0.59 0.85-0.2 1.42-0.91 1.55-1.77 0.25-1.71 0.68-5.3 1.12-12.21"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M15.52 3.59c1.78 0.03 3.17 0.09 4.16 0.14 1.2 0.06 2.31 0.7 2.64 1.85 0.05 0.17 0.1 0.36 0.14 0.55 0.2 0.92-0.49 1.71-1.43 1.79-1.51 0.13-4.27 0.27-9.04 0.27-4.76 0-7.53-0.15-9.04-0.27-0.94-0.08-1.63-0.88-1.39-1.78 0.09-0.33 0.2-0.63 0.31-0.89 0.41-0.95 1.39-1.44 2.42-1.5 0.95-0.05 2.34-0.11 4.19-0.15A3.5 3.5 0 0 1 11.69 1.5h0.63a3.5 3.5 0 0 1 3.2 2.09Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M9 12.5l0.5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M15 12.5l-0.5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+      <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
     </svg>
   );
 }
