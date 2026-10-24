@@ -15,15 +15,17 @@ public static class FormationDetailMother
         bool archived,
         string? iconUrl,
         List<FormationModuleRow> modules,
-        List<FormationMemberRow> team) =>
-        new(id, title, audience, description, status, archived, iconUrl, modules, team);
+        List<FormationMemberRow> team,
+        List<FormationDocumentRow> docs) =>
+        new(id, title, audience, description, status, archived, iconUrl, modules, team, docs);
 
     public static FormationDetailEntity Random() => With();
 
     public static FormationDetailEntity Populated() =>
         With(
             modules: [FormationModuleRowMother.Random()],
-            team: [FormationMemberRowMother.Random()]);
+            team: [FormationMemberRowMother.Random()],
+            docs: [FormationDocumentRowMother.Random()]);
 
     public static FormationDetailEntity With(
         Guid? id = null,
@@ -34,7 +36,8 @@ public static class FormationDetailMother
         bool? archived = null,
         string? iconUrl = null,
         List<FormationModuleRow>? modules = null,
-        List<FormationMemberRow>? team = null) =>
+        List<FormationMemberRow>? team = null,
+        List<FormationDocumentRow>? docs = null) =>
         Create(
             id ?? Guid.NewGuid(),
             title ?? WordMother.Random(),
@@ -44,5 +47,6 @@ public static class FormationDetailMother
             archived ?? false,
             iconUrl,
             modules ?? [],
-            team ?? []);
+            team ?? [],
+            docs ?? []);
 }

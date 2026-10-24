@@ -14,6 +14,7 @@ public static class StorageOptionsMother
             FormationIconsPath = WordMother.Random(),
             FormationIconsRoute = formationIconsRoute ?? $"/formations/{WordMother.Random()}",
             ChatbotDocumentsPath = WordMother.Random(),
+            FormationDocumentsPath = WordMother.Random(),
             ConversationAttachmentsPath = WordMother.Random()
         };
 }

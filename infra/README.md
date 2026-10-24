@@ -31,6 +31,7 @@ en *Configuración → Variables de entorno*:
 | `ConnectionStrings__Nakama` | el output `connection_string_template` con la contraseña real |
 | `Jwt__SigningKey` | una clave aleatoria larga |
 | `Storage__ChatbotDocumentsPath` | `D:\home\site\external_resources\chatbot-documents` |
+| `Storage__FormationDocumentsPath` | `D:\home\site\external_resources\formation-documents` |
 | `Storage__ConversationAttachmentsPath` | `D:\home\site\external_resources\conversation-attachments` |
 | `Storage__ChatbotIconsPath` | `D:\home\site\external_resources\chatbot-icons` |
 | `Storage__FormationIconsPath` | `D:\home\site\external_resources\formation-icons` |

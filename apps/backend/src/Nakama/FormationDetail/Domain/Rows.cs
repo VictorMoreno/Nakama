@@ -25,6 +25,15 @@ public sealed class FormationModuleRow
     public int? PassingScore { get; set; }
 }
 
+public sealed class FormationDocumentRow
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Origin { get; set; } = string.Empty;
+    public DateTime Updated { get; set; }
+    public string FileName { get; set; } = string.Empty;
+}
+
 public sealed class FormationMemberRow
 {
     public Guid UserId { get; set; }

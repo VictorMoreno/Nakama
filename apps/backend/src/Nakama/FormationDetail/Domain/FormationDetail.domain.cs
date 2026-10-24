@@ -11,7 +11,8 @@ public partial class FormationDetail
         bool archived,
         string? iconUrl,
         List<FormationModuleRow> modules,
-        List<FormationMemberRow> team)
+        List<FormationMemberRow> team,
+        List<FormationDocumentRow> docs)
     {
         this.Id = key;
         this.Title = title;
@@ -22,6 +23,7 @@ public partial class FormationDetail
         this.IconUrl = iconUrl;
         this.Modules = modules;
         this.Team = team;
+        this.Docs = docs;
     }
 
     public static FormationDetail Create(
@@ -38,6 +40,7 @@ public partial class FormationDetail
             status,
             false,
             null,
+            [],
             [],
             []);
 
@@ -110,6 +113,18 @@ public partial class FormationDetail
             module.Gated = gated;
         }
     }
+
+    public void AddDocument(Guid id, string name, string origin, DateTime updated, string fileName) =>
+        this.Docs.Add(new FormationDocumentRow
+        {
+            Id = id,
+            Name = name,
+            Origin = origin,
+            Updated = updated,
+            FileName = fileName,
+        });
+
+    public void RemoveDocument(Guid documentId) => this.Docs.RemoveAll(document => document.Id == documentId);
 
     public void AddMember(Guid userId)
     {

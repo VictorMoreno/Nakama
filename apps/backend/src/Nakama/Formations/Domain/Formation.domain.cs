@@ -13,7 +13,8 @@ public partial class Formation
         FormationStatus status,
         string? iconUrl,
         bool archived,
-        IReadOnlyList<FormationModule> modules)
+        IReadOnlyList<FormationModule> modules,
+        IReadOnlyList<FormationDocument> documents)
     {
         this.Id = key;
         this.Title = title;
@@ -23,6 +24,7 @@ public partial class Formation
         this.IconUrl = iconUrl;
         this.Archived = archived;
         this._modules.AddRange(modules);
+        this._documents.AddRange(documents);
     }
 
     public static Formation Create(
@@ -32,7 +34,7 @@ public partial class Formation
         string description,
         FormationStatus status)
     {
-        Formation formation = new(key, title, audience, description, status, null, false, []);
+        Formation formation = new(key, title, audience, description, status, null, false, [], []);
         formation.Record(new FormationCreated(key, title, audience, description, status));
         return formation;
     }
@@ -120,6 +122,23 @@ public partial class Formation
         this._modules[index] = toggled;
 
         this.Record(new FormationModuleGatingToggled(this.Id, moduleId, toggled.Gated));
+    }
+
+    public void AddDocument(FormationDocument document)
+    {
+        this._documents.Add(document);
+        this.Record(new FormationDocumentAdded(this.Id, document));
+    }
+
+    public void RemoveDocument(Guid documentId)
+    {
+        if (this._documents.All(existing => existing.Id != documentId))
+        {
+            throw FormationErrors.DocumentNotFound(documentId);
+        }
+
+        this._documents.RemoveAll(existing => existing.Id == documentId);
+        this.Record(new FormationDocumentRemoved(this.Id, documentId));
     }
 
     public void Archive()

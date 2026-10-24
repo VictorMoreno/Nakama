@@ -13,8 +13,9 @@ public static class FormationMother
         FormationStatus status,
         string? iconUrl,
         bool archived,
-        IReadOnlyList<FormationModule> modules) =>
-        new(id, title, audience, description, status, iconUrl, archived, modules);
+        IReadOnlyList<FormationModule> modules,
+        IReadOnlyList<FormationDocument> documents) =>
+        new(id, title, audience, description, status, iconUrl, archived, modules, documents);
 
     public static Formation Random() => With();
 
@@ -30,7 +31,8 @@ public static class FormationMother
         FormationStatus? status = null,
         string? iconUrl = null,
         bool? archived = null,
-        IReadOnlyList<FormationModule>? modules = null) =>
+        IReadOnlyList<FormationModule>? modules = null,
+        IReadOnlyList<FormationDocument>? documents = null) =>
         Create(
             id ?? RandomId(),
             title ?? WordMother.Random(),
@@ -39,5 +41,6 @@ public static class FormationMother
             status ?? FormationStatus.Active,
             iconUrl,
             archived ?? false,
-            modules ?? []);
+            modules ?? [],
+            documents ?? []);
 }

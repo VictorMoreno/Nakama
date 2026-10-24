@@ -22,6 +22,8 @@ interface FormationsContextValue {
   addModule: (key: string, module: Omit<FormationModule, "id">) => Promise<void>;
   updateModule: (key: string, module: FormationModule) => Promise<void>;
   removeModule: (key: string, moduleId: string) => Promise<void>;
+  addDocument: (key: string, file: File, name: string, origin: string) => Promise<void>;
+  removeDocument: (key: string, documentId: string) => Promise<void>;
   toggleModuleGating: (key: string, moduleId: string) => Promise<void>;
   completeModule: (key: string, moduleId: string, score?: number) => Promise<void>;
   addTeamMember: (key: string, userId: string) => Promise<void>;
@@ -102,6 +104,16 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     await refresh();
   }
 
+  async function addDocument(key: string, file: File, name: string, origin: string) {
+    await repo.AddDocument(key, file, name, origin);
+    await refresh();
+  }
+
+  async function removeDocument(key: string, documentId: string) {
+    await repo.RemoveDocument(key, documentId);
+    await refresh();
+  }
+
   async function toggleModuleGating(key: string, moduleId: string) {
     await repo.ToggleModuleGating(key, moduleId);
     await refresh();
@@ -134,6 +146,8 @@ export function FormationsProvider({ children }: { children: ReactNode }) {
     addModule,
     updateModule,
     removeModule,
+    addDocument,
+    removeDocument,
     toggleModuleGating,
     completeModule,
     addTeamMember,

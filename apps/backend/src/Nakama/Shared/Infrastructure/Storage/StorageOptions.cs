@@ -14,5 +14,7 @@ public sealed class StorageOptions
 
     public required string ChatbotDocumentsPath { get; init; }
 
+    public required string FormationDocumentsPath { get; init; }
+
     public required string ConversationAttachmentsPath { get; init; }
 }

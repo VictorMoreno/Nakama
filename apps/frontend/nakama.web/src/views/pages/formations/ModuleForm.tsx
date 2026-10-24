@@ -3,7 +3,8 @@ import Select from "../../components/shared/Select";
 import { CheckIcon, CloseIcon, PlusIcon, RecycleBinIcon } from "../../components/shared/icons";
 import { useFormations } from "../../shared/contexts/FormationsContext";
 import { useToast } from "../../shared/contexts/ToastContext";
-import type { FormationModule, ModuleType } from "../../../modules/formations/domain/Formation";
+import type { FormationModule, ModuleType, QuizQuestion } from "../../../modules/formations/domain/Formation";
+import GenerateQuizDialog from "./GenerateQuizDialog";
 import styles from "./FormationManagePage.module.scss";
 
 interface QuizDraftQuestion {
@@ -60,6 +61,8 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
   const [urlError, setUrlError] = useState(false);
   const [quizError, setQuizError] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [generated, setGenerated] = useState(false);
   const { addModule, updateModule } = useFormations();
   const { showToast } = useToast();
 
@@ -70,16 +73,15 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
   // Quick-start convenience: if the quiz is still the untouched single blank question, replace
   // it instead of appending alongside it - avoids leaving a stray empty question that would
   // fail validation for no reason the admin asked for.
-  function addGeneratedQuestion() {
-    const generated: QuizDraftQuestion = {
-      question: `Pregunta generada automáticamente sobre "${title.trim() || "este módulo"}" a partir de los documentos indexados`,
-      options: ["Opción A", "Opción B (correcta)", "Opción C", "Opción D"],
-      correctIndex: 1
-    };
+  function addGeneratedQuestions(questions: QuizQuestion[]) {
+    const drafts: QuizDraftQuestion[] = questions.map((q) => ({ question: q.question, options: [...q.options], correctIndex: q.correctIndex }));
     setQuiz((prev) => {
       const isSingleBlank = prev.length === 1 && !prev[0].question.trim() && prev[0].options.every((o) => !o.trim());
-      return isSingleBlank ? [generated] : [...prev, generated];
+      return isSingleBlank ? drafts : [...prev, ...drafts];
     });
+    setQuizError(false);
+    setGenerated(true);
+    setGenerateOpen(false);
   }
 
   function removeQuestion(qi: number) {
@@ -139,7 +141,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
             type,
             summary: trimmedSummary,
             gated,
-            aiDraft: false,
+            aiDraft: generated,
             passingScore: Number(passingScore) || 70,
             quiz: quiz.map((q) => ({
               question: q.question.trim(),
@@ -333,8 +335,8 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
               <button className="btn-ghost" type="button" onClick={addQuestion}>
                 <PlusIcon /> Añadir pregunta
               </button>
-              <button className="btn-ghost" type="button" onClick={addGeneratedQuestion}>
-                <PlusIcon /> Generar pregunta de ejemplo
+              <button className="btn-ghost" type="button" onClick={() => setGenerateOpen(true)}>
+                <PlusIcon /> Generar preguntas con IA
               </button>
             </div>
             {quizError && (
@@ -342,6 +344,13 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
                 Cada pregunta necesita su texto, al menos 2 opciones completas y una marcada como correcta.
               </p>
             )}
+            <GenerateQuizDialog
+              open={generateOpen}
+              formationKey={formationKey}
+              topic={[title.trim(), summary.trim()].filter(Boolean).join(". ")}
+              onClose={() => setGenerateOpen(false)}
+              onGenerated={addGeneratedQuestions}
+            />
           </div>
         </>
       )}

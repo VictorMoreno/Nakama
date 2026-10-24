@@ -34,7 +34,8 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("status").AsInt32().NotNullable()
             .WithColumn("archived").AsBoolean().NotNullable()
             .WithColumn("iconurl").AsString(255).Nullable()
-            .WithColumn("modules_json").AsCustom("text").NotNullable();
+            .WithColumn("modules_json").AsCustom("text").NotNullable()
+            .WithColumn("documents_json").AsCustom("text").NotNullable();
 
         this.Create.Table("formation_enrollments")
             .WithColumn("id").AsGuid().PrimaryKey()
@@ -116,7 +117,8 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("archived").AsBoolean().NotNullable()
             .WithColumn("iconurl").AsString(255).Nullable()
             .WithColumn("modules_json").AsCustom("text").NotNullable()
-            .WithColumn("team_json").AsCustom("text").NotNullable();
+            .WithColumn("team_json").AsCustom("text").NotNullable()
+            .WithColumn("docs_json").AsCustom("text").NotNullable();
 
         this.Create.Table("read_analytics")
             .WithColumn("id").AsString(255).PrimaryKey()

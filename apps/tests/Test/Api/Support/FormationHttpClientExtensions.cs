@@ -18,6 +18,47 @@ public static class FormationHttpClientExtensions
             new { Title = title, Audience = audience, Description = description, Status = (int)status },
             accessToken);
 
+    public static Task<HttpResponseMessage> AddFormationDocument(
+        this HttpClient client,
+        Guid formationId,
+        Guid documentId,
+        AttachedFile file,
+        string accessToken)
+    {
+        MultipartFormDataContent content = new()
+        {
+            { new StringContent(file.FileName), "name" },
+            { new StringContent("Subida manual"), "origin" },
+            { new ByteArrayContent(file.Content), "file", file.FileName }
+        };
+
+        return client.SendContent(HttpMethod.Put, $"/api/formations/{formationId}/documents/{documentId}", accessToken, content);
+    }
+
+    public static Task<HttpResponseMessage> RemoveFormationDocument(this HttpClient client, Guid formationId, Guid documentId, string accessToken) =>
+        client.Send(HttpMethod.Delete, $"/api/formations/{formationId}/documents/{documentId}", accessToken);
+
+    public static Task<HttpResponseMessage> DownloadFormationDocument(this HttpClient client, Guid formationId, Guid documentId, string? accessToken) =>
+        client.Get($"/api/formations/{formationId}/documents/{documentId}/file", accessToken);
+
+    public static Task<HttpResponseMessage> GetFormation(this HttpClient client, Guid id, string accessToken) =>
+        client.Get($"/api/formations/{id}", accessToken);
+
+    public static Task<HttpResponseMessage> GenerateQuizQuestions(
+        this HttpClient client,
+        Guid formationId,
+        IReadOnlyList<Guid> documentIds,
+        int provider,
+        string model,
+        int questionCount,
+        string topic,
+        string accessToken) =>
+        client.SendJson(
+            HttpMethod.Post,
+            $"/api/formations/{formationId}/quiz-questions",
+            new { DocumentIds = documentIds, Provider = provider, Model = model, QuestionCount = questionCount, Topic = topic },
+            accessToken);
+
     public static Task<HttpResponseMessage> ArchiveFormation(this HttpClient client, Guid id, string accessToken) =>
         client.Send(HttpMethod.Post, $"/api/formations/{id}/archive", accessToken);
 

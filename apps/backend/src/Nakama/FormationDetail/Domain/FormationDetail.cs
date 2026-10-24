@@ -16,4 +16,5 @@ public partial class FormationDetail : IEntity
 
     public List<FormationModuleRow> Modules { get; protected set; } = [];
     public List<FormationMemberRow> Team { get; protected set; } = [];
+    public List<FormationDocumentRow> Docs { get; protected set; } = [];
 }

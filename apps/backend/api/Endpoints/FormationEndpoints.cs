@@ -1,4 +1,5 @@
 using Api.Configuration;
+using Microsoft.AspNetCore.Mvc;
 using Nakama.FormationDetail.Application;
 using Nakama.FormationDetail.Application.Finder;
 using Nakama.FormationEnrollment.Application;
@@ -6,13 +7,18 @@ using Nakama.FormationEnrollment.Application.Finder;
 using Nakama.FormationEnrollment.Application.ModuleCompleter;
 using Nakama.FormationEnrollment.Application.TeamMemberAdder;
 using Nakama.FormationEnrollment.Application.TeamMemberRemover;
+using Nakama.Formations.Application;
 using Nakama.Formations.Application.Archiver;
 using Nakama.Formations.Application.Creator;
+using Nakama.Formations.Application.DocumentAdder;
+using Nakama.Formations.Application.DocumentFileFinder;
+using Nakama.Formations.Application.DocumentRemover;
 using Nakama.Formations.Application.IconUpdater;
 using Nakama.Formations.Application.ModuleAdder;
 using Nakama.Formations.Application.ModuleGatingToggler;
 using Nakama.Formations.Application.ModuleRemover;
 using Nakama.Formations.Application.ModuleUpdater;
+using Nakama.Formations.Application.QuizGenerator;
 using Nakama.Formations.Application.StatusUpdater;
 using Nakama.FormationsList.Application;
 using Nakama.FormationsList.Application.PageSearcher;
@@ -59,6 +65,37 @@ public sealed class FormationEndpoints : IEndpoint
             .WithSummary("Removes a formation's icon image.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPut("/{id:guid}/documents/{documentId:guid}", AddFormationDocument)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a formation, to generate exam questions from it.")
+            .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapDelete("/{id:guid}/documents/{documentId:guid}", RemoveFormationDocument)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Removes a document from a formation and deletes its file.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet("/{id:guid}/documents/{documentId:guid}/file", DownloadFormationDocument)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Downloads the original file of a formation document.")
+            .WithDescription("Admin only. Documents are internal material, so they are not served as public static files.")
+            .Produces<Stream>(StatusCodes.Status200OK, "application/octet-stream")
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/{id:guid}/quiz-questions", GenerateQuizQuestions)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Generates a draft of exam questions from documents of the formation, using the given provider and model.")
+            .WithDescription(
+                "Nothing is saved: the draft is returned for the administrator to review. At most 4 questions can be requested, " +
+                "the formation needs documents and the selected ones must belong to it. If the model does not return valid questions the request fails with 422.")
+            .Produces<GeneratedQuizResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         group.MapPut("/{id:guid}/modules/{moduleId:guid}", AddFormationModule)
             .RequireAuthorization(AuthPolicies.Admin)
@@ -131,6 +168,57 @@ public sealed class FormationEndpoints : IEndpoint
             .Produces<FormationEnrollmentResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
     }
+
+    private static async Task<IResult> AddFormationDocument(
+        Guid id,
+        Guid documentId,
+        IFormFile file,
+        [FromForm] string name,
+        [FromForm] string origin,
+        ICommandBus commandBus,
+        CancellationToken ct)
+    {
+        await using Stream stream = file.OpenReadStream();
+        await commandBus.Send(new FormationDocumentAdder.Command(id, documentId, name, origin, file.FileName, stream, file.Length), ct);
+        return Results.Created();
+    }
+
+    private static async Task<IResult> RemoveFormationDocument(
+        Guid id,
+        Guid documentId,
+        ICommandBus commandBus,
+        CancellationToken ct)
+    {
+        await commandBus.Send(new FormationDocumentRemover.Command(id, documentId), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> DownloadFormationDocument(
+        Guid id,
+        Guid documentId,
+        IQueryBus queryBus,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        FormationDocumentFileResponse file = await queryBus.Ask(new FormationDocumentFileFinder.Query(id, documentId), ct);
+        httpContext.Response.Headers.XContentTypeOptions = "nosniff";
+        return Results.File(file.Content, file.ContentType, file.FileName);
+    }
+
+    private static async Task<IResult> GenerateQuizQuestions(
+        Guid id,
+        GenerateQuizQuestionsRequest body,
+        IQueryBus queryBus,
+        CancellationToken ct) =>
+        Results.Ok(await queryBus.Ask(
+            new FormationQuizGenerator.Query(
+                id,
+                body.DocumentIds,
+                body.Provider,
+                body.Model,
+                body.QuestionCount,
+                body.Topic),
+            ct));
 
     private static async Task<IResult> CreateFormation(
         Guid id,
@@ -293,6 +381,13 @@ public sealed class FormationEndpoints : IEndpoint
         string Audience,
         string Description,
         int Status);
+
+    private sealed record GenerateQuizQuestionsRequest(
+        IReadOnlyList<Guid> DocumentIds,
+        int Provider,
+        string Model,
+        int QuestionCount,
+        string Topic);
 
     private sealed record UpdateFormationStatusRequest(int Status);
 

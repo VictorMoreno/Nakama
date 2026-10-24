@@ -3,6 +3,8 @@ export type ModuleType = "video" | "documento" | "ejercicio" | "examen";
 /** Estado configurado por el admin del currículo — determina el LED de la card y el status-tag de la ficha */
 export type FormationLifecycleStatus = "activo" | "inactivo" | "borrador";
 
+export const MAX_GENERATED_QUESTIONS = 4;
+
 export interface QuizQuestion {
   question: string;
   options: string[];
@@ -21,7 +23,7 @@ export interface FormationModule {
   summary: string;
   /** Si está activo, el siguiente módulo queda bloqueado hasta completar este (configurable por el admin) */
   gated: boolean;
-  /** Contenido generado como borrador por IA a partir de los documentos indexados del chatbot de referencia, pendiente de revisión */
+  /** Preguntas generadas por IA a partir de documentos de un chatbot, pendientes de revisión: se marca al guardar tras generarlas y se limpia al editar y guardar el módulo */
   aiDraft: boolean;
   /** Enlace al recurso — vídeo, documento o ejercicio, según el tipo */
   resourceUrl?: string;
@@ -39,15 +41,22 @@ export interface LearnerProgress {
   examScores: Record<string, number>;
 }
 
+export interface FormationDocument {
+  id: string;
+  name: string;
+  origin: string;
+  updated: string;
+}
+
 export interface FormationMember {
   userId: string;
   progress: number;
 }
 
 /**
- * Un currículo de formación (RF23) — entidad independiente del chatbot. Puede referenciar
- * opcionalmente un chatbot (solo como fuente de contexto para el borrador de IA y para
- * mostrar de dónde sale el contenido), pero no depende de él para nada más.
+ * Un currículo de formación (RF23) — entidad independiente del chatbot. Al redactar un examen
+ * se pueden usar los documentos de un chatbot para generar un borrador de preguntas con IA,
+ * pero la formación no guarda ninguna referencia a él.
  */
 export interface Formation {
   id: string;
@@ -58,6 +67,7 @@ export interface Formation {
   /** Configurado por el admin del currículo, independiente del progreso de aprendizaje */
   status: FormationLifecycleStatus;
   modules: FormationModule[];
+  docs: FormationDocument[];
   team: FormationMember[];
   archived?: boolean;
   /** Imagen subida por un admin (al crear o desde la ficha del currículo), mostrada en la card del listado en vez del icono por defecto */

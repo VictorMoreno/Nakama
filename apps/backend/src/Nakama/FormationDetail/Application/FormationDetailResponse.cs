@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Nakama.FormationDetail.Domain;
 
 namespace Nakama.FormationDetail.Application;
@@ -13,7 +14,8 @@ public sealed record FormationDetailResponse(
     bool Archived,
     string? IconUrl,
     List<FormationModuleRow> Modules,
-    List<FormationMemberRow> Team)
+    List<FormationMemberRow> Team,
+    List<FormationDocumentResponse> Docs)
 {
     public static FormationDetailResponse From(FormationDetail entity, string iconsRoute) => new(
         entity.Id,
@@ -24,5 +26,21 @@ public sealed record FormationDetailResponse(
         entity.Archived,
         entity.IconUrl is null ? null : $"{iconsRoute}/{entity.IconUrl}",
         entity.Modules,
-        entity.Team);
+        entity.Team,
+        entity.Docs.Select(FormationDocumentResponse.From).ToList());
+}
+
+public sealed record FormationDocumentResponse(
+    Guid Id,
+    string Name,
+    string Origin,
+    DateTime Updated,
+    [property: JsonIgnore] string FileName)
+{
+    public static FormationDocumentResponse From(FormationDocumentRow row) => new(
+        row.Id,
+        row.Name,
+        row.Origin,
+        row.Updated,
+        row.FileName);
 }

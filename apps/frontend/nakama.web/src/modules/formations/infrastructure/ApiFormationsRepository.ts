@@ -4,19 +4,24 @@ import type {
   CompleteFormationModuleRequest,
   CreateFormationRequest,
   FormationDetailResponse,
+  FormationDocumentResponse,
   FormationMemberRow,
   FormationModuleRow,
   FormationSummaryResponse,
+  GenerateQuizQuestionsRequest,
   GeneratedNakamaClient,
   QuizQuestionRow,
   UpdateFormationModuleRequest,
   UpdateFormationStatusRequest
 } from "../../../shared/infrastructure/GeneratedNakamaClient";
+import type { DocumentFile } from "../../../shared/domain/DocumentFile";
 import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlToFileParameter";
+import { formatDate } from "../../../shared/infrastructure/formatDate";
 import type { Page, PageQuery } from "../../../shared/domain/Page";
 import type {
   Formation,
   FormationLifecycleStatus,
+  FormationDocument,
   FormationListItem,
   FormationMap,
   FormationMember,
@@ -24,7 +29,8 @@ import type {
   ModuleType,
   QuizQuestion
 } from "../domain/Formation";
-import type { CreateFormationInput, IFormationsRepository } from "../domain/IFormationsRepository";
+import type { LlmProviderKind } from "../../llmProviders/domain/LlmProviderConfig";
+import type { CreateFormationInput, GenerateQuizInput, IFormationsRepository } from "../domain/IFormationsRepository";
 
 // Write side: backend enums serialize as their ordinal (0-indexed, declaration order).
 // Read side: response DTOs already stringify enums via `.ToString()` (PascalCase member
@@ -55,6 +61,10 @@ function toFormationModule(row: FormationModuleRow): FormationModule {
   };
 }
 
+function toFormationDocument(row: FormationDocumentResponse): FormationDocument {
+  return { id: row.id ?? "", name: row.name ?? "", origin: row.origin ?? "", updated: formatDate(row.updated) };
+}
+
 function toFormationMember(row: FormationMemberRow): FormationMember {
   return { userId: row.userId ?? "", progress: row.progress ?? 0 };
 }
@@ -71,6 +81,7 @@ function toFormation(summary: FormationSummaryResponse, detail: FormationDetailR
     description: summary.description ?? "",
     status: STATUS_FROM_API[summary.status ?? "Draft"] ?? "borrador",
     modules: (detail.modules ?? []).map(toFormationModule),
+    docs: (detail.docs ?? []).map(toFormationDocument),
     team: (detail.team ?? []).map(toFormationMember),
     archived: summary.archived ?? false,
     iconUrl: summary.iconUrl,
@@ -92,6 +103,8 @@ function toFormationListItem(summary: FormationSummaryResponse): FormationListIt
     progressPct: summary.progressPct ?? 0
   };
 }
+
+const PROVIDER_TO_ORDINAL: Record<LlmProviderKind, number> = { anthropic: 0, openai: 1, local: 2 };
 
 export class ApiFormationsRepository implements IFormationsRepository {
   private readonly client: GeneratedNakamaClient;
@@ -155,6 +168,7 @@ export class ApiFormationsRepository implements IFormationsRepository {
       status,
       iconUrl,
       modules: [],
+      docs: [],
       team: [],
       isEnrolled: false,
       progressPct: 0,
@@ -176,6 +190,35 @@ export class ApiFormationsRepository implements IFormationsRepository {
     } else {
       await this.client.iconDELETE2(id);
     }
+  }
+
+  async AddDocument(id: string, file: File, name: string, origin: string): Promise<void> {
+    await this.client.documentsPUT2(id, crypto.randomUUID(), { data: file, fileName: file.name }, name, origin);
+  }
+
+  async RemoveDocument(id: string, documentId: string): Promise<void> {
+    await this.client.documentsDELETE2(id, documentId);
+  }
+
+  async DownloadDocument(id: string, documentId: string): Promise<DocumentFile> {
+    const response = await this.client.file2(id, documentId);
+    return { blob: response.data, fileName: response.fileName ?? "documento" };
+  }
+
+  async GenerateQuizQuestions(input: GenerateQuizInput): Promise<QuizQuestion[]> {
+    const response = await this.client.quizQuestions(input.formationId, {
+      documentIds: input.documentIds,
+      provider: PROVIDER_TO_ORDINAL[input.provider],
+      model: input.model,
+      questionCount: input.questionCount,
+      topic: input.topic
+    } satisfies GenerateQuizQuestionsRequest);
+
+    return (response.questions ?? []).map((row) => ({
+      question: row.question ?? "",
+      options: row.options ?? [],
+      correctIndex: row.correctIndex ?? 0
+    }));
   }
 
   async AddModule(id: string, module: Omit<FormationModule, "id">): Promise<void> {

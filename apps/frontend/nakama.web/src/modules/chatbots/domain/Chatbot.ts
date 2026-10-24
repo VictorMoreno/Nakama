@@ -16,11 +16,6 @@ export interface ChatbotDocument {
   updated: string;
 }
 
-export interface DocumentFile {
-  blob: Blob;
-  fileName: string;
-}
-
 export type TeamRole = "Propietario" | "Propietaria" | "Editor" | "Lector";
 
 export interface TeamMember {

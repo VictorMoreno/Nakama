@@ -15,12 +15,12 @@ import type {
   ChatbotListItem,
   ChatbotMap,
   ChatbotSettings,
-  DocumentFile,
   LlmProvider,
   TeamMember,
   TeamRole
 } from "../domain/Chatbot";
 import type { CreateChatbotInput, IChatbotsRepository } from "../domain/IChatbotsRepository";
+import type { DocumentFile } from "../../../shared/domain/DocumentFile";
 import type { Page, PageQuery } from "../../../shared/domain/Page";
 import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlToFileParameter";
 import { formatDate } from "../../../shared/infrastructure/formatDate";

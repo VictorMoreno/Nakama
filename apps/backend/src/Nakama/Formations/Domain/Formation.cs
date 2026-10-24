@@ -22,4 +22,7 @@ public partial class Formation : AggregateRoot<FormationId>
 
     private readonly List<FormationModule> _modules = [];
     public IReadOnlyCollection<FormationModule> Modules => this._modules;
+
+    private readonly List<FormationDocument> _documents = [];
+    public IReadOnlyCollection<FormationDocument> Documents => this._documents;
 }

@@ -61,8 +61,6 @@ public sealed class ChatbotEndpoints : IEndpoint
         group.MapPut("/{id:guid}/documents/{documentId:guid}", AddChatbotDocument)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a chatbot's knowledge base.")
-            .WithDescription(
-                "Newly uploaded documents are always reported as Pending - this codebase has no real indexing pipeline yet.")
             .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)

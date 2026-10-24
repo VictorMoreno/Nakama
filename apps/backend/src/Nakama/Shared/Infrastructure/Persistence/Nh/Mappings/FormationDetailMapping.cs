@@ -29,5 +29,6 @@ public sealed class FormationDetailMapping : ClassMapping<FormationDetail>
 
         this.Property(x => x.Modules, m => { m.Column(c => { c.Name("modules_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<FormationModuleRow>>>(); });
         this.Property(x => x.Team, m => { m.Column(c => { c.Name("team_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<FormationMemberRow>>>(); });
+        this.Property(x => x.Docs, m => { m.Column(c => { c.Name("docs_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<FormationDocumentRow>>>(); });
     }
 }

@@ -17,8 +17,9 @@ import { FORMATION_STATUS_META } from "../../../lib/status";
 import type { FormationLifecycleStatus, FormationModule, ModuleType } from "../../../modules/formations/domain/Formation";
 import AddTeamMemberDialog from "./AddTeamMemberDialog";
 import styles from "./FormationManagePage.module.scss";
+import FormationDocumentsSection from "./FormationDocumentsSection";
 import ModuleForm from "./ModuleForm";
-import { useFormationManage } from "./hooks/useFormationManage";
+import { FORMATION_TABS, useFormationManage } from "./hooks/useFormationManage";
 
 const TYPE_LABEL: Record<ModuleType, string> = {
   video: "Vídeo",
@@ -130,6 +131,8 @@ export default function FormationManagePage() {
   const {
     c,
     navigate,
+    activeTab,
+    setActiveTab,
     expandedModuleId,
     toggleModuleExpanded,
     creatingNew,
@@ -181,75 +184,98 @@ export default function FormationManagePage() {
           <StatusSelect value={c.status} onChange={handleUpdateStatus} options={STATUS_OPTIONS} ariaLabel="Estado de la formación" />
         </div>
 
-        <div className="glass">
-          <div className="panel-head">
-            <h2>Icono de la formación</h2>
-          </div>
-          <div style={{ padding: "0 20px 20px" }}>
-            <IconUploadField value={c.iconUrl} onChange={handleUpdateIcon} placeholderLabel={c.title} />
-          </div>
+        <div className="tabs" role="tablist" aria-label="Secciones de la formación">
+          {FORMATION_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              className="tab-btn"
+              aria-selected={activeTab === tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <div className="glass">
-          <div className="panel-head">
-            <h2>Módulos de la formación</h2>
-          </div>
-
-          <div className={styles.moduleList}>
-            {c.modules.map((m, idx) => (
-              <ManageModuleRow
-                key={m.id}
-                formationKey={c.id}
-                module={m}
-                index={idx}
-                expanded={expandedModuleId === m.id}
-                onToggleExpand={() => toggleModuleExpanded(m.id)}
-                onDelete={() => setDeleteId(m.id)}
-              />
-            ))}
-            {creatingNew ? (
-              <div className={`${styles.moduleItem} ${styles.expanded}`}>
-                <ModuleForm formationKey={c.id} onClose={() => setCreatingNew(false)} />
+        {activeTab === "general" && (
+          <div className="tab-panel active">
+            <div className="glass" style={{ marginBottom: 14 }}>
+              <div className="panel-head">
+                <h2>Icono de la formación</h2>
               </div>
-            ) : (
-              <button className={styles.moduleItemAddTrigger} type="button" onClick={startCreating}>
-                <PlusIcon width={16} height={16} /> Nuevo módulo
-              </button>
-            )}
-          </div>
-        </div>
+              <div style={{ padding: "0 20px 20px" }}>
+                <IconUploadField value={c.iconUrl} onChange={handleUpdateIcon} placeholderLabel={c.title} />
+              </div>
+            </div>
+            <div className="glass">
+              <div className="panel-head">
+                <h2>Módulos de la formación</h2>
+              </div>
 
-        <div className="glass" style={{ marginTop: 14 }}>
-          <div className="panel-head">
-            <h2>Progreso del equipo</h2>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span className="count">Media: {avgTeamProgress}%</span>
-              <button className="btn-primary" type="button" onClick={() => setAddTeamMemberOpen(true)}>
-                <PlusIcon /> Asignar persona
-              </button>
+              <div className={styles.moduleList}>
+                {c.modules.map((m, idx) => (
+                  <ManageModuleRow
+                    key={m.id}
+                    formationKey={c.id}
+                    module={m}
+                    index={idx}
+                    expanded={expandedModuleId === m.id}
+                    onToggleExpand={() => toggleModuleExpanded(m.id)}
+                    onDelete={() => setDeleteId(m.id)}
+                  />
+                ))}
+                {creatingNew ? (
+                  <div className={`${styles.moduleItem} ${styles.expanded}`}>
+                    <ModuleForm formationKey={c.id} onClose={() => setCreatingNew(false)} />
+                  </div>
+                ) : (
+                  <button className={styles.moduleItemAddTrigger} type="button" onClick={startCreating}>
+                    <PlusIcon width={16} height={16} /> Nuevo módulo
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          {c.team.length === 0 ? (
-            <p style={{ padding: "0 20px 20px", fontSize: "0.82rem", color: "var(--ink-faint)" }}>
-              Todavía no hay personas asignadas a esta formación.
-            </p>
-          ) : (
-            <div className={styles.progressList}>
-              {c.team.map((m, idx) => (
-                <div className={styles.progressRow} key={`${m.userId}-${idx}`}>
-                  <span className={styles.name}>{findUser(m.userId)?.name ?? "Usuario eliminado"}</span>
-                  <div className="bar-track">
-                    <div className="bar-fill" style={{ width: `${m.progress}%` }} />
-                  </div>
-                  <span className={styles.pct}>{m.progress}%</span>
-                  <button className="btn-ghost danger" type="button" onClick={() => setRemoveTeamMemberUserId(m.userId)}>
-                    <RecycleBinIcon /> Quitar
+        )}
+
+        {activeTab === "docs" && <FormationDocumentsSection formation={c} />}
+
+        {activeTab === "permisos" && (
+          <div className="tab-panel active">
+            <div className="glass">
+              <div className="panel-head">
+                <h2>Progreso del equipo</h2>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span className="count">Media: {avgTeamProgress}%</span>
+                  <button className="btn-primary" type="button" onClick={() => setAddTeamMemberOpen(true)}>
+                    <PlusIcon /> Asignar persona
                   </button>
                 </div>
-              ))}
+              </div>
+              {c.team.length === 0 ? (
+                <p style={{ padding: "0 20px 20px", fontSize: "0.82rem", color: "var(--ink-faint)" }}>
+                  Todavía no hay personas asignadas a esta formación.
+                </p>
+              ) : (
+                <div className={styles.progressList}>
+                  {c.team.map((m, idx) => (
+                    <div className={styles.progressRow} key={`${m.userId}-${idx}`}>
+                      <span className={styles.name}>{findUser(m.userId)?.name ?? "Usuario eliminado"}</span>
+                      <div className="bar-track">
+                        <div className="bar-fill" style={{ width: `${m.progress}%` }} />
+                      </div>
+                      <span className={styles.pct}>{m.progress}%</span>
+                      <button className="btn-ghost danger" type="button" onClick={() => setRemoveTeamMemberUserId(m.userId)}>
+                        <RecycleBinIcon /> Quitar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <AddTeamMemberDialog

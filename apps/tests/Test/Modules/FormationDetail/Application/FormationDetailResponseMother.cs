@@ -24,7 +24,8 @@ public static class FormationDetailResponseMother
         bool? archived = null,
         string? iconUrl = null,
         List<FormationModuleRow>? modules = null,
-        List<FormationMemberRow>? team = null) =>
+        List<FormationMemberRow>? team = null,
+        List<FormationDocumentResponse>? docs = null) =>
         new(
             id ?? Guid.NewGuid(),
             title ?? WordMother.Random(),
@@ -34,5 +35,6 @@ public static class FormationDetailResponseMother
             archived ?? false,
             iconUrl,
             modules ?? [],
-            team ?? []);
+            team ?? [],
+            docs ?? []);
 }

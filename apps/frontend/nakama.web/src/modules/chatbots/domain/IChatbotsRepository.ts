@@ -1,3 +1,4 @@
+import type { DocumentFile } from "../../../shared/domain/DocumentFile";
 import type { Page, PageQuery } from "../../../shared/domain/Page";
 import type {
   Chatbot,
@@ -5,7 +6,6 @@ import type {
   ChatbotListItem,
   ChatbotMap,
   ChatbotSettings,
-  DocumentFile,
   TeamMember
 } from "./Chatbot";
 

@@ -32,5 +32,12 @@ public sealed class FormationMapping : ClassMapping<Formation>
             m.Access(Accessor.Field);
             m.Type<JsonUserType<List<FormationModule>>>();
         });
+
+        this.Property("_documents", m =>
+        {
+            m.Column(c => { c.Name("documents_json"); c.SqlType("text"); });
+            m.Access(Accessor.Field);
+            m.Type<JsonUserType<List<FormationDocument>>>();
+        });
     }
 }

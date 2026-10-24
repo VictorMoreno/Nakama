@@ -25,6 +25,7 @@ public sealed class NakamaApiFactory(TestDatabase database, Action<IServiceColle
         builder.UseSetting("Storage:ChatbotIconsPath", Path.Combine(this._storageRoot, "chatbot-icons"));
         builder.UseSetting("Storage:FormationIconsPath", Path.Combine(this._storageRoot, "formation-icons"));
         builder.UseSetting("Storage:ChatbotDocumentsPath", Path.Combine(this._storageRoot, "chatbot-documents"));
+        builder.UseSetting("Storage:FormationDocumentsPath", Path.Combine(this._storageRoot, "formation-documents"));
         builder.UseSetting("Storage:ConversationAttachmentsPath", Path.Combine(this._storageRoot, "conversation-attachments"));
         builder.ConfigureTestServices(services =>
         {

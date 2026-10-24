@@ -1,8 +1,5 @@
-import { useId, useState, type ChangeEvent } from "react";
-import Dialog from "../../../components/shared/Dialog";
-import { CloseIcon, UploadIcon } from "../../../components/shared/icons";
+import DocumentUploadDialog from "../../../components/shared/DocumentUploadDialog";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
-import { useToast } from "../../../shared/contexts/ToastContext";
 import { documentsConfig } from "../../../../shared/infrastructure/config/DocumentsConfig";
 
 interface UploadDocumentDialogProps {
@@ -14,64 +11,18 @@ interface UploadDocumentDialogProps {
 
 export default function UploadDocumentDialog({ open, botId, botLabel, onClose }: UploadDocumentDialogProps) {
   const { addDocument } = useChatbots();
-  const { showToast } = useToast();
-  const inputId = useId();
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-
-  function handleFile(e: ChangeEvent<HTMLInputElement>) {
-    const picked = e.target.files?.[0];
-    e.target.value = "";
-    if (!picked) return;
-    const dot = picked.name.lastIndexOf(".");
-    const extension = dot >= 0 ? picked.name.slice(dot).toLowerCase() : "";
-    if (!documentsConfig.allowedExtensions.includes(extension)) {
-      showToast(`Selecciona un archivo permitido (${documentsConfig.allowedExtensions.join(", ")})`);
-      return;
-    }
-    if (picked.size > documentsConfig.maxSizeMb * 1024 * 1024) {
-      showToast(`El documento no puede superar ${documentsConfig.maxSizeMb} MB`);
-      return;
-    }
-    setFile(picked);
-  }
-
-  function handleClose() {
-    setFile(null);
-    onClose();
-  }
-
-  async function handleUpload() {
-    if (!file) return;
-    setUploading(true);
-    try {
-      await addDocument(botId, file, file.name, "Subida manual");
-      showToast("Documento añadido");
-      handleClose();
-    } catch {
-      showToast("No se pudo subir el documento");
-    } finally {
-      setUploading(false);
-    }
-  }
 
   return (
-    <Dialog open={open} onClose={handleClose} title="Subir documento">
-      <p>
-        Sube un archivo ({documentsConfig.allowedExtensions.join(", ")}), máx. {documentsConfig.maxSizeMb} MB. Se indexa en <strong>{botLabel}</strong> — solo visible para este chatbot.
-      </p>
-      <label className="dropzone" htmlFor={inputId} style={{ cursor: "pointer", display: "block" }}>
-        {file ? file.name : "Arrastra un archivo aquí, o haz clic para seleccionar"}
-      </label>
-      <input id={inputId} type="file" accept={documentsConfig.allowedExtensions.join(",")} onChange={handleFile} hidden />
-      <div className="modal-actions">
-        <button className="btn-ghost" type="button" onClick={handleClose}>
-          <CloseIcon /> Cancelar
-        </button>
-        <button className="btn-primary" type="button" onClick={handleUpload} disabled={!file || uploading}>
-          <UploadIcon /> {uploading ? "Subiendo…" : "Subir"}
-        </button>
-      </div>
-    </Dialog>
+    <DocumentUploadDialog
+      open={open}
+      description={
+        <>
+          Sube un archivo ({documentsConfig.allowedExtensions.join(", ")}), máx. {documentsConfig.maxSizeMb} MB. Se añade a la base de
+          conocimiento de <strong>{botLabel}</strong> — solo visible para este chatbot.
+        </>
+      }
+      onUpload={(file) => addDocument(botId, file, file.name, "Subida manual")}
+      onClose={onClose}
+    />
   );
 }

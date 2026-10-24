@@ -31,8 +31,8 @@ export default function FormationsListPage() {
       <div className={styles.botsList}>
         <div className={styles.botsToolbar}>
           <p className={styles.botsIntro}>
-            Formaciones independientes de los chatbots, aunque pueden referenciar uno como fuente de contexto para
-            generar contenido con IA.
+            Formaciones independientes de los chatbots, aunque al redactar un examen se pueden usar los documentos de un
+            chatbot para generar preguntas con IA.
           </p>
           {isAdmin && (
             <button className="btn-primary" type="button" onClick={() => navigate("/formacion/new")}>

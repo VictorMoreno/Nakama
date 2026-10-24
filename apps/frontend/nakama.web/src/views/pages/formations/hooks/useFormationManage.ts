@@ -4,6 +4,14 @@ import type { FormationLifecycleStatus } from "../../../../modules/formations/do
 import { useFormations } from "../../../shared/contexts/FormationsContext";
 import { useToast } from "../../../shared/contexts/ToastContext";
 
+type TabKey = "general" | "docs" | "permisos";
+
+export const FORMATION_TABS: { key: TabKey; label: string }[] = [
+  { key: "general", label: "General" },
+  { key: "docs", label: "Documentos" },
+  { key: "permisos", label: "Permisos" }
+];
+
 /** /formacion/:key/gestionar (RequireAdmin) — the admin curriculum-building view. */
 export function useFormationManage() {
   const { key } = useParams<{ key: string }>();
@@ -11,6 +19,7 @@ export function useFormationManage() {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
+  const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
   const [creatingNew, setCreatingNew] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -59,6 +68,8 @@ export function useFormationManage() {
   return {
     c,
     navigate,
+    activeTab,
+    setActiveTab,
     expandedModuleId,
     toggleModuleExpanded,
     creatingNew,

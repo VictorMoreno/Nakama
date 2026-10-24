@@ -1,0 +1,36 @@
+.empty { padding: 0 20px 20px; font-size: 0.82rem; color: var(--ink-faint); }
+
+.tableWrap { overflow-x: auto; padding: 0 20px 18px; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 480px; }
+
+.th {
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink-soft);
+}
+
+.docName { color: var(--ink); font-weight: 500; }
+
+.docLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}

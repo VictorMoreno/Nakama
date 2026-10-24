@@ -218,6 +218,33 @@ export interface IGeneratedNakamaClient {
     iconDELETE2(id: string): Promise<void>;
 
     /**
+     * Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a formation, to generate exam questions from it.
+     * @param file (optional) 
+     * @param name (optional) 
+     * @param origin (optional) 
+     * @return Created
+     */
+    documentsPUT2(id: string, documentId: string, file: FileParameter | undefined, name: string | undefined, origin: string | undefined): Promise<void>;
+
+    /**
+     * Removes a document from a formation and deletes its file.
+     * @return No Content
+     */
+    documentsDELETE2(id: string, documentId: string): Promise<void>;
+
+    /**
+     * Downloads the original file of a formation document.
+     * @return OK
+     */
+    file2(id: string, documentId: string): Promise<FileResponse>;
+
+    /**
+     * Generates a draft of exam questions from documents of the formation, using the given provider and model.
+     * @return OK
+     */
+    quizQuestions(id: string, body: GenerateQuizQuestionsRequest): Promise<GeneratedQuizResponse>;
+
+    /**
      * Adds a module to a formation, using a caller-supplied module id.
      * @return Created
      */
@@ -1856,6 +1883,240 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a formation, to generate exam questions from it.
+     * @param file (optional) 
+     * @param name (optional) 
+     * @param origin (optional) 
+     * @return Created
+     */
+    documentsPUT2(id: string, documentId: string, file: FileParameter | undefined, name: string | undefined, origin: string | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/documents/{documentId}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (documentId === undefined || documentId === null)
+            throw new globalThis.Error("The parameter 'documentId' must be defined.");
+        url_ = url_.replace("{documentId}", encodeURIComponent("" + documentId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+        if (name === null || name === undefined)
+            throw new globalThis.Error("The parameter 'name' cannot be null.");
+        else
+            content_.append("name", name.toString());
+        if (origin === null || origin === undefined)
+            throw new globalThis.Error("The parameter 'origin' cannot be null.");
+        else
+            content_.append("origin", origin.toString());
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processDocumentsPUT2(_response));
+        });
+    }
+
+    protected processDocumentsPUT2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 201) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Removes a document from a formation and deletes its file.
+     * @return No Content
+     */
+    documentsDELETE2(id: string, documentId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/documents/{documentId}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (documentId === undefined || documentId === null)
+            throw new globalThis.Error("The parameter 'documentId' must be defined.");
+        url_ = url_.replace("{documentId}", encodeURIComponent("" + documentId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processDocumentsDELETE2(_response));
+        });
+    }
+
+    protected processDocumentsDELETE2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Downloads the original file of a formation document.
+     * @return OK
+     */
+    file2(id: string, documentId: string): Promise<FileResponse> {
+        let url_ = this.baseUrl + "/api/formations/{id}/documents/{documentId}/file";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (documentId === undefined || documentId === null)
+            throw new globalThis.Error("The parameter 'documentId' must be defined.");
+        url_ = url_.replace("{documentId}", encodeURIComponent("" + documentId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processFile2(_response));
+        });
+    }
+
+    protected processFile2(response: Response): Promise<FileResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse>(null as any);
+    }
+
+    /**
+     * Generates a draft of exam questions from documents of the formation, using the given provider and model.
+     * @return OK
+     */
+    quizQuestions(id: string, body: GenerateQuizQuestionsRequest): Promise<GeneratedQuizResponse> {
+        let url_ = this.baseUrl + "/api/formations/{id}/quiz-questions";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processQuizQuestions(_response));
+        });
+    }
+
+    protected processQuizQuestions(response: Response): Promise<GeneratedQuizResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as GeneratedQuizResponse;
+            return result200;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            result422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Unprocessable Content", status, _responseText, _headers, result422);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<GeneratedQuizResponse>(null as any);
+    }
+
+    /**
      * Adds a module to a formation, using a caller-supplied module id.
      * @return Created
      */
@@ -2615,6 +2876,14 @@ export interface FormationDetailResponse {
     iconUrl?: string | undefined;
     modules?: FormationModuleRow[] | undefined;
     team?: FormationMemberRow[] | undefined;
+    docs?: FormationDocumentResponse[] | undefined;
+}
+
+export interface FormationDocumentResponse {
+    id?: string;
+    name?: string | undefined;
+    origin?: string | undefined;
+    updated?: Date;
 }
 
 export interface FormationEnrollmentResponse {
@@ -2662,6 +2931,24 @@ export interface FormationSummaryResponsePagedResponse {
     page?: number;
     pageSize?: number;
     readonly totalPages?: number;
+}
+
+export interface GenerateQuizQuestionsRequest {
+    documentIds?: string[] | undefined;
+    provider?: number;
+    model?: string | undefined;
+    questionCount?: number;
+    topic?: string | undefined;
+}
+
+export interface GeneratedQuestionResponse {
+    question?: string | undefined;
+    options?: string[] | undefined;
+    correctIndex?: number;
+}
+
+export interface GeneratedQuizResponse {
+    questions?: GeneratedQuestionResponse[] | undefined;
 }
 
 export interface HistoryExampleRow {
