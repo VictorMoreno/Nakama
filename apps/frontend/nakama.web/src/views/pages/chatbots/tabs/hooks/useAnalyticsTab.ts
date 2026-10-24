@@ -1,14 +1,22 @@
-import { useState } from "react";
-import { useToast } from "../../../../shared/contexts/ToastContext";
+import { useEffect, useState } from "react";
+import type { UnhelpfulQuestion } from "../../../../../modules/analytics/domain/Analytics";
+import type { IAnalyticsRepository } from "../../../../../modules/analytics/domain/IAnalyticsRepository";
+import { Services } from "../../../../../shared/infrastructure/injection/Services";
+import { useInjection } from "../../../../../shared/infrastructure/injection/useInjection";
 
-export function useAnalyticsTab() {
-  const { showToast } = useToast();
-  const [documented, setDocumented] = useState<Set<number>>(new Set());
+export function useAnalyticsTab(botKey: string) {
+  const repo = useInjection<IAnalyticsRepository>(Services.AnalyticsRepository.id);
+  const [unhelpfulQuestions, setUnhelpfulQuestions] = useState<UnhelpfulQuestion[] | null>(null);
 
-  function markDocumented(idx: number) {
-    setDocumented((prev) => new Set(prev).add(idx));
-    showToast("Añadida a la cola de documentación");
-  }
+  useEffect(() => {
+    let cancelled = false;
+    repo.FindUnhelpfulQuestionsOfChatbot(botKey).then((data) => {
+      if (!cancelled) setUnhelpfulQuestions(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [repo, botKey]);
 
-  return { documented, markDocumented };
+  return { unhelpfulQuestions };
 }

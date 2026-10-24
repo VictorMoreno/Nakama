@@ -18,10 +18,7 @@ public sealed record ChatbotDetailResponse(
     string Provider,
     string Model,
     List<ChatbotDocumentResponse> Docs,
-    List<TeamMemberRow> Team,
-    List<GapQuestionRow> Gaps,
-    List<GapQuestionRow> TopQuestions,
-    List<StatTileRow> Stats)
+    List<TeamMemberRow> Team)
 {
     public static ChatbotDetailResponse From(ChatbotDetail entity, string iconsRoute) => new(
         entity.Id,
@@ -36,10 +33,7 @@ public sealed record ChatbotDetailResponse(
         entity.Provider,
         entity.Model,
         entity.Docs.Select(d => ChatbotDocumentResponse.From(d)).ToList(),
-        entity.Team,
-        entity.Gaps,
-        entity.TopQuestions,
-        entity.Stats);
+        entity.Team);
 }
 
 public sealed record ChatbotDocumentResponse(

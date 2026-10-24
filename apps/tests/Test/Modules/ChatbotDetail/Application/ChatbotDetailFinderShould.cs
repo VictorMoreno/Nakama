@@ -70,9 +70,6 @@ public sealed class ChatbotDetailFinderShould : ChatbotDetailUnitTestCase
 
         response.Docs.Should().BeEmpty();
         response.Team.Should().BeEmpty();
-        response.Gaps.Should().BeEmpty();
-        response.TopQuestions.Should().BeEmpty();
-        response.Stats.Should().BeEmpty();
     }
 
     [Test]

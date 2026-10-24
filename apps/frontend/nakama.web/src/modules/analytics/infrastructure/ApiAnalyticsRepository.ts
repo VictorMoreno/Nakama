@@ -1,4 +1,4 @@
-import type { AnalyticsResponse, GeneratedNakamaClient, QuestionActivityResponse, UserActivityResponse } from "../../../shared/infrastructure/GeneratedNakamaClient";
+import type { AnalyticsResponse, GeneratedNakamaClient, QuestionActivityResponse, UnhelpfulQuestionsResponse, UserActivityResponse } from "../../../shared/infrastructure/GeneratedNakamaClient";
 import type { AnalyticsSnapshot, QuestionActivity, UnhelpfulQuestion, UserActivity } from "../domain/Analytics";
 import type { IAnalyticsRepository } from "../domain/IAnalyticsRepository";
 
@@ -30,6 +30,10 @@ function toQuestionActivity(response: QuestionActivityResponse): QuestionActivit
   };
 }
 
+function toUnhelpfulQuestions(response: UnhelpfulQuestionsResponse): UnhelpfulQuestion[] {
+  return (response.questions ?? []).map((row) => ({ botKey: row.botKey ?? "", question: row.question ?? "", count: row.count ?? 0 }));
+}
+
 export class ApiAnalyticsRepository implements IAnalyticsRepository {
   private readonly client: GeneratedNakamaClient;
 
@@ -54,6 +58,11 @@ export class ApiAnalyticsRepository implements IAnalyticsRepository {
 
   async FindUnhelpfulQuestions(): Promise<UnhelpfulQuestion[]> {
     const response = await this.client.unhelpfulQuestions();
-    return (response.questions ?? []).map((row) => ({ botKey: row.botKey ?? "", question: row.question ?? "", count: row.count ?? 0 }));
+    return toUnhelpfulQuestions(response);
+  }
+
+  async FindUnhelpfulQuestionsOfChatbot(botKey: string): Promise<UnhelpfulQuestion[]> {
+    const response = await this.client.unhelpfulQuestions2(botKey);
+    return toUnhelpfulQuestions(response);
   }
 }

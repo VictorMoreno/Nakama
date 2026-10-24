@@ -78,6 +78,30 @@ public sealed class NhAnswerFeedbackRepositoryShould : InfrastructureTestCase
     }
 
     [Test]
+    public async Task find_only_the_not_useful_answers_of_the_given_chatbot()
+    {
+        Guid bot = Guid.NewGuid();
+        AnswerFeedbackEntry mine = AnswerFeedbackEntryMother.With(botKey: bot, useful: false, ratedAt: From.AddHours(1));
+        foreach (AnswerFeedbackEntry entry in new[]
+        {
+            mine,
+            AnswerFeedbackEntryMother.With(useful: false, ratedAt: From.AddHours(2)),
+            AnswerFeedbackEntryMother.With(botKey: bot, useful: true, ratedAt: From.AddHours(3))
+        })
+        {
+            await this._repository.Save(entry, CancellationToken.None);
+        }
+
+        await this.Persist();
+
+        IReadOnlyList<AnswerFeedbackEntry> found = await this._repository.Search(
+            new UnhelpfulAnswersOfChatbotBetweenSpecification(bot, From, From.AddDays(1)),
+            CancellationToken.None);
+
+        found.Select(entry => entry.Id).Should().Equal(mine.Id);
+    }
+
+    [Test]
     public async Task find_the_not_useful_answers_inside_the_range_ordered_by_date()
     {
         AnswerFeedbackEntry second = AnswerFeedbackEntryMother.With(useful: false, ratedAt: From.AddHours(10));

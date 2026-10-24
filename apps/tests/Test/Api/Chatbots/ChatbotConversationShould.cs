@@ -94,7 +94,7 @@ public sealed class ChatbotConversationShould : ApiTestCase
     }
 
     [Test]
-    public async Task count_the_answer_in_the_analytics_and_remember_the_question_in_the_chatbot_detail()
+    public async Task count_the_answer_in_the_analytics()
     {
         string admin = await this.SignIn(isAdmin: true);
         ChatbotCreator.Command chatbot = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
@@ -108,9 +108,6 @@ public sealed class ChatbotConversationShould : ApiTestCase
             .Content.ReadFromJsonAsync<AnalyticsResponse>();
         analytics!.AnsweredThisWeek.Should().Be(1);
         analytics.UsageByBot.Should().ContainSingle(row => row.BotKey == chatbot.Id).Which.Value.Should().Be(1);
-        ChatbotDetailResponse? detail = await (await this.Client.GetChatbot(chatbot.Id, admin))
-            .Content.ReadFromJsonAsync<ChatbotDetailResponse>();
-        detail!.TopQuestions.Should().ContainSingle(row => row.Question == question).Which.Count.Should().Be(1);
     }
 
     [Test]

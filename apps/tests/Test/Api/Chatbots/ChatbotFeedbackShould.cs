@@ -94,6 +94,36 @@ public sealed class ChatbotFeedbackShould : ApiTestCase
     }
 
     [Test]
+    public async Task list_to_the_team_only_the_unhelpful_questions_of_their_own_chatbot()
+    {
+        (ChatbotCreator.Command chatbot, string admin, SignedInUser member) = await this.CreateChatbotWithMember();
+        ChatbotCreator.Command other = ChatbotCreatorCommandMother.With(provider: LlmProvider.Anthropic);
+        await this.Client.CreateChatbot(other, admin);
+        await this.Client.AddChatbotTeamMember(other.Id, member.Id, TeamRole.Editor, admin);
+        string ownQuestion = WordMother.Random();
+        string otherQuestion = WordMother.Random();
+        Guid own = await this.Ask(chatbot, member.Token, ownQuestion);
+        Guid foreign = await this.Ask(other, member.Token, otherQuestion);
+        await this.Client.RateExchange(chatbot.Id, own, 0, false, member.Token);
+        await this.Client.RateExchange(other.Id, foreign, 0, false, member.Token);
+
+        UnhelpfulQuestionsResponse? response = await (await this.Client.Get($"/api/chatbots/{chatbot.Id}/unhelpful-questions", member.Token))
+            .Content.ReadFromJsonAsync<UnhelpfulQuestionsResponse>();
+
+        response!.Questions.Should().ContainSingle().Which.Should().Be(new UnhelpfulQuestionRow(chatbot.Id, ownQuestion, 1));
+    }
+
+    [Test]
+    public async Task refuse_the_unhelpful_questions_of_a_chatbot_to_someone_outside_its_team()
+    {
+        (ChatbotCreator.Command chatbot, _, _) = await this.CreateChatbotWithMember();
+        string outsider = await this.SignIn(isAdmin: false);
+
+        (await this.Client.Get($"/api/chatbots/{chatbot.Id}/unhelpful-questions", outsider)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await this.Client.Get($"/api/chatbots/{chatbot.Id}/unhelpful-questions", null)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Test]
     public async Task stop_listing_a_question_when_its_rating_is_changed_to_useful()
     {
         (ChatbotCreator.Command chatbot, string admin, SignedInUser member) = await this.CreateChatbotWithMember();

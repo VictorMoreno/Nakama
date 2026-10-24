@@ -169,6 +169,12 @@ export interface IGeneratedNakamaClient {
     paged(page: number | undefined, pageSize: number | undefined, search: string | undefined, status: string | undefined): Promise<ChatbotSummaryResponsePagedResponse>;
 
     /**
+     * Gets the questions of one chatbot whose answer was rated as not useful this week, most repeated first.
+     * @return OK
+     */
+    unhelpfulQuestions2(id: string): Promise<UnhelpfulQuestionsResponse>;
+
+    /**
      * Gets the caller's conversation history for one chatbot.
      * @return OK
      */
@@ -1459,6 +1465,54 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     /**
+     * Gets the questions of one chatbot whose answer was rated as not useful this week, most repeated first.
+     * @return OK
+     */
+    unhelpfulQuestions2(id: string): Promise<UnhelpfulQuestionsResponse> {
+        let url_ = this.baseUrl + "/api/chatbots/{id}/unhelpful-questions";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processUnhelpfulQuestions2(_response));
+        });
+    }
+
+    protected processUnhelpfulQuestions2(response: Response): Promise<UnhelpfulQuestionsResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as UnhelpfulQuestionsResponse;
+            return result200;
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            let result403: any = null;
+            result403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Forbidden", status, _responseText, _headers, result403);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UnhelpfulQuestionsResponse>(null as any);
+    }
+
+    /**
      * Gets the caller's conversation history for one chatbot.
      * @return OK
      */
@@ -2482,9 +2536,6 @@ export interface ChatbotDetailResponse {
     model?: string | undefined;
     docs?: ChatbotDocumentResponse[] | undefined;
     team?: TeamMemberRow[] | undefined;
-    gaps?: GapQuestionRow[] | undefined;
-    topQuestions?: GapQuestionRow[] | undefined;
-    stats?: StatTileRow[] | undefined;
 }
 
 export interface ChatbotDocumentResponse {
@@ -2615,11 +2666,6 @@ export interface FormationSummaryResponsePagedResponse {
     readonly totalPages?: number;
 }
 
-export interface GapQuestionRow {
-    question?: string | undefined;
-    count?: number;
-}
-
 export interface HistoryExampleRow {
     question?: string | undefined;
     answer?: string | undefined;
@@ -2688,13 +2734,6 @@ export interface RegisterLlmProviderRequest {
     apiKey?: string | undefined;
     enabled?: boolean;
     models?: ModelInput[] | undefined;
-}
-
-export interface StatTileRow {
-    label?: string | undefined;
-    value?: string | undefined;
-    unit?: string | undefined;
-    bar?: number;
 }
 
 export interface TeamMemberRow {

@@ -12,6 +12,11 @@ public sealed class ChatbotMemberAuthorizationHandler(ICurrentUser currentUser, 
         AuthorizationHandlerContext context,
         ChatbotMemberRequirement requirement)
     {
+        if (context.User.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
         if (currentUser.IsAdmin)
         {
             context.Succeed(requirement);

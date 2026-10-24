@@ -3,9 +3,7 @@ import type {
   ChatbotDocumentResponse,
   ChatbotSummaryResponse,
   CreateChatbotRequest,
-  GapQuestionRow,
   GeneratedNakamaClient,
-  StatTileRow,
   TeamMemberRow,
   UpdateChatbotSettingsRequest,
   UpdateChatbotStatusRequest
@@ -19,9 +17,7 @@ import type {
   ChatbotSettings,
   DocStatus,
   DocumentFile,
-  GapQuestion,
   LlmProvider,
-  StatTile,
   TeamMember,
   TeamRole
 } from "../domain/Chatbot";
@@ -73,14 +69,6 @@ function toTeamMember(row: TeamMemberRow): TeamMember {
   return { userId: row.userId ?? "", role: ROLE_FROM_API[row.role ?? "Owner"] ?? "Lector" };
 }
 
-function toGapQuestion(row: GapQuestionRow): GapQuestion {
-  return { q: row.question ?? "", count: row.count ?? 0 };
-}
-
-function toStatTile(row: StatTileRow): StatTile {
-  return { label: row.label ?? "", value: row.value ?? "", unit: row.unit ?? "", bar: row.bar ?? 0 };
-}
-
 /**
  * Merges the list, detail, and chat-page endpoints into the flat `Chatbot` shape the rest
  * of the app already expects (N+1+1 fetch per FindAll - fine at this scale, revisit with a
@@ -100,10 +88,7 @@ function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailRespons
       model: detail.model ?? ""
     },
     docs: (detail.docs ?? []).map(toDocument),
-    gaps: (detail.gaps ?? []).map(toGapQuestion),
-    topQuestions: (detail.topQuestions ?? []).map(toGapQuestion),
     team: (detail.team ?? []).map(toTeamMember),
-    stats: (detail.stats ?? []).map(toStatTile),
     archived: summary.archived ?? false,
     iconUrl: summary.iconUrl
   };
@@ -190,15 +175,7 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       settings,
       iconUrl,
       docs: [],
-      gaps: [],
-      topQuestions: [],
-      team: [],
-      stats: [
-        { label: "Tiempo hasta productividad", value: "—", unit: "sin datos todavía", bar: 0 },
-        { label: "Preguntas directas a seniors / semana", value: "—", unit: "sin datos todavía", bar: 0 },
-        { label: "Respuestas útiles del bot", value: "—", unit: "sin datos todavía", bar: 0 },
-        { label: "Documentos ingestados", value: "0", unit: "objetivo >100", bar: 0 }
-      ]
+      team: []
     };
   }
 

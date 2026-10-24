@@ -21,17 +21,3 @@ public sealed class TeamMemberRow
     public Guid UserId { get; set; }
     public string Role { get; set; } = string.Empty;
 }
-
-public sealed class GapQuestionRow
-{
-    public string Question { get; set; } = string.Empty;
-    public int Count { get; set; }
-}
-
-public sealed class StatTileRow
-{
-    public string Label { get; set; } = string.Empty;
-    public string Value { get; set; } = string.Empty;
-    public string Unit { get; set; } = string.Empty;
-    public int Bar { get; set; }
-}

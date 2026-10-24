@@ -41,10 +41,7 @@ public sealed class ChatbotDetailCreatedOnChatbotCreatedShould : ChatbotDetailUn
             && !detail.Archived
             && detail.IconUrl == null
             && detail.Docs.Count == 0
-            && detail.Team.Count == 0
-            && detail.Gaps.Count == 0
-            && detail.TopQuestions.Count == 0
-            && detail.Stats.Count == 0);
+            && detail.Team.Count == 0);
         this.ShouldNotHaveUpdatedAnyChatbotDetail();
     }
 }

@@ -30,16 +30,7 @@ public static class UnhelpfulQuestionsFinder
                 new UnhelpfulAnswersBetweenSpecification(calendar.StartOfDayUtc(weekStart), calendar.StartOfDayUtc(today.AddDays(1))),
                 cancellationToken);
 
-            List<UnhelpfulQuestionRow> rows = entries
-                .GroupBy(entry => (entry.BotKey, Key: entry.Question.Trim().ToLowerInvariant()))
-                .Select(group => new UnhelpfulQuestionRow(group.Key.BotKey, group.First().Question.Trim(), group.Count()))
-                .OrderByDescending(row => row.Count)
-                .ThenBy(row => row.Question, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(row => row.BotKey)
-                .Take(options.Value.UnhelpfulQuestionsLimit)
-                .ToList();
-
-            return new UnhelpfulQuestionsResponse(rows);
+            return UnhelpfulQuestionsGrouper.Group(entries, options.Value.UnhelpfulQuestionsLimit);
         }
     }
 }

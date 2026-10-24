@@ -33,8 +33,5 @@ public sealed class ChatbotDetailMapping : ClassMapping<ChatbotDetail>
 
         this.Property(x => x.Docs, m => { m.Column(c => { c.Name("docs_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<ChatbotDocumentRow>>>(); });
         this.Property(x => x.Team, m => { m.Column(c => { c.Name("team_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<TeamMemberRow>>>(); });
-        this.Property(x => x.Gaps, m => { m.Column(c => { c.Name("gaps_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<GapQuestionRow>>>(); });
-        this.Property(x => x.TopQuestions, m => { m.Column(c => { c.Name("top_questions_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<GapQuestionRow>>>(); });
-        this.Property(x => x.Stats, m => { m.Column(c => { c.Name("stats_json"); c.SqlType("text"); }); m.Type<JsonUserType<List<StatTileRow>>>(); });
     }
 }

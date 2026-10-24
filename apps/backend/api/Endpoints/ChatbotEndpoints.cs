@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Api.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using Nakama.AnswerFeedback.Application;
+using Nakama.AnswerFeedback.Application.Searcher;
 using Nakama.ChatbotDetail.Application;
 using Nakama.ChatbotDetail.Application.Finder;
 using Nakama.Chatbots.Application.Archiver;
@@ -153,6 +155,14 @@ public sealed class ChatbotEndpoints : IEndpoint
             .Produces<ChatbotDetailResponse>()
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet("/{id:guid}/unhelpful-questions", FindUnhelpfulQuestions)
+            .RequireAuthorization(AuthPolicies.ChatbotMember)
+            .WithSummary("Gets the questions of one chatbot whose answer was rated as not useful this week, most repeated first.")
+            .WithDescription(
+                "Only members of the team (or administrators) may read it. The week starts on Monday in the configured time zone. Questions are grouped ignoring case and surrounding spaces, no person is identified, and at most Reporting:AnswerFeedback:UnhelpfulQuestionsLimit rows are returned.")
+            .Produces<UnhelpfulQuestionsResponse>()
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/{botKey:guid}/conversation-history", FindConversationHistory)
             .WithSummary("Gets the caller's conversation history for one chatbot.")
@@ -393,6 +403,9 @@ public sealed class ChatbotEndpoints : IEndpoint
             new ChatbotSummaryPageSearcher.Query(currentUser.Id, currentUser.IsAdmin, page, pageSize, search, status), ct);
         return Results.Ok(response);
     }
+
+    private static async Task<IResult> FindUnhelpfulQuestions(Guid id, IQueryBus queryBus, CancellationToken ct) =>
+        Results.Ok(await queryBus.Ask(new UnhelpfulQuestionsSearcher.Query(id), ct));
 
     private static async Task<IResult> FindChatbotDetail(Guid id, IQueryBus queryBus, CancellationToken ct)
     {

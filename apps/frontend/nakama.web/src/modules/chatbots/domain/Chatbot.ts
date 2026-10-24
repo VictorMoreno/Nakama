@@ -25,11 +25,6 @@ export interface DocumentFile {
   fileName: string;
 }
 
-export interface GapQuestion {
-  q: string;
-  count: number;
-}
-
 export type TeamRole = "Propietario" | "Propietaria" | "Editor" | "Lector";
 
 export interface TeamMember {
@@ -41,13 +36,6 @@ const OWNER_ROLES: TeamRole[] = ["Propietario", "Propietaria"];
 
 export function isOwnerRole(role: TeamRole): boolean {
   return OWNER_ROLES.includes(role);
-}
-
-export interface StatTile {
-  label: string;
-  value: string;
-  unit: string;
-  bar: number;
 }
 
 export interface ChatExample {
@@ -76,10 +64,7 @@ export interface Chatbot {
   context: string;
   settings: ChatbotSettings;
   docs: ChatbotDocument[];
-  gaps: GapQuestion[];
-  topQuestions: GapQuestion[];
   team: TeamMember[];
-  stats: StatTile[];
   archived?: boolean;
   iconUrl?: string;
 }

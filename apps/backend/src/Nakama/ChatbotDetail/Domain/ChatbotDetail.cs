@@ -20,7 +20,4 @@ public partial class ChatbotDetail : IEntity
 
     public List<ChatbotDocumentRow> Docs { get; protected set; } = [];
     public List<TeamMemberRow> Team { get; protected set; } = [];
-    public List<GapQuestionRow> Gaps { get; protected set; } = [];
-    public List<GapQuestionRow> TopQuestions { get; protected set; } = [];
-    public List<StatTileRow> Stats { get; protected set; } = [];
 }

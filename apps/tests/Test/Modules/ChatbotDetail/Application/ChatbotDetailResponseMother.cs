@@ -29,8 +29,5 @@ public static class ChatbotDetailResponseMother
             provider ?? "Anthropic",
             model ?? WordMother.Random(),
             docs ?? [],
-            [],
-            [],
-            [],
             []);
 }

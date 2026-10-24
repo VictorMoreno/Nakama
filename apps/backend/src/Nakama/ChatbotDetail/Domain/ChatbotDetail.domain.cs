@@ -15,10 +15,7 @@ public partial class ChatbotDetail
         string provider,
         string model,
         List<ChatbotDocumentRow> docs,
-        List<TeamMemberRow> team,
-        List<GapQuestionRow> gaps,
-        List<GapQuestionRow> topQuestions,
-        List<StatTileRow> stats)
+        List<TeamMemberRow> team)
     {
         this.Id = key;
         this.Label = label;
@@ -33,9 +30,6 @@ public partial class ChatbotDetail
         this.Model = model;
         this.Docs = docs;
         this.Team = team;
-        this.Gaps = gaps;
-        this.TopQuestions = topQuestions;
-        this.Stats = stats;
     }
 
     public static ChatbotDetail Create(Guid key,
@@ -58,9 +52,6 @@ public partial class ChatbotDetail
             explicaMas,
             provider,
             model,
-            [],
-            [],
-            [],
             [],
             []);
 
@@ -100,17 +91,4 @@ public partial class ChatbotDetail
     });
 
     public void RemoveTeamMember(Guid userId) => this.Team.RemoveAll(member => member.UserId == userId);
-
-    public void RecordQuestion(string question)
-    {
-        GapQuestionRow? existing = this.TopQuestions.FirstOrDefault(q => q.Question == question);
-        if (existing is not null)
-        {
-            existing.Count++;
-        }
-        else
-        {
-            this.TopQuestions.Add(new GapQuestionRow { Question = question, Count = 1 });
-        }
-    }
 }

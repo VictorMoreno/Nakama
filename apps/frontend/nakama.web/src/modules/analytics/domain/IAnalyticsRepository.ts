@@ -5,4 +5,5 @@ export interface IAnalyticsRepository {
   FindUserActivity(days: number): Promise<UserActivity>;
   FindQuestionActivity(weeks: number): Promise<QuestionActivity>;
   FindUnhelpfulQuestions(): Promise<UnhelpfulQuestion[]>;
+  FindUnhelpfulQuestionsOfChatbot(botKey: string): Promise<UnhelpfulQuestion[]>;
 }

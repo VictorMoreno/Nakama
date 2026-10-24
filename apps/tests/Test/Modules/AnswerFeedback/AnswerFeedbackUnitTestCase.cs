@@ -11,6 +11,7 @@ namespace Test.Modules.AnswerFeedback;
 public abstract class AnswerFeedbackUnitTestCase : UnitTestCase
 {
     private readonly List<UnhelpfulAnswersBetweenSpecification> _searches = [];
+    private readonly List<UnhelpfulAnswersOfChatbotBetweenSpecification> _chatbotSearches = [];
 
     protected Mock<IAnswerFeedbackRepository> FeedbackRepository { get; } = new();
 
@@ -18,11 +19,14 @@ public abstract class AnswerFeedbackUnitTestCase : UnitTestCase
 
     protected IReadOnlyList<UnhelpfulAnswersBetweenSpecification> Searches => this._searches;
 
+    protected IReadOnlyList<UnhelpfulAnswersOfChatbotBetweenSpecification> ChatbotSearches => this._chatbotSearches;
+
     [SetUp]
     public void AnswerFeedbackSetUp()
     {
         this.FeedbackRepository.Reset();
         this._searches.Clear();
+        this._chatbotSearches.Clear();
         this.FeedbackRepository
             .Setup(repository => repository.Save(It.IsAny<AnswerFeedbackEntry>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -44,7 +48,17 @@ public abstract class AnswerFeedbackUnitTestCase : UnitTestCase
                 It.IsAny<ISpecification<AnswerFeedbackEntry>>(),
                 It.IsAny<CancellationToken>()))
             .Callback<ISpecification<AnswerFeedbackEntry>, CancellationToken>((specification, _) =>
-                this._searches.Add((UnhelpfulAnswersBetweenSpecification)specification))
+            {
+                switch (specification)
+                {
+                    case UnhelpfulAnswersBetweenSpecification all:
+                        this._searches.Add(all);
+                        break;
+                    case UnhelpfulAnswersOfChatbotBetweenSpecification ofChatbot:
+                        this._chatbotSearches.Add(ofChatbot);
+                        break;
+                }
+            })
             .ReturnsAsync(entries);
 
     protected void ShouldCountAnswers(int useful, int total)

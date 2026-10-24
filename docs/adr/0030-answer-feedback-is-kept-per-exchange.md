@@ -32,8 +32,13 @@ person is stored. Two queries read it:
   rate has a single source and changing a vote moves the rate instead of counting twice.
 - `UnhelpfulQuestionsFinder`: `GET /api/analytics/unhelpful-questions` (administrators), the questions rated as not useful
   since Monday of the current week in `Reporting:TimeZone`, grouped by chatbot and question ignoring case and
-  surrounding spaces, most repeated first, capped by `Reporting:AnswerFeedback:UnhelpfulQuestionsLimit` (10).
+  surrounding spaces, most repeated first, capped by `Reporting:AnswerFeedback:UnhelpfulQuestionsLimit` (10). A second
+  use case, `UnhelpfulQuestionsSearcher` (a `Searcher`: it takes the chatbot key, never fails and an empty list is a valid
+  answer), restricted to one chatbot, answers `GET /api/chatbots/{id}/unhelpful-questions` for the team of that chatbot
+  (policy `ChatbotMember`), which is what the analytics tab of a chatbot shows. Both group and cap the rows the same way.
 
 **Consequences.** The useful/not-useful totals accumulated before this change are lost: they had no exchange to attach to.
 The list shows question text, which is what the page was always meant to show; it is aggregated and carries no author. The
-per-chatbot analytics tab still reads `ChatbotDetail.Gaps`, which stays empty until it is fed from this table or removed.
+per-chatbot analytics tab no longer reads `ChatbotDetail`: its `gaps_json`, `top_questions_json` and `stats_json` columns
+were never fed with real data (the top questions were an all-time counter by exact text, not a weekly one) and migration 6
+drops them, together with the block of most repeated questions, the stat tiles and the "Documentar" button.

@@ -1,53 +1,6 @@
-.statGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-
-  @media (width <= 920px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.statCard {
-  padding: 18px 20px;
-
-  :global(.label) {
-    font-size: 0.72rem;
-    color: var(--ink-faint);
-    margin-bottom: 8px;
-  }
-
-  :global(.value) {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-variant-numeric: tabular-nums;
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-
-  :global(.target) {
-    font-size: 0.72rem;
-    color: var(--ink-faint);
-    font-family: var(--font-body);
-  }
-}
-
-.barTrack {
-  margin-top: 10px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--border);
-  overflow: hidden;
-}
-
-.barFill {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--accent);
-}
-
 .gapsList { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px; }
+
+.emptyNote { margin: 0; font-size: 0.82rem; color: var(--ink-faint); }
 
 .gapItem {
   background: var(--bg);

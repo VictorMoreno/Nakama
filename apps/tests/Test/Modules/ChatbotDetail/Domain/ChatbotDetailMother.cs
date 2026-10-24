@@ -19,10 +19,7 @@ public static class ChatbotDetailMother
         string provider,
         string model,
         List<ChatbotDocumentRow> docs,
-        List<TeamMemberRow> team,
-        List<GapQuestionRow> gaps,
-        List<GapQuestionRow> topQuestions,
-        List<StatTileRow> stats) =>
+        List<TeamMemberRow> team) =>
         new(
             id,
             label,
@@ -36,20 +33,14 @@ public static class ChatbotDetailMother
             provider,
             model,
             docs,
-            team,
-            gaps,
-            topQuestions,
-            stats);
+            team);
 
     public static ChatbotDetailEntity Random() => With();
 
     public static ChatbotDetailEntity Populated() =>
         With(
             docs: [ChatbotDocumentRowMother.Random()],
-            team: [TeamMemberRowMother.Random()],
-            gaps: [GapQuestionRowMother.Random()],
-            topQuestions: [GapQuestionRowMother.Random()],
-            stats: [StatTileRowMother.Random()]);
+            team: [TeamMemberRowMother.Random()]);
 
     public static ChatbotDetailEntity With(
         Guid? id = null,
@@ -64,10 +55,7 @@ public static class ChatbotDetailMother
         string? provider = null,
         string? model = null,
         List<ChatbotDocumentRow>? docs = null,
-        List<TeamMemberRow>? team = null,
-        List<GapQuestionRow>? gaps = null,
-        List<GapQuestionRow>? topQuestions = null,
-        List<StatTileRow>? stats = null) =>
+        List<TeamMemberRow>? team = null) =>
         Create(
             id ?? Guid.NewGuid(),
             label ?? WordMother.Random(),
@@ -81,8 +69,5 @@ public static class ChatbotDetailMother
             provider ?? "Anthropic",
             model ?? WordMother.Random(),
             docs ?? [],
-            team ?? [],
-            gaps ?? [],
-            topQuestions ?? [],
-            stats ?? []);
+            team ?? []);
 }
