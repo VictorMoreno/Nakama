@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nakama.FormationDetail.Application;
 using Nakama.FormationEnrollment.Application;
 using Nakama.Formations.Domain;
+using Nakama.Home.Application;
 using Test.Api.Support;
 using Test.Modules.Shared;
 
@@ -139,5 +140,25 @@ public sealed class FormationExamShould : ApiTestCase
         HttpResponseMessage response = await this.Client.GetFormationEnrollments(formation, learner.Token);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Test]
+    public async Task summarise_the_progress_and_the_failed_exams_of_the_signed_in_person_in_the_home()
+    {
+        (_, SignedInUser learner, Guid formation, Guid module) = await this.CreateFormationWithExam(passingScore: 60, correctIndexes: [1, 2]);
+        await this.Client.SubmitFormationExam(formation, module, [1, 0], learner.Token);
+
+        HttpResponseMessage response = await this.Client.Get("/api/home", learner.Token);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        HomeResponse? home = await response.Content.ReadFromJsonAsync<HomeResponse>();
+        HomeFormationRow row = home!.Formations.Should().ContainSingle().Subject;
+        row.FormationId.Should().Be(formation);
+        row.Completed.Should().BeFalse();
+        row.CompletedModules.Should().Be(0);
+        HomePendingExamRow exam = home.PendingExams.Should().ContainSingle().Subject;
+        exam.ModuleId.Should().Be(module);
+        exam.LastScore.Should().Be(50);
+        exam.PassingScore.Should().Be(60);
     }
 }

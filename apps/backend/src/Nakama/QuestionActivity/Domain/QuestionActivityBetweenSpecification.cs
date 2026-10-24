@@ -5,8 +5,9 @@ namespace Nakama.QuestionActivity.Domain;
 
 public sealed class QuestionActivityBetweenSpecification : BaseSpecification<QuestionActivityEntry>
 {
-    public QuestionActivityBetweenSpecification(DateTime fromInclusive, DateTime toExclusive)
+    public QuestionActivityBetweenSpecification(DateTime fromInclusive, DateTime toExclusive, Guid? userId = null)
     {
+        this.UserId = userId;
         this.FromInclusive = fromInclusive;
         this.ToExclusive = toExclusive;
         this.ApplyOrderBy(entry => entry.OccurredAt);
@@ -16,6 +17,20 @@ public sealed class QuestionActivityBetweenSpecification : BaseSpecification<Que
 
     public DateTime ToExclusive { get; }
 
-    protected override Expression<Func<QuestionActivityEntry, bool>> CreateExpression() =>
-        entry => entry.OccurredAt >= this.FromInclusive && entry.OccurredAt < this.ToExclusive;
+    public Guid? UserId { get; }
+
+    protected override Expression<Func<QuestionActivityEntry, bool>> CreateExpression()
+    {
+        DateTime from = this.FromInclusive;
+        DateTime to = this.ToExclusive;
+        Expression<Func<QuestionActivityEntry, bool>> criteria = entry => entry.OccurredAt >= from && entry.OccurredAt < to;
+
+        if (this.UserId is not null)
+        {
+            Guid userId = this.UserId.Value;
+            criteria = criteria.And(entry => entry.UserId == userId);
+        }
+
+        return criteria;
+    }
 }

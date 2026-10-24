@@ -106,4 +106,22 @@ public sealed class QuestionActivityFinderShould : QuestionActivityUnitTestCase
         await act.Should().ThrowAsync<QuestionActivityInvalidWeeksError>();
         this.Searches.Should().BeEmpty();
     }
+
+    [Test]
+    public async Task search_only_the_questions_of_the_given_person()
+    {
+        Guid userId = Guid.NewGuid();
+
+        await this._handler.Handle(new QuestionActivityFinder.Query(1, userId), CancellationToken.None);
+
+        this.Searches.Should().ContainSingle().Which.UserId.Should().Be(userId);
+    }
+
+    [Test]
+    public async Task search_the_questions_of_everyone_when_no_person_is_given()
+    {
+        await this._handler.Handle(new QuestionActivityFinder.Query(1), CancellationToken.None);
+
+        this.Searches.Should().ContainSingle().Which.UserId.Should().BeNull();
+    }
 }

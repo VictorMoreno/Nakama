@@ -18,6 +18,11 @@ function toChatExample(row: {
   };
 }
 
+interface ConversationRow {
+  startedAt: number;
+  summary: ConversationSummary;
+}
+
 export class ApiConversationsRepository implements IConversationsRepository {
   private readonly client: GeneratedNakamaClient;
 
@@ -26,18 +31,32 @@ export class ApiConversationsRepository implements IConversationsRepository {
   }
 
   async FindAll(): Promise<ConversationSummary[]> {
+    const rows = await this.fetchRows();
+    return rows.map((row) => row.summary);
+  }
+
+  async FindLatest(): Promise<ConversationSummary | null> {
+    const rows = await this.fetchRows();
+    const latest = rows.reduce<ConversationRow | null>((best, row) => (best === null || row.startedAt > best.startedAt ? row : best), null);
+    return latest?.summary ?? null;
+  }
+
+  private async fetchRows(): Promise<ConversationRow[]> {
     const summaries = await this.client.chatbotsAll();
     const perBot = await Promise.all(
       summaries.map(async (summary) => {
         const botId = summary.id ?? "";
         const history = await this.client.conversationHistory(botId);
         return (history.entries ?? []).map(
-          (row): ConversationSummary => ({
-            id: row.id ?? "",
-            botKey: row.botKey ?? botId,
-            title: row.title ?? "",
-            dateLabel: formatDateTime(row.dateLabel),
-            exchanges: (row.exchanges ?? []).map(toChatExample)
+          (row): ConversationRow => ({
+            startedAt: row.dateLabel ? new Date(row.dateLabel).getTime() : 0,
+            summary: {
+              id: row.id ?? "",
+              botKey: row.botKey ?? botId,
+              title: row.title ?? "",
+              dateLabel: formatDateTime(row.dateLabel),
+              exchanges: (row.exchanges ?? []).map(toChatExample)
+            }
           })
         );
       })

@@ -9,12 +9,12 @@ namespace Nakama.QuestionActivity.Application.Finder;
 
 public static class QuestionActivityFinder
 {
-    public sealed record Query(int? Weeks) : IQuery<QuestionActivityResponse>;
+    public sealed record Query(int? Weeks, Guid? UserId = null) : IQuery<QuestionActivityResponse>;
 
     public sealed class Handler(Finder finder) : IQueryHandler<Query, QuestionActivityResponse>
     {
         public async Task<QuestionActivityResponse> Handle(Query query, CancellationToken ct) =>
-            await finder.Execute(query.Weeks, ct);
+            await finder.Execute(query.Weeks, query.UserId, ct);
     }
 
     public sealed class Finder(
@@ -24,7 +24,7 @@ public static class QuestionActivityFinder
     {
         private const int DaysPerWeek = 7;
 
-        public async Task<QuestionActivityResponse> Execute(int? requestedWeeks, CancellationToken cancellationToken)
+        public async Task<QuestionActivityResponse> Execute(int? requestedWeeks, Guid? userId, CancellationToken cancellationToken)
         {
             QuestionActivityOptions settings = options.Value;
             int weeks = requestedWeeks ?? settings.DefaultWeeks;
@@ -39,7 +39,7 @@ public static class QuestionActivityFinder
             DateOnly firstWeek = currentWeek.AddDays(-DaysPerWeek * (weeks - 1));
 
             IReadOnlyList<QuestionActivityEntry> entries = await repository.Search(
-                new QuestionActivityBetweenSpecification(calendar.StartOfDayUtc(firstWeek), calendar.StartOfDayUtc(today.AddDays(1))),
+                new QuestionActivityBetweenSpecification(calendar.StartOfDayUtc(firstWeek), calendar.StartOfDayUtc(today.AddDays(1)), userId),
                 cancellationToken);
             Dictionary<DateOnly, int> perWeek = entries
                 .GroupBy(entry => calendar.WeekStart(calendar.LocalDay(entry.OccurredAt)))

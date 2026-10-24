@@ -46,6 +46,15 @@ public abstract class FormationEnrollmentUnitTestCase : UnitTestCase
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(enrollments);
 
+    protected void ShouldFindEnrollmentsOfUser(Guid userId, params Nakama.FormationEnrollment.Domain.FormationEnrollment[] enrollments) =>
+        this.EnrollmentsRepository
+            .Setup(repository => repository.Search(
+                It.Is<ISpecification<Nakama.FormationEnrollment.Domain.FormationEnrollment>>(specification =>
+                    specification is FormationEnrollmentByUserSpecification
+                    && ((FormationEnrollmentByUserSpecification)specification).UserId == userId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(enrollments);
+
     protected void ShouldNotFindEnrollment() =>
         this.EnrollmentsRepository
             .Setup(repository => repository.Search(

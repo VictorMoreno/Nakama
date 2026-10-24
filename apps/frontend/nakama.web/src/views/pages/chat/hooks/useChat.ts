@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { ChatExample, ConversationSummary } from "../../../../modules/chatbots/domain/Chatbot";
 import type { IConversationsRepository } from "../../../../modules/chatbots/domain/IConversationsRepository";
 import { chatConfig } from "../../../../shared/infrastructure/config/ChatConfig";
@@ -41,10 +41,11 @@ const MAX_COMPOSER_HEIGHT = 160;
 const MAX_TITLE_LENGTH = 60;
 
 export function useChat() {
-  const { chatbots, currentBotKey } = useChatbots();
+  const { chatbots, currentBotKey, setCurrentBotKey } = useChatbots();
   const { isAdmin, currentUser } = useUser();
   const conversationsRepo = useInjection<IConversationsRepository>(Services.ConversationsRepository.id);
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const bot = chatbots[currentBotKey];
 
@@ -55,12 +56,30 @@ export function useChat() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const pendingOpenRef = useRef<ConversationSummary | null>(null);
+  const requestedConversationId = (location.state as { conversationId?: string } | null)?.conversationId;
+  const deepLinkRef = useRef({ requestedConversationId, currentBotKey, pathname: location.pathname, navigate, setCurrentBotKey });
+
+  useEffect(() => {
+    deepLinkRef.current = { requestedConversationId, currentBotKey, pathname: location.pathname, navigate, setCurrentBotKey };
+  });
 
   useEffect(() => {
     if (!currentUser) return;
     let cancelled = false;
     conversationsRepo.FindAll().then((data) => {
-      if (!cancelled) setConversations(data);
+      if (cancelled) return;
+      setConversations(data);
+      const link = deepLinkRef.current;
+      const requested = data.find((conv) => conv.id === link.requestedConversationId);
+      if (!requested) return;
+      link.navigate(link.pathname, { replace: true, state: null });
+      if (requested.botKey === link.currentBotKey) {
+        openConversation(requested);
+      } else {
+        pendingOpenRef.current = requested;
+        link.setCurrentBotKey(requested.botKey);
+      }
     });
     return () => {
       cancelled = true;
@@ -77,6 +96,11 @@ export function useChat() {
   useEffect(() => {
     if (!bot) return;
     resetThread();
+    const pending = pendingOpenRef.current;
+    if (pending && pending.botKey === bot.id) {
+      pendingOpenRef.current = null;
+      openConversation(pending);
+    }
   }, [bot?.id]);
 
   useEffect(() => {

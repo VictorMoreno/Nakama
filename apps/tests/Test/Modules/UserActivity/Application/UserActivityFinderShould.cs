@@ -162,4 +162,22 @@ public sealed class UserActivityFinderShould : UserActivityUnitTestCase
         await act.Should().ThrowAsync<UserActivityInvalidDaysError>();
         this.Searches.Should().BeEmpty();
     }
+
+    [Test]
+    public async Task search_only_the_activity_of_the_given_person()
+    {
+        Guid userId = Guid.NewGuid();
+
+        await this._handler.Handle(new UserActivityFinder.Query(30, userId), CancellationToken.None);
+
+        this.Searches.Should().ContainSingle().Which.UserId.Should().Be(userId);
+    }
+
+    [Test]
+    public async Task search_the_activity_of_everyone_when_no_person_is_given()
+    {
+        await this._handler.Handle(new UserActivityFinder.Query(30), CancellationToken.None);
+
+        this.Searches.Should().ContainSingle().Which.UserId.Should().BeNull();
+    }
 }

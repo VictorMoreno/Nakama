@@ -9,12 +9,12 @@ namespace Nakama.UserActivity.Application.Finder;
 
 public static class UserActivityFinder
 {
-    public sealed record Query(int? Days) : IQuery<UserActivityResponse>;
+    public sealed record Query(int? Days, Guid? UserId = null) : IQuery<UserActivityResponse>;
 
     public sealed class Handler(Finder finder) : IQueryHandler<Query, UserActivityResponse>
     {
         public async Task<UserActivityResponse> Handle(Query query, CancellationToken ct) =>
-            await finder.Execute(query.Days, ct);
+            await finder.Execute(query.Days, query.UserId, ct);
     }
 
     public sealed class Finder(
@@ -26,7 +26,7 @@ public static class UserActivityFinder
 
         private const int MonthDays = 30;
 
-        public async Task<UserActivityResponse> Execute(int? requestedDays, CancellationToken cancellationToken)
+        public async Task<UserActivityResponse> Execute(int? requestedDays, Guid? userId, CancellationToken cancellationToken)
         {
             UserActivityOptions settings = options.Value;
             int days = requestedDays ?? settings.DefaultDays;
@@ -40,7 +40,7 @@ public static class UserActivityFinder
             DateOnly firstDay = today.AddDays(-(Math.Max(days, MonthDays) - 1));
 
             IReadOnlyList<UserActivityEntry> entries = await repository.Search(
-                new UserActivityBetweenSpecification(calendar.StartOfDayUtc(firstDay), calendar.StartOfDayUtc(today.AddDays(1))),
+                new UserActivityBetweenSpecification(calendar.StartOfDayUtc(firstDay), calendar.StartOfDayUtc(today.AddDays(1)), userId),
                 cancellationToken);
             List<LocalEntry> local = entries
                 .Select(entry => new LocalEntry(calendar.LocalDay(entry.OccurredAt), entry.UserId, entry.Type))

@@ -18,4 +18,15 @@ public sealed class QuestionActivityBetweenSpecificationShould
         specification.IsSatisfiedBy(QuestionActivityEntryMother.With(occurredAt: From.AddDays(1))).Should().BeFalse();
         specification.IsSatisfiedBy(QuestionActivityEntryMother.With(occurredAt: From.AddTicks(-1))).Should().BeFalse();
     }
+
+    [Test]
+    public void match_only_the_questions_of_the_given_person_when_one_is_set()
+    {
+        Guid userId = Guid.NewGuid();
+        QuestionActivityBetweenSpecification specification = new(From, From.AddDays(1), userId);
+
+        specification.IsSatisfiedBy(QuestionActivityEntryMother.With(userId: userId, occurredAt: From)).Should().BeTrue();
+        specification.IsSatisfiedBy(QuestionActivityEntryMother.With(userId: Guid.NewGuid(), occurredAt: From)).Should().BeFalse();
+        specification.IsSatisfiedBy(QuestionActivityEntryMother.With(userId: userId, occurredAt: From.AddDays(1))).Should().BeFalse();
+    }
 }

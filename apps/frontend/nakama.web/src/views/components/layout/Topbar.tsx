@@ -21,6 +21,8 @@ export default function Topbar() {
   const { pathname } = useLocation();
   const { title, subtitle } = headingFor(pathname);
 
+  if (pathname === "/inicio") return null;
+
   return (
     <div className={styles.topbar}>
       <div className={styles.viewTitle}>

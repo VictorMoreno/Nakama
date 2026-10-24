@@ -6,6 +6,7 @@ export const Services = {
   ConversationsRepository: { id: "ConversationsRepository" },
   FormationsRepository: { id: "FormationsRepository" },
   FormationEnrollmentRepository: { id: "FormationEnrollmentRepository" },
+  HomeRepository: { id: "HomeRepository" },
   LlmProvidersRepository: { id: "LlmProvidersRepository" },
   UsersRepository: { id: "UsersRepository" }
 } as const;

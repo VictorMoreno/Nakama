@@ -3,6 +3,8 @@ import type { ConversationSummary } from "./Chatbot";
 export interface IConversationsRepository {
   FindAll(): Promise<ConversationSummary[]>;
 
+  FindLatest(): Promise<ConversationSummary | null>;
+
   Ask(
     conversationId: string,
     botKey: string,

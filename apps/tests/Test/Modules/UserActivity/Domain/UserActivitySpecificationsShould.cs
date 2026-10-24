@@ -29,4 +29,15 @@ public sealed class UserActivitySpecificationsShould
         specification.IsSatisfiedBy(UserActivityEntryMother.With(userId, occurredAt: From.AddTicks(-1))).Should().BeFalse();
         specification.IsSatisfiedBy(UserActivityEntryMother.With(Guid.NewGuid(), occurredAt: From.AddDays(1))).Should().BeFalse();
     }
+
+    [Test]
+    public void match_only_the_activity_of_the_given_person_in_the_range_when_one_is_set()
+    {
+        Guid userId = Guid.NewGuid();
+        UserActivityBetweenSpecification specification = new(From, From.AddDays(1), userId);
+
+        specification.IsSatisfiedBy(UserActivityEntryMother.With(userId, occurredAt: From)).Should().BeTrue();
+        specification.IsSatisfiedBy(UserActivityEntryMother.With(Guid.NewGuid(), occurredAt: From)).Should().BeFalse();
+        specification.IsSatisfiedBy(UserActivityEntryMother.With(userId, occurredAt: From.AddDays(1))).Should().BeFalse();
+    }
 }

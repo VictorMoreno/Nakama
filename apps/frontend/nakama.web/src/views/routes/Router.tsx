@@ -12,12 +12,24 @@ import CreateFormationPage from "../pages/formations/CreateFormationPage";
 import FormationExecutePage from "../pages/formations/FormationExecutePage";
 import FormationManagePage from "../pages/formations/FormationManagePage";
 import FormationsListPage from "../pages/formations/FormationsListPage";
+import HomePage from "../pages/home/HomePage";
 import LlmProvidersPage from "../pages/llmProviders/LlmProvidersPage";
 
 /** Bounces non-admins back to Chat — gates the admin-only sections (Chatbots, Analítica). */
 function RequireAdmin({ children }: { children: ReactNode }) {
   const { isAdmin } = useUser();
   return isAdmin ? <>{children}</> : <Navigate to="/chat" replace />;
+}
+
+/** The learner's landing page is Inicio; admins keep landing on Chat. */
+function LandingRedirect() {
+  const { isAdmin } = useUser();
+  return <Navigate to={isAdmin ? "/chat" : "/inicio"} replace />;
+}
+
+function RequireLearner({ children }: { children: ReactNode }) {
+  const { isAdmin } = useUser();
+  return isAdmin ? <Navigate to="/chat" replace /> : <>{children}</>;
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -29,13 +41,13 @@ function RequireAuth({ children }: { children: ReactNode }) {
 function RedirectIfAuthenticated({ children }: { children: ReactNode }) {
   const { currentUser, isRestoring } = useUser();
   if (isRestoring) return null;
-  return currentUser ? <Navigate to="/chat" replace /> : <>{children}</>;
+  return currentUser ? <LandingRedirect /> : <>{children}</>;
 }
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/chat" replace />} />
+      <Route path="/" element={<LandingRedirect />} />
       <Route
         path="login"
         element={
@@ -51,6 +63,14 @@ export default function Router() {
           </RequireAuth>
         }
       >
+        <Route
+          path="inicio"
+          element={
+            <RequireLearner>
+              <HomePage />
+            </RequireLearner>
+          }
+        />
         <Route path="chat" element={<ChatPage />} />
         <Route
           path="chatbots"
@@ -110,7 +130,7 @@ export default function Router() {
             </RequireAdmin>
           }
         />
-        <Route path="*" element={<Navigate to="/chat" replace />} />
+        <Route path="*" element={<LandingRedirect />} />
       </Route>
     </Routes>
   );

@@ -1,3 +1,4 @@
+import { ApiHomeRepository } from "../../../modules/home/infrastructure/ApiHomeRepository";
 import { ApiAnalyticsRepository } from "../../../modules/analytics/infrastructure/ApiAnalyticsRepository";
 import { ApiAuthRepository } from "../../../modules/auth/infrastructure/ApiAuthRepository";
 import { ApiChatbotsRepository } from "../../../modules/chatbots/infrastructure/ApiChatbotsRepository";
@@ -25,6 +26,7 @@ const registry = new Map<string, unknown>([
   [Services.ConversationsRepository.id, new ApiConversationsRepository(client)],
   [Services.FormationsRepository.id, new ApiFormationsRepository(client)],
   [Services.FormationEnrollmentRepository.id, new ApiFormationEnrollmentRepository(client)],
+  [Services.HomeRepository.id, new ApiHomeRepository(client)],
   [Services.LlmProvidersRepository.id, new ApiLlmProvidersRepository(client)],
   [Services.UsersRepository.id, new ApiUsersRepository(client)]
 ]);
