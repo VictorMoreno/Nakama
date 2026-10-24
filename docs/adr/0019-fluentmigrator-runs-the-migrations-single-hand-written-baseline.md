@@ -19,8 +19,11 @@ infrastructure and E2E tests, which run on the migrated schema, are what notice 
 every schema change is edited straight into this file instead of adding migrations, so it always describes the whole
 schema as one `CREATE` with no history to replay. The cost is that an existing local database has to be recreated
 (`docker compose down -v && docker compose up -d`) after such an edit: its `VersionInfo` already records version 1 as
-applied, so FluentMigrator would not run the file again. From the first production deployment on,
-`InitialSchemaMigration` is frozen and every change is a new numbered migration.
+applied, so FluentMigrator would not run the file again. The numbered migrations that were added while a development
+environment already existed in Azure (indexes of `read_user_activity`, `read_question_activity`, `read_answer_feedback` and
+the columns dropped from `read_analytics` and `read_chatbot_detail`) were folded back into the baseline, and that
+environment's database was recreated. From the first production deployment on, `InitialSchemaMigration` is frozen and
+every change is a new numbered migration.
 
 **Column naming.** Every column name is lowercase (`label`, not `Label`) even though the mapping says
 `Property(x => x.Label)`. FluentMigrator's Postgres runner quotes every identifier it emits, preserving case (`"Label"`),

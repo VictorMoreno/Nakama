@@ -25,7 +25,7 @@ public sealed class ChatbotDetailUpdatedOnChatbotDocumentAddedShould : ChatbotDe
     public async Task add_the_document_row_to_the_detail()
     {
         ChatbotDetailEntity detail = ChatbotDetailMother.Random();
-        ChatbotDocument document = ChatbotDocumentMother.With(status: DocStatus.Ok);
+        ChatbotDocument document = ChatbotDocumentMother.Random();
         ChatbotDocumentAdded @event = ChatbotDocumentAddedMother.With(ChatbotId.From(detail.Id), document);
         this.ShouldFindChatbotDetail(detail);
 
@@ -35,8 +35,6 @@ public sealed class ChatbotDetailUpdatedOnChatbotDocumentAddedShould : ChatbotDe
         row.Id.Should().Be(document.Id);
         row.Name.Should().Be(document.Name);
         row.Origin.Should().Be(document.Origin);
-        row.Status.Should().Be(document.Status.ToString());
-        row.StatusLabel.Should().Be(document.StatusLabel);
         row.Updated.Should().Be(document.Updated);
         row.FileName.Should().Be(document.FileName);
         this.ShouldHaveUpdatedChatbotDetail(detail);

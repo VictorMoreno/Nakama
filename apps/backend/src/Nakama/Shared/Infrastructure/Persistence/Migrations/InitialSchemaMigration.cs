@@ -95,10 +95,7 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("provider").AsString(255).NotNullable()
             .WithColumn("model").AsString(255).NotNullable()
             .WithColumn("docs_json").AsCustom("text").NotNullable()
-            .WithColumn("team_json").AsCustom("text").NotNullable()
-            .WithColumn("gaps_json").AsCustom("text").NotNullable()
-            .WithColumn("top_questions_json").AsCustom("text").NotNullable()
-            .WithColumn("stats_json").AsCustom("text").NotNullable();
+            .WithColumn("team_json").AsCustom("text").NotNullable();
 
         this.Create.Table("read_formations_list")
             .WithColumn("id").AsGuid().PrimaryKey()
@@ -123,11 +120,7 @@ public sealed class InitialSchemaMigration : Migration
 
         this.Create.Table("read_analytics")
             .WithColumn("id").AsString(255).PrimaryKey()
-            .WithColumn("activebotscount").AsInt32().NotNullable()
-            .WithColumn("answeredthisweek").AsInt32().NotNullable()
-            .WithColumn("usage_by_bot_json").AsCustom("text").NotNullable()
-            .WithColumn("usefulfeedbackcount").AsInt32().NotNullable()
-            .WithColumn("totalfeedbackcount").AsInt32().NotNullable();
+            .WithColumn("activebotscount").AsInt32().NotNullable();
 
         this.Create.Table("users")
             .WithColumn("id").AsGuid().PrimaryKey()
@@ -158,6 +151,36 @@ public sealed class InitialSchemaMigration : Migration
             .WithColumn("userid").AsGuid().NotNullable()
             .WithColumn("type").AsString(255).NotNullable()
             .WithColumn("occurredat").AsDateTime().NotNullable();
+
+        this.Create.Index("ix_read_user_activity_occurredat")
+            .OnTable("read_user_activity")
+            .OnColumn("occurredat").Ascending();
+
+        this.Create.Index("ix_read_user_activity_userid_occurredat")
+            .OnTable("read_user_activity")
+            .OnColumn("userid").Ascending()
+            .OnColumn("occurredat").Ascending();
+
+        this.Create.Table("read_question_activity")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("botkey").AsGuid().NotNullable()
+            .WithColumn("userid").AsGuid().NotNullable()
+            .WithColumn("occurredat").AsDateTime().NotNullable();
+
+        this.Create.Index("ix_read_question_activity_occurredat")
+            .OnTable("read_question_activity")
+            .OnColumn("occurredat").Ascending();
+
+        this.Create.Table("read_answer_feedback")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("botkey").AsGuid().NotNullable()
+            .WithColumn("question").AsCustom("text").NotNullable()
+            .WithColumn("useful").AsBoolean().NotNullable()
+            .WithColumn("ratedat").AsDateTime().NotNullable();
+
+        this.Create.Index("ix_read_answer_feedback_ratedat")
+            .OnTable("read_answer_feedback")
+            .OnColumn("ratedat").Ascending();
 
         this.Create.Table("read_conversation_audit")
             .WithColumn("id").AsGuid().PrimaryKey()

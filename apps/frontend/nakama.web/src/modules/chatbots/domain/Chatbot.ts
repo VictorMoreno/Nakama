@@ -9,14 +9,10 @@ export interface ChatbotSettings {
   model: string;
 }
 
-export type DocStatus = "ok" | "pending";
-
 export interface ChatbotDocument {
   id: string;
   name: string;
   origin: string;
-  status: DocStatus;
-  statusLabel: string;
   updated: string;
 }
 

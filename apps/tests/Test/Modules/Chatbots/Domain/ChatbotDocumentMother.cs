@@ -11,16 +11,12 @@ public static class ChatbotDocumentMother
         Guid? id = null,
         string? name = null,
         string? origin = null,
-        DocStatus? status = null,
-        string? statusLabel = null,
         DateTime? updated = null,
         string? fileName = null) =>
         new(
             id ?? Guid.NewGuid(),
             name ?? WordMother.Random(),
             origin ?? WordMother.Random(),
-            status ?? DocStatus.Ok,
-            statusLabel ?? WordMother.Random(),
             updated ?? DateTime.UtcNow,
             fileName ?? $"{Guid.NewGuid():N}.pdf");
 }

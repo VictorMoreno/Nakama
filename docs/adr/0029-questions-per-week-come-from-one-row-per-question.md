@@ -8,7 +8,7 @@ back it: it is a counter that only grows (it is never reset, so it is really a t
 context, `QuestionActivity`, records **one row per question** — `read_question_activity (id, botkey, userid, occurredat)`
 — fed by a handler on `ConversationExchangeAppended`, the same append-only pattern as `read_user_activity` (ADR-23, ADR-28).
 Append-only rows need no read-modify-write, so two questions answered at the same time cannot lose an update, and the
-data stays queryable by day, week or chatbot without a schema change. A numbered migration (3) creates the table and an
+data stays queryable by day, week or chatbot without a schema change. The baseline creates the table and an
 index on `occurredat`.
 
 The event had no time, so `ConversationExchangeAppended` now carries `OccurredAt` and `Conversation.AppendExchange` takes
@@ -34,7 +34,7 @@ as the active users already come from `UserActivity` (ADR-28), so the card and t
 "Preguntas resueltas por chatbot" (`usageByBot` of the same response) is read from this table too: the questions of the
 current calendar month in `Reporting:TimeZone`, grouped by `botkey`, from the most to the least asked, with ties broken by
 chatbot so the order is stable. Only chatbots with a question that month appear; the chart already has an empty state. The
-JSON contract (`botKey`, `value`) is unchanged, so the generated client is too. Migration 4 drops the old
+JSON contract (`botKey`, `value`) is unchanged, so the generated client is too. The baseline no longer has the old
 `answeredthisweek` and `usage_by_bot_json` columns of `read_analytics` and the aggregate no longer reacts to
 `ConversationExchangeAppended`: `Analytics` keeps only the chatbot count and the feedback counters. The totals accumulated
 before the table existed are lost, as with the weekly series. A deleted or archived chatbot keeps its rows, so its key

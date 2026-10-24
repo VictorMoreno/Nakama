@@ -40,8 +40,6 @@ public sealed record ChatbotDocumentResponse(
     Guid Id,
     string Name,
     string Origin,
-    string Status,
-    string StatusLabel,
     DateTime Updated,
     [property: JsonIgnore] string FileName)
 {
@@ -49,8 +47,6 @@ public sealed record ChatbotDocumentResponse(
         row.Id,
         row.Name,
         row.Origin,
-        row.Status,
-        row.StatusLabel,
         row.Updated,
         row.FileName);
 }

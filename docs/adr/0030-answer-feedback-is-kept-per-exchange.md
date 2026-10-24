@@ -28,7 +28,7 @@ again updates the row instead of adding one, and the question is copied so the r
 person is stored. Two queries read it:
 
 - `AnswerFeedbackSummaryFinder`: useful and total ratings, which now feed `usefulFeedbackCount` and `totalFeedbackCount` of
-  `GET /api/analytics`. The two counters of the `Analytics` aggregate are gone (migration 5 drops the columns), so the useful
+  `GET /api/analytics`. The two counters of the `Analytics` aggregate are gone (the baseline no longer has the columns), so the useful
   rate has a single source and changing a vote moves the rate instead of counting twice.
 - `UnhelpfulQuestionsFinder`: `GET /api/analytics/unhelpful-questions` (administrators), the questions rated as not useful
   since Monday of the current week in `Reporting:TimeZone`, grouped by chatbot and question ignoring case and
@@ -40,5 +40,5 @@ person is stored. Two queries read it:
 **Consequences.** The useful/not-useful totals accumulated before this change are lost: they had no exchange to attach to.
 The list shows question text, which is what the page was always meant to show; it is aggregated and carries no author. The
 per-chatbot analytics tab no longer reads `ChatbotDetail`: its `gaps_json`, `top_questions_json` and `stats_json` columns
-were never fed with real data (the top questions were an all-time counter by exact text, not a weekly one) and migration 6
-drops them, together with the block of most repeated questions, the stat tiles and the "Documentar" button.
+were never fed with real data (the top questions were an all-time counter by exact text, not a weekly one) and the baseline
+no longer has them, together with the block of most repeated questions, the stat tiles and the "Documentar" button.

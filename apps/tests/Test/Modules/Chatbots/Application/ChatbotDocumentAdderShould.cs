@@ -23,7 +23,7 @@ public sealed class ChatbotDocumentAdderShould : ChatbotsUnitTestCase
     }
 
     [Test]
-    public async Task store_the_file_and_add_a_pending_document_to_the_chatbot()
+    public async Task store_the_file_and_add_the_document_to_the_chatbot()
     {
         DateTime now = DateTime.UtcNow;
         string fileName = $"{Guid.NewGuid():N}.pdf";
@@ -39,8 +39,6 @@ public sealed class ChatbotDocumentAdderShould : ChatbotsUnitTestCase
             command.DocumentId,
             command.Name,
             command.Origin,
-            DocStatus.Pending,
-            "Pendiente",
             now,
             fileName));
         this.ShouldHaveStoredDocument(command.DocumentId, command.OriginalFileName, command.Length);

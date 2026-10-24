@@ -11,8 +11,6 @@ public static class ChatbotDocumentRowMother
         Guid? id = null,
         string? name = null,
         string? origin = null,
-        string? status = null,
-        string? statusLabel = null,
         DateTime? updated = null,
         string? fileName = null) =>
         new()
@@ -20,8 +18,6 @@ public static class ChatbotDocumentRowMother
             Id = id ?? Guid.NewGuid(),
             Name = name ?? WordMother.Random(),
             Origin = origin ?? WordMother.Random(),
-            Status = status ?? "Ok",
-            StatusLabel = statusLabel ?? WordMother.Random(),
             Updated = updated ?? DateTime.UtcNow,
             FileName = fileName ?? $"{Guid.NewGuid():N}.pdf"
         };

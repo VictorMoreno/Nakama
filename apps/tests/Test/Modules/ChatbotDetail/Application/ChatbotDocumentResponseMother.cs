@@ -12,8 +12,6 @@ public static class ChatbotDocumentResponseMother
             Guid.NewGuid(),
             name ?? WordMother.Random(),
             WordMother.Random(),
-            "Ok",
-            WordMother.Random(),
             DateTime.UtcNow,
             fileName ?? $"{Guid.NewGuid():N}.pdf");
 }

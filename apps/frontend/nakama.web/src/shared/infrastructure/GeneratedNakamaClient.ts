@@ -2542,8 +2542,6 @@ export interface ChatbotDocumentResponse {
     id?: string;
     name?: string | undefined;
     origin?: string | undefined;
-    status?: string | undefined;
-    statusLabel?: string | undefined;
     updated?: Date;
 }
 

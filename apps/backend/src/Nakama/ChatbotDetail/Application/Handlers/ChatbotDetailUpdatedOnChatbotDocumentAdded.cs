@@ -19,8 +19,6 @@ public sealed class ChatbotDetailUpdatedOnChatbotDocumentAdded(IChatbotDetailRep
             chatbotDocumentAdded.Document.Id,
             chatbotDocumentAdded.Document.Name,
             chatbotDocumentAdded.Document.Origin,
-            chatbotDocumentAdded.Document.Status.ToString(),
-            chatbotDocumentAdded.Document.StatusLabel,
             chatbotDocumentAdded.Document.Updated,
             chatbotDocumentAdded.Document.FileName);
         await chatbotDetailRepository.Update(chatbotDetail, cancellationToken);

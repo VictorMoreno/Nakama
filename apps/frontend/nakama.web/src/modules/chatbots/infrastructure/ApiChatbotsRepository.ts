@@ -15,7 +15,6 @@ import type {
   ChatbotListItem,
   ChatbotMap,
   ChatbotSettings,
-  DocStatus,
   DocumentFile,
   LlmProvider,
   TeamMember,
@@ -35,8 +34,6 @@ const STATUS_TO_API: Record<ChatbotLifecycleStatus, string> = { borrador: "Draft
 
 const PROVIDER_TO_ORDINAL: Record<LlmProvider, number> = { anthropic: 0, openai: 1, local: 2 };
 const PROVIDER_FROM_API: Record<string, LlmProvider> = { Anthropic: "anthropic", OpenAi: "openai", Local: "local" };
-
-const DOC_STATUS_FROM_API: Record<string, DocStatus> = { Ok: "ok", Pending: "pending" };
 
 // Backend only has a single "Owner" role (ordinal 0) - the gendered "Propietario"/
 // "Propietaria" split is presentation-only on this side (see ADR-15 in the backend's
@@ -59,8 +56,6 @@ function toDocument(row: ChatbotDocumentResponse): ChatbotDocument {
     id: row.id ?? "",
     name: row.name ?? "",
     origin: row.origin ?? "",
-    status: DOC_STATUS_FROM_API[row.status ?? "Ok"] ?? "ok",
-    statusLabel: row.statusLabel ?? "",
     updated: formatDate(row.updated)
   };
 }

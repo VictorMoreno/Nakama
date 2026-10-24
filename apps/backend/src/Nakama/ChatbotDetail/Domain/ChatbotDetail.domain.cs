@@ -69,15 +69,12 @@ public partial class ChatbotDetail
 
     public void MarkArchived() => this.Archived = true;
 
-    public void AddDocument(Guid id, string name, string origin, string status, string statusLabel, DateTime updated,
-        string fileName) =>
+    public void AddDocument(Guid id, string name, string origin, DateTime updated, string fileName) =>
         this.Docs.Add(new ChatbotDocumentRow
         {
             Id = id,
             Name = name,
             Origin = origin,
-            Status = status,
-            StatusLabel = statusLabel,
             Updated = updated,
             FileName = fileName,
         });

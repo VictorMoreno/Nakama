@@ -26,7 +26,6 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
             <thead>
               <tr>
                 <th className={styles.th}>Documento</th>
-                <th className={styles.th}>Estado</th>
                 <th className={styles.th}>Actualizado</th>
                 <th className={styles.th}></th>
               </tr>
@@ -42,9 +41,6 @@ export default function DocumentsTab({ bot }: DocumentsTabProps) {
                     ) : (
                       doc.name
                     )}
-                  </td>
-                  <td className={styles.td}>
-                    <span className={`status-tag ${doc.status}`}>{doc.statusLabel}</span>
                   </td>
                   <td className={styles.td}>{doc.updated}</td>
                   <td className={styles.td}>

@@ -46,7 +46,7 @@ export default function UploadDocumentDialog({ open, botId, botLabel, onClose }:
     setUploading(true);
     try {
       await addDocument(botId, file, file.name, "Subida manual");
-      showToast("Documento en cola de indexado");
+      showToast("Documento añadido");
       handleClose();
     } catch {
       showToast("No se pudo subir el documento");

@@ -3,11 +3,11 @@
 - **Status:** Accepted
 - **Area:** Domain model notes
 
-`ModuleType`, `FormationStatus`, `ChatbotStatus`, `LlmProvider`, `DocStatus` each mirror an equivalent frontend union
+`ModuleType`, `FormationStatus`, `ChatbotStatus`, `LlmProvider` each mirror an equivalent frontend union
 type, kept in sync by convention (not shared code) since these are two separate stacks. `TeamRole` is a partial mirror:
 the frontend distinguishes grammatical gender for the owner label ("Propietario"/"Propietaria") for display purposes
 only — the domain models a single `Owner` role, rendering the gendered label is a presentation concern. `TeamMember`'s
 `isOwnerRole`-equivalent check is the domain invariant carrier behind that same frontend concept.
 
-**Where it applies:** `Chatbots/Domain/{ChatbotStatus,DocStatus,TeamRole,TeamMember}.cs`, `LlmProviders/Domain/LlmProvider.cs`,
+**Where it applies:** `Chatbots/Domain/{ChatbotStatus,TeamRole,TeamMember}.cs`, `LlmProviders/Domain/LlmProvider.cs`,
 `Formations/Domain/{FormationStatus,ModuleType}.cs`

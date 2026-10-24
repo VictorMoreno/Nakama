@@ -26,9 +26,8 @@ must include it (and not run with `InvariantGlobalization` on).
 **Reading it.** `UserActivityFinder` loads the entries of the window (the larger of the requested days and 30, which the
 summary cards need) with `UserActivityBetweenSpecification` and aggregates them in memory. At this scale that is simpler
 than a grouped SQL query and keeps the time-zone logic in one testable place; revisit it if the table grows past what one
-month of entries makes reasonable. Migration 2 adds indexes on `occurredat` and on `(userid, occurredat)` for the range
-query and the throttle check. ADR-19 allows editing the baseline until the first deployment, but a development environment
-already exists in Azure, so this is a numbered migration.
+month of entries makes reasonable. The baseline creates indexes on `occurredat` and on `(userid, occurredat)` for the range
+query and the throttle check.
 
 **Limits.** `Reporting:UserActivity:DefaultDays` and `MaxDays` are mirrored in the frontend as `VITE_USER_ACTIVITY_DEFAULT_DAYS` and
 `VITE_USER_ACTIVITY_DAY_OPTIONS`, and the endpoint answers 422 `nakama.user_activity.invalid_days` outside `1..MaxDays`.
