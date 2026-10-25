@@ -16,6 +16,7 @@ Plataforma de onboarding interno para empresas: chatbots entrenados con la docum
 - [Funcionalidades principales](#-funcionalidades-principales)
 - [Datos y cuentas de prueba](#-datos-y-cuentas-de-prueba)
 - [Documentación](#-documentación)
+- [Presentación y vídeo](#-presentación-y-vídeo)
 - [Despliegue](#-despliegue)
 - [Contribuyendo](#-contribuyendo)
 - [Versionado](#-versionado)
@@ -179,12 +180,13 @@ docker exec -i nakama-postgres psql -U nakama -d nakama < docs/db/demo-data.sql
 
 El script se puede lanzar más de una vez (omite las filas que ya existen). Es un conjunto mínimo a propósito, para que la analítica parta de cero y refleje lo que hagas tú: dos cuentas de acceso y 3 personas más, 2 chatbots (uno activo y otro en borrador), 2 formaciones (una activa con un cuestionario y otra en borrador) y el proveedor Anthropic con el catálogo de modelos de Claude, desactivado y sin API key (pégala en «Proveedores de IA»). No trae conversaciones, valoraciones ni actividad de usuarios:
 
-| Rol | Email | Contraseña |
-|---|---|---|
-| Administrador | `admin@nakama.com` | `Admin123.` |
-| Persona de equipo | `user@nakama.com` | `Admin123.` |
-
-Las otras 3 personas son `@seed.nakama.test` con la contraseña `Seed1234.`.
+| Nombre | Rol | Email | Contraseña |
+|---|---|---|---|
+| Admin | Administrador | `admin@nakama.com` | `Admin123.` |
+| User | Persona de equipo | `user@nakama.com` | `Admin123.` |
+| Lucía Díaz | Administrador | `lucia.diaz@seed.nakama.test` | `Seed1234.` |
+| Mateo García | Administrador | `mateo.garcia@seed.nakama.test` | `Seed1234.` |
+| Sofía Blanco | Persona de equipo | `sofia.blanco@seed.nakama.test` | `Seed1234.` |
 
 ## 📚 Documentación
 
@@ -196,7 +198,7 @@ Las otras 3 personas son `@seed.nakama.test` con la contraseña `Seed1234.`.
 | [`docs/adr/`](docs/adr/README.md) | ADRs del backend: una decisión por archivo y por qué se tomó (persistencia, eventos, CQRS, autenticación, analítica…) |
 | [`docs/db/demo-data.sql`](docs/db/demo-data.sql) | Script de datos de demostración (ver [Datos y cuentas de prueba](#-datos-y-cuentas-de-prueba)) |
 | [`infra/README.md`](infra/README.md) | Infraestructura de Azure con Terraform y pasos de despliegue |
-| [`docs/presentacion/Nakama-presentacion.pptx`](docs/presentacion/Nakama-presentacion.pptx) | Presentación en PowerPoint de la aplicación; también hay un vídeo de presentación |
+| [`docs/presentacion/Nakama-presentacion.pptx`](docs/presentacion/Nakama-presentacion.pptx) | Presentación en PowerPoint de la aplicación y [vídeo de presentación](https://drive.google.com/file/d/1lICKBU0X1b6uQHaMI3AqFlNyfD0qPtS9/view?usp=sharing) (ver [Presentación y vídeo](#-presentación-y-vídeo)) |
 
 **Guías de implementación por módulo** (`agents.md`, enrutadas desde [`CLAUDE.md`](CLAUDE.md)):
 
@@ -206,6 +208,12 @@ Las otras 3 personas son `@seed.nakama.test` con la contraseña `Seed1234.`.
 - [`apps/tests/Test/agents.md`](apps/tests/Test/agents.md): convenciones de tests .NET
 
 **Documentación de la API**: con el backend en entorno `Development`, Swagger UI está en `https://localhost:7080/api/docs` y el contrato OpenAPI en `/openapi/{versión}.json`; de ese contrato se genera el cliente TypeScript del frontend con NSwag. No se expone en producción.
+
+## 🎬 Presentación y vídeo
+
+- **Vídeo de presentación** (explicación de la aplicación con captura de pantalla): <https://drive.google.com/file/d/1lICKBU0X1b6uQHaMI3AqFlNyfD0qPtS9/view?usp=sharing>
+- **Presentación en PowerPoint**: [`docs/presentacion/Nakama-presentacion.pptx`](docs/presentacion/Nakama-presentacion.pptx)
+- **Aplicación en producción**: <https://nakama-appservice.azurewebsites.net/>
 
 ## 📦 Despliegue
 

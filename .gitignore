@@ -133,3 +133,6 @@ Desktop.ini
 skills-lock.json
 /TODO.md
 publish.zip
+
+# Vídeo de presentación: se publica en Google Drive (supera el límite de 100 MB de GitHub)
+docs/presentacion/*.mp4
