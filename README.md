@@ -198,7 +198,7 @@ El script se puede lanzar más de una vez (omite las filas que ya existen). Es u
 | [`docs/adr/`](docs/adr/README.md) | ADRs del backend: una decisión por archivo y por qué se tomó (persistencia, eventos, CQRS, autenticación, analítica…) |
 | [`docs/db/demo-data.sql`](docs/db/demo-data.sql) | Script de datos de demostración (ver [Datos y cuentas de prueba](#-datos-y-cuentas-de-prueba)) |
 | [`infra/README.md`](infra/README.md) | Infraestructura de Azure con Terraform y pasos de despliegue |
-| [`docs/presentacion/Nakama-presentacion.pptx`](docs/presentacion/Nakama-presentacion.pptx) | Presentación en PowerPoint de la aplicación y [vídeo de presentación](https://drive.google.com/file/d/1lICKBU0X1b6uQHaMI3AqFlNyfD0qPtS9/view?usp=sharing) (ver [Presentación y vídeo](#-presentación-y-vídeo)) |
+| [`docs/presentacion/Nakama-presentacion.pptx`](docs/presentacion/Nakama-presentacion.pptx) | Presentación en PowerPoint de la aplicación ([también en Google Slides](https://docs.google.com/presentation/d/1HdJ-YVMIi3HlOToizfldZyGuVDETTDv6/edit?usp=sharing)) y [vídeo de presentación](https://drive.google.com/file/d/1lICKBU0X1b6uQHaMI3AqFlNyfD0qPtS9/view?usp=sharing) (ver [Presentación y vídeo](#-presentación-y-vídeo)) |
 
 **Guías de implementación por módulo** (`agents.md`, enrutadas desde [`CLAUDE.md`](CLAUDE.md)):
 
@@ -212,7 +212,8 @@ El script se puede lanzar más de una vez (omite las filas que ya existen). Es u
 ## 🎬 Presentación y vídeo
 
 - **Vídeo de presentación** (explicación de la aplicación con captura de pantalla): <https://drive.google.com/file/d/1lICKBU0X1b6uQHaMI3AqFlNyfD0qPtS9/view?usp=sharing>
-- **Presentación en PowerPoint**: [`docs/presentacion/Nakama-presentacion.pptx`](docs/presentacion/Nakama-presentacion.pptx)
+- **Presentación (Google Slides)**: <https://docs.google.com/presentation/d/1HdJ-YVMIi3HlOToizfldZyGuVDETTDv6/edit?usp=sharing>
+- **Presentación en PowerPoint (archivo en el repositorio)**: [`docs/presentacion/Nakama-presentacion.pptx`](docs/presentacion/Nakama-presentacion.pptx)
 - **Aplicación en producción**: <https://nakama-appservice.azurewebsites.net/>
 
 ## 📦 Despliegue
