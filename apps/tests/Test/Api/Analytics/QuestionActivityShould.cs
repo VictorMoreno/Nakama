@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using AwesomeAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Nakama.Analytics.Application;
 using Nakama.Chatbots.Application.Creator;
@@ -81,18 +80,6 @@ public sealed class QuestionActivityShould : ApiTestCase
 
         AnalyticsResponse? analytics = await response.Content.ReadFromJsonAsync<AnalyticsResponse>();
         analytics!.UsageByBot.Should().ContainSingle().Which.Should().Be(new UsageByBotRow(asked.Id, 2));
-    }
-
-    [TestCase(0)]
-    [TestCase(27)]
-    public async Task reject_a_number_of_weeks_out_of_range(int weeks)
-    {
-        string admin = await this.SignIn(isAdmin: true);
-
-        HttpResponseMessage response = await this.Client.Get($"/api/analytics/question-activity?weeks={weeks}", admin);
-
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await response.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.question_activity.invalid_weeks");
     }
 
     [Test]

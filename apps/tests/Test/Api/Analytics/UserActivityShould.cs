@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using AwesomeAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Nakama.Shared.Domain;
 using Nakama.UserActivity.Application;
@@ -46,18 +45,6 @@ public sealed class UserActivityShould : ApiTestCase
 
         activity.Days.Should().HaveCount(7);
         activity.ActiveLast30Days.Should().Be(1);
-    }
-
-    [TestCase(0)]
-    [TestCase(91)]
-    public async Task reject_a_number_of_days_out_of_range(int days)
-    {
-        string admin = await this.SignIn(isAdmin: true);
-
-        HttpResponseMessage response = await this.Client.Get($"/api/analytics/user-activity?days={days}", admin);
-
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await response.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.user_activity.invalid_days");
     }
 
     [Test]

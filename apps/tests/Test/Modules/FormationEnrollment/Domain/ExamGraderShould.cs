@@ -29,16 +29,9 @@ public sealed class ExamGraderShould
     [TestCase(new[] { 0, 1 })]
     [TestCase(new[] { 0, 1, 2, 0 })]
     [TestCase(new int[0])]
-    public void reject_answers_that_do_not_match_the_number_of_questions(int[] answers)
-    {
-        Action act = () => ExamGrader.Score(answers, Key);
-
-        act.Should().Throw<FormationEnrollmentInvalidExamAnswersError>();
-    }
-
     [TestCase(new[] { 0, 1, 3 })]
     [TestCase(new[] { -1, 1, 2 })]
-    public void reject_answers_that_are_not_one_of_the_options(int[] answers)
+    public void reject_answers_that_do_not_fit_the_exam(int[] answers)
     {
         Action act = () => ExamGrader.Score(answers, Key);
 

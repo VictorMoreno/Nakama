@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using AwesomeAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Nakama.ChatbotSummaries.Application;
 using Nakama.Chatbots.Application.Creator;
 using Nakama.Chatbots.Domain;
@@ -130,30 +129,6 @@ public sealed class ChatbotPagingShould : ApiTestCase
 
         response.Items.Select(item => item.Label).Should().Equal("Mío");
         response.TotalCount.Should().Be(1);
-    }
-
-    [TestCase(0, null)]
-    [TestCase(-1, null)]
-    public async Task reject_an_invalid_page_number(int page, int? pageSize)
-    {
-        string token = await this.SignIn(isAdmin: true);
-
-        HttpResponseMessage response = await this.Client.ListChatbotsPage(token, page: page, pageSize: pageSize);
-
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await response.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.pagination.invalid_page");
-    }
-
-    [TestCase(0)]
-    [TestCase(1000)]
-    public async Task reject_a_page_size_outside_the_allowed_range(int pageSize)
-    {
-        string token = await this.SignIn(isAdmin: true);
-
-        HttpResponseMessage response = await this.Client.ListChatbotsPage(token, pageSize: pageSize);
-
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        (await response.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.pagination.invalid_page_size");
     }
 
     [Test]

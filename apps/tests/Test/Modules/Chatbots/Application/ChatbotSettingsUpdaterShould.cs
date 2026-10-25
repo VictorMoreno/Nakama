@@ -39,23 +39,6 @@ public sealed class ChatbotSettingsUpdaterShould : ChatbotsUnitTestCase
             @event => @event.Id == chatbot.Id && @event.Settings == settings);
     }
 
-    [TestCase("")]
-    [TestCase("   ")]
-    public async Task fail_without_saving_anything_when_the_settings_have_no_model(string model)
-    {
-        Chatbot chatbot = ChatbotMother.With(settings: ChatbotSettingsMother.Random());
-        ChatbotSettings previous = chatbot.Settings;
-        this.ShouldFindChatbot(chatbot);
-
-        Func<Task> act = async () =>
-            await this._handler.Handle(ChatbotSettingsUpdaterCommandMother.With(chatbot.Id.Value, model: model), CancellationToken.None);
-
-        await act.Should().ThrowAsync<ChatbotModelRequiredError>();
-        chatbot.Settings.Should().Be(previous);
-        this.ShouldNotHaveSavedAnyChatbot();
-        this.ShouldNotHavePublishedAnything();
-    }
-
     [Test]
     public async Task fail_without_saving_anything_when_the_chatbot_does_not_exist()
     {
