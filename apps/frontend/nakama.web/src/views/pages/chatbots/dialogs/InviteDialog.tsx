@@ -16,7 +16,6 @@ interface InviteDialogProps {
   open: boolean;
   botKey: string;
   botLabel: string;
-  /** userIds already on this chatbot's team - excluded from the picker to avoid duplicate assignments. */
   existingUserIds: string[];
   onClose: () => void;
 }

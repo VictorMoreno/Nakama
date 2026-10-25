@@ -75,7 +75,7 @@ public sealed class ChatbotEndpoints : IEndpoint
         group.MapPut("/{id:guid}/documents/{documentId:guid}", AddChatbotDocument)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a chatbot's knowledge base.")
-            .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
+            .DisableAntiforgery()
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -111,7 +111,7 @@ public sealed class ChatbotEndpoints : IEndpoint
         group.MapPost("/{id:guid}/icon", UploadChatbotIcon)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Uploads or replaces a chatbot's icon image (PNG or JPEG, max 2 MB).")
-            .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
+            .DisableAntiforgery()
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);

@@ -33,9 +33,6 @@ function exchangesToThread(exchanges: ChatExample[], conversationId: string): Th
   ]);
 }
 
-// Caps how tall the composer textarea auto-grows before it scrolls internally instead
-// (about 6 lines at the composer's font size) — otherwise a long pasted question could
-// push the send row off-screen.
 const MAX_COMPOSER_HEIGHT = 160;
 
 const MAX_TITLE_LENGTH = 60;

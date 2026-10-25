@@ -71,7 +71,7 @@ public sealed class FormationEndpoints : IEndpoint
         group.MapPost("/{id:guid}/icon", UploadFormationIcon)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Uploads or replaces a formation's icon image (PNG or JPEG, max 2 MB).")
-            .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
+            .DisableAntiforgery()
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -85,7 +85,7 @@ public sealed class FormationEndpoints : IEndpoint
         group.MapPut("/{id:guid}/documents/{documentId:guid}", AddFormationDocument)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Uploads a document (PDF, Markdown, or plain text, max 20 MB) to a formation, to generate exam questions from it.")
-            .DisableAntiforgery() // stateless JSON/file API, no cookie-based auth to forge against
+            .DisableAntiforgery()
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);

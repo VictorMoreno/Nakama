@@ -25,10 +25,7 @@ function emptyQuestion(): QuizDraftQuestion {
 
 interface ModuleFormProps {
   formationKey: string;
-  // Present when editing an existing module, absent when creating a new one.
   module?: FormationModule;
-  // Called both after a successful save and after Cancelar - the accordion row collapses
-  // either way, same as closing the old dialog did in both cases.
   onClose: () => void;
 }
 
@@ -46,9 +43,6 @@ const SUMMARY_LABEL: Record<ModuleType, string> = {
   examen: "Qué valida este examen"
 };
 
-// This instance mounts when its accordion row expands and unmounts when it collapses - unlike
-// the old dialog (one shared instance reopened many times), state never needs to be re-synced
-// on reopen, so the initial values come straight from `module` via lazy useState.
 export default function ModuleForm({ formationKey, module, onClose }: ModuleFormProps) {
   const [title, setTitle] = useState(module?.title ?? "");
   const [type, setType] = useState<ModuleType>(module?.type ?? "documento");
@@ -77,9 +71,6 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
     setQuiz((prev) => [...prev, emptyQuestion()]);
   }
 
-  // Quick-start convenience: if the quiz is still the untouched single blank question, replace
-  // it instead of appending alongside it - avoids leaving a stray empty question that would
-  // fail validation for no reason the admin asked for.
   function addGeneratedQuestions(questions: QuizQuestion[]) {
     const drafts: QuizDraftQuestion[] = questions.map((q) => ({ question: q.question, options: [...q.options], correctIndex: q.correctIndex ?? 0 }));
     setQuiz((prev) => {
@@ -182,8 +173,6 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
       }
       onClose();
     } catch {
-      // Keep the form open with everything the admin typed - collapsing here would silently
-      // discard their edits on top of the save having already failed.
       showToast("No se pudieron guardar los cambios — revisá tu conexión e intentá de nuevo");
     } finally {
       setSaving(false);

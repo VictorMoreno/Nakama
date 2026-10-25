@@ -34,9 +34,6 @@ import type {
 import type { LlmProviderKind } from "../../llmProviders/domain/LlmProviderConfig";
 import type { CreateFormationInput, GenerateQuizInput, IFormationsRepository } from "../domain/IFormationsRepository";
 
-// Write side: backend enums serialize as their ordinal (0-indexed, declaration order).
-// Read side: response DTOs already stringify enums via `.ToString()` (PascalCase member
-// name, e.g. "Active") - the two directions are asymmetric, never share one lookup table.
 const STATUS_TO_ORDINAL: Record<FormationLifecycleStatus, number> = { borrador: 0, activo: 1, inactivo: 2 };
 const STATUS_FROM_API: Record<string, FormationLifecycleStatus> = { Draft: "borrador", Active: "activo", Inactive: "inactivo" };
 const STATUS_TO_API: Record<FormationLifecycleStatus, string> = { borrador: "Draft", activo: "Active", inactivo: "Inactive" };
@@ -71,10 +68,6 @@ function toFormationMember(row: FormationMemberRow): FormationMember {
   return { userId: row.userId ?? "", progress: row.progress ?? 0 };
 }
 
-/**
- * Merges the list + detail endpoints into the flat `Formation` shape the rest of the app
- * already expects (N+1 fetch per FindAll - same accepted tradeoff as ApiChatbotsRepository).
- */
 function toFormation(summary: FormationSummaryResponse, detail: FormationDetailResponse): Formation {
   return {
     id: summary.id ?? "",
@@ -161,7 +154,6 @@ export class ApiFormationsRepository implements IFormationsRepository {
       await this.client.iconPOST2(id, await dataUrlToFileParameter(iconUrl, "icon"));
     }
 
-    // Built locally instead of a follow-up GET, same reasoning as ApiChatbotsRepository.Create.
     return {
       id,
       title,
@@ -274,7 +266,6 @@ export class ApiFormationsRepository implements IFormationsRepository {
 
   async SubmitExam(id: string, moduleId: string, answers: number[]): Promise<ExamResult> {
     await this.client.exam(id, moduleId, { answers } satisfies SubmitFormationExamRequest);
-    // The submit endpoint answers 204 (it is a command); the server-side grade is read back from the progress.
     const progress = await this.client.enrollment(id);
     const attempts = (progress.examAttempts ?? []).filter((attempt) => attempt.moduleId === moduleId);
     const last = attempts[attempts.length - 1];

@@ -4,7 +4,7 @@ namespace Nakama.UserActivity.Domain;
 
 public partial class UserActivityEntry : IEntity
 {
-    protected UserActivityEntry() { } // NHibernate
+    protected UserActivityEntry() { }
 
     public Guid Id { get; protected set; }
     public Guid UserId { get; protected set; }

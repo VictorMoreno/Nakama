@@ -9,8 +9,6 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-// Class component: getDerivedStateFromError/componentDidCatch have no hook equivalent yet -
-// this is the one place in the app a class component is the right tool, not a stylistic choice.
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { error: null };
 

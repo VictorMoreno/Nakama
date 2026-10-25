@@ -39,11 +39,6 @@ function parsePositiveInt(raw: string | null): number | null {
   return raw !== null && Number.isInteger(value) && value > 0 ? value : null;
 }
 
-/**
- * Server-side paginated list whose page, page size, search text and status filter live in the URL
- * (`?page=&size=&q=&status=&baja=`), so reloading or going back restores the same view. The previous page
- * stays on screen while the next one loads.
- */
 export function usePagedList<T, TStatus extends string>(
   fetchPage: (query: PageQuery<TStatus>) => Promise<Page<T>>,
   statuses: readonly TStatus[],

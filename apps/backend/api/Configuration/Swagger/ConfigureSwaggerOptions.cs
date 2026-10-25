@@ -5,9 +5,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Api.Configuration.Swagger;
 
-// One SwaggerDoc per API version - SwaggerGenOptions.DocInclusionPredicate defaults to
-// matching ApiDescription.GroupName against the document name, which AddApiExplorer already
-// populates via GroupNameFormat, so no custom predicate is needed here.
 public sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
     : IConfigureNamedOptions<SwaggerGenOptions>
 {

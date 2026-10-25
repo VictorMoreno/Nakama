@@ -9,7 +9,6 @@ const FORMATS_LABEL = iconsConfig.allowedContentTypes.map((type) => type.split("
 interface IconUploadFieldProps {
   value?: string;
   onChange: (dataUrl: string | undefined) => void;
-  /** Used for the fallback initial shown while no image has been chosen — pass the name/title being typed. */
   placeholderLabel: string;
 }
 

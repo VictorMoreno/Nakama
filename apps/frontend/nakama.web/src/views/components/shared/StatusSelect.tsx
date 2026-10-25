@@ -17,11 +17,6 @@ interface StatusSelectProps<T extends string> {
   ariaLabel: string;
 }
 
-/**
- * The status-tag badge itself, made clickable — opens the same option list as `Select`
- * so admins configure the estado right where they already read it, instead of a separate
- * config row further down the page.
- */
 export default function StatusSelect<T extends string>({ value, onChange, options, ariaLabel }: StatusSelectProps<T>) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);

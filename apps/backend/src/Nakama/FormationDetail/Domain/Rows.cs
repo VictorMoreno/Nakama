@@ -1,9 +1,5 @@
 namespace Nakama.FormationDetail.Domain;
 
-// Plain rows embedded (as JSON) inside FormationDetail below - denormalized projection
-// data, not domain value objects. Live in Domain (not Infrastructure) because they're property
-// types on the read entity itself.
-
 public sealed class QuizQuestionRow
 {
     public string Question { get; set; } = string.Empty;

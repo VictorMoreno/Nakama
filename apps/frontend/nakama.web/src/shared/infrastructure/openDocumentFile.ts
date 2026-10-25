@@ -14,7 +14,6 @@ function saveAsFile(objectUrl: string, fileName: string): void {
   link.click();
 }
 
-/** Opens a downloaded document in a new tab when the browser can render it, and saves it as a file otherwise. Rethrows when the download fails. */
 export async function openDocumentFile(download: () => Promise<DocumentFile>): Promise<void> {
   const viewer: Window | null = window.open("", "_blank");
   try {

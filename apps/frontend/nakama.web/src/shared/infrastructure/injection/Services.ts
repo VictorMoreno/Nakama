@@ -1,4 +1,3 @@
-/** Injection tokens — pass `Services.X.id` to `useInjection<IX>(...)` to resolve X. */
 export const Services = {
   AnalyticsRepository: { id: "AnalyticsRepository" },
   AuthRepository: { id: "AuthRepository" },

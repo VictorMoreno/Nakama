@@ -1,5 +1,3 @@
-// Provider and hook are deliberately colocated (standard React Context convention) —
-// this only costs Fast Refresh a full remount of consumers on edit, not correctness.
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { UserSummary } from "../../../modules/users/domain/User";
@@ -11,9 +9,6 @@ import { useUser } from "./UserContext";
 interface UsersContextValue {
   users: UserSummary[];
   isLoading: boolean;
-  /** Cross-references a userId (e.g. a TeamMember row) against the loaded list - the display
-   * name/email a picker or a team row shows, since neither is persisted on the assignment
-   * itself anymore (it only stores the real UserId). */
   findUser: (userId: string) => UserSummary | undefined;
 }
 

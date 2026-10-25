@@ -63,7 +63,6 @@ public sealed class NhUserRepository(INhUnitOfWork unitOfWork) : IUserPasswordSt
 
     public Task<string?> GetEmailAsync(User user, CancellationToken cancellationToken) => Task.FromResult<string?>(user.Email);
 
-    // No email-confirmation flow yet - admin-provisioned users are implicitly confirmed.
     public Task<bool> GetEmailConfirmedAsync(User user, CancellationToken cancellationToken) => Task.FromResult(true);
 
     public Task SetEmailConfirmedAsync(User user, bool confirmed, CancellationToken cancellationToken) => Task.CompletedTask;

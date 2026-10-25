@@ -4,7 +4,7 @@ namespace Nakama.ChatbotMembers.Domain;
 
 public partial class ChatbotMember : IEntity
 {
-    protected ChatbotMember() { } // NHibernate
+    protected ChatbotMember() { }
 
     public Guid Id { get; protected set; }
     public Guid ChatbotId { get; protected set; }

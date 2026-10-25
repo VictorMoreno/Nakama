@@ -13,7 +13,6 @@ function byProgressDescending(a: HomeFormation, b: HomeFormation): number {
   return b.progressPct - a.progressPct;
 }
 
-/** The learner's landing page: what to continue, what is pending and a few numbers about their own use. */
 export function useHome() {
   const homeRepo = useInjection<IHomeRepository>(Services.HomeRepository.id);
   const conversationsRepo = useInjection<IConversationsRepository>(Services.ConversationsRepository.id);

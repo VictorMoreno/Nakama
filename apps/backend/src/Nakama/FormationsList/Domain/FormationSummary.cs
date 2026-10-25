@@ -4,7 +4,7 @@ namespace Nakama.FormationsList.Domain;
 
 public partial class FormationSummary : IEntity
 {
-    protected FormationSummary() { } // NHibernate
+    protected FormationSummary() { }
 
     public Guid Id { get; protected set; }
     public string Title { get; protected set; } = string.Empty;

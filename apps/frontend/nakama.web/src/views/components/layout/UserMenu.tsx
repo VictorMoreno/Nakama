@@ -21,7 +21,6 @@ interface DropdownPos {
 }
 
 interface UserMenuProps {
-  /** True when the rail is collapsed — shrinks the trigger down to just the avatar. */
   collapsed?: boolean;
 }
 
@@ -36,9 +35,6 @@ export default function UserMenu({ collapsed = false }: UserMenuProps) {
   const { mode, setMode } = useTheme();
   const { showToast } = useToast();
 
-  // The dropdown is portaled to <body> (see render below) instead of living inside the
-  // rail so it can escape the rail's own stacking context/overflow and sit above the rest
-  // of the page regardless of where the trigger is rendered.
   useEffect(() => {
     if (!open) return;
 

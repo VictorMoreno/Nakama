@@ -86,8 +86,6 @@ function ManageModuleRow({ formationKey, module: m, index, expanded, onToggleExp
                 </div>
               )}
               {m.type === "examen" && m.quiz && (
-                // Read-only content review while managing - no radios/submit, the correct answer
-                // is revealed so an admin can verify the quiz without "taking" it (Abrir's job).
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
                   {m.quiz.map((q) => (
                     <div key={q.question} className={styles.moduleItemDesc}>

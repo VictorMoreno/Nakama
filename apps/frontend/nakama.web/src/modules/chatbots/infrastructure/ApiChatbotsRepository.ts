@@ -26,9 +26,6 @@ import type { Page, PageQuery } from "../../../shared/domain/Page";
 import { dataUrlToFileParameter } from "../../../shared/infrastructure/dataUrlToFileParameter";
 import { formatDate } from "../../../shared/infrastructure/formatDate";
 
-// Write side: backend enums serialize as their ordinal (0-indexed, declaration order).
-// Read side: response DTOs already stringify enums via `.ToString()` (PascalCase member
-// name, e.g. "Active") - the two directions are asymmetric, never share one lookup table.
 const STATUS_TO_ORDINAL: Record<ChatbotLifecycleStatus, number> = { borrador: 0, activo: 1, inactivo: 2 };
 const STATUS_FROM_API: Record<string, ChatbotLifecycleStatus> = { Draft: "borrador", Active: "activo", Inactive: "inactivo" };
 const STATUS_TO_API: Record<ChatbotLifecycleStatus, string> = { borrador: "Draft", activo: "Active", inactivo: "Inactive" };
@@ -36,10 +33,6 @@ const STATUS_TO_API: Record<ChatbotLifecycleStatus, string> = { borrador: "Draft
 const PROVIDER_TO_ORDINAL: Record<LlmProvider, number> = { anthropic: 0, openai: 1, local: 2 };
 const PROVIDER_FROM_API: Record<string, LlmProvider> = { Anthropic: "anthropic", OpenAi: "openai", Local: "local" };
 
-// Backend only has a single "Owner" role (ordinal 0) - the gendered "Propietario"/
-// "Propietaria" split is presentation-only on this side (see ADR-15 in the backend's
-// ADR.md), so an Owner always reads back as "Propietario"; writing either gendered form
-// maps back to the same ordinal.
 const ROLE_TO_ORDINAL: Record<TeamRole, number> = { Propietario: 0, Propietaria: 0, Editor: 1, Lector: 2 };
 const ROLE_FROM_API: Record<string, TeamRole> = { Owner: "Propietario", Editor: "Editor", Reader: "Lector" };
 
@@ -65,11 +58,6 @@ function toTeamMember(row: TeamMemberRow): TeamMember {
   return { userId: row.userId ?? "", role: ROLE_FROM_API[row.role ?? "Owner"] ?? "Lector" };
 }
 
-/**
- * Merges the list, detail, and chat-page endpoints into the flat `Chatbot` shape the rest
- * of the app already expects (N+1+1 fetch per FindAll - fine at this scale, revisit with a
- * batching/GraphQL-style endpoint if the chatbot count grows enough to matter).
- */
 function toChatbot(summary: ChatbotSummaryResponse, detail: ChatbotDetailResponse): Chatbot {
   return {
     id: summary.id ?? "",
@@ -153,8 +141,6 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
       await this.client.iconPOST(id, await dataUrlToFileParameter(iconUrl, "icon"));
     }
 
-    // Built locally instead of a follow-up GET - same pattern the mock used, and the
-    // backend response body is empty (201 Created) anyway, so there's nothing to read back.
     return {
       id,
       label: name,
@@ -176,9 +162,6 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
   }
 
   async UpdateSettings(id: string, patch: Partial<ChatbotSettings>): Promise<void> {
-    // The backend has no partial-update endpoint - it replaces the whole settings object -
-    // so a partial patch needs the current settings first to merge into. Costs one extra
-    // GET; acceptable at this stage, same "don't over-engineer batching yet" call as FindAll.
     const current = await this.client.chatbotsGET(id);
     const merged: ChatbotSettings = {
       socratic: patch.socratic ?? current.socratic ?? false,
@@ -223,10 +206,6 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
   }
 
   async RemoveTeamMember(id: string, userId: string): Promise<void> {
-    // The mock pre-checked "is this the owner" locally before removing; without a locally
-    // cached team list here, that guard is enforced server-side only now
-    // (ChatbotErrors.OwnerCannotBeRemoved -> 422) - the domain invariant still holds, it's
-    // just checked in one place instead of two.
     await this.client.teamDELETE(id, userId);
   }
 }

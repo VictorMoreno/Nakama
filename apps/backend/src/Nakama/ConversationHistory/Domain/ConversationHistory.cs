@@ -4,8 +4,8 @@ namespace Nakama.ConversationHistory.Domain;
 
 public partial class ConversationHistory : IEntity
 {
-    protected ConversationHistory() { } // NHibernate
+    protected ConversationHistory() { }
 
-    public Guid Id { get; protected set; } // = botKey
+    public Guid Id { get; protected set; }
     public List<ConversationSummaryRow> Entries { get; protected set; } = [];
 }

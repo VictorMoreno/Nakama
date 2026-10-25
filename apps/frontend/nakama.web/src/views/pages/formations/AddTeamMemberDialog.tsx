@@ -9,7 +9,6 @@ import { useUsers } from "../../shared/contexts/UsersContext";
 interface AddTeamMemberDialogProps {
   open: boolean;
   formationKey: string;
-  /** userIds already assigned to this formation - excluded from the picker. */
   existingUserIds: string[];
   onClose: () => void;
 }

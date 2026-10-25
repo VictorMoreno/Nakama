@@ -7,7 +7,4 @@ namespace Nakama.FormationDetail.Infrastructure;
 using FormationDetail = Nakama.FormationDetail.Domain.FormationDetail;
 
 public sealed class NhFormationDetailRepository(INhUnitOfWork unitOfWork)
-    : NhRepositoryBase<FormationDetail, Guid>(unitOfWork), IFormationDetailRepository
-{
-    // FindById, Save inherited directly from the base, no redeclaration needed
-}
+    : NhRepositoryBase<FormationDetail, Guid>(unitOfWork), IFormationDetailRepository;

@@ -7,7 +7,6 @@ interface DialogProps {
   children: ReactNode;
 }
 
-/** The shared glass modal shell (backdrop, box, Escape-to-close, click-outside-to-close). */
 export default function Dialog({ open, onClose, title, children }: DialogProps) {
   useEffect(() => {
     if (!open) return;

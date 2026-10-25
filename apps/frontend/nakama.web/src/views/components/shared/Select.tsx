@@ -13,9 +13,7 @@ interface SelectProps<T extends string> {
   onChange: (value: T) => void;
   options: SelectOption<T>[];
   ariaLabel: string;
-  /** Stretch to fill the parent, matching the old `style={{ width: "100%" }}` native selects used in form fields. */
   fullWidth?: boolean;
-  /** Open the panel above the trigger, for selects pinned to the bottom edge where opening downwards would force a scroll. */
   openUp?: boolean;
 }
 

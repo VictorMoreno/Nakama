@@ -15,7 +15,6 @@ export const FORMATION_TABS: { key: TabKey; label: string }[] = [
   { key: "permisos", label: "Permisos" }
 ];
 
-/** /formacion/:key/gestionar (RequireAdmin) — the admin curriculum-building view. */
 export function useFormationManage() {
   const { key } = useParams<{ key: string }>();
   const { formations, updateStatus, updateIcon, removeModule, removeTeamMember } = useFormations();

@@ -4,7 +4,7 @@ namespace Nakama.FormationDetail.Domain;
 
 public partial class FormationDetail : IEntity
 {
-    protected FormationDetail() { } // NHibernate
+    protected FormationDetail() { }
 
     public Guid Id { get; protected set; }
     public string Title { get; protected set; } = string.Empty;

@@ -4,7 +4,7 @@ namespace Nakama.QuestionActivity.Domain;
 
 public partial class QuestionActivityEntry : IEntity
 {
-    protected QuestionActivityEntry() { } // NHibernate
+    protected QuestionActivityEntry() { }
 
     public Guid Id { get; protected set; }
     public Guid BotKey { get; protected set; }

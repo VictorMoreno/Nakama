@@ -4,7 +4,7 @@ namespace Nakama.AnswerFeedback.Domain;
 
 public partial class AnswerFeedbackEntry : IEntity
 {
-    protected AnswerFeedbackEntry() { } // NHibernate
+    protected AnswerFeedbackEntry() { }
 
     public Guid Id { get; protected set; }
     public Guid BotKey { get; protected set; }

@@ -15,13 +15,11 @@ import FormationsListPage from "../pages/formations/FormationsListPage";
 import HomePage from "../pages/home/HomePage";
 import LlmProvidersPage from "../pages/llmProviders/LlmProvidersPage";
 
-/** Bounces non-admins back to Chat — gates the admin-only sections (Chatbots, Analítica). */
 function RequireAdmin({ children }: { children: ReactNode }) {
   const { isAdmin } = useUser();
   return isAdmin ? <>{children}</> : <Navigate to="/chat" replace />;
 }
 
-/** The learner's landing page is Inicio; admins keep landing on Chat. */
 function LandingRedirect() {
   const { isAdmin } = useUser();
   return <Navigate to={isAdmin ? "/chat" : "/inicio"} replace />;

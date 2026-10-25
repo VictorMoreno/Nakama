@@ -28,7 +28,7 @@ public static class FormationTeamMemberAdder
     {
         public async Task Execute(FormationId id, Guid userId, CancellationToken cancellationToken)
         {
-            await queryBus.Ask(new FormationDetailFinder.Query(id.Value), cancellationToken); // 404 if the formation doesn't exist
+            await queryBus.Ask(new FormationDetailFinder.Query(id.Value), cancellationToken);
 
             IReadOnlyList<FormationEnrollment> existing = await enrollmentRepository.Search(
                 new FormationEnrollmentByFormationAndUserSpecification(id.Value, userId), cancellationToken);

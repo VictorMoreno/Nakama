@@ -4,7 +4,7 @@ namespace Nakama.ConversationAudit.Domain;
 
 public partial class ConversationAuditLog : IEntity
 {
-    protected ConversationAuditLog() { } // NHibernate
+    protected ConversationAuditLog() { }
 
     public Guid Id { get; protected set; }
     public Guid UserId { get; protected set; }

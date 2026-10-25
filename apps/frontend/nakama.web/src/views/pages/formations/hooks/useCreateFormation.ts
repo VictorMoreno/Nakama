@@ -36,8 +36,6 @@ export function useCreateFormation() {
       iconUrl
     });
     showToast("Formación creada");
-    // Straight into manage mode, not the plain execute view - right after creating it, the next
-    // thing an admin does is add modules, which only the gestionar route exposes.
     navigate(`/formacion/${key}/gestionar`);
   }
 

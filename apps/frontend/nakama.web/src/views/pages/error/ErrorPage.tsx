@@ -6,9 +6,6 @@ interface ErrorPageProps {
   error?: Error | null;
 }
 
-// Standalone screen (same convention as LoginPage — outside AppShell/Router context), since
-// this renders from the app-root ErrorBoundary: at that point AppShell's layout, and any
-// router/context state above it, may itself be what broke.
 export default function ErrorPage({ error }: ErrorPageProps) {
   return (
     <div className={styles.errorScreen}>

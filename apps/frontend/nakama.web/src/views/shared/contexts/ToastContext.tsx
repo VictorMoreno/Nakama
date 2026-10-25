@@ -1,5 +1,3 @@
-// Provider and hook are deliberately colocated (standard React Context convention) —
-// this only costs Fast Refresh a full remount of consumers on edit, not correctness.
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 

@@ -16,11 +16,6 @@ export function ChevronDownIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-/**
- * Hex-badge monogram — the hexagon nods to the engineering/automotive-tool badge
- * language (a hex bolt head) that inspired this app's onboarding pitch, with a
- * geometric "N" for Nakama built from the same three strokes.
- */
 export function BrandMarkIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
@@ -221,8 +216,6 @@ export function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-// Door frame (open side) with an arrow entering it - the standard "sign in" glyph, distinct
-// from the generic ArrowRightIcon.
 export function LoginIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
