@@ -193,6 +193,11 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
   return (
     <div className={styles.moduleForm}>
       <div className="form-field">
+        <label htmlFor="module-type">Tipo de paso</label>
+        <Select id="module-type" value={type} onChange={setType} options={TYPE_OPTIONS} ariaLabel="Tipo de paso" fullWidth />
+      </div>
+
+      <div className="form-field">
         <label htmlFor="module-title">Título</label>
         <input
           id="module-title"
@@ -206,11 +211,6 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
           }}
           autoFocus
         />
-      </div>
-
-      <div className="form-field">
-        <label htmlFor="module-type">Tipo de paso</label>
-        <Select id="module-type" value={type} onChange={setType} options={TYPE_OPTIONS} ariaLabel="Tipo de paso" fullWidth />
       </div>
 
       <div className="form-field">
