@@ -286,6 +286,7 @@
 }
 
 label.dropzone { cursor: pointer; display: block; }
+label.dropzone.dragging { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 
 .panel-body { padding: 0 20px 20px; }
 .panel-spaced { margin-bottom: 14px; }
