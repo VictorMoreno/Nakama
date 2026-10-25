@@ -13,7 +13,7 @@ export class ApiClientBase {
         return options_;
     }
 
-    protected async transformResult(_url: string, response: Response, processor: (_response: Response) => Promise<any>): Promise<any> {
+    protected async transformResult<T>(_url: string, response: Response, processor: (_response: Response) => Promise<T>): Promise<T> {
         return processor(response);
     }
 }

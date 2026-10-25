@@ -32,32 +32,32 @@ interface FormationsContextValue {
 }
 
 const FormationsContext = createContext<FormationsContextValue | null>(null);
+const NO_FORMATIONS: FormationMap = {};
 
 export function FormationsProvider({ children }: { children: ReactNode }) {
   const repo = useInjection<IFormationsRepository>(Services.FormationsRepository.id);
   const { currentUser } = useUser();
 
-  const [formations, setFormations] = useState<FormationMap>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadedFormations, setFormations] = useState<FormationMap>(NO_FORMATIONS);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const userId: string | null = currentUser?.id ?? null;
+  const formations: FormationMap = userId && loadedFor === userId ? loadedFormations : NO_FORMATIONS;
+  const isLoading: boolean = userId !== null && loadedFor !== userId;
 
   useEffect(() => {
-    if (!currentUser) {
-      setFormations({});
-      setIsLoading(false);
-      return;
-    }
+    if (!userId) return;
+
     let cancelled = false;
-    setIsLoading(true);
     repo.FindAll().then((data) => {
       if (!cancelled) {
         setFormations(data);
-        setIsLoading(false);
+        setLoadedFor(userId);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [repo, currentUser]);
+  }, [repo, userId]);
 
   const activeFormations = useMemo(
     () => Object.values(formations).filter((c) => !c.archived).sort((a, b) => a.title.localeCompare(b.title)),

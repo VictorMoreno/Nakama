@@ -17,16 +17,15 @@ export function useFormationExecute() {
   const navigate = useNavigate();
 
   const c = key ? formations[key] : undefined;
-  const [myProgress, setMyProgress] = useState<LearnerProgress>(EMPTY_PROGRESS);
+  const [loadedProgress, setLoadedProgress] = useState<LearnerProgress>(EMPTY_PROGRESS);
+  const myProgress: LearnerProgress = c && currentUser ? loadedProgress : EMPTY_PROGRESS;
 
   useEffect(() => {
-    if (!c || !currentUser) {
-      setMyProgress(EMPTY_PROGRESS);
-      return;
-    }
+    if (!c || !currentUser) return;
+
     let cancelled = false;
     enrollmentRepo.FindMyProgress(c.id).then((progress) => {
-      if (!cancelled) setMyProgress(progress ?? EMPTY_PROGRESS);
+      if (!cancelled) setLoadedProgress(progress ?? EMPTY_PROGRESS);
     });
     return () => {
       cancelled = true;

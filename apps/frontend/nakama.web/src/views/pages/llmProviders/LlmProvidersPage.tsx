@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CloseIcon, PlusIcon } from "../../components/shared/icons";
 import type { LlmModelOption, LlmProviderConfig } from "../../../modules/llmProviders/domain/LlmProviderConfig";
 import { KNOWN_PROVIDERS, useLlmProviders } from "./hooks/useLlmProviders";
@@ -13,12 +13,6 @@ function ProviderPanel({ config, onSave }: ProviderPanelProps) {
   const [apiKey, setApiKey] = useState("");
   const [enabled, setEnabled] = useState(config.enabled);
   const [models, setModels] = useState<LlmModelOption[]>(config.models);
-
-  useEffect(() => {
-    setApiKey("");
-    setEnabled(config.enabled);
-    setModels(config.models);
-  }, [config]);
 
   function updateModel(index: number, patch: Partial<LlmModelOption>) {
     setModels((prev) => prev.map((m, i) => (i === index ? { ...m, ...patch } : m)));
@@ -108,7 +102,7 @@ function ProviderPanel({ config, onSave }: ProviderPanelProps) {
 }
 
 export default function LlmProvidersPage() {
-  const { configFor, register, loading, activeTab, setActiveTab } = useLlmProviders();
+  const { configFor, register, loading, revision, activeTab, setActiveTab } = useLlmProviders();
 
   if (loading) return null;
 
@@ -124,7 +118,7 @@ export default function LlmProvidersPage() {
 
       {KNOWN_PROVIDERS.map((p) => (
         <div key={p.value} className={`tab-panel${activeTab === p.value ? " active" : ""}`}>
-          <ProviderPanel config={configFor(p.value)} onSave={(apiKey, enabled, models) => void register(p.value, apiKey, enabled, models)} />
+          <ProviderPanel key={revision} config={configFor(p.value)} onSave={(apiKey, enabled, models) => void register(p.value, apiKey, enabled, models)} />
         </div>
       ))}
     </section>

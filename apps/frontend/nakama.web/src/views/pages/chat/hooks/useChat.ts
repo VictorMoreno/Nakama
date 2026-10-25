@@ -53,7 +53,8 @@ export function useChat() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
-  const pendingOpenRef = useRef<ConversationSummary | null>(null);
+  const [pendingOpen, setPendingOpen] = useState<ConversationSummary | null>(null);
+  const [threadBotId, setThreadBotId] = useState<string | undefined>(bot?.id);
   const requestedConversationId = (location.state as { conversationId?: string } | null)?.conversationId;
   const deepLinkRef = useRef({ requestedConversationId, currentBotKey, pathname: location.pathname, navigate, setCurrentBotKey });
 
@@ -74,7 +75,7 @@ export function useChat() {
       if (requested.botKey === link.currentBotKey) {
         openConversation(requested);
       } else {
-        pendingOpenRef.current = requested;
+        setPendingOpen(requested);
         link.setCurrentBotKey(requested.botKey);
       }
     });
@@ -90,15 +91,15 @@ export function useChat() {
     setThread([]);
   }
 
-  useEffect(() => {
-    if (!bot) return;
-    resetThread();
-    const pending = pendingOpenRef.current;
-    if (pending && pending.botKey === bot.id) {
-      pendingOpenRef.current = null;
-      openConversation(pending);
+  if (bot && bot.id !== threadBotId) {
+    setThreadBotId(bot.id);
+    if (pendingOpen && pendingOpen.botKey === bot.id) {
+      setPendingOpen(null);
+      openConversation(pendingOpen);
+    } else {
+      resetThread();
     }
-  }, [bot?.id]);
+  }
 
   useEffect(() => {
     threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight });

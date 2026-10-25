@@ -16,17 +16,27 @@ export function useLlmProviders() {
   const { showToast } = useToast();
   const [providers, setProviders] = useState<LlmProviderConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [revision, setRevision] = useState(0);
   const [activeTab, setActiveTab] = useState<LlmProviderKind>(KNOWN_PROVIDERS[0].value);
 
   async function reload() {
     const rows = await repo.FindAll();
     setProviders(rows);
+    setRevision((r) => r + 1);
     setLoading(false);
   }
 
   useEffect(() => {
-    void reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    repo.FindAll().then((rows) => {
+      if (cancelled) return;
+      setProviders(rows);
+      setRevision((r) => r + 1);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [repo]);
 
   function configFor(provider: LlmProviderKind): LlmProviderConfig {
@@ -43,5 +53,5 @@ export function useLlmProviders() {
     }
   }
 
-  return { providers, loading, configFor, register, activeTab, setActiveTab };
+  return { providers, loading, revision, configFor, register, activeTab, setActiveTab };
 }

@@ -36,7 +36,7 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
 
   const [loadedChatbots, setChatbots] = useState<ChatbotMap>(NO_CHATBOTS);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
-  const [currentBotKey, setCurrentBotKey] = useState<string>("");
+  const [selectedBotKey, setCurrentBotKey] = useState<string>("");
 
   const { currentUser } = useUser();
   const userId: string | null = currentUser?.id ?? null;
@@ -66,12 +66,9 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
     [chatbots]
   );
 
-  useEffect(() => {
-    if (activeChatbots.length === 0) return;
-    if (!activeChatbots.some((bot) => bot.id === currentBotKey)) {
-      setCurrentBotKey(activeChatbots[0].id);
-    }
-  }, [activeChatbots, currentBotKey]);
+  const currentBotKey: string = activeChatbots.some((bot) => bot.id === selectedBotKey)
+    ? selectedBotKey
+    : (activeChatbots[0]?.id ?? selectedBotKey);
 
   async function createChatbot(input: CreateChatbotInput): Promise<string> {
     const bot = await repo.Create(input);
