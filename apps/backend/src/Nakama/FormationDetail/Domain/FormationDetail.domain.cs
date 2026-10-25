@@ -46,6 +46,13 @@ public partial class FormationDetail
 
     public void UpdateStatus(string status) => this.Status = status;
 
+    public void UpdateDetails(string title, string audience, string description)
+    {
+        this.Title = title;
+        this.Audience = audience;
+        this.Description = description;
+    }
+
     public void MarkArchived() => this.Archived = true;
 
     public void MarkUnarchived() => this.Archived = false;

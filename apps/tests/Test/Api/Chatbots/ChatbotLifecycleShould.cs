@@ -9,6 +9,7 @@ using Nakama.Chatbots.Domain;
 using Nakama.LlmProviders.Domain;
 using Test.Api.Support;
 using Test.Modules.Chatbots.Application;
+using Test.Modules.Shared;
 
 namespace Test.Api.Chatbots;
 
@@ -80,21 +81,30 @@ public sealed class ChatbotLifecycleShould : ApiTestCase
     }
 
     [Test]
-    public async Task change_the_status_of_a_chatbot_and_see_it_in_the_list_and_in_the_detail()
+    public async Task change_the_status_and_the_details_of_a_chatbot_and_see_them_in_the_list_and_in_the_detail()
     {
         string token = await this.SignIn(isAdmin: true);
         ChatbotCreator.Command command = ChatbotCreatorCommandMother.With(status: ChatbotStatus.Active);
+        string label = WordMother.Random();
+        string description = WordMother.Random();
         await this.Client.CreateChatbot(command, token);
 
         HttpResponseMessage updated = await this.Client.UpdateChatbotStatus(command.Id, (int)ChatbotStatus.Inactive, token);
+        HttpResponseMessage detailsUpdated = await this.Client.UpdateChatbotDetails(command.Id, label, description, token);
 
         updated.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        detailsUpdated.StatusCode.Should().Be(HttpStatusCode.NoContent);
         List<ChatbotSummaryResponse>? chatbots = await (await this.Client.ListChatbots(token))
             .Content.ReadFromJsonAsync<List<ChatbotSummaryResponse>>();
-        chatbots.Should().ContainSingle(item => item.Id == command.Id).Which.Status.Should().Be(nameof(ChatbotStatus.Inactive));
+        ChatbotSummaryResponse summary = chatbots.Should().ContainSingle(item => item.Id == command.Id).Which;
+        summary.Status.Should().Be(nameof(ChatbotStatus.Inactive));
+        summary.Label.Should().Be(label);
+        summary.Description.Should().Be(description);
         ChatbotDetailResponse? detail = await (await this.Client.GetChatbot(command.Id, token))
             .Content.ReadFromJsonAsync<ChatbotDetailResponse>();
         detail!.Status.Should().Be(nameof(ChatbotStatus.Inactive));
+        detail.Label.Should().Be(label);
+        detail.Description.Should().Be(description);
     }
 
     [Test]
@@ -151,6 +161,8 @@ public sealed class ChatbotLifecycleShould : ApiTestCase
 
         rejected.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         (await rejected.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.chatbots.archived");
+        (await this.Client.UpdateChatbotDetails(command.Id, WordMother.Random(), WordMother.Random(), token))
+            .StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         await this.Client.UnarchiveChatbot(command.Id, token);
         (await this.Client.UpdateChatbotStatus(command.Id, (int)ChatbotStatus.Draft, token)).StatusCode.Should().Be(HttpStatusCode.NoContent);
     }

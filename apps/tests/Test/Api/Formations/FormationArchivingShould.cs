@@ -13,30 +13,41 @@ namespace Test.Api.Formations;
 public sealed class FormationArchivingShould : ApiTestCase
 {
     [Test]
-    public async Task unarchive_an_archived_formation_and_see_it_active_again()
+    public async Task unarchive_an_archived_formation_and_edit_its_details_again()
     {
         (string admin, Guid formation) = await this.CreateFormation();
+        string title = WordMother.Random();
+        string audience = WordMother.Random();
+        string description = WordMother.Random();
         await this.Client.ArchiveFormation(formation, admin);
 
         HttpResponseMessage restored = await this.Client.UnarchiveFormation(formation, admin);
+        HttpResponseMessage detailsUpdated = await this.Client.UpdateFormationDetails(formation, title, audience, description, admin);
 
         restored.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        detailsUpdated.StatusCode.Should().Be(HttpStatusCode.NoContent);
         FormationDetailResponse? detail = await (await this.Client.GetFormation(formation, admin))
             .Content.ReadFromJsonAsync<FormationDetailResponse>();
         detail!.Archived.Should().BeFalse();
+        detail.Title.Should().Be(title);
+        detail.Audience.Should().Be(audience);
+        detail.Description.Should().Be(description);
     }
 
     [Test]
-    public async Task reject_uploading_a_document_to_an_archived_formation()
+    public async Task reject_uploading_a_document_and_editing_the_details_of_an_archived_formation()
     {
         (string admin, Guid formation) = await this.CreateFormation();
         await this.Client.ArchiveFormation(formation, admin);
 
         HttpResponseMessage rejected = await this.Client.AddFormationDocument(
             formation, Guid.NewGuid(), new AttachedFile("notes.txt", [1, 2, 3]), admin);
+        HttpResponseMessage detailsRejected = await this.Client.UpdateFormationDetails(
+            formation, WordMother.Random(), WordMother.Random(), WordMother.Random(), admin);
 
         rejected.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         (await rejected.Content.ReadFromJsonAsync<ProblemDetails>())!.Title.Should().Be("nakama.formations.archived");
+        detailsRejected.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 
     [Test]

@@ -7,6 +7,7 @@ using Nakama.ChatbotDetail.Application;
 using Nakama.ChatbotDetail.Application.Finder;
 using Nakama.Chatbots.Application.Archiver;
 using Nakama.Chatbots.Application.Creator;
+using Nakama.Chatbots.Application.DetailsUpdater;
 using Nakama.Chatbots.Application.DocumentAdder;
 using Nakama.Chatbots.Application.DocumentFileFinder;
 using Nakama.Chatbots.Application.DocumentRemover;
@@ -56,6 +57,12 @@ public sealed class ChatbotEndpoints : IEndpoint
         group.MapPatch("/{id:guid}/status", UpdateChatbotStatus)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Updates a chatbot's status.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPatch("/{id:guid}/details", UpdateChatbotDetails)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Updates a chatbot's label and description.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -213,6 +220,16 @@ public sealed class ChatbotEndpoints : IEndpoint
         CancellationToken ct)
     {
         await commandBus.Send(new ChatbotStatusUpdater.Command(id, body.Status), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> UpdateChatbotDetails(
+        Guid id,
+        UpdateChatbotDetailsRequest body,
+        ICommandBus commandBus,
+        CancellationToken ct)
+    {
+        await commandBus.Send(new ChatbotDetailsUpdater.Command(id, body.Label, body.Description), ct);
         return Results.NoContent();
     }
 
@@ -442,6 +459,8 @@ public sealed class ChatbotEndpoints : IEndpoint
         string Model);
 
     private sealed record UpdateChatbotStatusRequest(int Status);
+
+    private sealed record UpdateChatbotDetailsRequest(string Label, string Description);
 
     private sealed record UpdateChatbotSettingsRequest(bool Socratic, bool ExplicaMas, int Provider, string Model);
 

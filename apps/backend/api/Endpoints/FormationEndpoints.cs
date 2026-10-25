@@ -13,6 +13,7 @@ using Nakama.Formations.Application;
 using Nakama.Formations.Application.Archiver;
 using Nakama.Formations.Application.Unarchiver;
 using Nakama.Formations.Application.Creator;
+using Nakama.Formations.Application.DetailsUpdater;
 using Nakama.Formations.Application.DocumentAdder;
 using Nakama.Formations.Application.DocumentFileFinder;
 using Nakama.Formations.Application.DocumentRemover;
@@ -58,6 +59,12 @@ public sealed class FormationEndpoints : IEndpoint
         group.MapPatch("/{id:guid}/status", UpdateFormationStatus)
             .RequireAuthorization(AuthPolicies.Admin)
             .WithSummary("Updates a formation's status.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPatch("/{id:guid}/details", UpdateFormationDetails)
+            .RequireAuthorization(AuthPolicies.Admin)
+            .WithSummary("Updates a formation's title, audience and description.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -281,6 +288,16 @@ public sealed class FormationEndpoints : IEndpoint
         return Results.NoContent();
     }
 
+    private static async Task<IResult> UpdateFormationDetails(
+        Guid id,
+        UpdateFormationDetailsRequest body,
+        ICommandBus commandBus,
+        CancellationToken ct)
+    {
+        await commandBus.Send(new FormationDetailsUpdater.Command(id, body.Title, body.Audience, body.Description), ct);
+        return Results.NoContent();
+    }
+
     private static async Task<IResult> UploadFormationIcon(
         Guid id,
         IFormFile file,
@@ -436,6 +453,8 @@ public sealed class FormationEndpoints : IEndpoint
         string Topic);
 
     private sealed record UpdateFormationStatusRequest(int Status);
+
+    private sealed record UpdateFormationDetailsRequest(string Title, string Audience, string Description);
 
     private sealed record QuizQuestionRequest(string Question, IReadOnlyList<string> Options, int CorrectIndex);
 

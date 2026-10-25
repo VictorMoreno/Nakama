@@ -55,6 +55,21 @@ public partial class Formation
         this.Record(new FormationStatusChanged(this.Id, status));
     }
 
+    public void UpdateDetails(string title, string audience, string description)
+    {
+        this.EnsureNotArchived();
+
+        if (this.Title == title && this.Audience == audience && this.Description == description)
+        {
+            return;
+        }
+
+        this.Title = title;
+        this.Audience = audience;
+        this.Description = description;
+        this.Record(new FormationDetailsUpdated(this.Id, title, audience, description));
+    }
+
     public void UpdateIcon(string? iconUrl)
     {
         this.EnsureNotArchived();

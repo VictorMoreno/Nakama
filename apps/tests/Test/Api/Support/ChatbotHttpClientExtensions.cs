@@ -31,6 +31,14 @@ public static class ChatbotHttpClientExtensions
         string accessToken) =>
         client.SendJson(HttpMethod.Patch, $"/api/chatbots/{id}/status", new { Status = status }, accessToken);
 
+    public static Task<HttpResponseMessage> UpdateChatbotDetails(
+        this HttpClient client,
+        Guid id,
+        string label,
+        string description,
+        string accessToken) =>
+        client.SendJson(HttpMethod.Patch, $"/api/chatbots/{id}/details", new { Label = label, Description = description }, accessToken);
+
     public static Task<HttpResponseMessage> ArchiveChatbot(this HttpClient client, Guid id, string accessToken) =>
         client.Send(HttpMethod.Post, $"/api/chatbots/{id}/archive", accessToken);
 

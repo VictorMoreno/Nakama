@@ -27,6 +27,12 @@ public partial class ChatbotSummary
 
     public void UpdateStatus(string status) => this.Status = status;
 
+    public void UpdateDetails(string label, string description)
+    {
+        this.Label = label;
+        this.Description = description;
+    }
+
     public void MarkArchived() => this.Archived = true;
 
     public void MarkUnarchived() => this.Archived = false;

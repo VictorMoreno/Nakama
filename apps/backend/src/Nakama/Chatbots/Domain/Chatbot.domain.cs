@@ -54,6 +54,20 @@ public partial class Chatbot
         this.Record(new ChatbotStatusChanged(this.Id, status));
     }
 
+    public void UpdateDetails(string label, string description)
+    {
+        this.EnsureNotArchived();
+
+        if (this.Label == label && this.Description == description)
+        {
+            return;
+        }
+
+        this.Label = label;
+        this.Description = description;
+        this.Record(new ChatbotDetailsUpdated(this.Id, label, description));
+    }
+
     public void UpdateSettings(ChatbotSettings settings)
     {
         this.EnsureNotArchived();

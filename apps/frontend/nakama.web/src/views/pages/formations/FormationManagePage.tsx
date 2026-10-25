@@ -17,6 +17,7 @@ import { FORMATION_STATUS_META } from "../../../lib/status";
 import type { FormationLifecycleStatus, FormationModule, ModuleType } from "../../../modules/formations/domain/Formation";
 import AddTeamMemberDialog from "./AddTeamMemberDialog";
 import styles from "./FormationManagePage.module.scss";
+import FormationDetailsPanel from "./FormationDetailsPanel";
 import FormationDocumentsSection from "./FormationDocumentsSection";
 import ModuleForm from "./ModuleForm";
 import TeamMemberExams from "./TeamMemberExams";
@@ -205,6 +206,7 @@ export default function FormationManagePage() {
 
         {activeTab === "general" && (
           <div className="tab-panel active">
+            <FormationDetailsPanel key={c.id} formation={c} />
             <div className="glass" style={{ marginBottom: 14 }}>
               <div className="panel-head">
                 <h2>Icono de la formación</h2>

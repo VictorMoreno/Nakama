@@ -54,6 +54,12 @@ public partial class ChatbotDetail
 
     public void UpdateStatus(string status) => this.Status = status;
 
+    public void UpdateDetails(string label, string description)
+    {
+        this.Label = label;
+        this.Description = description;
+    }
+
     public void UpdateSettings(bool socratic, bool explicaMas, string provider, string model)
     {
         this.Socratic = socratic;

@@ -5,6 +5,7 @@ import type {
   CreateChatbotRequest,
   GeneratedNakamaClient,
   TeamMemberRow,
+  UpdateChatbotDetailsRequest,
   UpdateChatbotSettingsRequest,
   UpdateChatbotStatusRequest
 } from "../../../shared/infrastructure/GeneratedNakamaClient";
@@ -190,6 +191,10 @@ export class ApiChatbotsRepository implements IChatbotsRepository {
 
   async UpdateStatus(id: string, status: ChatbotLifecycleStatus): Promise<void> {
     await this.client.status(id, { status: STATUS_TO_ORDINAL[status] } satisfies UpdateChatbotStatusRequest);
+  }
+
+  async UpdateDetails(id: string, label: string, description: string): Promise<void> {
+    await this.client.details(id, { label, description } satisfies UpdateChatbotDetailsRequest);
   }
 
   async UpdateIcon(id: string, iconUrl: string | undefined): Promise<void> {

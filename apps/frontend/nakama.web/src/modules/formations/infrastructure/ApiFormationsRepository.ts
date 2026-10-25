@@ -11,6 +11,7 @@ import type {
   GeneratedNakamaClient,
   QuizQuestionResponse,
   SubmitFormationExamRequest,
+  UpdateFormationDetailsRequest,
   UpdateFormationModuleRequest,
   UpdateFormationStatusRequest
 } from "../../../shared/infrastructure/GeneratedNakamaClient";
@@ -187,6 +188,10 @@ export class ApiFormationsRepository implements IFormationsRepository {
 
   async UpdateStatus(id: string, status: FormationLifecycleStatus): Promise<void> {
     await this.client.status2(id, { status: STATUS_TO_ORDINAL[status] } satisfies UpdateFormationStatusRequest);
+  }
+
+  async UpdateDetails(id: string, title: string, audience: string, description: string): Promise<void> {
+    await this.client.details2(id, { title, audience, description } satisfies UpdateFormationDetailsRequest);
   }
 
   async UpdateIcon(id: string, iconUrl: string | undefined): Promise<void> {

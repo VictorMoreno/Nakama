@@ -18,6 +18,19 @@ public static class FormationHttpClientExtensions
             new { Title = title, Audience = audience, Description = description, Status = (int)status },
             accessToken);
 
+    public static Task<HttpResponseMessage> UpdateFormationDetails(
+        this HttpClient client,
+        Guid id,
+        string title,
+        string audience,
+        string description,
+        string accessToken) =>
+        client.SendJson(
+            HttpMethod.Patch,
+            $"/api/formations/{id}/details",
+            new { Title = title, Audience = audience, Description = description },
+            accessToken);
+
     public static Task<HttpResponseMessage> AddFormationDocument(
         this HttpClient client,
         Guid formationId,

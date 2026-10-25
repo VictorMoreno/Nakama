@@ -95,6 +95,12 @@ export interface IGeneratedNakamaClient {
     status(id: string, body: UpdateChatbotStatusRequest): Promise<void>;
 
     /**
+     * Updates a chatbot's label and description.
+     * @return No Content
+     */
+    details(id: string, body: UpdateChatbotDetailsRequest): Promise<void>;
+
+    /**
      * Replaces a chatbot's settings (Socratic mode, ExplicaMas, LLM provider).
      * @return No Content
      */
@@ -216,6 +222,12 @@ export interface IGeneratedNakamaClient {
      * @return No Content
      */
     status2(id: string, body: UpdateFormationStatusRequest): Promise<void>;
+
+    /**
+     * Updates a formation's title, audience and description.
+     * @return No Content
+     */
+    details2(id: string, body: UpdateFormationDetailsRequest): Promise<void>;
 
     /**
      * Uploads or replaces a formation's icon image (PNG or JPEG, max 2 MB).
@@ -907,6 +919,55 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     protected processStatus(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Updates a chatbot's label and description.
+     * @return No Content
+     */
+    details(id: string, body: UpdateChatbotDetailsRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/chatbots/{id}/details";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processDetails(_response));
+        });
+    }
+
+    protected processDetails(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -1886,6 +1947,55 @@ export class GeneratedNakamaClient extends ApiClientBase implements IGeneratedNa
     }
 
     protected processStatus2(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            result404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProblemDetails;
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * Updates a formation's title, audience and description.
+     * @return No Content
+     */
+    details2(id: string, body: UpdateFormationDetailsRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/formations/{id}/details";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.transformResult(url_, _response, (_response: Response) => this.processDetails2(_response));
+        });
+    }
+
+    protected processDetails2(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -3349,6 +3459,11 @@ export interface UnhelpfulQuestionsResponse {
     questions?: UnhelpfulQuestionRow[] | undefined;
 }
 
+export interface UpdateChatbotDetailsRequest {
+    label?: string | undefined;
+    description?: string | undefined;
+}
+
 export interface UpdateChatbotSettingsRequest {
     socratic?: boolean;
     explicaMas?: boolean;
@@ -3358,6 +3473,12 @@ export interface UpdateChatbotSettingsRequest {
 
 export interface UpdateChatbotStatusRequest {
     status?: number;
+}
+
+export interface UpdateFormationDetailsRequest {
+    title?: string | undefined;
+    audience?: string | undefined;
+    description?: string | undefined;
 }
 
 export interface UpdateFormationModuleRequest {

@@ -22,6 +22,7 @@ interface ChatbotsContextValue {
   unarchiveChatbot: (key: string) => Promise<void>;
   updateSettings: (key: string, patch: Partial<ChatbotSettings>) => Promise<void>;
   updateStatus: (key: string, status: Chatbot["status"]) => Promise<void>;
+  updateDetails: (key: string, label: string, description: string) => Promise<void>;
   updateIcon: (key: string, iconUrl: string | undefined) => Promise<void>;
   addDocument: (key: string, file: File, name: string, origin: string) => Promise<void>;
   removeDocument: (key: string, documentId: string) => Promise<void>;
@@ -107,6 +108,11 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
     setChatbots((prev) => (prev[key] ? { ...prev, [key]: { ...prev[key], status } } : prev));
   }
 
+  async function updateDetails(key: string, label: string, description: string) {
+    await repo.UpdateDetails(key, label, description);
+    setChatbots((prev) => (prev[key] ? { ...prev, [key]: { ...prev[key], label, description } } : prev));
+  }
+
   async function updateIcon(key: string, iconUrl: string | undefined) {
     await repo.UpdateIcon(key, iconUrl);
     setChatbots((prev) => (prev[key] ? { ...prev, [key]: { ...prev[key], iconUrl } } : prev));
@@ -158,6 +164,7 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
     unarchiveChatbot,
     updateSettings,
     updateStatus,
+    updateDetails,
     updateIcon,
     addDocument,
     removeDocument,

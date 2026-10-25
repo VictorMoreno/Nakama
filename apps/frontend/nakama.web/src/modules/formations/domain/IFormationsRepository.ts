@@ -35,6 +35,7 @@ export interface IFormationsRepository {
   Archive(id: string): Promise<void>;
   Unarchive(id: string): Promise<void>;
   UpdateStatus(id: string, status: FormationLifecycleStatus): Promise<void>;
+  UpdateDetails(id: string, title: string, audience: string, description: string): Promise<void>;
   UpdateIcon(id: string, iconUrl: string | undefined): Promise<void>;
   AddModule(id: string, module: Omit<FormationModule, "id">): Promise<void>;
   UpdateModule(id: string, module: FormationModule): Promise<void>;

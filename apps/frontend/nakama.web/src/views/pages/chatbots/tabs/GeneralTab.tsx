@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import IconUploadField from "../../../components/shared/IconUploadField";
 import Select from "../../../components/shared/Select";
 import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import type { Chatbot, LlmProvider } from "../../../../modules/chatbots/domain/Chatbot";
 import type { ILlmProvidersRepository } from "../../../../modules/llmProviders/domain/ILlmProvidersRepository";
 import type { LlmProviderConfig } from "../../../../modules/llmProviders/domain/LlmProviderConfig";
@@ -16,9 +17,36 @@ interface GeneralTabProps {
 }
 
 export default function GeneralTab({ bot }: GeneralTabProps) {
-  const { updateSettings, updateIcon } = useChatbots();
+  const { updateSettings, updateIcon, updateDetails } = useChatbots();
+  const { showToast } = useToast();
   const llmProvidersRepo = useInjection<ILlmProvidersRepository>(Services.LlmProvidersRepository.id);
   const [providers, setProviders] = useState<LlmProviderConfig[]>([]);
+  const [label, setLabel] = useState(bot.label);
+  const [description, setDescription] = useState(bot.description);
+  const [labelError, setLabelError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const dirty = label.trim() !== bot.label || description.trim() !== bot.description;
+
+  async function handleSaveDetails() {
+    const nextLabel = label.trim();
+    const nextDescription = description.trim();
+    if (!nextLabel || !nextDescription) {
+      setLabelError(!nextLabel);
+      setDescriptionError(!nextDescription);
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateDetails(bot.id, nextLabel, nextDescription);
+      showToast("Datos del chatbot actualizados");
+    } catch {
+      showToast("No se pudieron guardar los datos del chatbot");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +63,45 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
 
   return (
     <div className="tab-panel active">
+      <div className="glass" style={{ marginBottom: 14 }}>
+        <div className="panel-head">
+          <h2>Datos básicos</h2>
+        </div>
+        <div style={{ padding: "0 20px 20px" }}>
+          <div className="form-field">
+            <label htmlFor="chatbot-label">Nombre</label>
+            <input
+              id="chatbot-label"
+              type="text"
+              className={`form-input${labelError ? " field-error" : ""}`}
+              value={label}
+              onChange={(e) => {
+                setLabel(e.target.value);
+                if (labelError) setLabelError(false);
+              }}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="chatbot-description">Descripción</label>
+            <textarea
+              id="chatbot-description"
+              className={`form-input${descriptionError ? " field-error" : ""}`}
+              rows={2}
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (descriptionError) setDescriptionError(false);
+              }}
+            />
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <button className="btn-primary" type="button" disabled={!dirty || saving} onClick={handleSaveDetails}>
+              Guardar cambios
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="glass" style={{ marginBottom: 14 }}>
         <div className="panel-head">
           <h2>Icono del chatbot</h2>
