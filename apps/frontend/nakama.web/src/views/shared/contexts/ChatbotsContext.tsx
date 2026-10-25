@@ -120,11 +120,7 @@ export function ChatbotsProvider({ children }: { children: ReactNode }) {
   }
 
   async function reloadChatbots() {
-    try {
-      setChatbots(await repo.FindAll());
-    } catch {
-      return;
-    }
+    setChatbots(await repo.FindAll());
   }
 
   async function removeDocument(key: string, documentId: string) {
