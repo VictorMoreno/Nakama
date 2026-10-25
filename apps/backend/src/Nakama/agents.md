@@ -239,7 +239,7 @@ nuevo que combina datos de dos ReadModels en el momento de la petición, en vez 
       new(key, label, description, status, 0, 0, false, null);
   ```
 - Errores de negocio en `Domain/Errors`, heredando de `DomainError`, con código estable
-  (`nakama.<módulo>...` — adaptado del `yq.spare_parts...` de la guía original). `DomainError`
+  (`nakama.<módulo>...`). `DomainError`
   hereda directamente de `Exception` (`Shared/Domain/DomainError.cs`) — no hay una
   `DomainException` intermedia que lo envuelva: el propio error concreto ES la excepción, y se
   lanza tal cual desde el método de dominio que detecta la violación (`throw
@@ -511,6 +511,6 @@ No es una subcarpeta dentro del módulo del agregado que lo alimenta.
 ## 12) Comandos base
 
 - Build: `dotnet build`
-- Test unit/integration backend: `dotnet test .\test\Yq.SpareParts.Test\`
-- Test arquitectura: `dotnet test .\test\Yq.SpareParts.Test.Architecture\`
+- Test unit/integration backend: `dotnet test .\apps\tests\Test\`
+- Test arquitectura: `dotnet test .\apps\tests\Test.Architecture\`
 

@@ -2,6 +2,25 @@
 
 Plataforma de onboarding interno para empresas: chatbots entrenados con la documentación de cada equipo/departamento y formaciones (currículos) guiadas por módulos, con seguimiento de progreso y analítica de uso.
 
+## 🧭 Índice
+
+- [Descripción general](#-descripción-general)
+- [Stack tecnológico](#️-stack-tecnológico)
+- [Instalación y ejecución](#-instalación-y-ejecución)
+  - [Pre-requisitos](#pre-requisitos)
+  - [1. Base de datos](#1-base-de-datos)
+  - [2. Backend](#2-backend)
+  - [3. Frontend](#3-frontend)
+  - [Comandos útiles](#comandos-útiles)
+- [Estructura del proyecto](#-estructura-del-proyecto)
+- [Funcionalidades principales](#-funcionalidades-principales)
+- [Datos y cuentas de prueba](#-datos-y-cuentas-de-prueba)
+- [Documentación](#-documentación)
+- [Despliegue](#-despliegue)
+- [Contribuyendo](#-contribuyendo)
+- [Versionado](#-versionado)
+- [Licencia](#-licencia)
+
 ## 📖 Descripción general
 
 Nakama nace de un problema muy concreto que se repite con cada incorporación nueva: el tiempo que un desarrollador senior tiene que dedicarle no es solo el del primer día, es un goteo constante durante semanas — las mismas preguntas, los mismos errores de principiante, el mismo contexto explicado una y otra vez por cada junior que entra al equipo. Ese tiempo no escala, y es tiempo que el senior deja de dedicar a su propio trabajo.
@@ -38,7 +57,7 @@ Hay dos roles: **administrador** (crea y gestiona chatbots/formaciones, sube doc
 **Infraestructura local**
 - [Docker Compose](https://docs.docker.com/compose/) para levantar PostgreSQL
 
-> Nota: el documento [`docs/architecture/stack-tecnologico.md`](docs/architecture/stack-tecnologico.md) recoge además decisiones de diseño **planificadas** (capa LLM vía Semantic Kernel, pgvector, multi-tenancy database-per-tenant, SSO con Jaltest Auth) que todavía no están implementadas en el código actual — este README describe lo que existe hoy.
+> Nota: el documento [`docs/architecture/stack-tecnologico.md`](docs/architecture/stack-tecnologico.md) recoge además decisiones de diseño **planificadas** (capa LLM vía Semantic Kernel, pgvector, multi-tenancy database-per-tenant) que todavía no están implementadas en el código actual — este README describe lo que existe hoy.
 
 ## 🚀 Instalación y ejecución
 
@@ -88,7 +107,7 @@ Levanta Vite en `http://localhost:3000`, con proxy de `/api` hacia el backend (v
 | `npm run lint` / `lint-fix` | `apps/frontend/nakama.web` | Lint de TS/React |
 | `npm run lint-css` | `apps/frontend/nakama.web` | Lint de estilos (Stylelint) |
 
-> **Tests automatizados**: `apps/tests/Test` contiene los tests unitarios del backend (NUnit, Moq, AwesomeAssertions y Bogus) para los handlers de usuarios, autenticación y conversaciones, además del generador de tokens JWT. Se ejecutan con `dotnet test apps/tests/Test`; la convención a seguir está en `apps/tests/Test/agents.md`. Los tests de integración de la API y los del frontend están pendientes, y la verificación de esas partes sigue siendo manual (build limpio + comprobación en navegador).
+> **Tests automatizados** (backend): `apps/tests/Test` agrupa los tests unitarios por módulo (NUnit, Moq, AwesomeAssertions y Bogus), los de infraestructura contra PostgreSQL real y los E2E de la API (HTTP → casos de uso → PostgreSQL con Testcontainers); `apps/tests/Test.Architecture` comprueba las reglas de arquitectura. `dotnet test` ejecuta ambos proyectos y los de infraestructura y E2E **necesitan Docker en marcha**. Solo unitarios: `dotnet test apps/tests/Test --filter "TestCategory!=E2E&TestCategory!=Infrastructure"`. La convención está en `apps/tests/Test/agents.md`. El frontend no tiene tests automatizados: se verifica a mano (build limpio + comprobación en navegador).
 
 ## 📂 Estructura del proyecto
 
@@ -99,6 +118,7 @@ proyecto_master/
 │   │   ├── api/                  # Capa HTTP: endpoints Minimal API (IEndpoint), Program.cs
 │   │   └── src/Nakama/           # Dominio/aplicación — un bounded context por carpeta:
 │   │       ├── Chatbots/         #   agregado Chatbot + Conversation (escritura)
+│   │       ├── ChatbotMembers/   #   equipo de cada chatbot y sus roles (propietario/editor/lector)
 │   │       ├── ChatbotDetail/    #   proyección de lectura del detalle de un chatbot
 │   │       ├── ChatbotSummaries/ #   proyección de lectura del listado de chatbots
 │   │       ├── ConversationHistory/ # historial de conversaciones por usuario
@@ -107,6 +127,8 @@ proyecto_master/
 │   │       ├── FormationEnrollment/ # agregado FormationEnrollment (asignación + progreso por persona)
 │   │       ├── FormationDetail/  #   proyección de lectura del detalle de una formación
 │   │       ├── FormationsList/   #   proyección de lectura del listado de formaciones (escopeado por usuario)
+│   │       ├── LlmProviders/     #   proveedores de IA (claves de API y catálogo de modelos)
+│   │       ├── Home/             #   resumen de la página de inicio de cada persona
 │   │       ├── Users/            #   usuarios y autenticación
 │   │       ├── UserActivity/     #   actividad de usuario (logins y renovaciones) para analítica
 │   │       ├── QuestionActivity/ #   preguntas a los chatbots (una fila por pregunta) para analítica
@@ -121,7 +143,9 @@ proyecto_master/
 │   │           ├── components/        # UI reutilizable
 │   │           ├── shared/            # contextos globales, hooks y CSS transversal
 │   │           └── routes/            # definición de rutas (React Router)
-│   └── tests/                    # convención para tests .NET (NUnit + FluentAssertions) — aún sin implementar
+│   └── tests/
+│       ├── Test/                 # tests .NET: unitarios, infraestructura (PostgreSQL real) y E2E de la API
+│       └── Test.Architecture/    # tests de reglas de arquitectura
 ├── docs/                         # ADRs, requisitos y documentación de arquitectura
 ├── infra/                        # Terraform del entorno de Azure (nakama-dev)
 └── docker-compose.yaml           # PostgreSQL local
@@ -140,9 +164,12 @@ Cada módulo relevante tiene su propio `agents.md` con las convenciones de imple
 - **Vistas separadas Cursar / Gestionar**: la persona que cursa una formación usa `/formacion/:id` (progreso, módulos bloqueados, exámenes respondibles); un admin la configura en `/formacion/:id/gestionar` (alta/edición inline de módulos sin diálogo, equipo asignado) — son páginas y hooks independientes, no una sola vista condicionada por rol.
 - **Listados paginados**: `/chatbots` y `/formacion` paginan, buscan y filtran por estado en el servidor (`GET /api/chatbots/paged` y `/api/formations/paged`); la página, el tamaño, la búsqueda y el estado viven en la URL (`?page=&size=&q=&status=`). El tamaño por defecto y el máximo se configuran en `Pagination` de `appsettings.json`; el frontend ofrece sus tamaños con `VITE_PAGINATION_PAGE_SIZE_OPTIONS` y `VITE_PAGINATION_DEFAULT_PAGE_SIZE` (ninguno puede superar el máximo del backend). Los endpoints sin paginar siguen existiendo para el resto de pantallas (ADR-26).
 - **Analítica global**: personas activas, preguntas respondidas esta semana, preguntas por semana (gráfico de las últimas 4, 8 o 12 semanas, con `VITE_QUESTION_ACTIVITY_WEEK_OPTIONS` y `VITE_QUESTION_ACTIVITY_DEFAULT_WEEKS` como espejo de `Reporting:QuestionActivity:MaxWeeks` y `DefaultWeeks`, ADR-29), uso por chatbot del mes en curso (solo los que tuvieron preguntas), tasa de respuestas útiles, preguntas sin buena respuesta de la semana (las valoradas como no útiles) y actividad de usuarios (personas activas hoy, en 7 y en 30 días, y un gráfico diario de personas activas e inicios de sesión a 7, 30 o 90 días). Se alimenta de `UserActivity`, que registra cada login y cada renovación de sesión (como máximo una por persona y hora). Los días se cuentan en la zona horaria `Reporting:TimeZone`, única para toda la analítica; el frontend ofrece los rangos con `VITE_USER_ACTIVITY_DAY_OPTIONS` y `VITE_USER_ACTIVITY_DEFAULT_DAYS` (ninguno puede superar `Reporting:UserActivity:MaxDays`) (ADR-28). Cada respuesta del chat se puede valorar con 👍 o 👎, y la valoración se guarda en el intercambio, sobrevive a recargar el chat y se puede cambiar (ADR-30).
-- **Autenticación propia**: login por email/contraseña contra la base de usuarios propia. Devuelve un JWT de acceso de 15 minutos, que se exige en todos los endpoints salvo login, refresh y logout; los de administración requieren además el rol de administrador. La sesión sobrevive a las recargas con un refresh token de 1 día en una cookie `HttpOnly` que se rota en cada uso (reutilizar uno ya rotado cierra todas las sesiones del usuario). Sin SSO todavía — ver nota de stack planificado más arriba.
-
+- **Proveedores de IA** (admin): pantalla «Proveedores de IA» para registrar la clave de API de cada proveedor (por defecto Anthropic) y su catálogo de modelos; de ahí salen el proveedor y el modelo que usan el chat y el borrador de preguntas con IA.
+- **Autenticación propia**: login por email/contraseña contra la base de usuarios propia. Devuelve un JWT de acceso de 15 minutos, que se exige en todos los endpoints salvo login, refresh y logout; los de administración requieren además el rol de administrador. La sesión sobrevive a las recargas con un refresh token de 1 día en una cookie `HttpOnly` que se rota en cada uso (reutilizar uno ya rotado cierra todas las sesiones del usuario).
 ## 🔑 Datos y cuentas de prueba
+
+- **Producción** ([nakama-appservice.azurewebsites.net](https://nakama-appservice.azurewebsites.net/)): los usuarios **ya están creados** y son los de la tabla de abajo; se puede entrar directamente, sin ejecutar nada.
+- **Desarrollo (local)**: es **necesario ejecutar el script de seed de datos** para poder acceder, como se explica a continuación.
 
 Las migraciones solo crean el esquema: una base nueva está **vacía y no hay ninguna cuenta con la que entrar** (la aplicación no tiene alta de usuarios). Para tener datos con los que explorarla, ejecuta a mano el script [`docs/db/demo-data.sql`](docs/db/demo-data.sql) una vez que la API haya aplicado las migraciones:
 
@@ -159,18 +186,37 @@ El script se puede lanzar más de una vez (omite las filas que ya existen). Es u
 
 Las otras 3 personas son `@seed.nakama.test` con la contraseña `Seed1234.`.
 
+## 📚 Documentación
+
+| Documento | Qué contiene |
+|---|---|
+| [`docs/requirements/analisis-requisitos-chatbot-onboarding.md`](docs/requirements/analisis-requisitos-chatbot-onboarding.md) | Análisis de requisitos de la plataforma (funcionales y no funcionales) |
+| [`docs/research/guia-entrevistas-validacion.md`](docs/research/guia-entrevistas-validacion.md) | Guía de entrevistas para validar las hipótesis del producto |
+| [`docs/architecture/stack-tecnologico.md`](docs/architecture/stack-tecnologico.md) | Decisiones de stack y arquitectura, incluidas las planificadas que aún no están implementadas |
+| [`docs/adr/`](docs/adr/README.md) | ADRs del backend: una decisión por archivo y por qué se tomó (persistencia, eventos, CQRS, autenticación, analítica…) |
+| [`docs/db/demo-data.sql`](docs/db/demo-data.sql) | Script de datos de demostración (ver [Datos y cuentas de prueba](#-datos-y-cuentas-de-prueba)) |
+| [`infra/README.md`](infra/README.md) | Infraestructura de Azure con Terraform y pasos de despliegue |
+| [`docs/presentacion/Nakama-presentacion.pptx`](docs/presentacion/Nakama-presentacion.pptx) | Presentación en PowerPoint de la aplicación; también hay un vídeo de presentación |
+
+**Guías de implementación por módulo** (`agents.md`, enrutadas desde [`CLAUDE.md`](CLAUDE.md)):
+
+- [`apps/backend/api/agents.md`](apps/backend/api/agents.md): capa HTTP (endpoints Minimal API)
+- [`apps/backend/src/Nakama/agents.md`](apps/backend/src/Nakama/agents.md): dominio y aplicación (DDD + hexagonal)
+- [`apps/frontend/nakama.web/agents.md`](apps/frontend/nakama.web/agents.md): frontend React + TypeScript
+- [`apps/tests/Test/agents.md`](apps/tests/Test/agents.md): convenciones de tests .NET
+
+**Documentación de la API**: con el backend en entorno `Development`, Swagger UI está en `https://localhost:7080/api/docs` y el contrato OpenAPI en `/openapi/{versión}.json`; de ese contrato se genera el cliente TypeScript del frontend con NSwag. No se expone en producción.
+
 ## 📦 Despliegue
+
+**URL de producción:** <https://nakama-appservice.azurewebsites.net/>
 
 La infraestructura de Azure (App Service Windows + PostgreSQL flexible server) se define con Terraform en [`infra/`](infra/README.md), junto con los pasos para publicar y configurar el entorno. Todavía no hay pipeline de CI/CD: el despliegue es manual.
 
-## 🤝 Contribuyendo
-
-Proyecto interno — antes de tocar un módulo, leé el `agents.md` de esa carpeta (ver tabla de routing en [`CLAUDE.md`](CLAUDE.md)) para seguir sus convenciones de nombres y capas.
-
-## 📌 Versionado
-
-Sin tags de versión todavía; se sigue el historial de commits en `main`.
-
 ## 📄 Licencia
 
-Proyecto interno, sin licencia pública definida.
+Copyright (c) 2026 Victor Moreno Ruiz. Todos los derechos reservados.
+
+Este código y sus archivos asociados son propiedad exclusiva del autor. Queda estrictamente
+prohibida la copia, modificación, distribución o uso de este software, total o parcial,
+sin el consentimiento previo y por escrito del titular de los derechos de autor.

@@ -19,7 +19,7 @@
 | Persistencia + Vector Store | PostgreSQL + pgvector, detrás de `IVectorStorePort` | Empieza simple (pgvector); si no rinde lo suficiente, se sustituye por Qdrant/Pinecone sin tocar el dominio |
 | Ingesta de documentos | Parsers .NET (PdfPig para PDF, Markdig para Markdown) | Evita depender de Python salvo casos raros |
 | Multi-tenancy | Database-per-tenant (una base de datos PostgreSQL por departamento) | Aislamiento fuerte a nivel físico (cumple RNF1: 0 cruces de información); el tenant se resuelve a nivel de conexión, no de filtro lógico |
-| Autenticación / SSO | Servidor de identidad propio (RNF2: SAML/OIDC), diseñado para ser sustituido por **Jaltest Auth** (servicio de identidad ya implementado en .NET 10) | Permite arrancar sin dependencias externas y migrar a Jaltest Auth cuando esté listo, sin reescribir el dominio (autenticación detrás de un puerto/interfaz compatible OIDC) |
+| Autenticación | Servidor de identidad propio | Permite arrancar sin dependencias externas, con la autenticación detrás de un puerto/interfaz para no acoplar el dominio |
 
 ---
 
@@ -30,11 +30,10 @@
 - Ventaja: aislamiento físico total (RNF1), y evita fugas por error de filtrado lógico (a diferencia de un esquema con `tenant_id` compartido).
 - Coste a vigilar: más bases de datos que gestionar/migrar a medida que crecen los departamentos (a tener en cuenta en el plan de migraciones y en el pipeline de despliegue).
 
-## 3. Autenticación: propio ahora, Jaltest Auth después
+## 3. Autenticación
 
-- Fase inicial: servidor de identidad propio (a definir: Duende IdentityServer u OpenIddict sobre .NET 10) para no bloquear el desarrollo por una dependencia externa.
-- El acceso a autenticación se modela como puerto (interfaz compatible OIDC) desde el arranque, de forma que sustituir el proveedor por **Jaltest Auth** más adelante sea un cambio de adaptador/configuración, no una reescritura.
-- Acción pendiente: validar con el equipo de Jaltest Auth los flujos OIDC/SAML soportados, para que el puerto propio no diverja de su contrato.
+- Servidor de identidad propio (a definir: Duende IdentityServer u OpenIddict sobre .NET 10) para no bloquear el desarrollo por una dependencia externa.
+- El acceso a autenticación se modela como puerto (interfaz) desde el arranque, de forma que cambiar el proveedor sea un cambio de adaptador/configuración, no una reescritura.
 
 ## 4. Capa LLM configurable por bot
 
@@ -48,7 +47,6 @@
 ## 5. Decisiones pendientes
 
 - [ ] Elegir implementación concreta del servidor de identidad propio (Duende IdentityServer vs OpenIddict)
-- [ ] Validar contrato OIDC/SAML de Jaltest Auth para diseñar el puerto de auth sin divergencias
 - [ ] Estrategia de despliegue/orquestación de múltiples BD por departamento (migraciones, backups)
 - [x] Framework de frontend adicional — resuelto: Vite + React 19 + TypeScript, React Router para navegación, Context API para estado (sin librería adicional por ahora), sistema de diseño propio en CSS (sin UI kit externo). Ver `frontend/`.
 

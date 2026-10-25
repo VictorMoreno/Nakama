@@ -6,9 +6,8 @@
 **Decision.** `Users` and `Authentication` are two bounded contexts. `Users` owns the `User` aggregate and checks credentials
 with ASP.NET Core Identity Core backed by NHibernate. `Authentication` owns the session: it issues a JWT access token and a
 rotating refresh token, and the API authorizes every request from that token. OAuth/SSO is out of scope here:
-`docs/architecture/stack-tecnologico.md` plans an own identity server now and Jaltest Auth later behind an OIDC/SAML port,
-and leaves two choices open (Duende IdentityServer vs. OpenIddict, and validating Jaltest's contract) that this ADR does
-not take.
+`docs/architecture/stack-tecnologico.md` plans an own identity server and leaves one choice open (Duende IdentityServer vs.
+OpenIddict) that this ADR does not take.
 
 **Identity Core works with NHibernate — verified, not assumed.** The `net10.0` dependency group of
 `Microsoft.Extensions.Identity.Core` has zero EF Core: `UserManager<TUser>`, `IUserStore<TUser>` and `PasswordHasher<TUser>`
