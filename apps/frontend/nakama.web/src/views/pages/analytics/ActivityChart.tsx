@@ -64,11 +64,11 @@ export default function ActivityChart({ days }: ActivityChartProps) {
     <>
       <div className={styles.chartLegend}>
         <span className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: "var(--accent)" }} />
+          <span className={`${styles.legendDot} ${styles.legendDotAccent}`} />
           Personas activas
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: "var(--cyan)" }} />
+          <span className={`${styles.legendDot} ${styles.legendDotCyan}`} />
           Inicios de sesión
         </span>
       </div>
@@ -108,11 +108,11 @@ export default function ActivityChart({ days }: ActivityChartProps) {
           <div className={`${styles.chartTooltip} ${styles.show}`} style={{ left: `${tooltipX}%`, top: `${tooltipY}%` }}>
             <div className={styles.row}>{shortDate(hovered.date)}</div>
             <div className={styles.row}>
-              <span className={styles.legendDot} style={{ background: "var(--accent)" }} />
+              <span className={`${styles.legendDot} ${styles.legendDotAccent}`} />
               Personas activas: {hovered.activeUsers}
             </div>
             <div className={styles.row}>
-              <span className={styles.legendDot} style={{ background: "var(--cyan)" }} />
+              <span className={`${styles.legendDot} ${styles.legendDotCyan}`} />
               Inicios de sesión: {hovered.logins}
             </div>
           </div>

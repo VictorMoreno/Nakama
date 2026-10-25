@@ -20,7 +20,7 @@ export default function ChatbotDetailPage() {
   if (!bot) {
     return (
       <section className="view active">
-        <div className="glass" style={{ padding: 24 }}>
+        <div className="glass glass-padded">
           <p>
             No se ha encontrado este chatbot.{" "}
             <button className="config-link" type="button" onClick={() => navigate("/chatbots")}>

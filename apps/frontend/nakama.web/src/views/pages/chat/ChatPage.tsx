@@ -36,7 +36,7 @@ export default function ChatPage() {
   if (!bot) {
     return (
       <section className="view active">
-        <div className="glass" style={{ padding: 24 }}>
+        <div className="glass glass-padded">
           <p>
             No tienes ningún chatbot seleccionado.{" "}
             {isAdmin ? (

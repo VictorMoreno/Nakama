@@ -44,7 +44,7 @@ function ProviderPanel({ config, onSave }: ProviderPanelProps) {
           <span className={`status-tag ${config.configured ? "ok" : "muted"}`}>{config.configured ? "Configurado" : "Sin configurar"}</span>
         </div>
 
-        <div style={{ padding: "0 20px 20px" }}>
+        <div className="panel-body">
           <div className="form-field">
             <label htmlFor={`${config.provider}-api-key`}>Clave de API</label>
             <input
@@ -55,20 +55,20 @@ function ProviderPanel({ config, onSave }: ProviderPanelProps) {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
             />
-            <p style={{ fontSize: "0.76rem", color: "var(--ink-faint)", lineHeight: 1.5, margin: "6px 0 0" }}>
+            <p className={styles.fieldHint}>
               La clave nunca se muestra una vez guardada — solo se puede reemplazar.
             </p>
           </div>
 
-          <div className="form-field" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div className={`form-field ${styles.enabledRow}`}>
             <button className="switch" role="switch" aria-checked={enabled} aria-label="Habilitado" type="button" onClick={() => setEnabled((v) => !v)} />
-            <label style={{ marginBottom: 0 }}>Habilitado</label>
+            <label className={styles.enabledLabel}>Habilitado</label>
           </div>
 
-          <div className="form-field" style={{ marginBottom: 0 }}>
+          <div className="form-field field-flush">
             <label>Modelos disponibles</label>
             {models.length === 0 && (
-              <p style={{ fontSize: "0.76rem", color: "var(--ink-faint)", lineHeight: 1.5, margin: "0 0 10px" }}>
+              <p className={styles.emptyHint}>
                 Todavía no hay modelos registrados para este proveedor.
               </p>
             )}
@@ -98,7 +98,7 @@ function ProviderPanel({ config, onSave }: ProviderPanelProps) {
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 14 }}>
+      <div className={styles.pageActions}>
         <button className="btn-primary" type="button" onClick={handleSave}>
           Guardar
         </button>

@@ -62,7 +62,7 @@ export default function TrendChart({ weeks }: TrendChartProps) {
     <>
       <div className={styles.chartLegend}>
         <span className={styles.legendItem}>
-          <span className={styles.legendDot} style={{ background: "var(--accent)" }} />
+          <span className={`${styles.legendDot} ${styles.legendDotAccent}`} />
           Preguntas a los chatbots
         </span>
       </div>
@@ -105,7 +105,7 @@ export default function TrendChart({ weeks }: TrendChartProps) {
           <div className={`${styles.chartTooltip} ${styles.show}`} style={{ left: `${tooltipX}%`, top: `${tooltipY}%` }}>
             <div className={styles.row}>Semana del {shortDate(hovered.weekStart)}</div>
             <div className={styles.row}>
-              <span className={styles.legendDot} style={{ background: "var(--accent)" }} />
+              <span className={`${styles.legendDot} ${styles.legendDotAccent}`} />
               Preguntas: {hovered.questions}
             </div>
           </div>

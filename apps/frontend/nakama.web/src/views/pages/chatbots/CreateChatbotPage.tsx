@@ -59,7 +59,7 @@ export default function CreateChatbotPage() {
           <div className="panel-head">
             <h2>Datos básicos</h2>
           </div>
-          <div style={{ padding: "0 20px 20px" }}>
+          <div className="panel-body">
             <IconUploadField value={iconUrl} onChange={setIconUrl} placeholderLabel={name || "Chatbot"} />
             <div className="form-field">
               <label htmlFor="new-bot-name">Nombre del chatbot</label>
@@ -76,7 +76,7 @@ export default function CreateChatbotPage() {
                 autoFocus
               />
             </div>
-            <div className="form-field" style={{ marginBottom: 0 }}>
+            <div className="form-field field-flush">
               <label htmlFor="new-bot-desc">Descripción breve</label>
               <textarea
                 id="new-bot-desc"
@@ -93,7 +93,7 @@ export default function CreateChatbotPage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 14 }}>
+        <div className={styles.section}>
           <div className="group-head">
             <h2>Comportamiento</h2>
             <p>Esto se configura una vez para todo el equipo — quien use el chatbot no puede cambiarlo desde el propio chat.</p>
@@ -140,7 +140,7 @@ export default function CreateChatbotPage() {
                   {modelOptions.length > 0 ? (
                     <Select value={selectedModel} onChange={setModel} options={modelOptions} ariaLabel="Modelo" />
                   ) : (
-                    <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
+                    <span className="hint-sm">
                       Sin modelos registrados — configúralo en Proveedores de IA.
                     </span>
                   )}
@@ -150,7 +150,7 @@ export default function CreateChatbotPage() {
           </div>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+        <div className="form-actions">
           <button className="btn-ghost" type="button" onClick={() => navigate("/chatbots")}>
             <CloseIcon /> Cancelar
           </button>

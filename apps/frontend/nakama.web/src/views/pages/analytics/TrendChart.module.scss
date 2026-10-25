@@ -47,3 +47,6 @@
     &:first-child { margin-top: 0; font-weight: 600; }
   }
 }
+
+.legendDotAccent { background: var(--accent); }
+.legendDotCyan { background: var(--cyan); }

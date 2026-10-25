@@ -52,7 +52,7 @@ export default function CreateFormationPage() {
           <div className="panel-head">
             <h2>Datos básicos</h2>
           </div>
-          <div style={{ padding: "0 20px 20px" }}>
+          <div className="panel-body">
             <IconUploadField value={iconUrl} onChange={setIconUrl} placeholderLabel={title || "Formación"} />
             <div className="form-field">
               <label htmlFor="new-formation-title">Título</label>
@@ -83,7 +83,7 @@ export default function CreateFormationPage() {
                 }}
               />
             </div>
-            <div className="form-field" style={{ marginBottom: 0 }}>
+            <div className="form-field field-flush">
               <label htmlFor="new-formation-desc">Descripción breve</label>
               <textarea
                 id="new-formation-desc"
@@ -100,7 +100,7 @@ export default function CreateFormationPage() {
           </div>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+        <div className="form-actions">
           <button className="btn-ghost" type="button" onClick={() => navigate("/formacion")}>
             <CloseIcon /> Cancelar
           </button>

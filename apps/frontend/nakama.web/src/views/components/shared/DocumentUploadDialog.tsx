@@ -56,7 +56,7 @@ export default function DocumentUploadDialog({ open, description, onUpload, onCl
   return (
     <Dialog open={open} onClose={handleClose} title="Subir documento">
       <p>{description}</p>
-      <label className="dropzone" htmlFor={inputId} style={{ cursor: "pointer", display: "block" }}>
+      <label className="dropzone" htmlFor={inputId}>
         {file ? file.name : "Arrastra un archivo aquí, o haz clic para seleccionar"}
       </label>
       <input id={inputId} type="file" accept={documentsConfig.allowedExtensions.join(",")} onChange={handleFile} hidden />

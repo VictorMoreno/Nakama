@@ -105,7 +105,7 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
           <div className={styles.moduleItemTitle}>
             {locked ? <LockIcon width={14} height={14} /> : done ? <CheckIcon width={14} height={14} /> : `${index + 1}.`} {m.title}
             <span className={`${styles.moduleTypeBadge} ${styles[m.type]}`}>
-              <TypeIcon width={11} height={11} style={{ marginRight: 3, verticalAlign: -1 }} />
+              <TypeIcon width={11} height={11} className={styles.typeIcon} />
               {TYPE_LABEL[m.type]}
             </span>
             {m.type === "examen" && m.passingScore !== undefined && (
@@ -140,7 +140,7 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
                 </div>
               )}
               {m.type === "examen" && m.quiz && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
+                <div className={styles.quizBody}>
                   <div className="tabs" role="tablist" aria-label="Secciones del examen">
                     <button
                       className="tab-btn"
@@ -170,13 +170,10 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
                   {examTab === "examen" &&
                     m.quiz.map((q, qi) => (
                       <div key={q.question}>
-                        <div style={{ fontSize: "0.8rem", color: "var(--ink)", fontWeight: 500, marginBottom: 6 }}>{q.question}</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <div className={styles.examQuestion}>{q.question}</div>
+                        <div className={styles.examOptions}>
                           {q.options.map((opt, oi) => (
-                            <label
-                              key={opt}
-                              style={{ display: "flex", alignItems: "center", gap: 7, fontSize: "0.78rem", color: "var(--ink-soft)" }}
-                            >
+                            <label key={opt} className={styles.examOption}>
                               <input
                                 type="radio"
                                 name={`${m.id}-q${qi}`}
@@ -202,8 +199,8 @@ function ExecuteModuleRow({ formationKey, module: m, index, locked, done, examSc
           )}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10, flex: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div className={styles.moduleItemSide}>
+          <div className={styles.moduleItemSideRow}>
             {!locked && m.type !== "examen" && (
               <button className={`btn-ghost${done ? " done" : ""}`} type="button" disabled={done || busy} onClick={handleComplete}>
                 <CheckIcon /> {done ? "Completado ✓" : "Marcar como completado"}
@@ -241,7 +238,7 @@ export default function FormationExecutePage() {
   if (!c) {
     return (
       <section className="view active">
-        <div className="glass" style={{ padding: 24 }}>
+        <div className="glass glass-padded">
           <p>
             No se ha encontrado esta formación.{" "}
             <button className="config-link" type="button" onClick={() => navigate("/formacion")}>
@@ -286,7 +283,7 @@ export default function FormationExecutePage() {
           </div>
 
           {c.modules.length === 0 ? (
-            <p style={{ padding: "0 20px 20px", fontSize: "0.82rem", color: "var(--ink-faint)" }}>
+            <p className="panel-body hint">
               Esta formación todavía no tiene módulos.
             </p>
           ) : (

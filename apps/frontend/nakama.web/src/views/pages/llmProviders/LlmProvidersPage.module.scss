@@ -22,3 +22,32 @@
     margin-left: auto;
   }
 }
+
+.fieldHint {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  line-height: 1.5;
+  margin: 6px 0 0;
+}
+
+.emptyHint {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  line-height: 1.5;
+  margin: 0 0 10px;
+}
+
+.enabledRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.enabledLabel { margin-bottom: 0; }
+
+.pageActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}

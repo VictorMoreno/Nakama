@@ -16,7 +16,7 @@ export default function UsageChart({ usage }: UsageChartProps) {
   const { chatbots } = useChatbots();
 
   if (usage.length === 0) {
-    return <p style={{ fontSize: "0.82rem", color: "var(--ink-faint)" }}>Todavía no hay conversaciones registradas.</p>;
+    return <p className="hint">Todavía no hay conversaciones registradas.</p>;
   }
 
   const maxV = Math.max(...usage.map((u) => u.value));

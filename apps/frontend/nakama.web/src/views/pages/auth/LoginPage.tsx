@@ -1,5 +1,3 @@
-import { type FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   AlertIcon,
   AnalyticsIcon,
@@ -10,11 +8,7 @@ import {
   LoginIcon,
   MailIcon
 } from "../../components/shared/icons";
-import type { AuthenticatedUser } from "../../../modules/auth/domain/AuthenticatedUser";
-import type { IAuthRepository } from "../../../modules/auth/domain/IAuthRepository";
-import { Services } from "../../../shared/infrastructure/injection/Services";
-import { useInjection } from "../../../shared/infrastructure/injection/useInjection";
-import { useUser } from "../../shared/contexts/UserContext";
+import { useLogin } from "./hooks/useLogin";
 import styles from "./LoginPage.module.scss";
 
 const FEATURES = [
@@ -24,30 +18,7 @@ const FEATURES = [
 ];
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const { setCurrentUser } = useUser();
-  const authRepo = useInjection<IAuthRepository>(Services.AuthRepository.id);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-    try {
-      const user: AuthenticatedUser | null = await authRepo.Login(email, password);
-      if (!user) {
-        setError("Correo o contraseña incorrectos.");
-        return;
-      }
-      setCurrentUser(user);
-      navigate("/chat");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const { email, setEmail, password, setPassword, error, submitting, handleSubmit } = useLogin();
 
   return (
     <div className={styles.loginScreen}>
@@ -101,7 +72,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="form-field" style={{ marginBottom: 8 }}>
+            <div className="form-field field-tight">
               <label htmlFor="login-password">Contraseña</label>
               <div className={styles.inputWithIcon}>
                 <LockIcon className={styles.inputIcon} />
@@ -125,7 +96,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button className="btn-primary" type="submit" style={{ width: "100%", justifyContent: "center" }} disabled={submitting}>
+            <button className="btn-primary btn-block" type="submit" disabled={submitting}>
               <LoginIcon /> Iniciar sesión
             </button>
           </form>

@@ -1,13 +1,7 @@
-import { useEffect, useState } from "react";
 import IconUploadField from "../../../components/shared/IconUploadField";
 import Select from "../../../components/shared/Select";
-import { useChatbots } from "../../../shared/contexts/ChatbotsContext";
-import { useToast } from "../../../shared/contexts/ToastContext";
 import type { Chatbot, LlmProvider } from "../../../../modules/chatbots/domain/Chatbot";
-import type { ILlmProvidersRepository } from "../../../../modules/llmProviders/domain/ILlmProvidersRepository";
-import type { LlmProviderConfig } from "../../../../modules/llmProviders/domain/LlmProviderConfig";
-import { Services } from "../../../../shared/infrastructure/injection/Services";
-import { useInjection } from "../../../../shared/infrastructure/injection/useInjection";
+import { useGeneralTab } from "./hooks/useGeneralTab";
 import styles from "./GeneralTab.module.scss";
 
 const PROVIDER_OPTIONS: { value: LlmProvider; label: string }[] = [{ value: "anthropic", label: "Anthropic (Claude)" }];
@@ -17,57 +11,29 @@ interface GeneralTabProps {
 }
 
 export default function GeneralTab({ bot }: GeneralTabProps) {
-  const { updateSettings, updateIcon, updateDetails } = useChatbots();
-  const { showToast } = useToast();
-  const llmProvidersRepo = useInjection<ILlmProvidersRepository>(Services.LlmProvidersRepository.id);
-  const [providers, setProviders] = useState<LlmProviderConfig[]>([]);
-  const [label, setLabel] = useState(bot.label);
-  const [description, setDescription] = useState(bot.description);
-  const [labelError, setLabelError] = useState(false);
-  const [descriptionError, setDescriptionError] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const dirty = label.trim() !== bot.label || description.trim() !== bot.description;
-
-  async function handleSaveDetails() {
-    const nextLabel = label.trim();
-    const nextDescription = description.trim();
-    if (!nextLabel || !nextDescription) {
-      setLabelError(!nextLabel);
-      setDescriptionError(!nextDescription);
-      return;
-    }
-    setSaving(true);
-    try {
-      await updateDetails(bot.id, nextLabel, nextDescription);
-      showToast("Datos del chatbot actualizados");
-    } catch {
-      showToast("No se pudieron guardar los datos del chatbot");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    llmProvidersRepo.FindAll().then((rows) => {
-      if (!cancelled) setProviders(rows);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [llmProvidersRepo]);
-
-  const selectedProvider = providers.find((p) => p.provider === bot.settings.provider);
-  const modelOptions = (selectedProvider?.models ?? []).map((m) => ({ value: m.id, label: m.label }));
+  const {
+    updateSettings,
+    updateIcon,
+    modelOptions,
+    label,
+    description,
+    labelError,
+    descriptionError,
+    saving,
+    dirty,
+    changeLabel,
+    changeDescription,
+    changeProvider,
+    handleSaveDetails
+  } = useGeneralTab(bot);
 
   return (
     <div className="tab-panel active">
-      <div className="glass" style={{ marginBottom: 14 }}>
+      <div className="glass panel-spaced">
         <div className="panel-head">
           <h2>Datos básicos</h2>
         </div>
-        <div style={{ padding: "0 20px 20px" }}>
+        <div className="panel-body">
           <div className="form-field">
             <label htmlFor="chatbot-label">Nombre</label>
             <input
@@ -75,10 +41,7 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
               type="text"
               className={`form-input${labelError ? " field-error" : ""}`}
               value={label}
-              onChange={(e) => {
-                setLabel(e.target.value);
-                if (labelError) setLabelError(false);
-              }}
+              onChange={(e) => changeLabel(e.target.value)}
             />
           </div>
           <div className="form-field">
@@ -88,13 +51,10 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
               className={`form-input${descriptionError ? " field-error" : ""}`}
               rows={2}
               value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                if (descriptionError) setDescriptionError(false);
-              }}
+              onChange={(e) => changeDescription(e.target.value)}
             />
           </div>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div className="form-actions">
             <button className="btn-primary" type="button" disabled={!dirty || saving} onClick={handleSaveDetails}>
               Guardar cambios
             </button>
@@ -102,11 +62,11 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
         </div>
       </div>
 
-      <div className="glass" style={{ marginBottom: 14 }}>
+      <div className="glass panel-spaced">
         <div className="panel-head">
           <h2>Icono del chatbot</h2>
         </div>
-        <div style={{ padding: "0 20px 20px" }}>
+        <div className="panel-body">
           <IconUploadField
             value={bot.iconUrl}
             onChange={(iconUrl) => updateIcon(bot.id, iconUrl)}
@@ -136,7 +96,7 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
                 onClick={() => updateSettings(bot.id, { socratic: !bot.settings.socratic })}
               />
             </div>
-  
+
             <div className={styles.configRow}>
               <div className={styles.configRowText}>
                 <div className="title">Explícame más</div>
@@ -151,22 +111,14 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
                 onClick={() => updateSettings(bot.id, { explicaMas: !bot.settings.explicaMas })}
               />
             </div>
-  
+
             <div className={styles.configRow}>
               <div className={styles.configRowText}>
                 <div className="title">Modelo de lenguaje</div>
                 <div className="desc">Proveedor y modelo que responde las preguntas de este chatbot. Cada chatbot puede usar uno distinto.</div>
               </div>
               <div className={styles.configRowControls}>
-                <Select
-                  value={bot.settings.provider}
-                  onChange={(provider) => {
-                    const firstModel = providers.find((p) => p.provider === provider)?.models[0]?.id ?? "";
-                    updateSettings(bot.id, { provider, model: firstModel });
-                  }}
-                  options={PROVIDER_OPTIONS}
-                  ariaLabel="Proveedor"
-                />
+                <Select value={bot.settings.provider} onChange={changeProvider} options={PROVIDER_OPTIONS} ariaLabel="Proveedor" />
                 {modelOptions.length > 0 ? (
                   <Select
                     value={bot.settings.model}
@@ -175,9 +127,7 @@ export default function GeneralTab({ bot }: GeneralTabProps) {
                     ariaLabel="Modelo"
                   />
                 ) : (
-                  <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
-                    Sin modelos registrados — configúralo en Proveedores de IA.
-                  </span>
+                  <span className="hint-sm">Sin modelos registrados — configúralo en Proveedores de IA.</span>
                 )}
               </div>
             </div>

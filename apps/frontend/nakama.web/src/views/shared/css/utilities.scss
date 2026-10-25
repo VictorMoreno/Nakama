@@ -273,7 +273,7 @@
   margin: 0;
 }
 
-.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.modal-actions, .form-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
 .dropzone {
   border: 1px dashed var(--border-strong);
@@ -284,6 +284,17 @@
   color: var(--ink-faint);
   margin-bottom: 16px;
 }
+
+label.dropzone { cursor: pointer; display: block; }
+
+.panel-body { padding: 0 20px 20px; }
+.panel-spaced { margin-bottom: 14px; }
+.glass-padded { padding: 24px; }
+.field-flush { margin-bottom: 0; }
+.field-tight { margin-bottom: 8px; }
+.btn-block { width: 100%; justify-content: center; }
+.hint { font-size: 0.82rem; color: var(--ink-faint); }
+.hint-sm { font-size: 0.8rem; color: var(--ink-soft); }
 
 // ---------- Panel head (used by chart/stat/team/gaps/etc. cards across features) ----------
 

@@ -60,7 +60,7 @@ function ManageModuleRow({ formationKey, module: m, index, expanded, onToggleExp
           <div className={styles.moduleItemTitle}>
             {index + 1}. {m.title}
             <span className={`${styles.moduleTypeBadge} ${styles[m.type]}`}>
-              <TypeIcon width={11} height={11} style={{ marginRight: 3, verticalAlign: -1 }} />
+              <TypeIcon width={11} height={11} className={styles.typeIcon} />
               {TYPE_LABEL[m.type]}
             </span>
             {m.aiDraft && <span className={styles.moduleDraftBadge}>Borrador IA</span>}
@@ -86,13 +86,13 @@ function ManageModuleRow({ formationKey, module: m, index, expanded, onToggleExp
                 </div>
               )}
               {m.type === "examen" && m.quiz && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+                <div className={styles.quizReview}>
                   {m.quiz.map((q) => (
                     <div key={q.question} className={styles.moduleItemDesc}>
-                      <strong style={{ color: "var(--ink)" }}>{q.question}</strong>
-                      <div style={{ marginTop: 4 }}>
+                      <strong className={styles.reviewQuestion}>{q.question}</strong>
+                      <div className={styles.reviewOptions}>
                         {q.options.map((opt, oi) => (
-                          <div key={opt} style={oi === q.correctIndex ? { color: "var(--accent)", fontWeight: 600 } : undefined}>
+                          <div key={opt} className={oi === q.correctIndex ? styles.correctOption : undefined}>
                             {oi === q.correctIndex ? "✓" : "·"} {opt}
                           </div>
                         ))}
@@ -159,7 +159,7 @@ export default function FormationManagePage() {
   if (!c) {
     return (
       <section className="view active">
-        <div className="glass" style={{ padding: 24 }}>
+        <div className="glass glass-padded">
           <p>
             No se ha encontrado esta formación.{" "}
             <button className="config-link" type="button" onClick={() => navigate("/formacion")}>
@@ -205,11 +205,11 @@ export default function FormationManagePage() {
         {activeTab === "general" && (
           <div className="tab-panel active">
             <FormationDetailsPanel key={c.id} formation={c} />
-            <div className="glass" style={{ marginBottom: 14 }}>
+            <div className="glass panel-spaced">
               <div className="panel-head">
                 <h2>Icono de la formación</h2>
               </div>
-              <div style={{ padding: "0 20px 20px" }}>
+              <div className="panel-body">
                 <IconUploadField value={c.iconUrl} onChange={handleUpdateIcon} placeholderLabel={c.title} />
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function FormationManagePage() {
             <div className="glass">
               <div className="panel-head">
                 <h2>Progreso del equipo</h2>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div className={styles.teamHeadActions}>
                   <span className="count">Media: {avgTeamProgress}%</span>
                   <button className="btn-primary" type="button" onClick={() => setAddTeamMemberOpen(true)}>
                     <PlusIcon /> Asignar persona
@@ -259,7 +259,7 @@ export default function FormationManagePage() {
                 </div>
               </div>
               {c.team.length === 0 ? (
-                <p style={{ padding: "0 20px 20px", fontSize: "0.82rem", color: "var(--ink-faint)" }}>
+                <p className="panel-body hint">
                   Todavía no hay personas asignadas a esta formación.
                 </p>
               ) : (

@@ -271,16 +271,12 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
           <div className="form-field">
             <label>Preguntas del examen</label>
             {quiz.map((q, qi) => (
-              <div
-                key={qi}
-                style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: 12, marginBottom: 10 }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontSize: "0.76rem", fontWeight: 600, color: "var(--ink-soft)" }}>Pregunta {qi + 1}</span>
+              <div key={qi} className={styles.questionCard}>
+                <div className={styles.questionHead}>
+                  <span className={styles.questionTitle}>Pregunta {qi + 1}</span>
                   <button
-                    className="btn-ghost danger"
+                    className={`btn-ghost danger ${styles.questionRemove}`}
                     type="button"
-                    style={{ padding: "4px 8px", fontSize: "0.7rem" }}
                     onClick={() => removeQuestion(qi)}
                     disabled={quiz.length <= 1}
                   >
@@ -289,15 +285,14 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
                 </div>
                 <input
                   type="text"
-                  className={`form-input${quizError && !q.question.trim() ? " field-error" : ""}`}
+                  className={`form-input ${styles.questionText}${quizError && !q.question.trim() ? " field-error" : ""}`}
                   placeholder="Texto de la pregunta"
                   value={q.question}
                   onChange={(e) => updateQuestionText(qi, e.target.value)}
-                  style={{ marginBottom: 8 }}
                 />
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div className={styles.optionList}>
                   {q.options.map((opt, oi) => (
-                    <div key={oi} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div key={oi} className={styles.optionRow}>
                       <input
                         type="radio"
                         name={`quiz-${qi}-correct`}
@@ -307,16 +302,14 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
                       />
                       <input
                         type="text"
-                        className={`form-input${quizError && !opt.trim() ? " field-error" : ""}`}
+                        className={`form-input ${styles.optionText}${quizError && !opt.trim() ? " field-error" : ""}`}
                         placeholder={`Opción ${oi + 1}`}
                         value={opt}
                         onChange={(e) => updateOptionText(qi, oi, e.target.value)}
-                        style={{ flex: 1 }}
                       />
                       <button
-                        className="btn-ghost"
+                        className={`btn-ghost ${styles.optionRemove}`}
                         type="button"
-                        style={{ padding: "4px 8px" }}
                         onClick={() => removeOption(qi, oi)}
                         disabled={q.options.length <= 2}
                         aria-label={`Quitar la opción ${oi + 1}`}
@@ -327,16 +320,15 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
                   ))}
                 </div>
                 <button
-                  className="btn-ghost"
+                  className={`btn-ghost ${styles.optionAdd}`}
                   type="button"
-                  style={{ marginTop: 8, fontSize: "0.72rem", padding: "5px 10px" }}
                   onClick={() => addOption(qi)}
                 >
                   <PlusIcon width={12} height={12} /> Añadir opción
                 </button>
               </div>
             ))}
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className={styles.quizActions}>
               <button className="btn-ghost" type="button" onClick={addQuestion}>
                 <PlusIcon /> Añadir pregunta
               </button>
@@ -345,7 +337,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
               </button>
             </div>
             {quizError && (
-              <p style={{ color: "var(--danger)", fontSize: "0.76rem", marginTop: 8 }}>
+              <p className={styles.quizError}>
                 Cada pregunta necesita su texto, al menos 2 opciones completas y una marcada como correcta.
               </p>
             )}
@@ -360,7 +352,7 @@ export default function ModuleForm({ formationKey, module, onClose }: ModuleForm
         </>
       )}
 
-      <div className="config-row" style={{ padding: "10px 0", border: "none" }}>
+      <div className={`config-row ${styles.gateRow}`}>
         <div className="config-row-text">
           <div className="title">Bloquea el siguiente módulo</div>
           <div className="desc">Los juniors no podrán acceder al siguiente módulo hasta completar este.</div>

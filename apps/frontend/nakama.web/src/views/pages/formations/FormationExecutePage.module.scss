@@ -123,3 +123,13 @@
   border: 1px dashed var(--border-strong);
   color: var(--ink-faint);
 }
+
+.typeIcon { margin-right: 3px; vertical-align: -1px; }
+
+.quizBody { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.examQuestion { font-size: 0.8rem; color: var(--ink); font-weight: 500; margin-bottom: 6px; }
+.examOptions { display: flex; flex-direction: column; gap: 4px; }
+label.examOption { display: flex; align-items: center; gap: 7px; font-size: 0.78rem; color: var(--ink-soft); }
+
+.moduleItemSide { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex: none; }
+.moduleItemSideRow { display: flex; align-items: center; gap: 8px; }
